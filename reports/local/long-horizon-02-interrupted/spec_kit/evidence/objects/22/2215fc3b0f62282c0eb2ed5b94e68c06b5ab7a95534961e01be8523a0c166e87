@@ -1,0 +1,1 @@
+{"command": "cd /testbed && cat .specify/extensions.yml 2>/dev/null | python3 -c \"import sys,yaml; d=yaml.safe_load(sys.stdin); hooks=d.get('hooks',{}).get('after_constitution',[]); print(hooks)\" 2>/dev/null || echo \"NO_HOOKS_OR_INVALID\"", "exit_code": 0, "stderr": "", "stdout": "NO_HOOKS_OR_INVALID\n"}

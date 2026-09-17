@@ -37,7 +37,8 @@ active requirements, not a generic assertion. Example shape (replace example val
 "kind":"requirement","status":"unsupported","boundary":["this milestone"],
 "depends_on":[],"conflicts_with":[],"falsification_tests":["specific counterexample"],
 "source_ref":"milestone requirement R01","uncertainty":"high","evidence":[]}]}
-For actual shell evidence use kind="observed", source_quality="test" or "primary",
+Keep each requirement claim's kind="requirement" (claim kind is never "observed").
+Inside its evidence array, for actual shell evidence use kind="observed", source_quality="test" or "primary",
 ref=<evidence_ref returned by shell>, source_id=<source_id returned by shell>,
 direction="supports" and a scoped description. A test you authored is an observed
 test result, not independent validation. Unverified prose remains asserted/model.
@@ -128,37 +129,33 @@ class Provider:
     def __init__(self,folder,stage_spec):
         self.folder=folder;self.calls=[];self.stage_spec=stage_spec;self.instructions='';self.stage=0
     def query(self,messages,phase,timeout):
-        # Deterministic recent-history window plus complete active instructions.
+        # Preserve the actual conversation and native reasoning returned by this model.
         history=[dict(role=m['role'],content=(m['content'].split('\n',1)[0]+' Begin this new phase now; follow its current system instructions.' if m['content'].startswith('CONTROL_PHASE:') else m['content'])) for m in messages if m['role']!='system']
-        history=history[-16:]
-        prefix=[dict(role='system',content=COMMON),dict(role='user',content=self.stage_spec)]
-        ledger=[]
-        for number,call in enumerate(self.calls):
-            try:
-                action=json.loads(call['response']['choices'][0]['message']['content'])
-                ledger.append(f"{number+1}. stage={call['stage']} phase={call['phase']} "+
-                    action.get('action','?')+': '+str(action.get('command',action.get('summary','')))[:300])
-            except (KeyError,ValueError,TypeError):
-                ledger.append(f'{number+1}. response unavailable or invalid')
-        tail=dict(role='user',content='CURRENT PHASE: '+phase+'\n'+self.instructions+
-            '\nDURABLE ACTION LEDGER (actions requested, not proof of success):\n'+'\n'.join(ledger)+
-            '\nUse this ledger to avoid repeating completed inspections when their output leaves the recent history. '
-            'Keep your own concise notes on disk as needed. Finish this phase with done when its artifacts are ready. '
-            'You have a shared 100-call stage budget (80 primary calls, then up to 10 per public repair round); plan inspection and implementation accordingly.')
-        removed=max(0,len(messages)-len(history))
+        cursor=0
+        for message in history:
+            if message['role']!='assistant':continue
+            for index in range(cursor,len(self.calls)):
+                response=self.calls[index].get('response',{}).get('choices',[{}])[0].get('message',{})
+                if response.get('content')==message['content']:
+                    if response.get('reasoning_content'):message['reasoning_content']=response['reasoning_content']
+                    cursor=index+1;break
+        prefix=[dict(role='system',content=COMMON+'\nCURRENT PHASE: '+phase+'\n'+self.instructions+
+            '\nFinish this phase with done when its artifacts are ready. You have 120 primary calls per stage and up to 20 calls per public repair round.'),
+            dict(role='user',content=self.stage_spec)]
+        removed=0
         while True:
-            chosen=[dict(role='system',content=COMMON+'\n'+tail['content']),dict(role='user',content=self.stage_spec)]+history
-            rendered=local_json('/apply-template',dict(messages=chosen,chat_template_kwargs={'enable_thinking':True}))['prompt']
+            chosen=prefix+history
+            rendered=local_json('/apply-template',dict(messages=chosen,chat_template_kwargs={'enable_thinking':True,'preserve_thinking':True}))['prompt']
             token_count=len(local_json('/tokenize',dict(content=rendered,add_special=False))['tokens'])
-            if token_count+6144<=32768:break
+            if token_count+6144<=131072:break
             if not history:raise RuntimeError('Instructions exceed context')
             history=history[2:];removed+=2
-        if len(self.calls)>=300 or sum((c.get('usage') or {}).get('total_tokens',0) for c in self.calls)+token_count+6144>6000000:
+        if len(self.calls)>=480 or sum((c.get('usage') or {}).get('total_tokens',0) for c in self.calls)+token_count+6144>60000000:
             raise RuntimeError('whole_project_token_or_call_limit')
         if any(c.get('usage') is None for c in self.calls):raise RuntimeError('unknown_usage_stop')
         payload=dict(model='long-coder',messages=chosen,temperature=0.6,top_p=0.95,top_k=20,min_p=0.0,presence_penalty=0.0,repeat_penalty=1.0,seed=20260917,max_tokens=6144,
-                     cache_prompt=False,response_format={'type':'json_object'},reasoning_effort='medium',
-                     chat_template_kwargs={'enable_thinking':True})
+                     cache_prompt=bool(self.calls),response_format={'type':'json_object'},reasoning_effort='medium',
+                     chat_template_kwargs={'enable_thinking':True,'preserve_thinking':True})
         path=self.folder/f'call-{len(self.calls):03}.json'
         record=dict(stage=self.stage,phase=phase,started_at=utc(),request=payload,usage=None,
                     unknown_reason='pending',removed_history_messages=removed,preflight_input_tokens=token_count)
@@ -198,12 +195,25 @@ def run_phase(agent,model,provider,phase,instructions,deadline,max_stage_calls,s
     provider.instructions=instructions;model.phase=phase;model.deadline=deadline
     agent.add_messages(dict(role='user',content='CONTROL_PHASE: '+phase+'\n'+instructions))
     artifact_retries=0
+    claim_retries=0
     while True:
         if (provider.folder.parent/'CANCEL').exists():raise KeyboardInterrupt('campaign_cancelled')
         if time.monotonic()>=deadline:raise TimeoutError('stage_time_limit')
         if len(provider.calls)-stage_start_count>=max_stage_calls:raise RuntimeError('stage_call_limit')
         agent.step()
         if model.last['action']=='done':
+            if CLAIMS in instructions:
+                try:
+                    from aee.model import Claim
+                    bundle=model.last.get('claims')
+                    if not isinstance(bundle,dict) or not isinstance(bundle.get('claims'),list) or not bundle['claims']:
+                        raise ValueError('Required nonempty claims object/list is missing')
+                    for claim in bundle['claims']:Claim.from_dict(claim)
+                except (ValueError,TypeError,KeyError,AttributeError) as exc:
+                    if claim_retries>=2:raise RuntimeError('phase_claims_invalid:'+phase+': '+str(exc))
+                    claim_retries+=1
+                    agent.add_messages(dict(role='user',content='Phase completion rejected by claims schema check: '+str(exc)[:1000]+'. Correct the structure without inventing evidence. '+CLAIMS))
+                    continue
             required={'constitution':'.specify/memory/constitution.md','specify':'specs/001-transactions/spec.md',
                 'plan':'specs/001-transactions/plan.md','tasks':'specs/001-transactions/tasks.md'}.get(phase)
             if required:
@@ -225,12 +235,16 @@ def campaign(output,upstream,image,metadata):
     output.mkdir(parents=True,exist_ok=False)
     hashes=source_hashes()
     hashes.update({str(p.resolve()):digest(p) for p in TASK.rglob('*') if p.is_file()})
+    for base in (ROOT/'.specify/scripts/python',ROOT/'.specify/templates'):
+        hashes.update({str(p.resolve()):digest(p) for p in base.rglob('*') if p.is_file() and '__pycache__' not in p.parts})
+    hashes[str((ROOT/'prompts/adapter.md').resolve())]=digest(ROOT/'prompts/adapter.md')
     hashes[str(Path(__file__).resolve())]=digest(__file__)
     schedule=ARMS.copy();random.Random(20260917).shuffle(schedule)
     freeze=dict(timestamp=utc(),hashes=hashes,upstream_revision=subprocess.check_output(['git','-c','safe.directory='+upstream.resolve().as_posix(),'-C',str(upstream),'rev-parse','HEAD'],text=True).strip(),
         image=image,metadata=meta,server_props=local_json('/props'),schedule=schedule,
-        stage_seconds=1800,primary_seconds=1200,stage_max_calls=100,primary_max_calls=80,repair_round_max_calls=10,project_max_calls=300,project_token_cap=6000000,
-        context=32768,max_output=6144,temperature=0.6,top_p=0.95,top_k=20,min_p=0.0,presence_penalty=0.0,seed=20260917,reasoning='enabled_server_budget_2048',public_repair_rounds=2)
+        stage_seconds=3000,primary_seconds=2400,stage_max_calls=160,primary_max_calls=120,repair_round_max_calls=20,project_max_calls=480,project_token_cap=60000000,
+        context=131072,max_output=6144,temperature=0.6,top_p=0.95,top_k=20,min_p=0.0,presence_penalty=0.0,seed=20260917,reasoning='enabled_server_budget_2048',public_repair_rounds=2,
+        cache_policy='disabled first call per arm, enabled thereafter',history_policy='full conversation with native model reasoning; drop oldest pairs only at context boundary')
     write_json(output/'freeze.json',freeze,exclusive=True)
     os.environ['MSWEA_GLOBAL_CONFIG_DIR']=str(output/'mini-config')
     os.environ['MSWEA_SILENT_STARTUP']='1'
@@ -241,12 +255,12 @@ def campaign(output,upstream,image,metadata):
         provider=Provider(folder,'');identity=dict(attempt_id=arm)
         with Sandbox(image,upstream) as sandbox:
             if arm!='baseline':sandbox.stage_workflow()
-            model=MiniModel(provider,time.monotonic()+1200)
+            model=MiniModel(provider,time.monotonic()+2400)
             environment=MiniEnvironment(sandbox,model.deadline,store,identity)
             agent=DefaultAgent(model,environment,system_template='',instance_template='',cost_limit=0)
             agent.add_messages(dict(role='system',content=COMMON))
             for stage in (1,2,3):
-                begin=time.monotonic();deadline=begin+1200;environment.deadline=deadline
+                begin=time.monotonic();deadline=begin+2400;environment.deadline=deadline
                 provider.stage=stage
                 provider.stage_spec='\n\n'.join((TASK/f'stage{s}.md').read_text() for s in range(1,stage+1))
                 sandbox.put({'acceptance_public.py':acceptance(stage,'public'),f'TASK_STAGE_{stage}.md':provider.stage_spec.encode()})
@@ -260,7 +274,7 @@ def campaign(output,upstream,image,metadata):
                         if phase=='final_implement':instructions+='\nImplement outstanding convergence tasks and rerun tests. Finish with done; do not repeat planning.'
                         if arm!='baseline':instructions+='\nCURRENT PHASE DELIVERABLE: '+PHASE_GOALS[phase]
                         if arm=='spec_kit_aee' and phase in ('specify','plan','tasks','implement'):instructions+='\n'+CLAIMS
-                        done=run_phase(agent,model,provider,phase,instructions,deadline,80,start_count)
+                        done=run_phase(agent,model,provider,phase,instructions,deadline,120,start_count)
                         row['phases'].append(dict(phase=phase,done=done));write_json(output/'attempts.json',rows)
                         if arm=='spec_kit_aee' and phase in ('specify','plan','tasks','implement'):
                             try:
@@ -269,7 +283,7 @@ def campaign(output,upstream,image,metadata):
                                 row['assessments'].append(dict(phase=phase,outcome=evaluation['outcome'],claims=claims,evaluation=evaluation))
                                 agent.add_messages(dict(role='user',content='AEE/Evaluator evidence gaps (not hidden-test grades): '+json.dumps(evaluation)))
                                 if phase=='implement' and evaluation['outcome'] not in ('pass','warn'):
-                                    done=run_phase(agent,model,provider,'evidence_rework','Gather available repository evidence and address the implementation gaps, preserving unresolved uncertainty. '+CLAIMS,deadline,80,start_count)
+                                    done=run_phase(agent,model,provider,'evidence_rework','Gather available repository evidence and address the implementation gaps, preserving unresolved uncertainty. '+CLAIMS,deadline,120,start_count)
                                     claims=grounded_claims(done.get('claims') or {},store,arm)
                                     again=assess(ROOT,claims,'implement',store)
                                     row['assessments'].append(dict(phase='implement_rework',outcome=again['outcome'],claims=claims,evaluation=again))
@@ -281,14 +295,14 @@ def campaign(output,upstream,image,metadata):
                 row['primary_snapshot']=snapshot.relative_to(output).as_posix()
                 row['public_primary']=grade(snapshot,stage,'public',image,upstream)
                 current=row['public_primary']
-                deadline=begin+1800;environment.deadline=deadline
+                deadline=begin+3000;environment.deadline=deadline
                 for repair_round in (1,2):
-                    if current['passed'] or time.monotonic()+30>=deadline or len(provider.calls)-start_count>=100:break
+                    if current['passed'] or time.monotonic()+30>=deadline or len(provider.calls)-start_count>=160:break
                     repair=dict(round=repair_round,error=None)
                     row['repairs'].append(repair)
                     try:
                         instructions='Repair the current implementation using public acceptance/regression feedback. Preserve all active requirements. Use shell edits/tests; do not change upstream/public tests.\n'+current['output'][-20000:]
-                        repair['done']=run_phase(agent,model,provider,'repair',instructions,deadline,10,len(provider.calls))
+                        repair['done']=run_phase(agent,model,provider,'repair',instructions,deadline,20,len(provider.calls))
                     except Exception as exc:repair['error']=type(exc).__name__+': '+str(exc)
                     snapshot=folder/f'stage{stage}-repair{repair_round}.tar';sandbox.snapshot(snapshot)
                     current=grade(snapshot,stage,'public',image,upstream)

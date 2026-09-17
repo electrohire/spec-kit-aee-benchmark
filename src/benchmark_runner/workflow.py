@@ -61,6 +61,10 @@ def assess(root, claims, phase, store):
         result_dir = sandbox/".specify/extensions/evaluator/results"
         files = list(result_dir.glob("*.json"))
         if not files:
+            diagnostic=store.artifact(canonical(dict(phase=phase,claims=claims,
+                exit_code=result.returncode,stdout=result.stdout.decode('utf-8',errors='replace'),
+                stderr=result.stderr.decode('utf-8',errors='replace'))))
+            store.append("assessment_errors",dict(phase=phase,timestamp=utc(),artifact=diagnostic))
             raise RuntimeError("AEE emitted no evaluator result")
         result_path = sandbox/"composed.json"
         compose = Path(root)/".specify/extensions/evaluator/scripts/python/compose_results.py"

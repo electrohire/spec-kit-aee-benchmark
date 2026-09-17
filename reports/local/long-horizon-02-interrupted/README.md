@@ -1,0 +1,3 @@
+# Interrupted staged run 02
+
+This incomplete integration pilot is not a three-arm comparison. Two Spec Kit milestones exhausted their primary and repair call limits; the 223 upstream regression tests passed but all new feature cases failed because TransactionalTinyDB was absent. Repair rounds did not change source. Stage 3 was interrupted, with a source/workflow snapshot saved immediately before cancellation. Baseline and combined arms did not run. No hidden grading was performed. All calls, costs, artifacts, and original protocol/runner remain. A subsequent campaign must be separately frozen and report this overhead.

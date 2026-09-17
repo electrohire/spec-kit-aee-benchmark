@@ -42,7 +42,7 @@ used by this adapter. Do not start the repository's paid provider.
 
 The existing 8081 router was left alive and its loaded model temporarily unloaded
 to reserve the GPUs. The dedicated 8091 server uses that same local weight with
-a smaller fixed context. Restore the router's model when finished. Shared system
+a fixed 131072-token context. Restore the router's model when finished. Shared system
 RAM is not dedicated VRAM; the measured devices have 12282 and 16311 MiB.
 
 ## Preflight, generation and reporting
@@ -50,9 +50,9 @@ RAM is not dedicated VRAM; the measured devices have 12282 and 16311 MiB.
 The archived `preflight/calibrate.py` builds a reference source only inside a
 calibration container. It passes all public/hidden combinations and verifies
 that unchanged TinyDB fails new-feature tests. Its source is never supplied to
-solvers. `preflight/smoke-v8.py` validates actual constitution creation, phase
-transition, and unrelated arithmetic implementation with independent checks.
-All earlier smoke failures and the interrupted first campaign are retained.
+solvers. `preflight/smoke-v11.py` validates all seven workflow phases, four actual
+AEE/Evaluator assessments, and unrelated arithmetic code with independent checks.
+All earlier smoke failures and both interrupted campaigns are retained.
 Calibration is a test-harness check, not scored model work.
 
 Create metadata with successful smoke/calibration records and verified file
@@ -84,9 +84,19 @@ The benchmark-run skill's original SWE-bench-only commands are superseded here
 by the user's explicit free-local experiment change. The separate adapter/grader
 and their calibration are exposed for review. The original paid gates remain.
 
-The measured run 02 uses thinking with a 2048-token reasoning budget, explicit
-phase-transition user messages, resolved skill arguments, a persistent action ledger,
-and same-repository workflow files. Source snapshots still transfer only tinydb
-Python modules. See the protocol revision history for the integration failures
-that led to these choices. Primary work has 80 calls/1200 seconds per stage; two
-repair rounds reserve 10 calls each within 1800 seconds total.
+Run 03 uses thinking with a 2048-token reasoning budget, resolved skill arguments,
+full conversation history with native reasoning retention, same-repository workflow
+files, and within-arm prompt caching. Source snapshots transfer only TinyDB Python
+modules. Primary work receives 120 calls/2400 seconds per stage; two repair rounds
+reserve 20 calls each within 160 calls/3000 seconds total. Each project is capped at
+480 calls and 60M logical input plus output tokens. Cached input is part of logical
+input, not an additional charge or a reason to erase context cost. See the frozen
+protocol for the complete revision history and assessment-scope limitations.
+
+Additional environment failures retained in this task: the first calibration
+container could not archive the upstream clone because Git detected differing
+Windows ownership. The runner now uses a per-command safe.directory exception
+for the exact upstream path, without changing global Git configuration. That
+unused, unmounted temporary container was inspected and removed. Intermittent
+sandbox denial of the Docker pipe also occurred during cleanup; it did not
+interrupt the already-running scored process.

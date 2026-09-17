@@ -1,4 +1,4 @@
-# Staged TinyDB study, revision 2 — frozen before its scored generation
+# Staged TinyDB study, revision 3 — frozen before its scored generation
 
 User-requested addition to the completed small-task exploration. Hypothesis:
 explicit requirements and evidence tracking may help preserve behavior through
@@ -38,20 +38,22 @@ This advisory routing is an explicit adaptation, not full strict-gate validation
 Free loopback-only llama.cpp b11026; Qwen3.6-35B-A3B, Unsloth UD-Q4_K_M,
 publisher revision a483e9e6cbd595906af30beda3187c2663a1118c.
 Weight SHA256 ac0e2c1189e055faa36eff361580e79c5bd6f8e76bffb4ce547f167d53e31a61.
-Both verified GPUs, layer split 9:14, 32768 context, q8 KV, one slot, 8 CPU threads,
+Both verified GPUs, layer split 9:14, 131072 context, q8 KV, one slot, 8 CPU threads,
 temperature 0.6, top_p 0.95, top_k 20, min_p 0, presence_penalty 0,
-repeat_penalty 1.0, seed 20260917, thinking enabled with a server reasoning budget of 2048, cache_prompt false, max output 6144.
+repeat_penalty 1.0, seed 20260917, thinking enabled with a server reasoning budget of 2048, prompt caching after the first call of each arm, max output 6144.
 This differs from the earlier 14B small-task campaign; do not compare their numbers
 as a controlled model or workflow effect. Native usage counts every phase and failure.
 
-Each arm: 3 x 1800-second stages, at most 100 calls/stage, 300 calls/project,
-6,000,000 total input+output tokens/project. Next-call output reservation enforced.
+Each arm: 3 x 3000-second stages, at most 160 calls/stage, 480 calls/project,
+60,000,000 total logical input+output tokens/project. Next-call output reservation enforced.
 HTTP generation timeout at most 120 seconds; shell at most 60 seconds.
-Last 16 history messages plus complete active requirements and current phase instructions
-in the system message, followed by the actual recent tool/action history. A deterministic ledger retains each prior action (first
-300 characters) with stage/phase, explicitly not proof of command success. The same
-ledger applies to all arms. Remove oldest history pairs until context fits. Compactions
-are logged. Explicit phase deliverables clarify the existing skill adapter. No semantic summary model or paid fallback.
+Full conversation history and this local model's native reasoning fields are retained.
+Current active requirements and phase instructions remain in a fixed prefix. Oldest
+history pairs are removed only if the rendered prompt plus output reservation exceeds
+131072 tokens; removals are logged. There is no rolling 16-message window or action
+ledger. The first request of each arm disables prompt caching to avoid cross-arm reuse;
+subsequent requests enable it. Native cached tokens are part of logical input tokens,
+not an additional token charge; report cached/uncached input separately. No semantic summary model or paid fallback.
 Unknown usage stops further inference for that arm. All arms run sequentially in
 seed-shuffled order, within the same budgets. Timing includes host phase work and
 public grading; final grading/snapshot infrastructure may extend stage wall time.
@@ -59,8 +61,8 @@ public grading; final grading/snapshot infrastructure may extend stage wall time
 ## Repair and grading
 
 Freeze primary source before feedback. Up to two common repair rounds per failed
-public milestone, using reserved stage resources: primary work has 1200 seconds/80 calls;
-repairs have at most 10 calls each within the whole-stage 1800-second deadline
+public milestone, using reserved stage resources: primary work has 2400 seconds/120 calls;
+repairs have at most 20 calls each within the whole-stage 3000-second deadline
 and remaining whole-project token budget. Each round
 may use multiple tool/model calls. Primary remains separately scored; repaired
 source carries into the next stage. Count stage limits, failed repairs, and unfinished
@@ -153,3 +155,50 @@ letting document work consume the entire stage. Primary gets 80 calls/1200 secon
 each of two public repair rounds gets up to 10 calls, all within 1800 seconds/stage
 and 6M tokens/300 calls/project. Same allocation for all arms. This is based on
 workflow smoke overhead, not hidden results; run 01 retains its original caps.
+
+## Run 03: full-context integration revision
+
+Run 02 was stopped after 234 calls / 4,377,753 tokens: two Spec Kit public milestones
+failed after primary and repair caps without implementation source changes, and the
+third was interrupted. Baseline/combined did not run; no hidden results were observed.
+This is retained as an incomplete integration pilot, not a comparative outcome.
+The 16-message adapter dominated behavior with repeated reads. The existing host
+configuration demonstrated room for 131072 context; this was reverified at startup
+with 11208/13589 MiB occupied on the two GPUs. Use batch512/ubatch256, full history,
+native reasoning retention and within-arm prompt caching. Weight/sampling settings
+and task/grader definitions remain the same. These simultaneous changes are not an
+isolated causal test of context or caching. A new full-workflow arithmetic smoke must
+complete all seven phases, four actual AEE/Evaluator assessments and independent code
+checks before scored run03. Primary allocation becomes 1800 seconds/80 calls, with
+10 calls per repair and 2400 seconds total/stage; cap300 calls/30M logical tokens per
+arm allows retained/cached history without pretending cached input is free logical
+context. All setup and interrupted costs remain visible. This iterative design is
+exploratory, not an untouched preregistration or evidence of general superiority.
+
+The first full-context smoke completed constitution/specification but omitted
+required AEE claims. Add at most two model format-repair opportunities when a
+required claims object is missing, charged to the same phase/stage budget. The
+next full-workflow smoke must validate actual assessment execution as well as
+code. Run03 also freezes every workflow script/template and adapter hash before
+generation, closing the supplemental-provenance limitation in the earlier pilot.
+
+Final run03 resource allocation supersedes the historical caps above: primary
+120 calls/2400 seconds; at most two 20-call public repair rounds; total160 calls
+and3000 seconds per stage,480 calls/60M logical tokens per arm. This provides
+headroom relative to the full-workflow smoke and reserves useful inspection/edit/
+retest capacity. Caching does not remove logical tokens from the numerator.
+The same allocation applies to baseline and both workflow arms.
+
+Full-workflow smoke10 reached tested implementation but produced claim.kind=observed,
+which is not a valid AEE claim type. Clarify claim.kind versus evidence.kind and
+validate model-produced claims with the installed Claim.from_dict before assessment,
+with at most two format-repair turns within the same budget. Failed assessment
+subprocess diagnostics are retained as evidence. Smoke11 exercises the corrected
+contract; prior failed claims and traces remain unchanged.
+
+Assessment scope: AEE runs after the four named planning/initial-implementation
+phases and the bounded implementation evidence rework, not after convergence/final
+implementation or common public repairs. Later source can therefore differ from
+the assessed state. Report outcomes and workflow fidelity separately; do not call
+them certification of final source or compute same-version false-acceptance rates
+without a matching code snapshot. The independent final grader remains decisive.

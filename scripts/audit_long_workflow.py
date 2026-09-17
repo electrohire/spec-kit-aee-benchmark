@@ -28,6 +28,7 @@ for arm in ('baseline','spec_kit','spec_kit_aee'):
             workflow_error=row['error'],documents=documents,
             assessments=[dict(phase=a['phase'],outcome=a.get('outcome'),error=a.get('error')) for a in row['assessments']]))
     audit.append(dict(arm=arm,stages=stages,total_shell_calls=len(tools),nonzero_shell_exits=sum(t['exit_code']!=0 for t in tools),
+        artifact_completion_rejections=sum(t['exit_code']!=0 and 'Required phase artifact is absent' in t['command'] for t in tools),
         repeated_commands=[dict(command=c,count=n) for c,n in counts.most_common() if n>1],
         script_commands=[dict(command=t['command'],exit_code=t['exit_code']) for t in tools if '.specify/scripts/' in t['command']],
         note='Repeated commands may be legitimate retests. Script mentions require manual execution review. Document presence does not certify content. Nonzero exits include negative tests and environment errors.'))

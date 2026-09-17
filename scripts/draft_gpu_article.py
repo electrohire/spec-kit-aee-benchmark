@@ -7,7 +7,7 @@ parser=argparse.ArgumentParser()
 parser.add_argument('results_commit')
 args=parser.parse_args()
 root=Path(__file__).resolve().parents[1]
-report=root/'reports/local/long-horizon-02'
+report=root/'reports/local/long-horizon-03'
 summary=json.loads((report/'summary.json').read_text())
 setup=json.loads((report/'setup-accounting.json').read_text())
 url='https://github.com/electrohire/spec-kit-aee-benchmark/tree/'+args.results_commit
@@ -52,9 +52,9 @@ The economics include input, output and reasoning usage for every phase and fail
 
 The setup failures matter too
 
-The initial staged run entered repeated file-reading loops. I stopped it, retained its 51 calls and 888,819 tokens, and corrected the adapter through separate development smokes. Those checks exposed directory-layout assumptions, unchanged documents behind “done” responses, and a lost phase-transition message. The revised run had a new freeze. No hidden-test result guided those fixes.
+Two initial staged pilots were interrupted after repeated file-reading loops and failed implementation. I retained their 285 calls and 5,266,572 tokens, then corrected the adapter through separate development smokes. Those checks exposed directory-layout assumptions, unchanged documents behind “done” responses, and a lost phase-transition message. The final pilot uses the larger 131,072-token context supported by the same GPUs, full conversation and model-reasoning retention, and within-arm prompt caching. It had a new freeze and a full-workflow preflight. No hidden-test result guided those fixes.
 
-Across the staged study’s development smokes and interrupted run, setup overhead was {setup['setup_plus_aborted_tokens']:,} tokens, separate from the completed comparison. This was iterative harness development, not a pristine experiment that worked on its first try. The full revision history is part of the evidence.
+Across the staged study’s development smokes and interrupted runs, setup overhead was {setup['setup_plus_aborted_tokens']:,} tokens, separate from the completed comparison. This was iterative harness development, not a pristine experiment that worked on its first try. The full revision history is part of the evidence.
 
 Runtime overhead was measured separately from coding inference. For seven measured repetitions after warmup, the installed AEE + Evaluator pipeline had a median of about 661.5 ms for 10 claims and 800.0 ms for 100 claims. These are specific local workloads with ordinary desktop background activity, not universal latency promises.
 
@@ -70,9 +70,9 @@ Disclosure: ElectroHire maintains AEE, the Evaluator extension and this benchmar
 
 Try it, inspect the failures, and measure whether it helps your own work.
 
-Results and exact protocol: {url}/reports/local/long-horizon-02
+Results and exact protocol: {url}/reports/local/long-horizon-03
 Earlier small-task results and repairs: {url}/reports/local/gpu-20260917
-Interrupted staged run: {url}/reports/local/long-horizon-01-interrupted
+Interrupted staged runs: {url}/reports/local/long-horizon-01-interrupted and {url}/reports/local/long-horizon-02-interrupted
 Spec Kit: https://github.com/github/spec-kit
 Spec Kit AEE extension: https://github.com/electrohire/spec-kit-aee
 Evaluator extension: https://github.com/electrohire/spec-kit-evaluator
