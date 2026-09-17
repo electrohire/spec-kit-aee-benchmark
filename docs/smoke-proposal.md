@@ -1,4 +1,4 @@
-# Concrete next-run proposal — not authorized
+# Archived next-run proposal — user chose offline only
 Request a **USD 30 global cap**, **USD 10 per attempt**, for one excluded development
 task (django__django-11099), once per arm: three attempts, 30 minutes each.
 No pilot spending is included. Stop on infrastructure/provider errors and uncertain
@@ -25,3 +25,5 @@ No API key should be shared in chat; set OPENAI_API_KEY in the local runner envi
 Other gates: Docker engine healthy, upstream gold grader smoke passed, solver
 image inspection excludes held-out material, images pinned by digest, provider
 usage details verified, source/configuration freeze committed.
+
+User response 2026-09-17: Keep work offline. This proposal is not an active approval request.

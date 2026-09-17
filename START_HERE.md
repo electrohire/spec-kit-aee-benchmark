@@ -49,3 +49,5 @@ or leaderboard submission. Preserve upstream notices and private logs.
 Draft PR: https://github.com/electrohire/spec-kit-aee-benchmark/pull/1
 Implementation commit: 9f2257dd6138a738b6b63960d4bb8447219d866e
 Offline tests: 41 passed; initial GitHub Actions Linux test and sample checks passed.
+
+User decision (2026-09-17): **Keep work offline.** Paid smoke and pilot are not authorized. Continue only offline verification and review until this changes.
