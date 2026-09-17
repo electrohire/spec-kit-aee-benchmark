@@ -12,7 +12,9 @@ jobs:
           version: "0.11.32"
       - run: uv sync --locked --group dev --python 3.12
       - run: uv run pytest -q
-      - run: uv run aee-bench dry-run manifests/offline-freeze.json > /tmp/schedule.json
+      # Historical manifests remain immutable; validate the current checkout separately.
+      - run: uv run aee-bench freeze /tmp/ci-freeze.json
+      - run: uv run aee-bench dry-run /tmp/ci-freeze.json > /tmp/schedule.json
       - run: uv run python scripts/check_evidence.py
       - run: uv run maintenance-triage examples/maintenance_triage/sample.csv /tmp/triage.json
       - run: diff examples/maintenance_triage/sample.json /tmp/triage.json
