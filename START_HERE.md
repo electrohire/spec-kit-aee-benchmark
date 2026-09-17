@@ -1,4 +1,12 @@
 # Resume the ElectroHire benchmark
+## Latest handoff — paused at user request, 2026-09-17
+Read [docs/gpu-machine-handoff.md](docs/gpu-machine-handoff.md) first. The user
+stopped this laptop experiment and requested saving/pushing the session for a
+machine with an RTX 4070 SUPER (12 GB) and RTX 5060 Ti (VRAM unconfirmed).
+No coding-model inference has run. Partial runtime warmups are incomplete and
+must not be used as benchmark results. No further execution on this laptop.
+Free local inference is authorized; paid calls/credits remain unauthorized.
+
 Goal: compare ordinary coding, Spec Kit and Spec Kit+Evaluator+AEE on 20 Verified
 tasks × three repeats × three arms, with honest token economics and an article.
 User excluded the ZIP entirely. Follow docs/implementation-brief.md.
