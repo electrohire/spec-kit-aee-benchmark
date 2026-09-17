@@ -45,3 +45,7 @@ development attempts), configure credentials locally, restore Docker and run the
 independent gold smoke. See docs/smoke-proposal.md. Pilot cap follows measured smoke.
 License selection pending. No prior shared skills.md recovered. No article posting
 or leaderboard submission. Preserve upstream notices and private logs.
+
+Draft PR: https://github.com/electrohire/spec-kit-aee-benchmark/pull/1
+Implementation commit: 9f2257dd6138a738b6b63960d4bb8447219d866e
+Offline tests: 41 passed; initial GitHub Actions Linux test and sample checks passed.

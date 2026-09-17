@@ -103,3 +103,6 @@ evidence rather than filling the results table with estimates.
 **Disclosure:** ElectroHire maintains the Evaluator/AEE projects being studied.
 That connection is a conflict of interest; independent grading, frozen protocols
 and public evidence are intended to make the work inspectable.
+
+## Versioned reproduction links
+[Runner source](https://github.com/electrohire/spec-kit-aee-benchmark/tree/9f2257dd6138a738b6b63960d4bb8447219d866e/src/benchmark_runner), [tutorial code](https://github.com/electrohire/spec-kit-aee-benchmark/blob/9f2257dd6138a738b6b63960d4bb8447219d866e/src/benchmark_runner/triage.py), [offline evidence](https://github.com/electrohire/spec-kit-aee-benchmark/blob/9f2257dd6138a738b6b63960d4bb8447219d866e/reports/latest-offline.json), and [frozen task manifest](https://github.com/electrohire/spec-kit-aee-benchmark/blob/9f2257dd6138a738b6b63960d4bb8447219d866e/manifests/tasks.json). [Draft PR](https://github.com/electrohire/spec-kit-aee-benchmark/pull/1).
