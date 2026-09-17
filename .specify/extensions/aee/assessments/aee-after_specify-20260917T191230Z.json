@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "methodology_version": "1.0",
+  "project": "spec-kit-aee-benchmark",
+  "phase": "after_specify",
+  "outcome": "pass",
+  "summary": "Assessed 1 claim(s); found 0 failure mode(s); 0 claim(s) below the 0.70 confidence threshold.",
+  "created_at": "2026-09-17T19:12:30.662202Z",
+  "claims": [
+    {
+      "id": "REQ-LATENCY-001",
+      "text": "Search responds within 250 ms",
+      "kind": "requirement",
+      "status": "supported",
+      "boundary": [
+        "Production",
+        "p95",
+        "50 requests/second"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "reports/load-test.json",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "description": "Observed p95 latency was 213 ms",
+          "source_id": "load-test-2026-09-04",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "A 30-minute load test observes p95 latency above 250 ms"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "spec.md#REQ-LATENCY-001",
+      "domain": "",
+      "confidence": 0.9,
+      "confidence_band": "high",
+      "failures": [],
+      "metadata": {}
+    }
+  ],
+  "scores": {
+    "REQ-LATENCY-001": {
+      "claim_id": "REQ-LATENCY-001",
+      "direct_score": 0.9,
+      "propagated_score": 0.9,
+      "band": "high",
+      "components": {
+        "evidence": 1.0,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "Fewer than two independent supporting sources"
+      ]
+    }
+  },
+  "recoveries": [],
+  "metadata": {
+    "threshold": 0.7,
+    "input": "D:/Development/spec-kit-aee-benchmark/reports/workflow/synthetic-claim.json"
+  }
+}

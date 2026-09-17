@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling==1.29.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "spec-kit-aee-benchmark"
+version = "0.1.0"
+description = "Reproducible three-arm coding workflow pilot"
+requires-python = ">=3.12"
+dependencies = ["applied-epistemic-engineering==1.0.2", "PyYAML==6.0.3", "jsonschema==4.26.0", "mini-swe-agent==2.4.6"]
+
+[dependency-groups]
+dev = ["pytest==9.1.1"]
+
+[project.optional-dependencies]
+grading = ["swebench==5.0.2"]
+
+[project.scripts]
+aee-bench = "benchmark_runner.cli:main"
+maintenance-triage = "benchmark_runner.triage:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/benchmark_runner"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
