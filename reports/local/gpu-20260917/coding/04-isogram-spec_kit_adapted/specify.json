@@ -1,0 +1,53 @@
+{
+  "ended_at": "2026-09-17T20:30:36.918732+00:00",
+  "original_record_sha256": "60a87a5ad61bc2b2cd1d74da03d7f7512bc95fa817c9c6ea548cb9cab6b0a0ca",
+  "request_omission": "Task text omitted; regenerate from frozen upstream inputs and runner.",
+  "request_sha256": "3f9ad8e5af0ea2d5cf66fedc711fa8097e3a31d6763c19561a5d42da00d7a7e2",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "length",
+        "index": 0,
+        "message": {
+          "content": "## Extension Hooks\n\n**Automatic Pre-Hook**: speckit-git.commit\nExecuting: `$speckit-git-commit`\nEXECUTE_COMMAND: speckit-git.commit\nCURRENT PHASE specify\n---\nname: \"speckit-specify\"\ndescription: \"Create or update the feature specification from a natural language feature description.\"\ncompatibility: \"Requires spec-kit project structure with .specify/ directory\"\nmetadata:\n  author: \"github-spec-kit\"\n  source: \"templates/commands/specify.md\"\n---\n\n\n## User Input\n\n```text\n$ARGUMENTS\n```\n\nYou **MUST** consider the user input before proceeding (if not empty).\n\n## Pre-Execution Checks\n\n**Check for extension hooks (before specification)**:\n- Check if `.specify/extensions.yml` exists in the project root.\n- If it exists, read it and look for entries under the `hooks.before_specify` key\n- If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally\n- Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.\n- For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:\n  - If the hook has no `condition` field, or it is null/empty, treat the hook as executable\n  - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation\n- When constructing command invocations from hook command names, replace dots (`.`) with hyphens (`-`). For example, `speckit.git.commit` \u2192 `$speckit-git-commit`.\n- For each executable hook, output the following based on its `optional` flag:\n  - **Optional hook** (`optional: true`):\n    ```\n    ## Extension Hooks\n\n    **Optional Pre-Hook**: {extension}\n    Command: `/{command}`\n    Description: {description}\n\n    Prompt: {prompt}\n    To execute: `/{command}`\n    ```\n  - **Mandatory hook** (`optional: false`):\n    ```\n    ## Extension Hooks\n\n    **Automatic Pre-Hook**: {extension}\n    Executing: `/{command}`\n    EXECUTE_COMMAND: {command}\n\n    Wait for the result of the hook command before proceeding to the Outline.\n    ```\n    After emitting the block above you MUST actually invoke the hook and wait for it to finish before continuing. Run it the same way you would run the",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789677036,
+    "id": "chatcmpl-P1S3SxjphDdEuE7azQKJE4mDm6ZghyN8",
+    "model": "local-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 12364.058,
+      "predicted_n": 512,
+      "predicted_per_second": 41.32947289635813,
+      "predicted_per_token_ms": 24.195808219178083,
+      "prompt_ms": 1470.539,
+      "prompt_n": 4261,
+      "prompt_per_second": 2897.5770108783245,
+      "prompt_per_token_ms": 0.34511593522647266
+    },
+    "usage": {
+      "completion_tokens": 512,
+      "prompt_tokens": 4261,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 4773
+    }
+  },
+  "seconds": 14.0,
+  "started_at": "2026-09-17T20:30:22.914098+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 512,
+    "prompt_tokens": 4261,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 4773
+  }
+}

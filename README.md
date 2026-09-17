@@ -3,9 +3,11 @@
 An ElectroHire experiment comparing ordinary coding agents, Spec Kit, and Spec Kit
 with Evaluator + Applied Epistemic Engineering on SWE-bench Verified.
 
-**Status: offline implementation available; no scored model attempts have run.**
-The planned pilot is 20 tasks × 3 repetitions × 3 arms = 180 attempts.
-No performance or savings claim is supported yet.
+**Status: free GPU small-task exploration and supplemental repairs completed.**
+See [actual results, token economics and failures](reports/local/gpu-20260917/README.md).
+The user requested a stronger long-horizon comparison; that campaign is being prepared.
+The original SWE-bench pilot (20 tasks × 3 repetitions × 3 arms) remains unrun.
+The small-task experiment does not support a superiority or token-saving claim.
 
 The controller uses Spec Kit, Evaluator and AEE. Solver treatments are isolated.
 The maintenance-triage example is illustrative and is not benchmark evidence.

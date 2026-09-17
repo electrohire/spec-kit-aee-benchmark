@@ -1,0 +1,53 @@
+{
+  "ended_at": "2026-09-17T20:33:05.871727+00:00",
+  "original_record_sha256": "f568ae3a8944f5a0592e11fe834e0eac024044d7e42ac0e2cad975f3567386c3",
+  "request_omission": "Task text omitted; regenerate from frozen upstream inputs and runner.",
+  "request_sha256": "58b2d0dac4d27466f7a8325d4fac1239e1e44c1a56e9fb8d557c974c0792afa3",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "## Extension Hooks\n\n**Automatic Pre-Hook**: speckit-git.commit\nExecuting: `$speckit-git-commit`\nEXECUTE_COMMAND: speckit-git.commit\n\n## Outline\n\n1. **Run Template Resolver**:\n   - Execute `python3 .specify/scripts/python/resolve_template.py constitution-template --json` from the repository root.\n   - Parse the output as `TEMPLATE_CONTENT`.\n\n2. **Collect Placeholder Values**:\n   - Use user input for values if provided.\n   - Infer values from existing repo context if necessary.\n   - Determine governance dates and version bump type.\n\n3. **Draft Updated Constitution**:\n   - Replace placeholders with concrete text.\n   - Ensure proper structure and clarity.\n\n4. **Produce Sync Impact Report**:\n   - Include version change, modified principles, added/removed sections, and TODOs.\n\n5. **Validation**:\n   - Ensure no unexplained bracket tokens.\n   - Verify version line matches report.\n   - Check dates and principles for clarity.\n\n6. **Write Constitution**:\n   - Overwrite `.specify/memory/constitution.md` with the updated content.\n\n7. **Output Summary**:\n   - Provide new version, bump rationale, TODOs, and suggested commit message.\n   - Include `Next Actions` section for deferred intents.\n\n## Post-Execution Checks\n\n**Automatic Hook**: speckit-git.commit\nExecuting: `$speckit-git-commit`\nEXECUTE_COMMAND: speckit-git.commit",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789677185,
+    "id": "chatcmpl-HetEZnrqugRSw7F1wQc18vW6H7rTA5vh",
+    "model": "local-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 6909.846,
+      "predicted_n": 299,
+      "predicted_per_second": 43.126865634921536,
+      "predicted_per_token_ms": 23.187402684563757,
+      "prompt_ms": 853.957,
+      "prompt_n": 2488,
+      "prompt_per_second": 2913.495644394273,
+      "prompt_per_token_ms": 0.34323030546623795
+    },
+    "usage": {
+      "completion_tokens": 299,
+      "prompt_tokens": 2488,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 2787
+    }
+  },
+  "seconds": 8.125,
+  "started_at": "2026-09-17T20:32:57.747893+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 299,
+    "prompt_tokens": 2488,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2787
+  }
+}

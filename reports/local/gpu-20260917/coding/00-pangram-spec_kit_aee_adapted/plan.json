@@ -1,0 +1,53 @@
+{
+  "ended_at": "2026-09-17T20:29:20.635502+00:00",
+  "original_record_sha256": "29a8c4c69a97f03a1ad5afecc197b060a2d923199026828a46e857071a3539d7",
+  "request_omission": "Task text omitted; regenerate from frozen upstream inputs and runner.",
+  "request_sha256": "c2e8c7f0a416820fccf192ebb31c646d023e5de6af9eb66dac5696057f792aba",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "## Extension Hooks\n\n**Automatic Pre-Hook**: speckit.git.commit\nExecuting: `/$speckit-git-commit`\nEXECUTE_COMMAND: speckit.git.commit\n\n## Outline\n\n1. **Run Template Resolver**:\n   - Execute `python3 .specify/scripts/python/resolve_template.py constitution-template --json` from the repository root.\n   - Parse the output as `TEMPLATE_CONTENT`.\n\n2. **Collect Placeholder Values**:\n   - Use user input for values if provided.\n   - Infer values from existing repo context if necessary.\n   - Determine governance dates and version bump type.\n\n3. **Draft Updated Constitution**:\n   - Replace placeholders with concrete text.\n   - Ensure proper structure and clarity.\n\n4. **Produce Sync Impact Report**:\n   - Include version change, modified principles, added/removed sections, and deferred items.\n\n5. **Validation**:\n   - Ensure no unexplained bracket tokens.\n   - Verify version line matches report.\n   - Check dates are in ISO format.\n   - Ensure principles are declarative and testable.\n\n6. **Write Constitution**:\n   - Overwrite `.specify/memory/constitution.md` with the updated content.\n\n7. **Output Summary**:\n   - Provide new version and bump rationale.\n   - List any TODO placeholders or deferred items.\n   - Suggest a commit message.\n   - Include a `Next Actions` section for any deferred non-governance intents.\n\n## Post-Execution Checks\n\n**Check for Extension Hooks**:\n- If `.specify/extensions.yml` exists, read it and look for entries under the `hooks.after_constitution` key.\n- Filter out hooks where `enabled` is explicitly `false`.\n- For each remaining hook, output the appropriate block based on its `optional` flag.\n- Execute mandatory hooks and wait for them to finish before continuing.",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789676960,
+    "id": "chatcmpl-mQqz9T5urGlrVQOjFz1B4Ilw1MzPgCDB",
+    "model": "local-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 8974.798,
+      "predicted_n": 376,
+      "predicted_per_second": 41.7836702285667,
+      "predicted_per_token_ms": 23.93279466666667,
+      "prompt_ms": 1323.76,
+      "prompt_n": 3736,
+      "prompt_per_second": 2822.263854475131,
+      "prompt_per_token_ms": 0.3543254817987152
+    },
+    "usage": {
+      "completion_tokens": 376,
+      "prompt_tokens": 3736,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 4112
+    }
+  },
+  "seconds": 10.578000000008615,
+  "started_at": "2026-09-17T20:29:10.062347+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 376,
+    "prompt_tokens": 3736,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 4112
+  }
+}

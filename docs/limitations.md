@@ -1,4 +1,17 @@
 # Limitations and open gates
+## GPU continuation update
+
+The [six-task local exploration and repair results](../reports/local/gpu-20260917/README.md)
+are now actual measured evidence. They use a document-only adaptation, not the
+full repository-tool Spec Kit workflow. Seven primary document truncations and
+three failing generated solutions remain counted. Supplemental repairs use the
+same exposed tests and are not held-out evaluation. All arms end at 5/6, with
+much higher cumulative token use in the adapted workflows. These results cannot
+establish how the full workflow performs on longer-horizon engineering work.
+That longer-horizon campaign was requested afterward and is being prepared.
+
+The following is the historical pre-GPU status of the unrun SWE-bench pilot.
+
 No scored generation or real model smoke has run. All model-response tests are
 synthetic fixtures. Actual deterministic AEE/Evaluator execution is separate
 evidence; it does not establish end-to-end provider/Docker integration.

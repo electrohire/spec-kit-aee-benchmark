@@ -1,0 +1,53 @@
+{
+  "ended_at": "2026-09-17T20:39:58.315510+00:00",
+  "original_record_sha256": "075404c43907939e70810a7a6dc3a23a1591271d0a0864fdbaba2193e9f91c4e",
+  "request_omission": "Exercise facts omitted; repair instruction and prior feedback are reproducible from frozen sources.",
+  "request_sha256": "e74ed5815da5bcddaf9964ba28853d7dd9660376e7619ed85a2569c252343bd0",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "```python\n# resistor_encoder.py\n\ndef color_code(color):\n    color_map = {\n        \"black\": 0,\n        \"brown\": 1,\n        \"red\": 2,\n        \"orange\": 3,\n        \"yellow\": 4,\n        \"green\": 5,\n        \"blue\": 6,\n        \"violet\": 7,\n        \"grey\": 8,\n        \"white\": 9\n    }\n    return color_map.get(color.lower(), None)\n\ndef colors():\n    color_map = {\n        \"black\": 0,\n        \"brown\": 1,\n        \"red\": 2,\n        \"orange\": 3,\n        \"yellow\": 4,\n        \"green\": 5,\n        \"blue\": 6,\n        \"violet\": 7,\n        \"grey\": 8,\n        \"white\": 9\n    }\n    return list(color_map.keys())\n\n# Example usage:\n# print(color_code('red'))  # Output: 2\n# print(colors())  # Output: ['black', 'brown', 'red', 'orange', 'yellow', 'green', 'blue', 'violet', 'grey', 'white']\n```",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789677598,
+    "id": "chatcmpl-vup55JI5Ur6mN4KaZu42fP26jGoJlaKv",
+    "model": "local-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 5524.131,
+      "predicted_n": 248,
+      "predicted_per_second": 44.71291502681598,
+      "predicted_per_token_ms": 22.3649028340081,
+      "prompt_ms": 363.279,
+      "prompt_n": 798,
+      "prompt_per_second": 2196.6587664026824,
+      "prompt_per_token_ms": 0.45523684210526316
+    },
+    "usage": {
+      "completion_tokens": 248,
+      "prompt_tokens": 798,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 1046
+    }
+  },
+  "seconds": 5.952999999979511,
+  "started_at": "2026-09-17T20:39:52.365581+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 248,
+    "prompt_tokens": 798,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1046
+  }
+}

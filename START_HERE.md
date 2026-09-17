@@ -1,4 +1,31 @@
 # Resume the ElectroHire benchmark
+## GPU continuation — 2026-09-17
+
+Current workspace is the `spec-kit-aee-benchmark` subdirectory of AXIOVEX.
+Both GPUs verified: RTX 4070 SUPER 12282 MiB and RTX 5060 Ti 16311 MiB.
+The free-local six-task/three-arm exploration and separately frozen repair loops
+are complete. Read [measured results](reports/local/gpu-20260917/README.md),
+[GPU protocol](docs/gpu-experiment-protocol.md),
+[repair protocol](docs/gpu-repair-protocol.md) and
+[reproduction](docs/gpu-reproduction.md). All failures and token overhead remain.
+Primary passes: 5/6 baseline, 2/6 adapted Spec Kit, 1/6 adapted combined arm.
+After shared same-test-feedback repairs: 5/6 each. This is not full Spec Kit validation.
+
+**Latest user direction:** add a better long-horizon benchmark, with real repository
+tools and requirements carried through implementation/change/repair. Preserve the
+small-task results; do not promote them as the final project study. Long-horizon
+task/model/protocol must be frozen before its generation. Include token economics,
+tokens per correct result, and actual repair loops. Article and final PR update wait
+for this additional work. No paid inference/credits, merge or LinkedIn posting.
+
+Host dependencies: `.venv-gpu`, Python 3.12.6, locked packages; use project-local
+`artifacts/tmp-gpu` as TEMP/TMP due intermittent shared-cache/temp ACL errors.
+49 regression tests pass. Existing Qwen3.6 router at localhost:8081 was restored
+with its original preset and model loaded after the first campaign; the user has
+authorized temporarily pausing/restoring it or using it if suitable.
+
+The older notes below describe the pre-GPU laptop state and are historical.
+
 ## Latest handoff — paused at user request, 2026-09-17
 Read [docs/gpu-machine-handoff.md](docs/gpu-machine-handoff.md) first. The user
 stopped this laptop experiment and requested saving/pushing the session for a

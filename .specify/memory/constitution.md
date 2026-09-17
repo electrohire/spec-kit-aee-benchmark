@@ -1,5 +1,5 @@
-<!-- Sync impact: unfilled template -> 1.0.0. Five principles adopted.
-Added experiment constraints and development gates. No template changes required. -->
+<!-- Sync impact: 1.0.0 -> 1.1.0. Add separately labeled free-local exploration
+authorized by GPU handoff; original pilot and five principles remain unchanged. -->
 # ElectroHire Benchmark Constitution
 
 ## Core Principles
@@ -33,6 +33,10 @@ grading MUST run separately after solver completion. The tutorial is illustrativ
 Use the 20-task, three-repeat, three-arm pilot. The combined treatment cannot
 isolate Evaluator from AEE. Publish no private source material or credentials.
 No LinkedIn posting, leaderboard submission or PR merge is authorized.
+The user-authorized GPU handoff also permits a separately frozen free-local
+Exercism exploration. It MUST NOT be presented as execution of that pilot or
+full Spec Kit integration. Report document adaptation, convenience selection,
+generic controller claims, public-test contamination and every failure.
 
 ## Development Workflow
 Apply constitution, specification, plan, tasks, implementation and convergence
@@ -45,4 +49,4 @@ Amend through a reviewed commit with rationale and semantic version increment.
 Every PR MUST report compliance and deviations. The provided implementation brief
 defines scope; this constitution constrains evidence and execution, not user intent.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-17 | **Last Amended**: 2026-09-17
+**Version**: 1.1.0 | **Ratified**: 2026-09-17 | **Last Amended**: 2026-09-17

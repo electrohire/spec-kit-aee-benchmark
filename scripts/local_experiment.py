@@ -42,8 +42,11 @@ def claims(n, text='The proposed implementation satisfies the exercise requireme
 
 
 def runtime(out):
+    if (out / 'runtime.json').exists():
+        raise ValueError('Fresh runtime output required; preserve earlier samples')
     store = Store(out / 'evidence')
     rows = []
+    expected_hashes = {}
     with tempfile.TemporaryDirectory() as tmp:
         folder = Path(tmp)
         cases = [('engine', n) for n in (10, 100, 1000)] + [('pipeline', n) for n in (10, 100)] + [('triage', n) for n in (1000, 10000, 100000)]
@@ -64,8 +67,12 @@ def runtime(out):
             if kind == 'engine':
                 result = AEEEngine(threshold=.7).assess(parsed, project='local-runtime', phase='after_plan')
                 outcome = result.outcome
+                content = result.to_dict()
+                substantive = {k: content[k] for k in ('outcome', 'claims', 'scores', 'recoveries')}
             elif kind == 'pipeline':
-                outcome = assess(ROOT, payload, 'plan', store)['outcome']
+                content = assess(ROOT, payload, 'plan', store)
+                outcome = content['outcome']
+                substantive = {k: content.get(k) for k in ('outcome', 'findings', 'next_action')}
             else:
                 target = folder / 'output.json'
                 subprocess.run([sys.executable, '-c', 'from benchmark_runner.triage import main; raise SystemExit(main())', str(inputs[n]), str(target)], check=True, capture_output=True)
@@ -77,6 +84,13 @@ def runtime(out):
                 assert len(data) == n and data[0]['asset_id'] == 'A0000000'
                 assert sum(x['flagged'] for x in data) == sum(i%10 >= 8 or 60+i%30 >= 80 for i in range(n))
                 extra = dict(input_sha256=digest(inputs[n]), output_sha256=digest(target))
+            else:
+                extra = dict(input_sha256=hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest(),
+                             output_sha256=hashlib.sha256(json.dumps(substantive, sort_keys=True).encode()).hexdigest())
+            key = (kind, n)
+            if key in expected_hashes and expected_hashes[key] != extra['output_sha256']:
+                raise ValueError(f'Non-deterministic substantive output: {key}')
+            expected_hashes[key] = extra['output_sha256']
             rows.append(dict(kind=kind, size=n, repetition=rep, warmup=rep == 0, milliseconds=elapsed, outcome=outcome, **extra))
             write_json(out / 'runtime.json', dict(timestamp=utc(), python=sys.version, platform=platform.platform(), samples=rows))
             print(f'{kind} {n} rep {rep}: {elapsed:.3f}ms', flush=True)

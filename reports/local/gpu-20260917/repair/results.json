@@ -1,0 +1,512 @@
+[
+  {
+    "arm": "spec_kit_aee_adapted",
+    "final_passed": true,
+    "original_passed": true,
+    "path": "00-pangram-spec_kit_aee_adapted",
+    "rounds": [],
+    "seconds": 0.0,
+    "task": "pangram"
+  },
+  {
+    "arm": "baseline",
+    "final_passed": true,
+    "original_passed": true,
+    "path": "01-isogram-baseline",
+    "rounds": [],
+    "seconds": 0.0,
+    "task": "isogram"
+  },
+  {
+    "arm": "baseline",
+    "final_passed": false,
+    "original_passed": false,
+    "path": "02-hamming-baseline",
+    "rounds": [
+      {
+        "ast_changed": false,
+        "error": null,
+        "finish_reason": "stop",
+        "grade": {
+          "exit_code": 1,
+          "output": "test_disallow_empty_first_strand (hamming_test.HammingTest.test_disallow_empty_first_strand) ... FAIL\ntest_disallow_empty_second_strand (hamming_test.HammingTest.test_disallow_empty_second_strand) ... FAIL\ntest_disallow_first_strand_longer (hamming_test.HammingTest.test_disallow_first_strand_longer) ... FAIL\ntest_disallow_second_strand_longer (hamming_test.HammingTest.test_disallow_second_strand_longer) ... FAIL\ntest_empty_strands (hamming_test.HammingTest.test_empty_strands) ... ok\ntest_long_different_strands (hamming_test.HammingTest.test_long_different_strands) ... ok\ntest_long_identical_strands (hamming_test.HammingTest.test_long_identical_strands) ... ok\ntest_single_letter_different_strands (hamming_test.HammingTest.test_single_letter_different_strands) ... ok\ntest_single_letter_identical_strands (hamming_test.HammingTest.test_single_letter_identical_strands) ... ok\n\n======================================================================\nFAIL: test_disallow_empty_first_strand (hamming_test.HammingTest.test_disallow_empty_first_strand)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 47, in test_disallow_empty_first_strand\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_empty_second_strand (hamming_test.HammingTest.test_disallow_empty_second_strand)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 54, in test_disallow_empty_second_strand\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_first_strand_longer (hamming_test.HammingTest.test_disallow_first_strand_longer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 33, in test_disallow_first_strand_longer\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_second_strand_longer (hamming_test.HammingTest.test_disallow_second_strand_longer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 40, in test_disallow_second_strand_longer\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n----------------------------------------------------------------------\nRan 9 tests in 0.001s\n\nFAILED (failures=4)\n",
+          "passed": false,
+          "skipped": 0,
+          "test_count": 9
+        },
+        "grading_seconds": 0.9059999999881256,
+        "model_seconds": 2.6719999999913853,
+        "round": 1,
+        "seconds": 3.5939999999827705,
+        "text_changed": false,
+        "unknown_reason": null,
+        "usage": {
+          "completion_tokens": 63,
+          "prompt_tokens": 1160,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 1223
+        }
+      },
+      {
+        "ast_changed": false,
+        "error": null,
+        "finish_reason": "stop",
+        "grade": {
+          "exit_code": 1,
+          "output": "test_disallow_empty_first_strand (hamming_test.HammingTest.test_disallow_empty_first_strand) ... FAIL\ntest_disallow_empty_second_strand (hamming_test.HammingTest.test_disallow_empty_second_strand) ... FAIL\ntest_disallow_first_strand_longer (hamming_test.HammingTest.test_disallow_first_strand_longer) ... FAIL\ntest_disallow_second_strand_longer (hamming_test.HammingTest.test_disallow_second_strand_longer) ... FAIL\ntest_empty_strands (hamming_test.HammingTest.test_empty_strands) ... ok\ntest_long_different_strands (hamming_test.HammingTest.test_long_different_strands) ... ok\ntest_long_identical_strands (hamming_test.HammingTest.test_long_identical_strands) ... ok\ntest_single_letter_different_strands (hamming_test.HammingTest.test_single_letter_different_strands) ... ok\ntest_single_letter_identical_strands (hamming_test.HammingTest.test_single_letter_identical_strands) ... ok\n\n======================================================================\nFAIL: test_disallow_empty_first_strand (hamming_test.HammingTest.test_disallow_empty_first_strand)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 47, in test_disallow_empty_first_strand\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_empty_second_strand (hamming_test.HammingTest.test_disallow_empty_second_strand)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 54, in test_disallow_empty_second_strand\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_first_strand_longer (hamming_test.HammingTest.test_disallow_first_strand_longer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 33, in test_disallow_first_strand_longer\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_second_strand_longer (hamming_test.HammingTest.test_disallow_second_strand_longer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 40, in test_disallow_second_strand_longer\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n----------------------------------------------------------------------\nRan 9 tests in 0.001s\n\nFAILED (failures=4)\n",
+          "passed": false,
+          "skipped": 0,
+          "test_count": 9
+        },
+        "grading_seconds": 0.8440000000118744,
+        "model_seconds": 1.8589999999967404,
+        "round": 2,
+        "seconds": 2.7190000000118744,
+        "text_changed": false,
+        "unknown_reason": null,
+        "usage": {
+          "completion_tokens": 63,
+          "prompt_tokens": 1160,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 1223
+        }
+      }
+    ],
+    "seconds": 6.327999999979511,
+    "task": "hamming"
+  },
+  {
+    "arm": "spec_kit_aee_adapted",
+    "final_passed": true,
+    "original_passed": false,
+    "path": "03-resistor-color-spec_kit_aee_adapted",
+    "rounds": [
+      {
+        "ast_changed": true,
+        "error": null,
+        "finish_reason": "stop",
+        "grade": {
+          "exit_code": 0,
+          "output": "test_black (resistor_color_test.ResistorColorTest.test_black) ... ok\ntest_colors (resistor_color_test.ResistorColorTest.test_colors) ... ok\ntest_orange (resistor_color_test.ResistorColorTest.test_orange) ... ok\ntest_white (resistor_color_test.ResistorColorTest.test_white) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n",
+          "passed": true,
+          "skipped": 0,
+          "test_count": 4
+        },
+        "grading_seconds": 0.9070000000065193,
+        "model_seconds": 3.3589999999967404,
+        "round": 1,
+        "seconds": 4.26600000000326,
+        "text_changed": true,
+        "unknown_reason": null,
+        "usage": {
+          "completion_tokens": 133,
+          "prompt_tokens": 449,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 582
+        }
+      }
+    ],
+    "seconds": 4.26600000000326,
+    "task": "resistor-color"
+  },
+  {
+    "arm": "spec_kit_adapted",
+    "final_passed": true,
+    "original_passed": false,
+    "path": "04-isogram-spec_kit_adapted",
+    "rounds": [
+      {
+        "ast_changed": true,
+        "error": null,
+        "finish_reason": "stop",
+        "grade": {
+          "exit_code": 0,
+          "output": "test_duplicated_character_in_the_middle (isogram_test.IsogramTest.test_duplicated_character_in_the_middle) ... ok\ntest_empty_string (isogram_test.IsogramTest.test_empty_string) ... ok\ntest_hypothetical_isogrammic_word_with_hyphen (isogram_test.IsogramTest.test_hypothetical_isogrammic_word_with_hyphen) ... ok\ntest_hypothetical_word_with_duplicated_character_following_hyphen (isogram_test.IsogramTest.test_hypothetical_word_with_duplicated_character_following_hyphen) ... ok\ntest_isogram_with_duplicated_hyphen (isogram_test.IsogramTest.test_isogram_with_duplicated_hyphen) ... ok\ntest_isogram_with_only_lower_case_characters (isogram_test.IsogramTest.test_isogram_with_only_lower_case_characters) ... ok\ntest_longest_reported_english_isogram (isogram_test.IsogramTest.test_longest_reported_english_isogram) ... ok\ntest_made_up_name_that_is_an_isogram (isogram_test.IsogramTest.test_made_up_name_that_is_an_isogram) ... ok\ntest_same_first_and_last_characters (isogram_test.IsogramTest.test_same_first_and_last_characters) ... ok\ntest_word_with_duplicated_character_and_with_two_hyphens (isogram_test.IsogramTest.test_word_with_duplicated_character_and_with_two_hyphens) ... ok\ntest_word_with_duplicated_character_in_mixed_case (isogram_test.IsogramTest.test_word_with_duplicated_character_in_mixed_case) ... ok\ntest_word_with_duplicated_character_in_mixed_case_lowercase_first (isogram_test.IsogramTest.test_word_with_duplicated_character_in_mixed_case_lowercase_first) ... ok\ntest_word_with_one_duplicated_character (isogram_test.IsogramTest.test_word_with_one_duplicated_character) ... ok\ntest_word_with_one_duplicated_character_from_the_end_of_the_alphabet (isogram_test.IsogramTest.test_word_with_one_duplicated_character_from_the_end_of_the_alphabet) ... ok\n\n----------------------------------------------------------------------\nRan 14 tests in 0.000s\n\nOK\n",
+          "passed": true,
+          "skipped": 0,
+          "test_count": 14
+        },
+        "grading_seconds": 0.875,
+        "model_seconds": 3.2810000000172295,
+        "round": 1,
+        "seconds": 4.1560000000172295,
+        "text_changed": true,
+        "unknown_reason": null,
+        "usage": {
+          "completion_tokens": 137,
+          "prompt_tokens": 205,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 342
+        }
+      }
+    ],
+    "seconds": 4.171999999991385,
+    "task": "isogram"
+  },
+  {
+    "arm": "spec_kit_adapted",
+    "final_passed": true,
+    "original_passed": false,
+    "path": "05-leap-spec_kit_adapted",
+    "rounds": [
+      {
+        "ast_changed": true,
+        "error": null,
+        "finish_reason": "stop",
+        "grade": {
+          "exit_code": 0,
+          "output": "test_year_divisible_by_100_but_not_by_3_is_still_not_a_leap_year (leap_test.LeapTest.test_year_divisible_by_100_but_not_by_3_is_still_not_a_leap_year) ... ok\ntest_year_divisible_by_100_not_divisible_by_400_in_common_year (leap_test.LeapTest.test_year_divisible_by_100_not_divisible_by_400_in_common_year) ... ok\ntest_year_divisible_by_200_not_divisible_by_400_in_common_year (leap_test.LeapTest.test_year_divisible_by_200_not_divisible_by_400_in_common_year) ... ok\ntest_year_divisible_by_2_not_divisible_by_4_in_common_year (leap_test.LeapTest.test_year_divisible_by_2_not_divisible_by_4_in_common_year) ... ok\ntest_year_divisible_by_400_but_not_by_125_is_still_a_leap_year (leap_test.LeapTest.test_year_divisible_by_400_but_not_by_125_is_still_a_leap_year) ... ok\ntest_year_divisible_by_400_is_leap_year (leap_test.LeapTest.test_year_divisible_by_400_is_leap_year) ... ok\ntest_year_divisible_by_4_and_5_is_still_a_leap_year (leap_test.LeapTest.test_year_divisible_by_4_and_5_is_still_a_leap_year) ... ok\ntest_year_divisible_by_4_not_divisible_by_100_in_leap_year (leap_test.LeapTest.test_year_divisible_by_4_not_divisible_by_100_in_leap_year) ... ok\ntest_year_not_divisible_by_4_in_common_year (leap_test.LeapTest.test_year_not_divisible_by_4_in_common_year) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 0.000s\n\nOK\n",
+          "passed": true,
+          "skipped": 0,
+          "test_count": 9
+        },
+        "grading_seconds": 0.8910000000032596,
+        "model_seconds": 1.812999999994645,
+        "round": 1,
+        "seconds": 2.7190000000118744,
+        "text_changed": true,
+        "unknown_reason": null,
+        "usage": {
+          "completion_tokens": 69,
+          "prompt_tokens": 295,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 364
+        }
+      }
+    ],
+    "seconds": 2.7190000000118744,
+    "task": "leap"
+  },
+  {
+    "arm": "spec_kit_adapted",
+    "final_passed": true,
+    "original_passed": false,
+    "path": "06-resistor-color-spec_kit_adapted",
+    "rounds": [
+      {
+        "ast_changed": true,
+        "error": null,
+        "finish_reason": "stop",
+        "grade": {
+          "exit_code": 0,
+          "output": "test_black (resistor_color_test.ResistorColorTest.test_black) ... ok\ntest_colors (resistor_color_test.ResistorColorTest.test_colors) ... ok\ntest_orange (resistor_color_test.ResistorColorTest.test_orange) ... ok\ntest_white (resistor_color_test.ResistorColorTest.test_white) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK\n",
+          "passed": true,
+          "skipped": 0,
+          "test_count": 4
+        },
+        "grading_seconds": 0.8599999999860302,
+        "model_seconds": 5.952999999979511,
+        "round": 1,
+        "seconds": 6.827999999979511,
+        "text_changed": true,
+        "unknown_reason": null,
+        "usage": {
+          "completion_tokens": 248,
+          "prompt_tokens": 798,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 1046
+        }
+      }
+    ],
+    "seconds": 6.8439999999827705,
+    "task": "resistor-color"
+  },
+  {
+    "arm": "spec_kit_adapted",
+    "final_passed": false,
+    "original_passed": false,
+    "path": "07-hamming-spec_kit_adapted",
+    "rounds": [
+      {
+        "ast_changed": true,
+        "error": null,
+        "finish_reason": "stop",
+        "grade": {
+          "exit_code": 1,
+          "output": "test_disallow_empty_first_strand (hamming_test.HammingTest.test_disallow_empty_first_strand) ... FAIL\ntest_disallow_empty_second_strand (hamming_test.HammingTest.test_disallow_empty_second_strand) ... FAIL\ntest_disallow_first_strand_longer (hamming_test.HammingTest.test_disallow_first_strand_longer) ... FAIL\ntest_disallow_second_strand_longer (hamming_test.HammingTest.test_disallow_second_strand_longer) ... FAIL\ntest_empty_strands (hamming_test.HammingTest.test_empty_strands) ... ok\ntest_long_different_strands (hamming_test.HammingTest.test_long_different_strands) ... ok\ntest_long_identical_strands (hamming_test.HammingTest.test_long_identical_strands) ... ok\ntest_single_letter_different_strands (hamming_test.HammingTest.test_single_letter_different_strands) ... ok\ntest_single_letter_identical_strands (hamming_test.HammingTest.test_single_letter_identical_strands) ... ok\n\n======================================================================\nFAIL: test_disallow_empty_first_strand (hamming_test.HammingTest.test_disallow_empty_first_strand)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 47, in test_disallow_empty_first_strand\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_empty_second_strand (hamming_test.HammingTest.test_disallow_empty_second_strand)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 54, in test_disallow_empty_second_strand\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_first_strand_longer (hamming_test.HammingTest.test_disallow_first_strand_longer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 33, in test_disallow_first_strand_longer\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_second_strand_longer (hamming_test.HammingTest.test_disallow_second_strand_longer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 40, in test_disallow_second_strand_longer\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n----------------------------------------------------------------------\nRan 9 tests in 0.001s\n\nFAILED (failures=4)\n",
+          "passed": false,
+          "skipped": 0,
+          "test_count": 9
+        },
+        "grading_seconds": 0.875,
+        "model_seconds": 2.1719999999913853,
+        "round": 1,
+        "seconds": 3.062999999994645,
+        "text_changed": true,
+        "unknown_reason": null,
+        "usage": {
+          "completion_tokens": 82,
+          "prompt_tokens": 369,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 451
+        }
+      },
+      {
+        "ast_changed": false,
+        "error": null,
+        "finish_reason": "stop",
+        "grade": {
+          "exit_code": 1,
+          "output": "test_disallow_empty_first_strand (hamming_test.HammingTest.test_disallow_empty_first_strand) ... FAIL\ntest_disallow_empty_second_strand (hamming_test.HammingTest.test_disallow_empty_second_strand) ... FAIL\ntest_disallow_first_strand_longer (hamming_test.HammingTest.test_disallow_first_strand_longer) ... FAIL\ntest_disallow_second_strand_longer (hamming_test.HammingTest.test_disallow_second_strand_longer) ... FAIL\ntest_empty_strands (hamming_test.HammingTest.test_empty_strands) ... ok\ntest_long_different_strands (hamming_test.HammingTest.test_long_different_strands) ... ok\ntest_long_identical_strands (hamming_test.HammingTest.test_long_identical_strands) ... ok\ntest_single_letter_different_strands (hamming_test.HammingTest.test_single_letter_different_strands) ... ok\ntest_single_letter_identical_strands (hamming_test.HammingTest.test_single_letter_identical_strands) ... ok\n\n======================================================================\nFAIL: test_disallow_empty_first_strand (hamming_test.HammingTest.test_disallow_empty_first_strand)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 47, in test_disallow_empty_first_strand\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_empty_second_strand (hamming_test.HammingTest.test_disallow_empty_second_strand)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 54, in test_disallow_empty_second_strand\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_first_strand_longer (hamming_test.HammingTest.test_disallow_first_strand_longer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 33, in test_disallow_first_strand_longer\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_second_strand_longer (hamming_test.HammingTest.test_disallow_second_strand_longer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 40, in test_disallow_second_strand_longer\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n----------------------------------------------------------------------\nRan 9 tests in 0.001s\n\nFAILED (failures=4)\n",
+          "passed": false,
+          "skipped": 0,
+          "test_count": 9
+        },
+        "grading_seconds": 0.875,
+        "model_seconds": 2.2969999999913853,
+        "round": 2,
+        "seconds": 3.187999999994645,
+        "text_changed": false,
+        "unknown_reason": null,
+        "usage": {
+          "completion_tokens": 82,
+          "prompt_tokens": 1179,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 1261
+        }
+      }
+    ],
+    "seconds": 6.296999999991385,
+    "task": "hamming"
+  },
+  {
+    "arm": "spec_kit_adapted",
+    "final_passed": true,
+    "original_passed": true,
+    "path": "08-pangram-spec_kit_adapted",
+    "rounds": [],
+    "seconds": 0.0,
+    "task": "pangram"
+  },
+  {
+    "arm": "spec_kit_aee_adapted",
+    "final_passed": false,
+    "original_passed": false,
+    "path": "09-hamming-spec_kit_aee_adapted",
+    "rounds": [
+      {
+        "ast_changed": false,
+        "error": null,
+        "finish_reason": "stop",
+        "grade": {
+          "exit_code": 1,
+          "output": "test_disallow_empty_first_strand (hamming_test.HammingTest.test_disallow_empty_first_strand) ... FAIL\ntest_disallow_empty_second_strand (hamming_test.HammingTest.test_disallow_empty_second_strand) ... FAIL\ntest_disallow_first_strand_longer (hamming_test.HammingTest.test_disallow_first_strand_longer) ... FAIL\ntest_disallow_second_strand_longer (hamming_test.HammingTest.test_disallow_second_strand_longer) ... FAIL\ntest_empty_strands (hamming_test.HammingTest.test_empty_strands) ... ok\ntest_long_different_strands (hamming_test.HammingTest.test_long_different_strands) ... ok\ntest_long_identical_strands (hamming_test.HammingTest.test_long_identical_strands) ... ok\ntest_single_letter_different_strands (hamming_test.HammingTest.test_single_letter_different_strands) ... ok\ntest_single_letter_identical_strands (hamming_test.HammingTest.test_single_letter_identical_strands) ... ok\n\n======================================================================\nFAIL: test_disallow_empty_first_strand (hamming_test.HammingTest.test_disallow_empty_first_strand)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 47, in test_disallow_empty_first_strand\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_empty_second_strand (hamming_test.HammingTest.test_disallow_empty_second_strand)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 54, in test_disallow_empty_second_strand\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_first_strand_longer (hamming_test.HammingTest.test_disallow_first_strand_longer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 33, in test_disallow_first_strand_longer\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_second_strand_longer (hamming_test.HammingTest.test_disallow_second_strand_longer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 40, in test_disallow_second_strand_longer\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n----------------------------------------------------------------------\nRan 9 tests in 0.001s\n\nFAILED (failures=4)\n",
+          "passed": false,
+          "skipped": 0,
+          "test_count": 9
+        },
+        "grading_seconds": 0.8280000000086147,
+        "model_seconds": 2.01500000001397,
+        "round": 1,
+        "seconds": 2.859000000025844,
+        "text_changed": false,
+        "unknown_reason": null,
+        "usage": {
+          "completion_tokens": 63,
+          "prompt_tokens": 1160,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 1223
+        }
+      },
+      {
+        "ast_changed": false,
+        "error": null,
+        "finish_reason": "stop",
+        "grade": {
+          "exit_code": 1,
+          "output": "test_disallow_empty_first_strand (hamming_test.HammingTest.test_disallow_empty_first_strand) ... FAIL\ntest_disallow_empty_second_strand (hamming_test.HammingTest.test_disallow_empty_second_strand) ... FAIL\ntest_disallow_first_strand_longer (hamming_test.HammingTest.test_disallow_first_strand_longer) ... FAIL\ntest_disallow_second_strand_longer (hamming_test.HammingTest.test_disallow_second_strand_longer) ... FAIL\ntest_empty_strands (hamming_test.HammingTest.test_empty_strands) ... ok\ntest_long_different_strands (hamming_test.HammingTest.test_long_different_strands) ... ok\ntest_long_identical_strands (hamming_test.HammingTest.test_long_identical_strands) ... ok\ntest_single_letter_different_strands (hamming_test.HammingTest.test_single_letter_different_strands) ... ok\ntest_single_letter_identical_strands (hamming_test.HammingTest.test_single_letter_identical_strands) ... ok\n\n======================================================================\nFAIL: test_disallow_empty_first_strand (hamming_test.HammingTest.test_disallow_empty_first_strand)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 47, in test_disallow_empty_first_strand\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_empty_second_strand (hamming_test.HammingTest.test_disallow_empty_second_strand)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 54, in test_disallow_empty_second_strand\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_first_strand_longer (hamming_test.HammingTest.test_disallow_first_strand_longer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 33, in test_disallow_first_strand_longer\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n======================================================================\nFAIL: test_disallow_second_strand_longer (hamming_test.HammingTest.test_disallow_second_strand_longer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hamming_test.py\", line 40, in test_disallow_second_strand_longer\n    self.assertEqual(err.exception.args[0], \"Strands must be of equal length.\")\nAssertionError: 'Strands must be of equal length' != 'Strands must be of equal length.'\n- Strands must be of equal length\n+ Strands must be of equal length.\n?                                +\n\n\n----------------------------------------------------------------------\nRan 9 tests in 0.001s\n\nFAILED (failures=4)\n",
+          "passed": false,
+          "skipped": 0,
+          "test_count": 9
+        },
+        "grading_seconds": 0.875,
+        "model_seconds": 1.8900000000139698,
+        "round": 2,
+        "seconds": 2.76500000001397,
+        "text_changed": false,
+        "unknown_reason": null,
+        "usage": {
+          "completion_tokens": 63,
+          "prompt_tokens": 1160,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 1223
+        }
+      }
+    ],
+    "seconds": 5.655999999988126,
+    "task": "hamming"
+  },
+  {
+    "arm": "spec_kit_aee_adapted",
+    "final_passed": true,
+    "original_passed": false,
+    "path": "10-raindrops-spec_kit_aee_adapted",
+    "rounds": [
+      {
+        "ast_changed": true,
+        "error": null,
+        "finish_reason": "stop",
+        "grade": {
+          "exit_code": 0,
+          "output": "test_2_to_the_power_3_does_not_make_a_raindrop_sound_as_3_is_the_exponent_not_the_base (raindrops_test.RaindropsTest.test_2_to_the_power_3_does_not_make_a_raindrop_sound_as_3_is_the_exponent_not_the_base) ... ok\ntest_the_sound_for_105_is_pling_plang_plong_as_it_has_factors_3_5_and_7 (raindrops_test.RaindropsTest.test_the_sound_for_105_is_pling_plang_plong_as_it_has_factors_3_5_and_7) ... ok\ntest_the_sound_for_10_is_plang_as_it_has_a_factor_5 (raindrops_test.RaindropsTest.test_the_sound_for_10_is_plang_as_it_has_a_factor_5) ... ok\ntest_the_sound_for_14_is_plong_as_it_has_a_factor_of_7 (raindrops_test.RaindropsTest.test_the_sound_for_14_is_plong_as_it_has_a_factor_of_7) ... ok\ntest_the_sound_for_15_is_pling_plang_as_it_has_factors_3_and_5 (raindrops_test.RaindropsTest.test_the_sound_for_15_is_pling_plang_as_it_has_factors_3_and_5) ... ok\ntest_the_sound_for_1_is_1 (raindrops_test.RaindropsTest.test_the_sound_for_1_is_1) ... ok\ntest_the_sound_for_21_is_pling_plong_as_it_has_factors_3_and_7 (raindrops_test.RaindropsTest.test_the_sound_for_21_is_pling_plong_as_it_has_factors_3_and_7) ... ok\ntest_the_sound_for_25_is_plang_as_it_has_a_factor_5 (raindrops_test.RaindropsTest.test_the_sound_for_25_is_plang_as_it_has_a_factor_5) ... ok\ntest_the_sound_for_27_is_pling_as_it_has_a_factor_3 (raindrops_test.RaindropsTest.test_the_sound_for_27_is_pling_as_it_has_a_factor_3) ... ok\ntest_the_sound_for_3125_is_plang_as_it_has_a_factor_5 (raindrops_test.RaindropsTest.test_the_sound_for_3125_is_plang_as_it_has_a_factor_5) ... ok\ntest_the_sound_for_35_is_plang_plong_as_it_has_factors_5_and_7 (raindrops_test.RaindropsTest.test_the_sound_for_35_is_plang_plong_as_it_has_factors_5_and_7) ... ok\ntest_the_sound_for_3_is_pling (raindrops_test.RaindropsTest.test_the_sound_for_3_is_pling) ... ok\ntest_the_sound_for_49_is_plong_as_it_has_a_factor_7 (raindrops_test.RaindropsTest.test_the_sound_for_49_is_plong_as_it_has_a_factor_7) ... ok\ntest_the_sound_for_52_is_52 (raindrops_test.RaindropsTest.test_the_sound_for_52_is_52) ... ok\ntest_the_sound_for_5_is_plang (raindrops_test.RaindropsTest.test_the_sound_for_5_is_plang) ... ok\ntest_the_sound_for_6_is_pling_as_it_has_a_factor_3 (raindrops_test.RaindropsTest.test_the_sound_for_6_is_pling_as_it_has_a_factor_3) ... ok\ntest_the_sound_for_7_is_plong (raindrops_test.RaindropsTest.test_the_sound_for_7_is_plong) ... ok\ntest_the_sound_for_9_is_pling_as_it_has_a_factor_3 (raindrops_test.RaindropsTest.test_the_sound_for_9_is_pling_as_it_has_a_factor_3) ... ok\n\n----------------------------------------------------------------------\nRan 18 tests in 0.000s\n\nOK\n",
+          "passed": true,
+          "skipped": 0,
+          "test_count": 18
+        },
+        "grading_seconds": 0.9220000000204891,
+        "model_seconds": 2.172000000020489,
+        "round": 1,
+        "seconds": 3.110000000015134,
+        "text_changed": true,
+        "unknown_reason": null,
+        "usage": {
+          "completion_tokens": 82,
+          "prompt_tokens": 406,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 488
+        }
+      }
+    ],
+    "seconds": 3.125,
+    "task": "raindrops"
+  },
+  {
+    "arm": "spec_kit_aee_adapted",
+    "final_passed": true,
+    "original_passed": false,
+    "path": "11-leap-spec_kit_aee_adapted",
+    "rounds": [
+      {
+        "ast_changed": true,
+        "error": null,
+        "finish_reason": "stop",
+        "grade": {
+          "exit_code": 0,
+          "output": "test_year_divisible_by_100_but_not_by_3_is_still_not_a_leap_year (leap_test.LeapTest.test_year_divisible_by_100_but_not_by_3_is_still_not_a_leap_year) ... ok\ntest_year_divisible_by_100_not_divisible_by_400_in_common_year (leap_test.LeapTest.test_year_divisible_by_100_not_divisible_by_400_in_common_year) ... ok\ntest_year_divisible_by_200_not_divisible_by_400_in_common_year (leap_test.LeapTest.test_year_divisible_by_200_not_divisible_by_400_in_common_year) ... ok\ntest_year_divisible_by_2_not_divisible_by_4_in_common_year (leap_test.LeapTest.test_year_divisible_by_2_not_divisible_by_4_in_common_year) ... ok\ntest_year_divisible_by_400_but_not_by_125_is_still_a_leap_year (leap_test.LeapTest.test_year_divisible_by_400_but_not_by_125_is_still_a_leap_year) ... ok\ntest_year_divisible_by_400_is_leap_year (leap_test.LeapTest.test_year_divisible_by_400_is_leap_year) ... ok\ntest_year_divisible_by_4_and_5_is_still_a_leap_year (leap_test.LeapTest.test_year_divisible_by_4_and_5_is_still_a_leap_year) ... ok\ntest_year_divisible_by_4_not_divisible_by_100_in_leap_year (leap_test.LeapTest.test_year_divisible_by_4_not_divisible_by_100_in_leap_year) ... ok\ntest_year_not_divisible_by_4_in_common_year (leap_test.LeapTest.test_year_not_divisible_by_4_in_common_year) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 0.000s\n\nOK\n",
+          "passed": true,
+          "skipped": 0,
+          "test_count": 9
+        },
+        "grading_seconds": 0.9060000000172295,
+        "model_seconds": 1.8429999999934807,
+        "round": 1,
+        "seconds": 2.76500000001397,
+        "text_changed": true,
+        "unknown_reason": null,
+        "usage": {
+          "completion_tokens": 69,
+          "prompt_tokens": 295,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 364
+        }
+      }
+    ],
+    "seconds": 2.7969999999913853,
+    "task": "leap"
+  },
+  {
+    "arm": "baseline",
+    "final_passed": true,
+    "original_passed": true,
+    "path": "12-leap-baseline",
+    "rounds": [],
+    "seconds": 0.0,
+    "task": "leap"
+  },
+  {
+    "arm": "baseline",
+    "final_passed": true,
+    "original_passed": true,
+    "path": "13-raindrops-baseline",
+    "rounds": [],
+    "seconds": 0.0,
+    "task": "raindrops"
+  },
+  {
+    "arm": "baseline",
+    "final_passed": true,
+    "original_passed": true,
+    "path": "14-resistor-color-baseline",
+    "rounds": [],
+    "seconds": 0.0,
+    "task": "resistor-color"
+  },
+  {
+    "arm": "spec_kit_aee_adapted",
+    "final_passed": true,
+    "original_passed": false,
+    "path": "15-isogram-spec_kit_aee_adapted",
+    "rounds": [
+      {
+        "ast_changed": true,
+        "error": null,
+        "finish_reason": "stop",
+        "grade": {
+          "exit_code": 0,
+          "output": "test_duplicated_character_in_the_middle (isogram_test.IsogramTest.test_duplicated_character_in_the_middle) ... ok\ntest_empty_string (isogram_test.IsogramTest.test_empty_string) ... ok\ntest_hypothetical_isogrammic_word_with_hyphen (isogram_test.IsogramTest.test_hypothetical_isogrammic_word_with_hyphen) ... ok\ntest_hypothetical_word_with_duplicated_character_following_hyphen (isogram_test.IsogramTest.test_hypothetical_word_with_duplicated_character_following_hyphen) ... ok\ntest_isogram_with_duplicated_hyphen (isogram_test.IsogramTest.test_isogram_with_duplicated_hyphen) ... ok\ntest_isogram_with_only_lower_case_characters (isogram_test.IsogramTest.test_isogram_with_only_lower_case_characters) ... ok\ntest_longest_reported_english_isogram (isogram_test.IsogramTest.test_longest_reported_english_isogram) ... ok\ntest_made_up_name_that_is_an_isogram (isogram_test.IsogramTest.test_made_up_name_that_is_an_isogram) ... ok\ntest_same_first_and_last_characters (isogram_test.IsogramTest.test_same_first_and_last_characters) ... ok\ntest_word_with_duplicated_character_and_with_two_hyphens (isogram_test.IsogramTest.test_word_with_duplicated_character_and_with_two_hyphens) ... ok\ntest_word_with_duplicated_character_in_mixed_case (isogram_test.IsogramTest.test_word_with_duplicated_character_in_mixed_case) ... ok\ntest_word_with_duplicated_character_in_mixed_case_lowercase_first (isogram_test.IsogramTest.test_word_with_duplicated_character_in_mixed_case_lowercase_first) ... ok\ntest_word_with_one_duplicated_character (isogram_test.IsogramTest.test_word_with_one_duplicated_character) ... ok\ntest_word_with_one_duplicated_character_from_the_end_of_the_alphabet (isogram_test.IsogramTest.test_word_with_one_duplicated_character_from_the_end_of_the_alphabet) ... ok\n\n----------------------------------------------------------------------\nRan 14 tests in 0.000s\n\nOK\n",
+          "passed": true,
+          "skipped": 0,
+          "test_count": 14
+        },
+        "grading_seconds": 0.9370000000053551,
+        "model_seconds": 3.3429999999934807,
+        "round": 1,
+        "seconds": 4.2960000000020955,
+        "text_changed": true,
+        "unknown_reason": null,
+        "usage": {
+          "completion_tokens": 137,
+          "prompt_tokens": 205,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 342
+        }
+      }
+    ],
+    "seconds": 4.312000000005355,
+    "task": "isogram"
+  },
+  {
+    "arm": "baseline",
+    "final_passed": true,
+    "original_passed": true,
+    "path": "16-pangram-baseline",
+    "rounds": [],
+    "seconds": 0.0,
+    "task": "pangram"
+  },
+  {
+    "arm": "spec_kit_adapted",
+    "final_passed": true,
+    "original_passed": true,
+    "path": "17-raindrops-spec_kit_adapted",
+    "rounds": [],
+    "seconds": 0.0,
+    "task": "raindrops"
+  }
+]

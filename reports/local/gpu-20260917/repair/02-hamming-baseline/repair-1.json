@@ -1,0 +1,53 @@
+{
+  "ended_at": "2026-09-17T20:39:37.466528+00:00",
+  "original_record_sha256": "7ecf89c89eba5b0cfbf5250a2771b4e983376b2a1f62f2a75b5cabd88efb5ed1",
+  "request_omission": "Exercise facts omitted; repair instruction and prior feedback are reproducible from frozen sources.",
+  "request_sha256": "18503bd505ef34297080be3996878b23eabe26b4ba3fb979542bb769fe92d673",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "```python\ndef distance(strand_a, strand_b):\n    if len(strand_a) != len(strand_b):\n        raise ValueError(\"Strands must be of equal length\")\n    \n    return sum(1 for a, b in zip(strand_a, strand_b) if a != b)\n```",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789677577,
+    "id": "chatcmpl-RpPeGYos5cZoPCB0nvBEY0zuw0amE2Lv",
+    "model": "local-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 1390.244,
+      "predicted_n": 63,
+      "predicted_per_second": 44.59648809849207,
+      "predicted_per_token_ms": 22.423290322580645,
+      "prompt_ms": 630.275,
+      "prompt_n": 1160,
+      "prompt_per_second": 1840.4664630518425,
+      "prompt_per_token_ms": 0.5433405172413793
+    },
+    "usage": {
+      "completion_tokens": 63,
+      "prompt_tokens": 1160,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 1223
+    }
+  },
+  "seconds": 2.6719999999913853,
+  "started_at": "2026-09-17T20:39:34.800009+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 63,
+    "prompt_tokens": 1160,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1223
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "ended_at": "2026-09-17T20:29:45.802318+00:00",
+  "original_record_sha256": "5361578bbcb6f167247e3f16be112dda5997d60a180d3c200e6a97000faa5e4e",
+  "request_omission": "Task text omitted; regenerate from frozen upstream inputs and runner.",
+  "request_sha256": "ff3de717d1530253f835542b46256cfceb48b65ca79925019de978ec89f1e287",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "```python\ndef is_isogram(phrase):\n    # Remove spaces and hyphens from the phrase\n    cleaned_phrase = phrase.replace(\" \", \"\").replace(\"-\", \"\").lower()\n    \n    # Create a set to store unique characters\n    seen_letters = set()\n    \n    # Iterate over each character in the cleaned phrase\n    for char in cleaned_phrase:\n        # If the character is already in the set, it's not an isogram\n        if char in seen_letters:\n            return False\n        # Add the character to the set\n        seen_letters.add(char)\n    \n    # If no characters repeat, it's an isogram\n    return True\n```",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789676985,
+    "id": "chatcmpl-YVGmCnz7TLrTxxWpi4025FAKRkXx634y",
+    "model": "local-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 3003.064,
+      "predicted_n": 136,
+      "predicted_per_second": 44.95408689258704,
+      "predicted_per_token_ms": 22.244918518518517,
+      "prompt_ms": 99.12,
+      "prompt_n": 167,
+      "prompt_per_second": 1684.8264729620662,
+      "prompt_per_token_ms": 0.5935329341317366
+    },
+    "usage": {
+      "completion_tokens": 136,
+      "prompt_tokens": 167,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 303
+    }
+  },
+  "seconds": 3.5940000000118744,
+  "started_at": "2026-09-17T20:29:42.191620+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 136,
+    "prompt_tokens": 167,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 303
+  }
+}
