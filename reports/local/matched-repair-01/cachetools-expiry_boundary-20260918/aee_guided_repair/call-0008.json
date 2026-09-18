@@ -1,0 +1,60 @@
+{
+  "budget_debit": 9270,
+  "ended_at": "2026-09-18T05:14:50.114524+00:00",
+  "max_output": 4096,
+  "original_sha256": "e4ffd71474ed4b54ec911e2ca6831ce3ac18adfb1f6e0972a6574c76bb72c4da",
+  "phase": "repair",
+  "preflight_input_tokens": 8672,
+  "removed_history_messages": 0,
+  "request_seconds": 10.577999999979511,
+  "request_sha256": "b126a19fced090d9ae1b439b5783f731dc2bfd7d646b67ec39570e471c2e1f0d",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# Test R01: Tags validation\\ntry:\\n    TaggedCache(2).put('a', 1, tags='bad')\\n    print('FAIL: should reject bare string tags')\\nexcept ValueError:\\n    print('PASS: rejects bare string tags')\\n\\ntry:\\n    TaggedCache(2).put('a', 1, tags=[1, 2])\\n    print('FAIL: should reject nonstring tag entries')\\nexcept ValueError:\\n    print('PASS: rejects nonstring tag entries')\\n\\n# Test R01: deep copy on get\\nc = TaggedCache(2)\\nc.put('a', [1, 2, 3], ['x'])\\nv1 = c.get('a')\\nv1.append(4)\\nv2 = c.get('a')\\nassert v2 == [1, 2, 3], f'FAIL: deep copy failed: {v2}'\\nprint('PASS: deep copy on get')\\n\\n# Test R01: deep copy on put\\nc2 = TaggedCache(2)\\ndata = [1, 2, 3]\\nc2.put('a', data, ['x'])\\ndata.append(4)\\nassert c2.get('a') == [1, 2, 3], 'FAIL: deep copy on put'\\nprint('PASS: deep copy on put')\\n\\n# Test R03: maxsize validation\\ntry:\\n    TaggedCache(True)\\n    print('FAIL: should reject bool maxsize')\\nexcept ValueError:\\n    print('PASS: rejects bool maxsize')\\n\\ntry:\\n    TaggedCache(0)\\n    print('FAIL: should reject zero maxsize')\\nexcept ValueError:\\n    print('PASS: rejects zero maxsize')\\n\\ntry:\\n    TaggedCache(-1)\\n    print('FAIL: should reject negative maxsize')\\nexcept ValueError:\\n    print('PASS: rejects negative maxsize')\\n\\nprint('All basic checks passed')\\n\\\"\\n\"}",
+          "reasoning_sha256": "f3e2d885548c4c2df4091071bb85cae68ed1dff826dfbe72d6f72d26bc2e1178",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789708490,
+    "id": "chatcmpl-WrkRJDvS41NrnCt19apNQtqrbETm0E8j",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 6295.215,
+      "predicted_n": 598,
+      "predicted_per_second": 94.83393339226699,
+      "predicted_per_token_ms": 10.544748743718593,
+      "prompt_ms": 3964.208,
+      "prompt_n": 8672,
+      "prompt_per_second": 2187.5744158732336,
+      "prompt_per_token_ms": 0.45712730627306275
+    },
+    "usage": {
+      "completion_tokens": 598,
+      "prompt_tokens": 8672,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 9270
+    }
+  },
+  "seconds": 10.577999999979511,
+  "stage": 3,
+  "started_at": "2026-09-18T05:14:39.525522+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 598,
+    "prompt_tokens": 8672,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 9270
+  }
+}

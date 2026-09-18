@@ -1,0 +1,60 @@
+{
+  "budget_debit": 7842,
+  "ended_at": "2026-09-18T05:05:35.067040+00:00",
+  "max_output": 4096,
+  "original_sha256": "92f1f03a6a3e90608937ec2cf7a5e3b08763e6876e3a2bb8098cc6470f3d9cdc",
+  "phase": "repair",
+  "preflight_input_tokens": 7519,
+  "removed_history_messages": 0,
+  "request_seconds": 3.9689999999827705,
+  "request_sha256": "5f9131506dc3ae3ed2de85c94c82acedfa3d039170585e58015248ee1e894e98",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{ \"action\": \"done\", \"summary\": \"All tests pass: 220 passed (acceptance_public.py 4/4, all upstream tests intact). The TaggedCache implementation in src/cachetools/tagged.py correctly implements R01-R08:\\n\\n- R01: put/get with deep copy, tag validation (rejects bare strings, non-string entries)\\n- R02: invalidate(tag) removes tagged entries, returns count, handles replacement\\n- R03: maxsize validation (positive int, no bool), values cost 1 slot\\n- R04: invalidate_many(tags, mode) with 'any' (union) and 'all' modes\\n- R05: resize(maxsize) preserving entries and LRU order\\n- R06: Tags as generators consumed once, detached return values\\n- R07: Constructor accepts timer=None, put accepts ttl=None or finite nonnegative non-bool numeric\\n- R08: Expired entries removed before get/put/len/resize/invalidation without touching recency of survivors\\n\\n16 warnings are pre-existing DeprecationWarning for MRUCache, not related to TaggedCache.\"}",
+          "reasoning_sha256": "93a274940e097b237e178695ab4e8e6c0b0b13ba892b4a496c37357d977c3db1",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789707935,
+    "id": "chatcmpl-NlqPVflVESlf8LT6A47jJjIPrNlC1vxn",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 6717,
+      "predicted_ms": 3405.491,
+      "predicted_n": 323,
+      "predicted_per_second": 94.5531789689064,
+      "predicted_per_token_ms": 10.57605900621118,
+      "prompt_ms": 555.854,
+      "prompt_n": 802,
+      "prompt_per_second": 1442.824914455954,
+      "prompt_per_token_ms": 0.6930847880299252
+    },
+    "usage": {
+      "completion_tokens": 323,
+      "prompt_tokens": 7519,
+      "prompt_tokens_details": {
+        "cached_tokens": 6717
+      },
+      "total_tokens": 7842
+    }
+  },
+  "seconds": 3.9689999999827705,
+  "stage": 3,
+  "started_at": "2026-09-18T05:05:31.088561+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 323,
+    "prompt_tokens": 7519,
+    "prompt_tokens_details": {
+      "cached_tokens": 6717
+    },
+    "total_tokens": 7842
+  }
+}

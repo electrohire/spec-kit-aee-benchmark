@@ -1,0 +1,60 @@
+{
+  "budget_debit": 12852,
+  "ended_at": "2026-09-18T05:26:50.966926+00:00",
+  "max_output": 4096,
+  "original_sha256": "eb4f68d44ba9d385ea8e25b1d3f83ec5164073d5bcc7cdfeb1d1dcf172d8ed0c",
+  "phase": "repair",
+  "preflight_input_tokens": 12505,
+  "removed_history_messages": 0,
+  "request_seconds": 4.297000000020489,
+  "request_sha256": "4c2073cf7000aae8da1728c2a341ccedb599dd67484610fa896d1461daf2a34f",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\n  \"action\": \"shell\",\n  \"command\": \"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\nfrom cachetools import Cache, LRUCache\\n\\n# Test resize with growing\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\nc.put('b', 2, ['y'])\\nc.resize(5)\\nassert len(c) == 2\\nassert c.get('a') == 1\\nassert c.get('b') == 2\\nprint('Grow resize OK')\\n\\n# Test resize invalid raises ValueError before mutation\\nc2 = TaggedCache(3)\\nc2.put('a', 1, ['x'])\\ntry:\\n    c2.resize(0)\\n    assert False\\nexcept ValueError:\\n    pass\\nassert len(c2) == 1\\nprint('Invalid resize OK')\\n\\n# Test invalid maxsize in constructor\\ntry:\\n    TaggedCache(-1)\\n    assert False\\nexcept ValueError:\\n    pass\\nprint('Invalid constructor OK')\\n\\n# Test invalid bool maxsize\\ntry:\\n    TaggedCache(True)\\n    assert False\\nexcept ValueError:\\n    pass\\nprint('Bool maxsize rejected OK')\\n\\n# Test invalid bool maxsize in resize\\ntry:\\n    TaggedCache(5).resize(True)\\n    assert False\\nexcept ValueError:\\n    pass\\nprint('Bool resize rejected OK')\\n\\nprint('All edge case checks passed!')\\n\\\"\"}",
+          "reasoning_sha256": "408ab6e7dce5d4287e00dfc6991b5bf990266d4028b2e5fdd9c3c8365490e540",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789709210,
+    "id": "chatcmpl-51C9lzWZgl1pX0YyOgnPgJCwYeljk4vv",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 12008,
+      "predicted_ms": 3832.515,
+      "predicted_n": 347,
+      "predicted_per_second": 90.28014241301078,
+      "predicted_per_token_ms": 11.076632947976877,
+      "prompt_ms": 424.482,
+      "prompt_n": 497,
+      "prompt_per_second": 1170.8388105973868,
+      "prompt_per_token_ms": 0.8540885311871228
+    },
+    "usage": {
+      "completion_tokens": 347,
+      "prompt_tokens": 12505,
+      "prompt_tokens_details": {
+        "cached_tokens": 12008
+      },
+      "total_tokens": 12852
+    }
+  },
+  "seconds": 4.297000000020489,
+  "stage": 3,
+  "started_at": "2026-09-18T05:26:46.662928+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 347,
+    "prompt_tokens": 12505,
+    "prompt_tokens_details": {
+      "cached_tokens": 12008
+    },
+    "total_tokens": 12852
+  }
+}

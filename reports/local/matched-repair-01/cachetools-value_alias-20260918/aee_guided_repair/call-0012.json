@@ -1,0 +1,60 @@
+{
+  "budget_debit": 12019,
+  "ended_at": "2026-09-18T05:29:03.157571+00:00",
+  "max_output": 4096,
+  "original_sha256": "b742f33059ca90d90b8a4e36446abc2207ea457015cedb45612cda916af28e54",
+  "phase": "repair",
+  "preflight_input_tokens": 11456,
+  "removed_history_messages": 0,
+  "request_seconds": 6.594000000040978,
+  "request_sha256": "09bcdc9e34d950f7548afa9634c22f455e4bee50faeecbeae081348a2e2459d4",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# Test: LRU eviction doesn't leave stale memberships\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\nc.put('b', 2, ['y'])\\n# Now cache is full: a, b\\nc.put('c', 3, ['z'])  # evicts 'a' (LRU)\\n# 'a' should be gone, tag 'x' membership should be gone\\nresult = c.invalidate('x')\\nprint(f'invalidating old tag after eviction: {result}')  # should be 0\\n\\n# Test: replacing a key removes old tag memberships\\nc2 = TaggedCache(2)\\nc2.put('a', 1, ['old'])\\nc2.put('a', 2, ['new'])\\nresult = c2.invalidate('old')\\nprint(f'invalidating old tag after replacement: {result}')  # should be 0\\nresult2 = c2.invalidate('new')\\nprint(f'invalidating new tag after replacement: {result2}')  # should be 1\\n\\n# Test: get refreshes LRU recency\\nc3 = TaggedCache(2)\\nc3.put('a', 1)\\nc3.put('b', 2)\\nc3.get('a')  # make 'a' most recent\\nc3.put('c', 3)  # should evict 'b' (least recent)\\nprint(f'after get refresh: {\\\\\\\"b\\\\\\\" not in c3 and \\\\\\\"a\\\\\\\" in c3}')  # should be True\\n\\n# Test: mode='all' requires every tag\\nc4 = TaggedCache(5)\\nc4.put('a', 1, ['x', 'y'])\\nc4.put('b', 2, ['x', 'z'])\\nc4.put('c', 3, ['y', 'z'])\\nresult = c4.invalidate_many(['x', 'y'], mode='all')\\nprint(f'mode=all with [x,y]: {result}')  # should be 1 (only 'a')\\n\\n# Test: mode='any' requires any tag (union)\\nresult2 = c4.invalidate_many(['x', 'y'], mode='any')\\nprint(f'mode=any with [x,y]: {result2}')  # should be 3 (a,b,c all match)\\n\\\"\\n\"}",
+          "reasoning_sha256": "408ab6e7dce5d4287e00dfc6991b5bf990266d4028b2e5fdd9c3c8365490e540",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789709343,
+    "id": "chatcmpl-e3dnjPQ5BIPHQjauOfBZJke7WLSkxo2d",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 10786,
+      "predicted_ms": 6071.569,
+      "predicted_n": 563,
+      "predicted_per_second": 92.56256496467387,
+      "predicted_per_token_ms": 10.803503558718862,
+      "prompt_ms": 500.772,
+      "prompt_n": 670,
+      "prompt_per_second": 1337.9342295495753,
+      "prompt_per_token_ms": 0.747420895522388
+    },
+    "usage": {
+      "completion_tokens": 563,
+      "prompt_tokens": 11456,
+      "prompt_tokens_details": {
+        "cached_tokens": 10786
+      },
+      "total_tokens": 12019
+    }
+  },
+  "seconds": 6.594000000040978,
+  "stage": 3,
+  "started_at": "2026-09-18T05:28:56.559787+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 563,
+    "prompt_tokens": 11456,
+    "prompt_tokens_details": {
+      "cached_tokens": 10786
+    },
+    "total_tokens": 12019
+  }
+}

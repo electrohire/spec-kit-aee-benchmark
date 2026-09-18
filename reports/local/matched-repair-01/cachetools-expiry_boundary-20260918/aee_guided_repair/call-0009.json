@@ -1,0 +1,60 @@
+{
+  "budget_debit": 10112,
+  "ended_at": "2026-09-18T05:14:58.657733+00:00",
+  "max_output": 4096,
+  "original_sha256": "152905bb480e68a36ff2abb07de380dca8cfba3d2837be9637df8ed2a4e867a7",
+  "phase": "repair",
+  "preflight_input_tokens": 9380,
+  "removed_history_messages": 0,
+  "request_seconds": 8.26600000000326,
+  "request_sha256": "e0944c8e75e9e8c4b99417b673222b63675f7c07944c1b11db62d8330c145a47",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# Test R04: invalidate_many with mode='all'\\nc = TaggedCache(3)\\nc.put('a', 1, ['x', 'y'])\\nc.put('b', 2, ['x', 'z'])\\nc.put('c', 3, ['y', 'z'])\\n\\n# mode='any': should remove union of tags\\nresult = c.invalidate_many(['x'])\\nassert result == 2, f'FAIL: expected 2 removed, got {result}'\\nassert len(c) == 1\\nassert c.get('c') == 3\\nprint('PASS: invalidate_many mode=any')\\n\\n# mode='all': should remove entries containing ALL tags\\nc2 = TaggedCache(3)\\nc2.put('a', 1, ['x', 'y'])\\nc2.put('b', 2, ['x', 'z'])\\nc2.put('c', 3, ['y', 'z'])\\nresult = c2.invalidate_many(['x', 'y'], mode='all')\\nassert result == 1, f'FAIL: expected 1 removed, got {result}'\\nassert len(c2) == 2\\nprint('PASS: invalidate_many mode=all')\\n\\n# Empty tags should remove zero\\nresult = c2.invalidate_many([], mode='any')\\nassert result == 0, f'FAIL: expected 0 removed for empty tags'\\nresult = c2.invalidate_many([], mode='all')\\nassert result == 0, f'FAIL: expected 0 removed for empty tags all mode'\\nprint('PASS: empty tags remove zero')\\n\\n# Invalid mode\\ntry:\\n    c2.invalidate_many(['x'], mode='invalid')\\n    print('FAIL: should reject invalid mode')\\nexcept ValueError:\\n    print('PASS: rejects invalid mode')\\n\\n# Test R05: resize\\nc3 = TaggedCache(3)\\nc3.put('a', 1, ['x'])\\nc3.put('b', 2, ['y'])\\nc3.put('c', 3, ['z'])\\nc3.resize(2)\\nassert len(c3) == 2\\nassert c3.maxsize == 2\\nprint('PASS: resize down evicts LRU')\\n\\nc3.resize(5)\\nassert len(c3) == 2\\nassert c3.maxsize == 5\\nprint('PASS: resize up does not evict')\\n\\n# Invalid resize\\ntry:\\n    c3.resize(True)\\n    print('FAIL: should reject bool resize')\\nexcept ValueError:\\n    print('PASS: rejects bool resize')\\n\\ntry:\\n    c3.resize(0)\\n    print('FAIL: should reject zero resize')\\nexcept ValueError:\\n    print('PASS: rejects zero resize')\\n\\n# Test failed resize preserves state\\ntry:\\n    c3.resize(-1)\\nexcept ValueError:\\n    pass\\nassert len(c3) == 2\\nassert c3.maxsize == 5\\nprint('PASS: failed resize preserves state')\\n\\nprint('All R04-R05 checks passed')\\n\\\"\\n\"}",
+          "reasoning_sha256": "408ab6e7dce5d4287e00dfc6991b5bf990266d4028b2e5fdd9c3c8365490e540",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789708498,
+    "id": "chatcmpl-sqRSwNR02p45TivMja582pGI1kEQz3R8",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 8668,
+      "predicted_ms": 7745.677,
+      "predicted_n": 732,
+      "predicted_per_second": 94.3752237538436,
+      "predicted_per_token_ms": 10.596001367989055,
+      "prompt_ms": 511.241,
+      "prompt_n": 712,
+      "prompt_per_second": 1392.6895534591317,
+      "prompt_per_token_ms": 0.7180351123595505
+    },
+    "usage": {
+      "completion_tokens": 732,
+      "prompt_tokens": 9380,
+      "prompt_tokens_details": {
+        "cached_tokens": 8668
+      },
+      "total_tokens": 10112
+    }
+  },
+  "seconds": 8.26600000000326,
+  "stage": 3,
+  "started_at": "2026-09-18T05:14:50.380656+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 732,
+    "prompt_tokens": 9380,
+    "prompt_tokens_details": {
+      "cached_tokens": 8668
+    },
+    "total_tokens": 10112
+  }
+}

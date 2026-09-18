@@ -1,0 +1,1 @@
+{"command": "cd /testbed && python -c \"\nfrom tinydb import TinyDB\nfrom tinydb.storages import MemoryStorage\n\ndb = TinyDB(storage=MemoryStorage)\ndb.insert({'x': 1})\nprint('all:', db.all())\nprint('doc_id from all:', db.all()[0])\n\"", "exit_code": 0, "stderr": "", "stdout": "all: [{'x': 1}]\ndoc_id from all: {'x': 1}\n"}

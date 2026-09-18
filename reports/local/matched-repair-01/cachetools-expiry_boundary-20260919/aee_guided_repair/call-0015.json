@@ -1,0 +1,60 @@
+{
+  "budget_debit": 12182,
+  "ended_at": "2026-09-18T05:06:07.437744+00:00",
+  "max_output": 4096,
+  "original_sha256": "c31ffeeb86e478f23355499a6925a5cc5a678c87091a4ceecc88cafac8a459f2",
+  "phase": "repair",
+  "preflight_input_tokens": 11933,
+  "removed_history_messages": 0,
+  "request_seconds": 3.1719999999622814,
+  "request_sha256": "e0f00ff3393a3f73123a4b686179816fe31d880643a7f68784706454f93f5823",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{ \"action\": \"done\", \"summary\": \"All 220 tests pass (4 acceptance_public.py + 216 upstream). Fixed the _expire method to use `now >= entry[2]` instead of `now > entry[2]` to correctly handle the exact expiry boundary (R07: TTL zero is immediately expired, at the exact expiry boundary a key is expired). All requirements R01-R08 are implemented and verified: R01-R03 (put/get, tags, maxsize), R04-R05 (invalidate_many, resize), R06 (generators, detached copies), R07-R08 (TTL with timer, boundary expiration). 15 pre-existing DeprecationWarnings for MRUCache are unrelated to TaggedCache.\"}",
+          "reasoning_sha256": "e2ae330c162daad21fd438b3644c0ea908e4e1a1572bb520f2f4bb1495a8640f",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789707967,
+    "id": "chatcmpl-WgMyQsCA74tRHol7PU5nRYkWdB7Ddaib",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 11427,
+      "predicted_ms": 2731.513,
+      "predicted_n": 249,
+      "predicted_per_second": 90.79217268964123,
+      "predicted_per_token_ms": 11.014165322580645,
+      "prompt_ms": 432.389,
+      "prompt_n": 506,
+      "prompt_per_second": 1170.242536234733,
+      "prompt_per_token_ms": 0.8545237154150198
+    },
+    "usage": {
+      "completion_tokens": 249,
+      "prompt_tokens": 11933,
+      "prompt_tokens_details": {
+        "cached_tokens": 11427
+      },
+      "total_tokens": 12182
+    }
+  },
+  "seconds": 3.1719999999622814,
+  "stage": 3,
+  "started_at": "2026-09-18T05:06:04.260227+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 249,
+    "prompt_tokens": 11933,
+    "prompt_tokens_details": {
+      "cached_tokens": 11427
+    },
+    "total_tokens": 12182
+  }
+}

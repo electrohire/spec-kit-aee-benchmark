@@ -15,8 +15,12 @@ at 22:51 America/New_York on September 17. Study01 was subsequently interrupted
 before hidden grading to correct excessive context-preflight tokenization;
 [all 357 calls and 8,987,818 measured tokens are preserved](reports/local/repeated-study-01-interrupted/README.md).
 Native calibration verified identical selected prompts with a faster context
-search. The separately frozen matched-repair01 is running; corrected study02
-follows it sequentially. Comparative results are not yet available.
+search. The separately frozen [matched-repair01 is complete](reports/local/matched-repair-01/README.md):
+ordinary repair fixed 4/12 seeded bugs and the attempted guided arm fixed 5/12.
+Only 1/16 diagnostics reached an actual AEE assessment; the extra fix occurred
+without one, so this does not establish an AEE benefit. All 597 calls and
+4,169,741 measured tokens are retained. Corrected study02 is running; its
+long-horizon comparative results are not yet available.
 The dedicated benchmark service currently uses both GPUs; each wrapper restores
 the original service after execution. Do not start a duplicate run. Inspect
 `artifacts/repeated-assets/suite-status.json` and `revision-status.json` locally.

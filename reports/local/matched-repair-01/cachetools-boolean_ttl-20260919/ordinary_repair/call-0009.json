@@ -1,0 +1,60 @@
+{
+  "budget_debit": 8366,
+  "ended_at": "2026-09-18T05:25:26.662012+00:00",
+  "max_output": 4096,
+  "original_sha256": "ee4b8fa4c6dec1e95ec3a0f9b4e31a3b1b6fcd0c35022a44582d153a04a14bf4",
+  "phase": "repair",
+  "preflight_input_tokens": 8135,
+  "removed_history_messages": 0,
+  "request_seconds": 2.875,
+  "request_sha256": "a5451d556e9a7637271266174d6ab97a0044740a4154c98fa88efc7e767eca0d",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# Test: bool TTL should be rejected\\ntry:\\n    c = TaggedCache(2)\\n    c.put('a', 1, ttl=True)\\n    print('FAIL: bool TTL accepted')\\nexcept ValueError as e:\\n    print(f'OK: bool TTL rejected: {e}')\\n\\n# Test: bool maxsize should be rejected\\ntry:\\n    c = TaggedCache(True)\\n    print('FAIL: bool maxsize accepted')\\nexcept ValueError as e:\\n    print(f'OK: bool maxsize rejected: {e}')\\n\\\"\\n\"}",
+          "reasoning_sha256": "4c2cbc2315bebdb058def7e86db442c978c8a0c0eea1d6f23e92e355e9f8cadb",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789709126,
+    "id": "chatcmpl-tCbuyPyLTEXH9uD4irEVcf5L8Jjbgvma",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 7787,
+      "predicted_ms": 2507.237,
+      "predicted_n": 231,
+      "predicted_per_second": 91.73444712246987,
+      "predicted_per_token_ms": 10.901030434782609,
+      "prompt_ms": 361.415,
+      "prompt_n": 348,
+      "prompt_per_second": 962.8820054507976,
+      "prompt_per_token_ms": 1.0385488505747127
+    },
+    "usage": {
+      "completion_tokens": 231,
+      "prompt_tokens": 8135,
+      "prompt_tokens_details": {
+        "cached_tokens": 7787
+      },
+      "total_tokens": 8366
+    }
+  },
+  "seconds": 2.875,
+  "stage": 3,
+  "started_at": "2026-09-18T05:25:23.774487+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 231,
+    "prompt_tokens": 8135,
+    "prompt_tokens_details": {
+      "cached_tokens": 7787
+    },
+    "total_tokens": 8366
+  }
+}

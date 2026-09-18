@@ -1,0 +1,60 @@
+{
+  "budget_debit": 11503,
+  "ended_at": "2026-09-18T05:07:06.921556+00:00",
+  "max_output": 4096,
+  "original_sha256": "67efdd0cb0706ea8789e4943748b45c6a05564f3911a5d06bfaecdf2ff538136",
+  "phase": "repair",
+  "preflight_input_tokens": 10870,
+  "removed_history_messages": 0,
+  "request_seconds": 7.342999999993481,
+  "request_sha256": "ba8ae4d8afd630e73e14f3ae39b12e2c72a7b661aec3bc147d66ca593b5c7df2",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\n  \"action\": \"shell\",\n  \"command\": \"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\nimport copy\\n\\n# Test R04: invalidate_many with mode='all'\\nc = TaggedCache(3)\\nc.put('a', 1, ['x'])\\nc.put('b', 2, ['x', 'y'])\\nc.put('c', 3, ['y'])\\nassert c.invalidate_many(['x', 'y'], mode='all') == 1  # only b has both\\nassert len(c) == 2\\nassert c.invalidate_many(['x', 'y'], mode='any') == 2  # a has x, c has y\\nassert len(c) == 0\\n\\n# Test R05: resize\\nc = TaggedCache(2)\\nc.put('a', 1)\\nc.put('b', 2)\\nc.resize(3)\\nassert len(c) == 2\\nassert c.maxsize == 3\\nc.resize(1)\\nassert len(c) == 1  # evicts least recent\\nassert c.maxsize == 1\\n\\n# Test R06: generators as tags\\nc = TaggedCache(2)\\nc.put('a', 1, (t for t in ['x']))\\nassert c.get('a') == 1\\nassert c.invalidate('x') == 1\\n\\n# Test R06: deep copy\\nc = TaggedCache(2)\\nv = {'a': [1, 2]}\\nc.put('a', v)\\nr1 = c.get('a')\\nr1['a'].append(3)\\nr2 = c.get('a')\\nassert r2 == {'a': [1, 2]}, f'Got {r2}'\\n\\n# Test R07: TTL zero is immediately expired\\nc = TaggedCache(2, timer=lambda: 0)\\nc.put('a', 1, ttl=0)\\nassert len(c) == 0\\ntry:\\n    c.get('a')\\n    assert False, 'Should have raised KeyError'\\nexcept KeyError:\\n    pass\\n\\n# Test R07: invalid TTL raises ValueError\\nc = TaggedCache(2)\\ntry:\\n    c.put('a', 1, ttl=-1)\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    c.put('a', 1, ttl=True)\\n    assert False\\nexcept ValueError:\\n    pass\\n\\n# Test R07: invalid maxsize\\nc = TaggedCache(2)\\ntry:\\n    c.resize(True)\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    c.resize(0)\\n    assert False\\nexcept ValueError:\\n    pass\\n\\nprint('All tests passed!')\\n\\\"\\n\"}",
+          "reasoning_sha256": "408ab6e7dce5d4287e00dfc6991b5bf990266d4028b2e5fdd9c3c8365490e540",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789708026,
+    "id": "chatcmpl-EtJzspN6UUJg5RsMJC0NTgMgnyBlps2m",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 10114,
+      "predicted_ms": 6770.52,
+      "predicted_n": 633,
+      "predicted_per_second": 93.34585822063889,
+      "predicted_per_token_ms": 10.712848101265823,
+      "prompt_ms": 555.343,
+      "prompt_n": 756,
+      "prompt_per_second": 1361.320841353902,
+      "prompt_per_token_ms": 0.7345806878306878
+    },
+    "usage": {
+      "completion_tokens": 633,
+      "prompt_tokens": 10870,
+      "prompt_tokens_details": {
+        "cached_tokens": 10114
+      },
+      "total_tokens": 11503
+    }
+  },
+  "seconds": 7.342999999993481,
+  "stage": 3,
+  "started_at": "2026-09-18T05:06:59.574761+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 633,
+    "prompt_tokens": 10870,
+    "prompt_tokens_details": {
+      "cached_tokens": 10114
+    },
+    "total_tokens": 11503
+  }
+}

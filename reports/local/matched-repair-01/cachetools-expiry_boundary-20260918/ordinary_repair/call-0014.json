@@ -1,0 +1,60 @@
+{
+  "budget_debit": 15328,
+  "ended_at": "2026-09-18T05:17:25.281587+00:00",
+  "max_output": 4096,
+  "original_sha256": "7044da00c489823c00a2955bd42b183eeac4d4c4154b138bcd0550d42bf73e93",
+  "phase": "repair",
+  "preflight_input_tokens": 14278,
+  "removed_history_messages": 0,
+  "request_seconds": 12.610000000044238,
+  "request_sha256": "6e9f5dd09c93219063966ac0601232864d4681fd06fc5145972d47f35a8d30a6",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\": \"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# TTL=2 with timer starting at 0 means expiry=2\\n# At exact boundary (time=2), key IS expired per R08\\nnow = [0]\\nc = TaggedCache(2, timer=lambda: now[0])\\nc.put('a', 1, ttl=2)\\nnow[0] = 1\\nassert c.get('a') == 1  # not expired yet\\n# At exact boundary time=2, key is expired\\ntry:\\n    c.get('a')\\n    print('FAIL at boundary')\\nexcept KeyError:\\n    print('PASS: expired at exact boundary')\\n\\n# TTL zero is immediately expired\\nc = TaggedCache(2, timer=lambda: 0)\\nc.put('a', 1, ttl=0)\\nassert len(c) == 0\\nprint('PASS: TTL=0 immediately expired')\\n\\n# Invalid TTL\\nc = TaggedCache(2)\\ntry:\\n    c.put('a', 1, ttl=-1)\\n    print('FAIL')\\nexcept ValueError:\\n    print('PASS: negative TTL rejected')\\n\\ntry:\\n    c.put('a', 1, ttl=True)\\n    print('FAIL')\\nexcept ValueError:\\n    print('PASS: bool TTL rejected')\\n\\ntry:\\n    c.put('a', 1, ttl=float('inf'))\\n    print('FAIL')\\nexcept ValueError:\\n    print('PASS: inf TTL rejected')\\n\\n# Test no TTL (None) - never expires\\nc = TaggedCache(2, timer=lambda: 1000)\\nc.put('a', 1)\\nassert c.get('a') == 1\\nprint('PASS: no TTL never expires')\\n\\n# Test overwrite replaces expiry\\nc = TaggedCache(2, timer=lambda: now[0])\\nc.put('a', 1, ttl=2)\\nnow[0] = 1\\nc.put('a', 2, ttl=10)  # overwrite with longer TTL\\nnow[0] = 5\\nassert c.get('a') == 2  # still alive\\nprint('PASS: overwrite replaces expiry')\\n\\n# Expired entries removed before put/len/resize/invalidation\\nc = TaggedCache(3, timer=lambda: now[0])\\nc.put('a', 1, ttl=1)\\nc.put('b', 2, ttl=1)\\nc.put('c', 3, ttl=1)\\nnow[0] = 2\\nassert len(c) == 0  # all expired\\nprint('PASS: expired removed before len')\\n\\n# Tag invalidation counts only live entries\\nc = TaggedCache(3, timer=lambda: now[0])\\nc.put('a', 1, ['x'], ttl=1)\\nc.put('b', 2, ['x'], ttl=100)\\nnow[0] = 2\\nassert c.invalidate('x') == 1  # only 'b' is live\\nassert c.get('b') == 2\\nprint('PASS: invalidation counts only live')\\n\\nprint('\\\\n=== ALL TESTS PASSED ===')\\n\\\"\\n\"}",
+          "reasoning_sha256": "252b74951f7f313c393b2a659645b0a8ca6d3676163705eccb8c2cdaf0dae074",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789708645,
+    "id": "chatcmpl-BPtbLbD6m3fg0fYniCBAYL7rpPYCf0pK",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 12443,
+      "predicted_ms": 11574.799,
+      "predicted_n": 1050,
+      "predicted_per_second": 90.62792364688147,
+      "predicted_per_token_ms": 11.034126787416588,
+      "prompt_ms": 1013.234,
+      "prompt_n": 1835,
+      "prompt_per_second": 1811.0327920302714,
+      "prompt_per_token_ms": 0.5521711171662126
+    },
+    "usage": {
+      "completion_tokens": 1050,
+      "prompt_tokens": 14278,
+      "prompt_tokens_details": {
+        "cached_tokens": 12443
+      },
+      "total_tokens": 15328
+    }
+  },
+  "seconds": 12.610000000044238,
+  "stage": 3,
+  "started_at": "2026-09-18T05:17:12.667944+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1050,
+    "prompt_tokens": 14278,
+    "prompt_tokens_details": {
+      "cached_tokens": 12443
+    },
+    "total_tokens": 15328
+  }
+}

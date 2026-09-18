@@ -1,0 +1,60 @@
+{
+  "budget_debit": 10161,
+  "ended_at": "2026-09-18T05:39:35.008561+00:00",
+  "max_output": 4096,
+  "original_sha256": "4a8d4e0ec8f23625f1320d8f66a6b2357b758beefe33b7eed898699b0ef5e12d",
+  "phase": "repair",
+  "preflight_input_tokens": 8897,
+  "removed_history_messages": 0,
+  "request_seconds": 13.78100000001723,
+  "request_sha256": "54991a5f75154053e6c8ecee36a6905c9c9f70003536b389ca84fbc1ef2393e8",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# Test R01: basic put/get with tags\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\nassert c.get('a') == 1, 'basic get failed'\\n\\n# Test R01: deep copy\\nc.put('b', {'nested': [1,2]}, ['y'])\\nval = c.get('b')\\nval['nested'].append(3)\\nassert c.get('b') == {'nested': [1,2]}, 'deep copy failed'\\n\\n# Test R01: string rejected as tags\\ntry:\\n    c.put('k', 'v', 'tag')\\n    assert False, 'should have raised'\\nexcept ValueError:\\n    pass\\n\\n# Test R01: non-string tag rejected\\ntry:\\n    c.put('k', 'v', [1])\\n    assert False, 'should have raised'\\nexcept ValueError:\\n    pass\\n\\n# Test R02: invalidate\\nc2 = TaggedCache(3)\\nc2.put('a', 1, ['x'])\\nc2.put('b', 2, ['x','y'])\\nc2.put('c', 3, ['y'])\\nassert c2.invalidate('x') == 2, f'expected 2, got {c2.invalidate(\\\"x\\\")}'\\nassert len(c2) == 1\\n\\n# Test R02: replacement removes old tags\\nc3 = TaggedCache(2)\\nc3.put('a', 1, ['old'])\\nc3.put('a', 2, ['new'])\\nassert c3.invalidate('old') == 0\\nassert c3.get('a') == 2\\n\\n# Test R03: maxsize validation\\ntry:\\n    TaggedCache(True)\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    TaggedCache(0)\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    TaggedCache(-1)\\n    assert False\\nexcept ValueError:\\n    pass\\n\\n# Test R04: invalidate_many\\ncc = TaggedCache(5)\\ncc.put('a', 1, ['x'])\\ncc.put('b', 2, ['x','y'])\\ncc.put('c', 3, ['y','z'])\\nassert cc.invalidate_many(['x','z']) == 3\\nassert len(cc) == 0\\n\\n# mode='all'\\ncc2 = TaggedCache(5)\\ncc2.put('a', 1, ['x','y'])\\ncc2.put('b', 2, ['x'])\\ncc2.put('c', 3, ['y'])\\nassert cc2.invalidate_many(['x','y'], mode='all') == 1\\nassert len(cc2) == 2\\n\\n# Test R05: resize\\ncc3 = TaggedCache(3)\\ncc3.put('a', 1, ['x'])\\ncc3.put('b', 2, ['x'])\\ncc3.put('c', 3, ['x'])\\ncc3.resize(2)\\nassert len(cc3) == 2\\nassert 'a' not in cc3  # LRU evicted\\nassert cc3.maxsize == 2\\n\\n# Test R06: generator tags\\ncc4 = TaggedCache(2)\\ncc4.put('k', 'v', (t for t in ['a','b']))\\nassert cc4.get('k') == 'v'\\nassert cc4.invalidate('a') == 1\\n\\n# Test R07: TTL\\nclock = [0]\\nc4 = TaggedCache(2, timer=lambda: clock[0])\\nc4.put('a', 1, ttl=2)\\nassert c4.get('a') == 1\\nclock[0] = 2  # exactly at boundary\\nassert c4.get('a') == 1  # not yet expired (now == expiry)\\nclock[0] = 3  # past boundary\\ntry:\\n    c4.get('a')\\n    assert False\\nexcept KeyError:\\n    pass\\n\\n# TTL zero immediately expired\\nc5 = TaggedCache(2, timer=lambda: clock[0])\\nc5.put('a', 1, ttl=0)\\ntry:\\n    c5.get('a')\\n    assert False\\nexcept KeyError:\\n    pass\\n\\n# Invalid TTL\\ntry:\\n    c5.put('b', 1, ttl=-1)\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    c5.put('b', 1, ttl=float('inf'))\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    c5.put('b', 1, ttl=True)\\n    assert False\\nexcept ValueError:\\n    pass\\n\\n# Invalid mode\\ntry:\\n    c5.invalidate_many(['x'], mode='invalid')\\n    assert False\\nexcept ValueError:\\n    pass\\n\\n# Invalid maxsize on resize\\ntry:\\n    c5.resize(False)\\n    assert False\\nexcept ValueError:\\n    pass\\n\\n# Empty tags removes nothing\\nassert c5.invalidate_many([]) == 0\\nassert c5.invalidate_many([], mode='all') == 0\\n\\nprint('All manual tests passed!')\\n\\\"\\n\"}",
+          "reasoning_sha256": "060938bd2b5b74f1a5fa673bdec4ce4930da106717e648caf2f29c8607bdad44",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789709975,
+    "id": "chatcmpl-g93TiivL9uJ33osbvIZvWaFy9Q6ogfWr",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 8541,
+      "predicted_ms": 13404.001,
+      "predicted_n": 1264,
+      "predicted_per_second": 94.22559726756212,
+      "predicted_per_token_ms": 10.612827395091053,
+      "prompt_ms": 360.469,
+      "prompt_n": 356,
+      "prompt_per_second": 987.6022626078803,
+      "prompt_per_token_ms": 1.0125533707865169
+    },
+    "usage": {
+      "completion_tokens": 1264,
+      "prompt_tokens": 8897,
+      "prompt_tokens_details": {
+        "cached_tokens": 8541
+      },
+      "total_tokens": 10161
+    }
+  },
+  "seconds": 13.78100000001723,
+  "stage": 3,
+  "started_at": "2026-09-18T05:39:21.230068+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1264,
+    "prompt_tokens": 8897,
+    "prompt_tokens_details": {
+      "cached_tokens": 8541
+    },
+    "total_tokens": 10161
+  }
+}

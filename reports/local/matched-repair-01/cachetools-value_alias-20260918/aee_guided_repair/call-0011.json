@@ -1,0 +1,60 @@
+{
+  "budget_debit": 11442,
+  "ended_at": "2026-09-18T05:28:56.286789+00:00",
+  "max_output": 4096,
+  "original_sha256": "9d71ac14d5543d235c7c149df0269c6a1f100272d16c464a4183d42ba8cea46f",
+  "phase": "repair",
+  "preflight_input_tokens": 10790,
+  "removed_history_messages": 0,
+  "request_seconds": 7.594000000040978,
+  "request_sha256": "f39e05d3a48b1b8ce20c03c689add542a62ba4a37fc7316eb931530e83859c94",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# Test: invalid TTL raises ValueError\\ntry:\\n    c = TaggedCache(2)\\n    c.put('a', 1, ttl=-1)\\n    print('ERROR: should have raised ValueError for negative ttl')\\nexcept ValueError as e:\\n    print(f'negative ttl raised ValueError: {e}')\\n\\ntry:\\n    c = TaggedCache(2)\\n    c.put('a', 1, ttl=True)\\n    print('ERROR: should have raised ValueError for bool ttl')\\nexcept ValueError as e:\\n    print(f'bool ttl raised ValueError: {e}')\\n\\ntry:\\n    c = TaggedCache(2)\\n    c.put('a', 1, ttl=float('inf'))\\n    print('ERROR: should have raised ValueError for inf ttl')\\nexcept ValueError as e:\\n    print(f'inf ttl raised ValueError: {e}')\\n\\n# Test: TTL zero is immediately expired\\nc = TaggedCache(2, timer=lambda: 0)\\nc.put('a', 1, ttl=0)\\ntry:\\n    c.get('a')\\n    print('ERROR: should have raised KeyError for zero ttl')\\nexcept KeyError:\\n    print('zero ttl immediately expired: KeyError raised')\\n\\n# Test: resize preserves LRU order\\nc = TaggedCache(3)\\nc.put('a', 1)\\nc.put('b', 2)\\nc.put('c', 3)\\nc.get('a')  # make 'a' most recent\\nc.resize(2)\\nprint(f'after resize(2): {list(c._cache)}')  # should have a, c (b evicted as LRU)\\n\\n# Test: resize fails preserves all state\\ntry:\\n    c.resize(True)\\nexcept ValueError:\\n    pass\\nprint(f'after failed resize: {len(c)}')  # should still be 2\\n\\\"\\n\"}",
+          "reasoning_sha256": "0a3fa9ff60f52637f62bc3cd5ad4102715803f681de78524193124d289035055",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789709336,
+    "id": "chatcmpl-63MgFpI3yejEu7BpZGWvd695xVawKeMd",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 9986,
+      "predicted_ms": 7024.209,
+      "predicted_n": 652,
+      "predicted_per_second": 92.67947465686173,
+      "predicted_per_token_ms": 10.789875576036867,
+      "prompt_ms": 549.888,
+      "prompt_n": 804,
+      "prompt_per_second": 1462.1159217877096,
+      "prompt_per_token_ms": 0.6839402985074627
+    },
+    "usage": {
+      "completion_tokens": 652,
+      "prompt_tokens": 10790,
+      "prompt_tokens_details": {
+        "cached_tokens": 9986
+      },
+      "total_tokens": 11442
+    }
+  },
+  "seconds": 7.594000000040978,
+  "stage": 3,
+  "started_at": "2026-09-18T05:28:48.683086+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 652,
+    "prompt_tokens": 10790,
+    "prompt_tokens_details": {
+      "cached_tokens": 9986
+    },
+    "total_tokens": 11442
+  }
+}

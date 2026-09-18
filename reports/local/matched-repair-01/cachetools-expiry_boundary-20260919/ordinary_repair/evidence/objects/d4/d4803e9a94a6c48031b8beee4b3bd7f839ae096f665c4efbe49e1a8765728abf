@@ -1,0 +1,1 @@
+{"command": "cd /testbed && PYTHONPATH=src:. python -c \"\nfrom cachetools.tagged import TaggedCache\n\n# Test R07: TTL zero is immediately expired\nc = TaggedCache(2, timer=lambda: 0)\nc.put('a', 1, ttl=0)\nprint('len after put with ttl=0:', len(c))\n\"\n", "exit_code": 0, "stderr": "", "stdout": "len after put with ttl=0: 1\n"}

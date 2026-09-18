@@ -149,6 +149,12 @@ def summarize_repair(raw,dest):
     summary['assessment_seconds']=sum(p.get('assessment_seconds',0) for p in pairs)
     summary['valid_diagnostic_pairs']=sum(p.get('claims') is not None for p in pairs)
     summary['diagnostic_source_changes']=sum(p['diagnostic_changed_source'] for p in pairs)
+    summary['incomplete_diagnostics']=[dict(project=p['project'],variant=p['variant'],seed=p['seed'],calls=p['diagnostic']['calls'],completed=p['diagnostic']['completed'],errors=p['diagnostic']['errors']) for p in pairs if p.get('claims') is None]
+    summary['discordant_pairs']=[]
+    for pair in sorted({r['pair'] for r in rows}):
+        paired={r['arm']:r for r in rows if r['pair']==pair}
+        if paired['ordinary_repair']['hidden_final']['passed'] != paired['aee_guided_repair']['hidden_final']['passed']:
+            summary['discordant_pairs'].append(dict(pair=pair,diagnostic_valid=paired['ordinary_repair']['diagnostic_valid'],ordinary_accepted=paired['ordinary_repair']['hidden_final']['passed'],guided_accepted=paired['aee_guided_repair']['hidden_final']['passed']))
     findings=[]
     for p in sorted(raw.glob('*/pair.json')):
         meta=json.loads(p.read_text());evaluation=meta.get('evaluation') or {}
@@ -169,16 +175,20 @@ def summarize_repair(raw,dest):
             clean_code_changes=sum(any(x['source_changed'] for x in r['repairs']) for r in subset if r['variant']=='clean'),
             repair_rounds=sum(len(r['repairs']) for r in subset),source_changing_rounds=sum(x['source_changed'] for r in subset for x in r['repairs']),
             first_round_fixes=sum(not r['hidden_before']['passed'] and r['repairs'][0]['hidden']['passed'] for r in subset),
+            second_round_additional_fixes=sum(not r['repairs'][0]['hidden']['passed'] and r['hidden_final']['passed'] for r in subset),
+            formally_completed_repair_rounds=sum(p['completed'] for r in subset for p in r['repairs']),
             tokens_per_fixed=attributed['total_tokens']/fixes if fixes and attributed['total_tokens'] is not None else None,
             wall_seconds=sum(r['seconds'] for r in subset))
         summary['arms'][arm]['phase_errors']=dict(collections.Counter(error for r in subset for p in r['repairs'] for error in p['errors']))
         summary['arms'][arm]['request_errors']=dict(collections.Counter(c['error'] for c in records if c.get('error')))
     write_json(dest/'summary.json',summary)
-    text='# Matched ordinary versus AEE-guided repair\n\n16 identical-start pairs: two projects × (three seeded defects + one clean control) × two seeds. Shared diagnostic input goes to both arms; only guided receives its actual AEE findings. Not a full Spec Kit workflow comparison.\n\n'
+    text='# Attempted matched ordinary versus AEE-guided repair\n\n16 identical-start pairs: two projects × (three seeded defects + one clean control) × two seeds. Shared diagnostic input goes to both arms; guided receives actual AEE findings only when diagnostic completion permits an assessment. Not a full Spec Kit workflow comparison.\n\n'
+    text+=f"**Assessment coverage: {summary['valid_diagnostic_pairs']}/16 pairs.** Incomplete diagnostics remain in the denominator and all their work counts. The totals below describe the attempted protocol, not proof of an AEE effect. See summary.json for discordant pairs and whether an assessment actually occurred.\n\n"
     text+='| Arm | Bugs fixed /12 | Final accepted /16 | Clean regressions /4 | Clean cases changed | Repair tokens | Tokens incl. shared diagnostic | Tokens/fix |\n|---|---:|---:|---:|---:|---:|---:|---:|\n'
     for arm,v in summary['arms'].items():
         text+=f"| {arm} | {v['fixed']} | {v['final_accepted']} | {v['clean_regressions']} | {v['clean_code_changes']} | {v['repair_only']['known_total_tokens']:,} | {v['with_shared_diagnostic_attributed']['known_total_tokens']:,} | {v['tokens_per_fixed'] if v['tokens_per_fixed'] is not None else 'undefined'} |\n"
     text+='\nShared diagnostic tokens are charged equally in treatment comparisons but counted once in the physical-work ledger. Unknown native usages remain null; reservation totals are not measured token totals. Findings require manual adjudication: subject overlap alone is not proof of defect detection. See findings-to-adjudicate.json and the final adjudication report.\n'
+    text+='\nRepair timing is exploratory: a roughly25-second CPU-only selector calibration overlapped early generation. The repair experiment retained its original source freeze and selector. No overlapping model-generation calls occurred.\n'
     (dest/'README.md').write_text(text,encoding='utf-8')
 
 

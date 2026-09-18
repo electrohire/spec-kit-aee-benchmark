@@ -1,0 +1,60 @@
+{
+  "budget_debit": 10299,
+  "ended_at": "2026-09-18T05:27:39.816554+00:00",
+  "max_output": 4096,
+  "original_sha256": "4874c096d3cfb9f420c380c80d490b58e1c19888fba6de0176c1b2d124ba9211",
+  "phase": "diagnose",
+  "preflight_input_tokens": 7968,
+  "removed_history_messages": 0,
+  "request_seconds": 25.030999999959022,
+  "request_sha256": "32ef13703ec7268ba634dcca984ff6e97f76804ccb3a4d34968bf435309395ea",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\nimport warnings\\nwarnings.filterwarnings('ignore', category=DeprecationWarning)\\n\\n# Test 1: get returns a deep copy (R01, R06)\\nc = TaggedCache(3)\\nc.put('a', [1, 2, 3], ['x'])\\nv1 = c.get('a')\\nv2 = c.get('a')\\nprint('Same object on repeated gets:', v1 is v2)  # Should be False per R06\\nv1.append(4)\\nv3 = c.get('a')\\nprint('Modifying get result affects cache:', 4 in v3)  # Should be False per R01\\n\\n# Test 2: nested structures\\nc2 = TaggedCache(3)\\nc2.put('b', {'nested': {'deep': 1}}, ['y'])\\ninner = c2.get('b')\\ninner['nested']['deep'] = 999\\ninner2 = c2.get('b')\\nprint('Nested mutation persists:', inner2['nested']['deep'] == 999)  # Should be False\\n\\\"\\n\"}",
+          "reasoning_sha256": "82f1f112e8e264b6286f3488ff8ad2ec7098f98620b92eb6d3f233d491ba9293",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789709259,
+    "id": "chatcmpl-8tnfzDbbVCWTmkNyjuAidInylTweaDdg",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 7579,
+      "predicted_ms": 24630.193,
+      "predicted_n": 2331,
+      "predicted_per_second": 94.59933992397056,
+      "predicted_per_token_ms": 10.570898283261803,
+      "prompt_ms": 386.629,
+      "prompt_n": 389,
+      "prompt_per_second": 1006.1324939412201,
+      "prompt_per_token_ms": 0.9939048843187661
+    },
+    "usage": {
+      "completion_tokens": 2331,
+      "prompt_tokens": 7968,
+      "prompt_tokens_details": {
+        "cached_tokens": 7579
+      },
+      "total_tokens": 10299
+    }
+  },
+  "seconds": 25.030999999959022,
+  "stage": 3,
+  "started_at": "2026-09-18T05:27:14.783471+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2331,
+    "prompt_tokens": 7968,
+    "prompt_tokens_details": {
+      "cached_tokens": 7579
+    },
+    "total_tokens": 10299
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "budget_debit": 11132,
+  "ended_at": "2026-09-18T05:03:18.035195+00:00",
+  "max_output": 4096,
+  "original_sha256": "4afb499bcd803f0a4d4213da182a8dfbb029f8b1795bdd94953bea06e54f553b",
+  "phase": "repair",
+  "preflight_input_tokens": 10059,
+  "removed_history_messages": 0,
+  "request_seconds": 12.063000000023749,
+  "request_sha256": "dc8fc59eee84d475a26aa68b14fd53bcc8c318088a7d98043316a9255a024949",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# Test R01: basic put/get with tags\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\nassert c.get('a') == 1\\nc.put('a', 2, ['y'])  # replace\\nc.put('b', 3, ['x'])\\nassert c.get('a') == 2\\nassert c.get('b') == 3\\n\\n# Test R02: invalidate\\nc2 = TaggedCache(3)\\nc2.put('a', 1, ['x'])\\nc2.put('b', 2, ['x','y'])\\nc2.put('c', 3, ['y'])\\nassert c2.invalidate('x') == 2  # a and b\\nassert len(c2) == 1\\nassert c2.get('c') == 3\\n\\n# Test R03: maxsize validation\\ntry:\\n    TaggedCache(-1)\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    TaggedCache(True)\\n    assert False\\nexcept ValueError:\\n    pass\\n\\n# Test R04: invalidate_many\\nimport warnings\\nwith warnings.catch_warnings():\\n    warnings.simplefilter('ignore')\\n    c3 = TaggedCache(5)\\nc3.put('a', 1, ['x','z'])\\nc3.put('b', 2, ['x','y'])\\nc3.put('c', 3, ['y'])\\nc3.put('d', 4, ['z'])\\nassert c3.invalidate_many(['x','y'], 'any') == 3  # a,b,c\\nassert len(c3) == 1\\nassert c3.get('d') == 4\\nassert c3.invalidate_many(['x','y'], 'all') == 0  # no key has both\\nc3.invalidate_many(['z'], 'all')  # d has z\\nassert len(c3) == 0\\n\\n# Test R05: resize\\nc4 = TaggedCache(3)\\nc4.put('a', 1, ['x'])\\nc4.put('b', 2, ['y'])\\nc4.put('c', 3, ['z'])\\nc4.resize(2)\\nassert c4.maxsize == 2\\nassert len(c4) == 2  # 'a' evicted\\nassert c4.get('b') == 2\\nassert c4.get('c') == 3\\n\\n# Test R06: generators as tags + detached deep copy\\nc5 = TaggedCache(3)\\nc5.put('a', {'nested': True}, (t for t in ['x']))\\nval = c5.get('a')\\nassert val == {'nested': True}\\nval['nested'] = False\\nassert c5.get('a')['nested'] == True  # detached\\n\\n# Test R07/R08: TTL\\nc6 = TaggedCache(2, timer=lambda: 0)\\nc6.put('a', 1, ttl=2)\\nassert c6.get('a') == 1\\nc6._timer = lambda: 1.5\\nassert c6.get('a') == 1  # not yet expired\\nc6._timer = lambda: 2\\ntry:\\n    c6.get('a')  # expired at boundary\\n    assert False\\nexcept KeyError:\\n    pass\\nc6.put('b', 2, ttl=0)  # immediately expired\\nassert len(c6) == 0\\n\\n# Test invalid tags\\ntry:\\n    TaggedCache(1).put('a', 1, 'string')\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    TaggedCache(1).put('a', 1, [1, 2])\\n    assert False\\nexcept ValueError:\\n    pass\\n\\n# Test invalid mode\\ntry:\\n    TaggedCache(1).invalidate_many(['x'], 'invalid')\\n    assert False\\nexcept ValueError:\\n    pass\\n\\n# Test invalid resize\\ntry:\\n    TaggedCache(3).resize(True)\\n    assert False\\nexcept ValueError:\\n    pass\\n\\n# Test invalid TTL\\ntry:\\n    TaggedCache(1).put('a', 1, ttl=-1)\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    TaggedCache(1).put('a', 1, ttl=True)\\n    assert False\\nexcept ValueError:\\n    pass\\n\\nprint('All manual tests passed!')\\n\\\"\\n\"}",
+          "reasoning_sha256": "a1089728a8c1958d6174e991e75e0a9900c99b71106e9e0c10a2fd7dacebaccc",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789707798,
+    "id": "chatcmpl-VfGbDsAixYLEZpQJhZoZl5rcCSFMaROi",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 8946,
+      "predicted_ms": 11366.83,
+      "predicted_n": 1073,
+      "predicted_per_second": 94.30949525945229,
+      "predicted_per_token_ms": 10.60338619402985,
+      "prompt_ms": 683.761,
+      "prompt_n": 1113,
+      "prompt_per_second": 1627.761747160192,
+      "prompt_per_token_ms": 0.614340521114106
+    },
+    "usage": {
+      "completion_tokens": 1073,
+      "prompt_tokens": 10059,
+      "prompt_tokens_details": {
+        "cached_tokens": 8946
+      },
+      "total_tokens": 11132
+    }
+  },
+  "seconds": 12.063000000023749,
+  "stage": 3,
+  "started_at": "2026-09-18T05:03:05.963880+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1073,
+    "prompt_tokens": 10059,
+    "prompt_tokens_details": {
+      "cached_tokens": 8946
+    },
+    "total_tokens": 11132
+  }
+}

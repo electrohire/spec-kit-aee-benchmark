@@ -1,0 +1,60 @@
+{
+  "budget_debit": 13726,
+  "ended_at": "2026-09-18T05:26:56.454727+00:00",
+  "max_output": 4096,
+  "original_sha256": "98b93db53eaf793a7d74d87dac41dec00701e5ff13855308d2b3bc83f57a7cb2",
+  "phase": "repair",
+  "preflight_input_tokens": 13449,
+  "removed_history_messages": 0,
+  "request_seconds": 3.437999999965541,
+  "request_sha256": "7057e7c19d7acd474c728aebc20fdfe11e51e0cc13217a78a35c1b4b42ccc2a6",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"done\",\"summary\":\"All 220 tests pass (216 upstream + 4 acceptance_public.py). The TaggedCache implementation in src/cachetools/tagged.py correctly satisfies all requirements R01-R08: R01 (put/get with deep copy, tag validation rejecting bare strings and nonstring entries), R02 (invalidate removes tagged entries, replacement cleans old tags, LRU eviction doesn't leave stale memberships), R03 (maxsize validation excludes bools), R04 (invalidate_many with any/all modes, empty tags removes zero), R05 (resize preserves entries/LRU order, invalid resize leaves state unchanged), R06 (generator tags consumed once, detached copies on get/put), R07 (timer support, TTL with None/finite nonnegative non-bool, invalid TTL raises ValueError before mutation), R08 (TTL expiration before get/put/len/resize/invalidation without touching recency of surviving entries, zero TTL immediately expired). No source changes were needed.\"}",
+          "reasoning_sha256": "a752fe6ea518110558ed0346b3ec109b39d7ceda92c450bb45dd295185eb41a5",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789709216,
+    "id": "chatcmpl-ggbcdiMKDiZx1CB4BtwtPbLfFlL2XpEt",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 13054,
+      "predicted_ms": 3027.105,
+      "predicted_n": 277,
+      "predicted_per_second": 91.17622282676021,
+      "predicted_per_token_ms": 10.967771739130434,
+      "prompt_ms": 378.09,
+      "prompt_n": 395,
+      "prompt_per_second": 1044.7248009733134,
+      "prompt_per_token_ms": 0.9571898734177214
+    },
+    "usage": {
+      "completion_tokens": 277,
+      "prompt_tokens": 13449,
+      "prompt_tokens_details": {
+        "cached_tokens": 13054
+      },
+      "total_tokens": 13726
+    }
+  },
+  "seconds": 3.437999999965541,
+  "stage": 3,
+  "started_at": "2026-09-18T05:26:53.004267+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 277,
+    "prompt_tokens": 13449,
+    "prompt_tokens_details": {
+      "cached_tokens": 13054
+    },
+    "total_tokens": 13726
+  }
+}

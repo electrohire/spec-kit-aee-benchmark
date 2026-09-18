@@ -1,0 +1,60 @@
+{
+  "budget_debit": 9689,
+  "ended_at": "2026-09-18T04:57:24.643957+00:00",
+  "max_output": 4096,
+  "original_sha256": "8cbc1c884404755fef8d43a2d02e50fd8d391d734cc293ac317fc6272e0822d7",
+  "phase": "repair",
+  "preflight_input_tokens": 7721,
+  "removed_history_messages": 0,
+  "request_seconds": 24.45300000003772,
+  "request_sha256": "615b61a9d134d28e6f3df22ef3f8ccf3824a374b382be893bf66cd129ea5413e",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\": \"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\nimport pickle\\n\\n# R01: Basic put/get with tags, deep copy, ValueError for bad tags\\nc = TaggedCache(3)\\nc.put('a', 1, ['x'])\\nc.put('b', 2, ['y'])\\nassert c.get('a') == 1\\nassert c.get('b') == 2\\n# Deep copy test\\nval = [1, 2, 3]\\nc.put('c', val, ['z'])\\nval.append(4)\\nassert c.get('c') == [1, 2, 3]\\n# Nested deep copy\\nnested = {'a': [1, 2]}\\nc.put('d', nested, ['w'])\\nnested['a'].append(3)\\nassert c.get('d') == {'a': [1, 2]}\\n# Bad tags\\ntry:\\n    c.put('e', 1, 'bad')\\n    assert False, 'Should raise'\\nexcept ValueError:\\n    pass\\ntry:\\n    c.put('e', 1, ['good', 123])\\n    assert False, 'Should raise'\\nexcept ValueError:\\n    pass\\n# Dedup tags\\nc.put('f', 1, ['x', 'x', 'y'])\\nassert c.invalidate('x') == 1\\nassert c.get('f') == 1\\nprint('R01 OK')\\n\\n# R02: invalidate returns count, LRU eviction\\ncc = TaggedCache(2)\\ncc.put('a', 1, ['t'])\\ncc.put('b', 2, ['t'])\\ncc.put('c', 3, ['t'])  # evicts 'a'\\nassert cc.invalidate('t') == 2\\nassert len(cc) == 0\\n# Replacing key removes old tags\\ncc2 = TaggedCache(2)\\ncc2.put('a', 1, ['old'])\\ncc2.put('a', 2, ['new'])\\nassert cc2.invalidate('old') == 0\\nassert cc2.get('a') == 2\\nprint('R02 OK')\\n\\n# R03: maxsize validation\\ntry:\\n    TaggedCache(-1)\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    TaggedCache(0)\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    TaggedCache(True)\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    TaggedCache(1.5)\\n    assert False\\nexcept ValueError:\\n    pass\\nprint('R03 OK')\\n\\n# R04: invalidate_many\\ncc3 = TaggedCache(5)\\ncc3.put('a', 1, ['x'])\\ncc3.put('b', 2, ['x', 'y'])\\ncc3.put('c', 3, ['y'])\\ncc3.put('d', 4, ['z'])\\nassert cc3.invalidate_many(['x', 'y']) == 3  # union: a,b,c\\nassert len(cc3) == 1\\nassert cc3.get('d') == 4\\n# mode='all'\\ncc4 = TaggedCache(5)\\ncc4.put('a', 1, ['x', 'y'])\\ncc4.put('b', 2, ['x'])\\ncc4.put('c', 3, ['y'])\\nassert cc4.invalidate_many(['x', 'y'], mode='all') == 1  # only a\\nassert len(cc4) == 2\\n# Empty tags\\nassert cc4.invalidate_many([]) == 0\\n# Invalid mode\\ntry:\\n    cc4.invalidate_many(['x'], mode='invalid')\\n    assert False\\nexcept ValueError:\\n    pass\\nprint('R04 OK')\\n\\n# R05: resize\\ncc5 = TaggedCache(5)\\ncc5.put('a', 1, ['x'])\\ncc5.put('b', 2, ['y'])\\ncc5.put('c', 3, ['z'])\\ncc5.resize(2)\\nassert len(cc5) == 2\\nassert cc5.maxsize == 2\\n# Verify LRU order preserved\\ncc6 = TaggedCache(5)\\ncc6.put('a', 1)\\ncc6.get('a')  # a is most recent\\ncc6.put('b', 2)\\ncc6.put('c', 3)\\ncc6.resize(2)\\nassert 'a' in cc6  # most recent kept\\nassert 'c' in cc6  # second most recent kept\\nassert 'b' not in cc6  # least recent evicted\\nprint('R05 OK')\\n\\n# R06: Tags as generators\\ncg = TaggedCache(3)\\ncg.put('a', 1, (t for t in ['x', 'y']))\\nassert cg.get('a') == 1\\nassert cg.invalidate('x') == 1\\nprint('R06 OK')\\n\\n# R07: TTL\\nclock = [0]\\nct = TaggedCache(3, timer=lambda: clock[0])\\nct.put('a', 1, ttl=5)\\nassert ct.get('a') == 1\\nclock[0] = 5  # at boundary, should be expired\\ntry:\\n    ct.get('a')\\n    assert False, 'Should be expired'\\nexcept KeyError:\\n    pass\\n# TTL zero is immediately expired\\nct.put('b', 2, ttl=0)\\nassert len(ct) == 0  # immediately expired\\n# Invalid TTL\\ntry:\\n    ct.put('c', 3, ttl=-1)\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    ct.put('c', 3, ttl=True)\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    ct.put('c', 3, ttl=float('inf'))\\n    assert False\\nexcept ValueError:\\n    pass\\nprint('R07 OK')\\n\\n# R08: Expired entries removed before operations\\nclock2 = [0]\\nct2 = TaggedCache(3, timer=lambda: clock2[0])\\nct2.put('a', 1, ttl=2)\\nct2.put('b', 2, ttl=2)\\nclock2[0] = 3\\nassert len(ct2) == 0\\n# resize after expiration\\nct2.put('a', 1, ttl=2)\\nct2.put('b', 2, ttl=2)\\nclock2[0] = 3\\nct2.resize(1)  # should not fail\\nassert len(ct2) == 0\\n# invalidate after expiration\\nct3 = TaggedCache(3, timer=lambda: clock2[0])\\nct3.put('a', 1, ['x'], ttl=2)\\nclock2[0] = 3\\nassert ct3.invalidate('x') == 0\\nprint('R08 OK')\\n\\n# pickle\\ncp = TaggedCache(3)\\ncp.put('a', 1, ['x'])\\ncp2 = pickle.loads(pickle.dumps(cp))\\nassert cp2.get('a') == 1\\nassert cp2.maxsize == 3\\nprint('pickle OK')\\n\\nprint('ALL CHECKS PASSED')\\n\\\"\\n\"}",
+          "reasoning_sha256": "4a1870622015b10489d238c1cf242fb479153aa746598dbc90498d7ed4912f29",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789707444,
+    "id": "chatcmpl-Aq2dJa6bguQDQZDcmg7wksyxWYUEgOaz",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 20595.552,
+      "predicted_n": 1968,
+      "predicted_per_second": 95.5060587839549,
+      "predicted_per_token_ms": 10.470539908490085,
+      "prompt_ms": 3526.937,
+      "prompt_n": 7721,
+      "prompt_per_second": 2189.1516633271303,
+      "prompt_per_token_ms": 0.45679795363294906
+    },
+    "usage": {
+      "completion_tokens": 1968,
+      "prompt_tokens": 7721,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 9689
+    }
+  },
+  "seconds": 24.45300000003772,
+  "stage": 3,
+  "started_at": "2026-09-18T04:57:00.185038+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1968,
+    "prompt_tokens": 7721,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 9689
+  }
+}

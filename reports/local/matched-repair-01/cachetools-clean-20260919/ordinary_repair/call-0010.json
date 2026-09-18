@@ -1,0 +1,60 @@
+{
+  "budget_debit": 10030,
+  "ended_at": "2026-09-18T05:04:14.435235+00:00",
+  "max_output": 4096,
+  "original_sha256": "a177093d5a7807a62b571f222a18184c13f3eddfc53cddbf8dba98d731b78e9d",
+  "phase": "repair",
+  "preflight_input_tokens": 9259,
+  "removed_history_messages": 0,
+  "request_seconds": 8.905999999959022,
+  "request_sha256": "b210befdce4486de2d8c60fe9a1c0d7419a9de30bd3ed09ae30aa0571bbfd65c",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# Test R08: expired entries removed before get, put, len, resize\\nnow = [0]\\nc = TaggedCache(3, timer=lambda: now[0])\\nc.put('a', 1, ttl=2)\\nc.put('b', 2, ttl=5)\\nassert len(c) == 2\\nnow[0] = 3  # 'a' expires\\nassert len(c) == 1  # expired removed before len\\nassert c.get('b') == 2\\nassert len(c) == 1\\n\\n# Test: put triggers expiry\\nc.put('c', 3)\\nassert len(c) == 2  # 'a' expired, 'b' and 'c' remain\\n\\n# Test: resize triggers expiry\\nc.resize(2)\\nassert len(c) == 2\\n\\n# Test: invalidation triggers expiry\\nnow[0] = 6  # 'b' also expires\\nc.invalidate('b')\\nassert len(c) == 0  # 'b' expired, nothing to invalidate\\n\\nprint('R08 expiry before operations: OK')\\n\\n# Test R08: overwriting replaces expiry\\nc = TaggedCache(2, timer=lambda: 0)\\nc.put('a', 1, ttl=2)\\nnow[0] = 3  # would be expired\\nc.put('a', 2, ttl=5)  # overwrite with new TTL\\nassert c.get('a') == 2\\nprint('R08 overwrite replaces expiry: OK')\\n\\n# Test R08: invalid TTL raises ValueError before mutation\\nc = TaggedCache(2, timer=lambda: 0)\\ntry:\\n    c.put('a', 1, ttl=-1)\\n    assert False\\nexcept ValueError:\\n    assert len(c) == 0\\nprint('R08 invalid TTL: OK')\\n\\ntry:\\n    c.put('a', 1, ttl=True)\\n    assert False\\nexcept ValueError:\\n    assert len(c) == 0\\nprint('R08 bool TTL: OK')\\n\\ntry:\\n    c.put('a', 1, ttl=float('inf'))\\n    assert False\\nexcept ValueError:\\n    assert len(c) == 0\\nprint('R08 inf TTL: OK')\\n\\n# Test R03: invalid maxsize leaves old value\\nc = TaggedCache(5)\\ntry:\\n    c.resize(0)\\n    assert False\\nexcept ValueError:\\n    assert c.maxsize == 5\\nprint('R03 invalid resize: OK')\\n\\n# Test R04: empty tags removes zero entries\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\nassert c.invalidate_many([]) == 0\\nassert len(c) == 1\\nprint('R04 empty tags: OK')\\n\\n# Test R04: invalid mode raises before mutation\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\ntry:\\n    c.invalidate_many(['x'], mode='invalid')\\n    assert False\\nexcept ValueError:\\n    assert len(c) == 1\\nprint('R04 invalid mode: OK')\\n\\nprint('All R08 and additional edge cases passed!')\\n\\\"\\n\"}",
+          "reasoning_sha256": "408ab6e7dce5d4287e00dfc6991b5bf990266d4028b2e5fdd9c3c8365490e540",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789707854,
+    "id": "chatcmpl-3z5DPCCTOPhJacE7QoFNxwy8tkYwHxYq",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 8123,
+      "predicted_ms": 8172.05,
+      "predicted_n": 771,
+      "predicted_per_second": 94.22360362454953,
+      "predicted_per_token_ms": 10.613051948051949,
+      "prompt_ms": 697.769,
+      "prompt_n": 1136,
+      "prompt_per_second": 1628.0459579029737,
+      "prompt_per_token_ms": 0.6142332746478874
+    },
+    "usage": {
+      "completion_tokens": 771,
+      "prompt_tokens": 9259,
+      "prompt_tokens_details": {
+        "cached_tokens": 8123
+      },
+      "total_tokens": 10030
+    }
+  },
+  "seconds": 8.905999999959022,
+  "stage": 3,
+  "started_at": "2026-09-18T05:04:05.527859+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 771,
+    "prompt_tokens": 9259,
+    "prompt_tokens_details": {
+      "cached_tokens": 8123
+    },
+    "total_tokens": 10030
+  }
+}

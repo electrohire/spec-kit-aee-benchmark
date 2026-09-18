@@ -1,0 +1,60 @@
+{
+  "budget_debit": 13859,
+  "ended_at": "2026-09-18T05:17:12.412320+00:00",
+  "max_output": 4096,
+  "original_sha256": "2a653b059d285c30ab81b5f98b332810c97fa95014e007bd4e02073cf893ec3b",
+  "phase": "repair",
+  "preflight_input_tokens": 12447,
+  "removed_history_messages": 0,
+  "request_seconds": 16.344000000040978,
+  "request_sha256": "b542a7a4c096ead0229bfdaeda51246b8e9527b83eacda463301686d28f96c48",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\": \"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\nprint('=== R02: get refreshes LRU recency ===')\\nc = TaggedCache(2)\\nc.put('a', 1)\\nc.put('b', 2)\\nc.get('a')  # refresh recency\\nc.put('c', 3)  # should evict 'b' not 'a'\\nassert c.get('a') == 1  # 'a' still there\\nassert c.get('c') == 3  # 'c' still there\\ntry:\\n    c.get('b')\\n    print('FAIL: b should have been evicted')\\nexcept KeyError:\\n    print('PASS: get refreshes LRU recency')\\n\\nprint('=== R03: maxsize validation ===')\\ntry:\\n    TaggedCache(0)\\n    print('FAIL')\\nexcept ValueError:\\n    print('PASS: maxsize=0 rejected')\\n\\ntry:\\n    TaggedCache(-1)\\n    print('FAIL')\\nexcept ValueError:\\n    print('PASS: maxsize=-1 rejected')\\n\\ntry:\\n    TaggedCache(True)\\n    print('FAIL')\\nexcept ValueError:\\n    print('PASS: maxsize=True rejected (bool)')\\n\\nprint('=== R04: invalidate_many ===')\\nc = TaggedCache(5)\\nc.put('a', 1, ['x'])\\nc.put('b', 2, ['x', 'y'])\\nc.put('c', 3, ['y'])\\nc.put('d', 4, ['z'])\\nassert c.invalidate_many(['x', 'y']) == 3\\nassert len(c) == 1\\nassert c.get('d') == 4\\nprint('PASS: union mode removes union')\\n\\nc = TaggedCache(5)\\nc.put('a', 1, ['x', 'y'])\\nc.put('b', 2, ['x'])\\nc.put('c', 3, ['y'])\\nassert c.invalidate_many(['x', 'y'], mode='all') == 1\\nassert len(c) == 2\\nprint('PASS: all mode removes only entries with all tags')\\n\\n# Empty tags\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\nassert c.invalidate_many([]) == 0\\nassert len(c) == 1\\nprint('PASS: empty tags removes nothing')\\n\\n# Invalid mode\\ntry:\\n    TaggedCache(2).invalidate_many(['x'], mode='invalid')\\n    print('FAIL')\\nexcept ValueError:\\n    print('PASS: invalid mode rejected')\\n\\n# Generator tags consumed once\\ndef gen_tags():\\n    yield 'x'\\n    yield 'y'\\nc = TaggedCache(5)\\nc.put('a', 1, gen_tags())\\nassert c.get('a') == 1\\nprint('PASS: generator tags')\\n\\nprint('=== R05: resize ===')\\nc = TaggedCache(3)\\nc.put('a', 1, ['x'])\\nc.put('b', 2, ['y'])\\nc.put('c', 3, ['z'])\\nc.resize(2)  # shrink, evicts least recent\\nassert c.maxsize == 2\\nassert len(c) == 2\\nprint('PASS: resize shrink')\\n\\nc.resize(5)  # grow\\nc.resize(3)\\nassert c.maxsize == 3\\nprint('PASS: resize grow preserves')\\n\\n# Invalid resize\\nc = TaggedCache(3)\\nc.put('a', 1)\\ntry:\\n    c.resize(0)\\nexcept ValueError:\\n    pass\\nassert len(c) == 1\\nassert c.maxsize == 3\\nprint('PASS: invalid resize preserves state')\\n\\nprint('=== R07: TTL ===')\\nnow = [0]\\nc = TaggedCache(2, timer=lambda: now[0])\\nc.put('a', 1, ttl=2)\\nnow[0] = 1\\nassert c.get('a') == 1  # not expired yet\\nnow[0] = 2\\nassert c.get('a') == 1  # at boundary\\nnow[0] = 3\\ntry:\\n    c.get('a')\\n    print('FAIL')\\nexcept KeyError:\\n    print('PASS: TTL expiry')\\n\\n# TTL zero is immediately expired\\nc = TaggedCache(2, timer=lambda: 0)\\nc.put('a', 1, ttl=0)\\nassert len(c) == 0\\nprint('PASS: TTL=0 immediately expired')\\n\\n# Invalid TTL\\nc = TaggedCache(2)\\ntry:\\n    c.put('a', 1, ttl=-1)\\n    print('FAIL')\\nexcept ValueError:\\n    print('PASS: negative TTL rejected')\\n\\ntry:\\n    c.put('a', 1, ttl=True)\\n    print('FAIL')\\nexcept ValueError:\\n    print('PASS: bool TTL rejected')\\n\\ntry:\\n    c.put('a', 1, ttl=float('inf'))\\n    print('FAIL')\\nexcept ValueError:\\n    print('PASS: inf TTL rejected')\\n\\nprint('\\\\n=== ALL TESTS PASSED ===')\\n\\\"\\n\"}",
+          "reasoning_sha256": "d768c8b91bdff55734fbdf913d0decd0b98ce1e97969e779bf45dd5899ea90b1",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789708632,
+    "id": "chatcmpl-BE0mxodPn1Z3mQv40Fk8IfryeIsGo5Kr",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 10414,
+      "predicted_ms": 15253.793,
+      "predicted_n": 1412,
+      "predicted_per_second": 92.50158304888495,
+      "predicted_per_token_ms": 10.810625797306875,
+      "prompt_ms": 1075.835,
+      "prompt_n": 2033,
+      "prompt_per_second": 1889.6949811076977,
+      "prompt_per_token_ms": 0.5291859321200197
+    },
+    "usage": {
+      "completion_tokens": 1412,
+      "prompt_tokens": 12447,
+      "prompt_tokens_details": {
+        "cached_tokens": 10414
+      },
+      "total_tokens": 13859
+    }
+  },
+  "seconds": 16.344000000040978,
+  "stage": 3,
+  "started_at": "2026-09-18T05:16:56.053758+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1412,
+    "prompt_tokens": 12447,
+    "prompt_tokens_details": {
+      "cached_tokens": 10414
+    },
+    "total_tokens": 13859
+  }
+}
