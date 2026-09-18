@@ -1,0 +1,48 @@
+{
+  "server": {
+    "arguments": [
+      "-m",
+      "C:\\Models\\Qwen3.6-35B-A3B-UD-Q4_K_M.gguf",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "8091",
+      "--alias",
+      "long-coder",
+      "--ctx-size",
+      "131072",
+      "--parallel",
+      "1",
+      "--n-gpu-layers",
+      "999",
+      "--split-mode",
+      "layer",
+      "--tensor-split",
+      "9,14",
+      "--flash-attn",
+      "on",
+      "--cache-type-k",
+      "q8_0",
+      "--cache-type-v",
+      "q8_0",
+      "--fit",
+      "off",
+      "--threads",
+      "8",
+      "--reasoning-budget",
+      "2048",
+      "--batch-size",
+      "512",
+      "--ubatch-size",
+      "256"
+    ],
+    "launched_at": "2026-09-18T02:07:59.9526589Z",
+    "pid": 42276
+  },
+  "gpu": [
+    "index, name, memory.total [MiB], memory.used [MiB]",
+    "0, NVIDIA GeForce RTX 4070 SUPER, 12282 MiB, 11062 MiB",
+    "1, NVIDIA GeForce RTX 5060 Ti, 16311 MiB, 13754 MiB"
+  ],
+  "weight_sha256": "ac0e2c1189e055faa36eff361580e79c5bd6f8e76bffb4ce547f167d53e31a61"
+}
