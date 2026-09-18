@@ -57,11 +57,18 @@ def calibration(out,preflight):
 def run(out,preflight,timeout):
     out.mkdir(parents=True,exist_ok=False)
     fixture=json.loads((preflight/'calibration.json').read_text());assert fixture['passed']
+    study_freeze=json.loads((ROOT/'artifacts/repeated-study-01/freeze.json').read_text())
+    hashes=dict(study_freeze['hashes'])
+    for name,sha in hashes.items():
+        assert digest(ROOT/name)==sha, 'Changed frozen input: '+name
+    hashes[str(Path(__file__).resolve().relative_to(ROOT))]=digest(__file__)
+    for item in preflight.glob('*'):
+        if item.is_file():hashes[str(item.resolve().relative_to(ROOT))]=digest(item)
     schedule=[(r,s) for r in fixture['variants'] for s in SEEDS]
     random.Random(SEEDS[1]).shuffle(schedule)
     write_json(out/'freeze.json',dict(timestamp=utc(),schedule=[(r['project'],r['variant'],s) for r,s in schedule],timeout=timeout,
         diagnostic_calls=8,repair_rounds=2,calls_per_round=8,stage_seconds=1200,config=CONFIG,
-        hashes={str(p.relative_to(ROOT)):digest(p) for p in [Path(__file__).resolve(),ROOT/'scripts/repeated_local.py',*(TASK.rglob('*.py'))]},
+        hashes=hashes,projects=PROJECTS,study_freeze_sha256=digest(ROOT/'artifacts/repeated-study-01/freeze.json'),
         pairing='Shared read-only diagnostic and raw claims, identical start/feedback/tools; only guided receives actual AEE findings. Shared model cost charged equally per arm for comparison and once in physical-work ledger.'))
     rows=[]
     for reference,seed in schedule:

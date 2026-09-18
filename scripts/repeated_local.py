@@ -304,7 +304,10 @@ def campaign(out,preflight,timeout):
                         instructions=(ROOT/'prompts/adapter.md').read_text().replace('/workflow','/testbed')+'\n'+skill(phase).replace('$ARGUMENTS',goal+'\n'+spec)+'\n'+goal+'\nUse SPECIFY_FEATURE_DIRECTORY=/testbed/specs/001-transactions. Keep documents concise and evidence explicit.'
                     limits={'constitution':32,'specify':32,'plan':32,'tasks':32,'implement':32,'converge':16,'final_implement':16}
                     need_claims=arm=='spec_kit_aee' and phase in ('specify','plan','tasks','implement')
+                    phase_before=folder/f'stage{stage}-{phase}-before.tar';box.snapshot(phase_before)
                     phase_row=session.phase(phase,instructions,spec,stage,min(left,limits.get(phase,left)),deadline,need_claims)
+                    phase_after=folder/f'stage{stage}-{phase}-after.tar';box.snapshot(phase_after)
+                    phase_row.update(source_changed=source_digest(phase_before)!=source_digest(phase_after),source_before=str(phase_before.relative_to(out)),source_after=str(phase_after.relative_to(out)))
                     row['phases'].append(phase_row)
                     if need_claims and phase_row['done']:
                         try:

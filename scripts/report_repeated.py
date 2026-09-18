@@ -29,6 +29,7 @@ def export(raw,dest):
         target=dest/p.relative_to(raw);target.parent.mkdir(parents=True,exist_ok=True)
         if p.name.startswith('call-') and p.suffix=='.json':
             obj=json.loads(p.read_text(encoding='utf-8-sig'))
+            obj['original_sha256']=hashlib.sha256(p.read_bytes()).hexdigest()
             request=obj.pop('request',None)
             if request is not None:obj['request_sha256']=hashlib.sha256(canonical(request)).hexdigest()
             for choice in obj.get('response',{}).get('choices',[]):
@@ -36,7 +37,7 @@ def export(raw,dest):
                 reasoning=message.pop('reasoning_content',None)
                 if reasoning:message['reasoning_sha256']=hashlib.sha256(reasoning.encode()).hexdigest()
             write_json(target,obj)
-        elif p.suffix in ('.json','.jsonl','.tar','.md','.py') or p.name=='CANCEL':
+        elif p.suffix in ('.json','.jsonl','.tar','.md','.py') or p.name=='CANCEL' or 'objects' in p.parts:
             shutil.copyfile(p,target)
     freeze=json.loads((raw/'freeze.json').read_text())
     frozen={}
@@ -78,7 +79,7 @@ def summarize_study(raw,dest):
             hidden_fixed=sum(not r['hidden_primary']['passed'] and r['hidden_final']['passed'] for r in subset),
             completed_milestone_workflows=completed,assessments=sum(len(r['assessments']) for r in subset),
             assessment_errors=sum('error' in a for r in subset for a in r['assessments']),
-            evidence_rework_rounds=sum(p['phase']=='evidence_rework' for r in subset for p in r['phases']),regressions=regressions)
+            evidence_rework_rounds=sum(p['phase']=='evidence_rework' for r in subset for p in r['phases']),planning_source_edits=[dict(project=r['project'],seed=r['seed'],stage=r['stage'],phase=p['phase']) for r in subset for p in r['phases'] if p['phase'] in ('constitution','specify','plan','tasks') and p.get('source_changed')],regressions=regressions)
     write_json(dest/'summary.json',summary)
     text='# Repeated two-project local comparison\n\n'+summary['scope']+'. All inference is local. API expenditure $0; hardware, energy and controller work unpriced.\n\n'
     text+='| Arm | Primary /12 | Final /12 | Entire trajectories /4 | Known tokens | Unknown calls | Tokens/accepted | Repair rounds | Completed milestone workflows |\n|---|---:|---:|---:|---:|---:|---:|---:|---:|\n'
