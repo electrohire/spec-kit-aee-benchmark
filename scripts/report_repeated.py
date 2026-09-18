@@ -38,6 +38,19 @@ def workflow_completed(row):
     return True
 
 
+def indexed_cases(cases):
+    counts=collections.Counter()
+    for case in cases:
+        stem=(case.get('file',''),case['name'])
+        counts[stem]+=1
+        yield (*stem,counts[stem]),case
+
+
+def feature_counts(grade):
+    cases=[c for c in grade['cases'] if c['name'].startswith(('test_R','test_public_'))]
+    return dict(passed=sum(c['passed'] for c in cases),discovered=len(cases))
+
+
 def export(raw,dest):
     dest.mkdir(parents=True,exist_ok=False)
     for p in raw.rglob('*'):
@@ -91,8 +104,8 @@ def summarize_study(raw,dest):
         for r in subset:
             if r['stage']==1:continue
             previous=next(x for x in subset if x['project']==r['project'] and x['seed']==r['seed'] and x['stage']==r['stage']-1)
-            before={c['name']:c['passed'] for c in previous['hidden_final']['cases']}
-            regressions.extend(dict(project=r['project'],seed=r['seed'],stage=r['stage'],case=c['name']) for c in r['hidden_final']['cases'] if before.get(c['name']) is True and not c['passed'])
+            before={key:c['passed'] for key,c in indexed_cases(previous['hidden_final']['cases'])}
+            regressions.extend(dict(project=r['project'],seed=r['seed'],stage=r['stage'],case=c['name'],file=key[0],occurrence=key[2]) for key,c in indexed_cases(r['hidden_final']['cases']) if before.get(key) is True and not c['passed'])
         summary['arms'][arm]=dict(economics=economics,primary_accepted=sum(r['hidden_primary']['passed'] for r in subset),final_accepted=accepted,milestones=len(subset),
             projects_accepted=sum(all(x['hidden_final']['passed'] for x in subset if x['project']==r['project'] and x['seed']==r['seed']) for r in subset if r['stage']==3),
             final_projects_accepted=sum(r['stage']==3 and r['hidden_final']['passed'] for r in subset),projects=4,tokens_per_accepted=None if not accepted or economics['total_tokens'] is None else economics['total_tokens']/accepted,
@@ -109,6 +122,7 @@ def summarize_study(raw,dest):
         summary['arms'][arm]['assessment_seconds']=sum(a.get('seconds',0) for r in subset for a in r['assessments'])
         fully_accepted=summary['arms'][arm]['projects_accepted']
         summary['arms'][arm]['tokens_per_entire_accepted_trajectory']=economics['total_tokens']/fully_accepted if fully_accepted and economics['total_tokens'] is not None else None
+        summary['arms'][arm]['feature_checkpoints']=[dict(project=r['project'],seed=r['seed'],stage=r['stage'],primary=feature_counts(r['hidden_primary']),final=feature_counts(r['hidden_final'])) for r in subset]
     write_json(dest/'summary.json',summary)
     text='# Repeated two-project local comparison\n\n'+summary['scope']+'. All inference is local. API expenditure $0; hardware, energy and controller work unpriced.\n\n'
     text+='| Arm | Primary /12 | Final /12 | Entire trajectories /4 | Known tokens | Unknown calls | Tokens/accepted | Repair rounds | Completed milestone workflows |\n|---|---:|---:|---:|---:|---:|---:|---:|---:|\n'
@@ -118,7 +132,7 @@ def summarize_study(raw,dest):
     text+='\n## Paired project/seed outcomes\n\n| Project | Seed | Arm | Stage | Public final | Hidden primary → final | Completed phases | Repair rounds |\n|---|---|---|---:|---|---|---:|---:|\n'
     for r in sorted(rows,key=lambda x:(x['project'],x['seed'],x['arm'],x['stage'])):
         text+=f"| {r['project']} | {r['seed']} | {r['arm']} | {r['stage']} | {r['public_final']['passed']} | {r['hidden_primary']['passed']} → {r['hidden_final']['passed']} | {sum(p['completed'] for p in r['phases'])}/{len(r['phases'])} | {len(r['repairs'])} |\n"
-    text+='\nRead the frozen protocol and summary.json for cached/uncached/generated tokens, native timing, stage wall time, regressions and workflow completion. Public repair feedback is not hidden grading. Hidden cases were controller-authored; projects were convenience selected. Two seeds are not statistical proof. Raw requests/native reasoning stay local with hashes; exact public prompt replay is unavailable. Earlier failures and calibration work are reported separately, never erased.\n'
+    text+='\nRead the frozen protocol and summary.json for cached/uncached/generated tokens, native timing, stage wall time, regressions and workflow completion. Feature counts are separate from unchanged upstream tests; dependent checkpoints are not pooled as independent tasks. Repeated upstream case names use discovery-order occurrence identifiers because this pytest configuration omits class names. Public repair feedback is not hidden grading. Hidden cases were controller-authored; projects were convenience selected. Two seeds are not statistical proof. Raw requests/native reasoning stay local with hashes; exact public prompt replay is unavailable. Earlier failures and calibration work are reported separately, never erased.\n'
     (dest/'README.md').write_text(text,encoding='utf-8')
 
 

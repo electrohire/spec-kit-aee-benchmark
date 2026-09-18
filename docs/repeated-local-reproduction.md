@@ -3,6 +3,8 @@
 Read `benchmarks/repeated_local/PROTOCOL.md` and `ADJUDICATION.md` first. This is
 separate from the earlier run03 and from the original unrun SWE-bench pilot.
 Do not update the email/article based on preparation or preliminary results.
+The requirement tests are published in this repository. They were withheld from
+these isolated solvers, but future replication is not a fresh secret-test study.
 
 ## Prerequisites
 
@@ -16,6 +18,35 @@ Clone the pinned TinyDB and cachetools revisions listed in PROJECTS in
 `artifacts/cachetools-upstream`. Use the immutable Linux Docker image from the
 previous long study; rebuilding it produces a newly recorded image identity.
 The solver/grader containers have no host mounts or network and run nonroot.
+
+For a fresh checkout, create the upstream directories and image with:
+
+```powershell
+git clone https://github.com/msiemens/tinydb.git artifacts/tinydb-upstream
+git -C artifacts/tinydb-upstream checkout 19066e03139e904c24410e23901e4b069d715a2e
+git clone https://github.com/tkem/cachetools.git artifacts/cachetools-upstream
+git -C artifacts/cachetools-upstream checkout c403f9f4185e58090b904c1915345b9ba46d5a08
+docker build -t spec-kit-aee-long:replication benchmarks/long_horizon
+docker image inspect spec-kit-aee-long:replication --format '{{.Id}}'
+```
+
+The measured image is not distributed through a registry. Set `IMAGE` in your
+replication copy of `scripts/repeated_local.py` to the ID you actually built,
+then recalibrate and create a new freeze. Do not change historical frozen inputs.
+The [previous environment guide](long-horizon-reproduction.md#environment) links
+the pinned llama.cpp release and model revision. Verify the weight checksum in
+the protocol before loading it; shared system RAM is not dedicated GPU VRAM.
+
+On this Windows host, commands use `.venv-gpu/Scripts/python.exe`. A fresh
+`uv sync` normally creates `.venv`; substitute its Python executable throughout.
+Create a writable temporary directory before the calibration commands:
+
+```powershell
+New-Item -ItemType Directory -Force artifacts/tmp-gpu | Out-Null
+$env:TEMP="$PWD/artifacts/tmp-gpu"
+$env:TMP=$env:TEMP
+$env:PYTHONUTF8='1'
+```
 
 Start an owned localhost llama.cpp server using the recorded launch arguments.
 On the measured host the existing8081router remains running while its model is
@@ -50,6 +81,13 @@ On another host, adapt only preflight paths/server ownership and record a new
 freeze. A campaign creates a new directory exclusively; it does not selectively
 resume or overwrite partial attempts. Keep interrupted directories and report
 all work. Review the full freeze and pinned source hashes before a new run.
+
+The wrapper includes this host's service-restoration script under ignored
+`artifacts/repeated-assets`. A new host must supply its own ownership-checked
+restoration script, hardware/package records, and installed-engine source snapshot
+before using the wrapper. This is a research runner with explicit host setup,
+not a one-command portable benchmark service. Never copy a historical process ID
+and use it to stop a process on another machine.
 
 ## Reporting
 

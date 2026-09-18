@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 from benchmark_runner.store import Store, canonical, write_json
-from report_repeated import accounting, workflow_completed
+from report_repeated import accounting, workflow_completed, indexed_cases, feature_counts
 from report_repeated_setup import copy_evidence
 
 
@@ -47,3 +47,13 @@ def test_workflow_completion_requires_actual_assessments_and_finished_rework():
     assert not workflow_completed(row)
     row['assessments'][-1] = dict(phase='implement')
     assert workflow_completed(row)
+
+
+def test_duplicate_upstream_names_do_not_hide_regressions_or_inflate_feature_counts():
+    cases=[dict(file='',name='test_get',passed=True),dict(file='',name='test_get',passed=False),
+           dict(file='',name='test_R01_detached',passed=False)]
+    keyed=dict(indexed_cases(cases))
+    assert len(keyed)==3
+    assert keyed[('', 'test_get', 1)]['passed']
+    assert not keyed[('', 'test_get', 2)]['passed']
+    assert feature_counts({'cases':cases})=={'passed':0,'discovered':1}

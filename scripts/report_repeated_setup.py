@@ -1,6 +1,7 @@
 """Preserve calibration failures and inventory new physical model work exactly once."""
 import argparse
 import hashlib
+import importlib.metadata
 import json
 import shutil
 from pathlib import Path
@@ -50,6 +51,13 @@ def run(destination):
         rows.append(dict(scope=folder.name, passed=result['passed'], economics=accounting(records)))
         copy_evidence(folder, destination / folder.name)
     copy_evidence(ROOT / 'artifacts/repeated-assets', destination / 'controller-assets')
+    notices = destination / 'licenses'
+    notices.mkdir()
+    shutil.copyfile(ROOT / 'docs/spec-kit-LICENSE.txt', notices / 'spec-kit-LICENSE.txt')
+    distribution = importlib.metadata.distribution('applied-epistemic-engineering')
+    for name in distribution.files:
+        if '/licenses/' in str(name).replace('\\', '/'):
+            shutil.copyfile(distribution.locate_file(name), notices / ('aee-engine-' + Path(name).name))
     write_json(destination / 'summary.json', dict(rows=rows, economics=accounting(all_records),
         note='All preparation attempts retained. No scored success claim; controller work is unpriced.'))
     scored_rows = []
