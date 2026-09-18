@@ -23,6 +23,21 @@ def accounting(records):
     return value
 
 
+def workflow_completed(row):
+    required={'solve'} if row['arm']=='baseline' else ({'constitution'} if row['stage']==1 else set()) | {'specify','plan','tasks','implement','converge','final_implement'}
+    if not required <= {p['phase'] for p in row['phases'] if p['completed']}:
+        return False
+    if row['arm']=='spec_kit_aee':
+        if not {'specify','plan','tasks','implement'} <= {a['phase'] for a in row['assessments'] if 'error' not in a}:
+            return False
+        if any(p['phase']=='evidence_rework' and not p['completed'] for p in row['phases']):
+            return False
+        reworks=sum(p['phase']=='evidence_rework' for p in row['phases'])
+        if sum(a['phase']=='implement' and 'error' not in a for a in row['assessments']) < 1+reworks:
+            return False
+    return True
+
+
 def export(raw,dest):
     dest.mkdir(parents=True,exist_ok=False)
     for p in raw.rglob('*'):
@@ -71,7 +86,7 @@ def summarize_study(raw,dest):
         economics=accounting(records)
         accepted=sum(r['hidden_final']['passed'] for r in subset)
         changed=sum(x['source_changed'] for r in subset for x in r['repairs'])
-        completed=sum(({'solve'} if arm=='baseline' else ({'constitution'} if r['stage']==1 else set()) | {'specify','plan','tasks','implement','converge','final_implement'}) <= {p['phase'] for p in r['phases'] if p['completed']} for r in subset)
+        completed=sum(workflow_completed(r) for r in subset)
         regressions=[]
         for r in subset:
             if r['stage']==1:continue
@@ -90,6 +105,7 @@ def summarize_study(raw,dest):
             evidence_rework_rounds=sum(p['phase']=='evidence_rework' for r in subset for p in r['phases']),planning_source_edits=[dict(project=r['project'],seed=r['seed'],stage=r['stage'],phase=p['phase']) for r in subset for p in r['phases'] if p['phase'] in ('constitution','specify','plan','tasks') and p.get('source_changed')],regressions=regressions)
         summary['arms'][arm]['by_phase']={phase:accounting([c for c in records if c['phase']==phase]) for phase in sorted({c['phase'] for c in records})}
         summary['arms'][arm]['request_errors']=dict(collections.Counter(c['error'] for c in records if c.get('error')))
+        summary['arms'][arm]['phase_errors']=dict(collections.Counter(error for r in subset for p in r['phases']+r['repairs'] for error in p['errors']))
         summary['arms'][arm]['assessment_seconds']=sum(a.get('seconds',0) for r in subset for a in r['assessments'])
         fully_accepted=summary['arms'][arm]['projects_accepted']
         summary['arms'][arm]['tokens_per_entire_accepted_trajectory']=economics['total_tokens']/fully_accepted if fully_accepted and economics['total_tokens'] is not None else None
@@ -136,6 +152,8 @@ def summarize_repair(raw,dest):
             first_round_fixes=sum(not r['hidden_before']['passed'] and r['repairs'][0]['hidden']['passed'] for r in subset),
             tokens_per_fixed=attributed['total_tokens']/fixes if fixes and attributed['total_tokens'] is not None else None,
             wall_seconds=sum(r['seconds'] for r in subset))
+        summary['arms'][arm]['phase_errors']=dict(collections.Counter(error for r in subset for p in r['repairs'] for error in p['errors']))
+        summary['arms'][arm]['request_errors']=dict(collections.Counter(c['error'] for c in records if c.get('error')))
     write_json(dest/'summary.json',summary)
     text='# Matched ordinary versus AEE-guided repair\n\n16 identical-start pairs: two projects × (three seeded defects + one clean control) × two seeds. Shared diagnostic input goes to both arms; only guided receives its actual AEE findings. Not a full Spec Kit workflow comparison.\n\n'
     text+='| Arm | Bugs fixed /12 | Final accepted /16 | Clean regressions /4 | Clean cases changed | Repair tokens | Tokens incl. shared diagnostic | Tokens/fix |\n|---|---:|---:|---:|---:|---:|---:|---:|\n'

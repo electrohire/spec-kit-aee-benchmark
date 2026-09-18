@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 from benchmark_runner.store import Store, canonical, write_json
-from report_repeated import accounting
+from report_repeated import accounting, workflow_completed
 from report_repeated_setup import copy_evidence
 
 
@@ -30,3 +30,20 @@ def test_public_export_preserves_tool_evidence_without_private_request_or_reason
     economics = accounting([exported])
     assert economics['total_tokens'] is None and economics['known_total_tokens'] == 0
     assert economics['budget_reservation_total'] == 70
+
+
+def test_workflow_completion_requires_actual_assessments_and_finished_rework():
+    row = dict(arm='spec_kit_aee', stage=1,
+               phases=[dict(phase=p, completed=True) for p in ('constitution','specify','plan','tasks','implement','converge','final_implement')],
+               assessments=[])
+    assert not workflow_completed(row)
+    row['assessments'] = [dict(phase=p) for p in ('specify','plan','tasks','implement')]
+    assert workflow_completed(row)
+    row['phases'].append(dict(phase='evidence_rework', completed=False))
+    assert not workflow_completed(row)
+    row['phases'][-1]['completed'] = True
+    assert not workflow_completed(row)
+    row['assessments'].append(dict(phase='implement', error='assessment failed'))
+    assert not workflow_completed(row)
+    row['assessments'][-1] = dict(phase='implement')
+    assert workflow_completed(row)
