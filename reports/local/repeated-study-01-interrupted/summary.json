@@ -1,0 +1,44 @@
+{
+  "completed_generation_milestones": 3,
+  "economics": {
+    "budget_reservation_total": 8987818,
+    "cached_tokens": 5229817,
+    "calls": 357,
+    "completion_request_seconds": 4062.857000000309,
+    "context_preflight_http_calls_lower_bound": 38358,
+    "context_preflight_note": "Each recorded trim step makes apply-template and tokenize requests. Failed preflights before a completion record are not included. These CPU helper requests are not model-generation calls or additional measured model tokens.",
+    "http_seconds": 4062.8730000003125,
+    "input_tokens": 8794149,
+    "known_cached_tokens": 5229817,
+    "known_input_tokens": 8794149,
+    "known_output_tokens": 193669,
+    "known_total_tokens": 8987818,
+    "known_uncached_input_tokens": 3564332,
+    "native_runtime": {
+      "decode_seconds": 2321.9124890000003,
+      "decode_tokens": 193669,
+      "median_http_seconds": 11.28100000001723,
+      "native_timing_calls": 357,
+      "note": "Decode excludes the first token per request, matching native predicted_n-1 timing semantics. HTTP time is not TTFT. Energy and peak device utilization were not sampled.",
+      "p95_http_seconds": 35.6589999999851,
+      "prompt_seconds": 1677.543867,
+      "prompt_tokens": 3564332,
+      "weighted_decode_tokens_per_second": 83.25550636202293,
+      "weighted_prompt_tokens_per_second": 2124.7325152660223
+    },
+    "output_tokens": 193669,
+    "total_tokens": 8987818,
+    "uncached_input_tokens": 3564332,
+    "unknown_calls": 0
+  },
+  "planned_milestones": 36,
+  "planned_trajectories": 12,
+  "reason": {
+    "decision": "Abort the entire three-arm attempt before hidden grading, preserve all calls and available checkpoints, verify equivalent prompt selection with a more efficient preflight, then use a fresh freeze. No correctness outcome was used to select a treatment for rerun.",
+    "hidden_grading_run": false,
+    "matched_repair": "The separately scheduled matched-repair experiment may proceed with its original frozen provider; short trajectories have a separate scope.",
+    "reason": "Context preflight repeatedly rebuilds and tokenizes progressively shortened copies of complete retained history. Observed 288-290 removed messages implies 145-146 template/tokenizer iterations per request. This consumes the stage wall budget independently of model inference."
+  },
+  "started_trajectories": 2,
+  "status": "interrupted_before_hidden_grading"
+}

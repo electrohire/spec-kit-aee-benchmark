@@ -11,9 +11,15 @@ diagnostics, and multiple projects/seeds. See
 The full workflow calibration passed after three retained failed preparations:
 95 local model calls, all seven phases, five actual AEE/Evaluator assessments,
 and a repaired injected regression checked independently. The scored suite started
-at 22:51 America/New_York on September 17. Results are not yet available.
-The dedicated benchmark service currently uses both GPUs; the wrapper restores
-the original service after execution. Do not start a duplicate run.
+at 22:51 America/New_York on September 17. Study01 was subsequently interrupted
+before hidden grading to correct excessive context-preflight tokenization;
+[all 357 calls and 8,987,818 measured tokens are preserved](reports/local/repeated-study-01-interrupted/README.md).
+Native calibration verified identical selected prompts with a faster context
+search. The separately frozen matched-repair01 is running; corrected study02
+follows it sequentially. Comparative results are not yet available.
+The dedicated benchmark service currently uses both GPUs; each wrapper restores
+the original service after execution. Do not start a duplicate run. Inspect
+`artifacts/repeated-assets/suite-status.json` and `revision-status.json` locally.
 
 Both repository PRs are ready for review, not drafts. No merge or publication is
 authorized. Leave the email and existing article unchanged. Prior measurements

@@ -7,10 +7,13 @@ and controller work are unpriced. The original SWE-bench pilot remains unrun.
 - [CPU application/AEE runtime and six-task study](gpu-20260917/README.md), including actual supplemental repairs.
 - [Staged TinyDB study](long-horizon-03/README.md): nine dependent checkpoints, no complete hidden milestone passes, all three arms timed out.
 - [Interrupted pilot 1](long-horizon-01-interrupted/README.md) and [pilot 2](long-horizon-02-interrupted/README.md), retained as development overhead.
+- [Interrupted repeated-study pilot](repeated-study-01-interrupted/README.md): 357 calls and 8,987,818 measured tokens, stopped before hidden grading for a context-preflight scalability correction. The fresh study and matched repair experiment remain in progress; these costs will be included in their complete physical inventory.
 
-## Complete benchmark-model work inventory
+## Historical benchmark-model inventory through run03
 
 This combines work counts, not success rates or treatment estimates across models.
+It predates the expanded campaign above; its immutable ledger remains available
+for the later cumulative inventory.
 
 | Scope | Calls | Known tokens | Calls with unknown usage |
 |---|---:|---:|---:|

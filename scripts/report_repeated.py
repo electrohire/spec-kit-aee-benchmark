@@ -21,8 +21,8 @@ def accounting(records):
     value['budget_reservation_total']=sum((r.get('usage') or {}).get('total_tokens',r.get('preflight_input_tokens',0)+r.get('max_output',0)) for r in records)
     value['native_runtime']=runtime(records)
     value['completion_request_seconds']=sum(r.get('request_seconds',r.get('seconds',0)) for r in records)
-    value['context_preflight_http_calls_lower_bound']=sum(2+r['removed_history_messages'] for r in records if 'removed_history_messages' in r)
-    value['context_preflight_note']='Each recorded trim step makes apply-template and tokenize requests. Failed preflights before a completion record are not included. These CPU helper requests are not model-generation calls or additional measured model tokens.'
+    value['context_preflight_http_calls_lower_bound']=sum(r.get('preflight_http_requests',2+r.get('removed_history_messages',0)) for r in records if 'removed_history_messages' in r)
+    value['context_preflight_note']='Uses measured helper request counts when present, otherwise the original linear-selector count. Failed preflights before a completion record are not included in this lower bound. These CPU helper requests are not model-generation calls or additional measured model tokens.'
     return value
 
 
@@ -74,7 +74,8 @@ def export(raw,dest):
     freeze=json.loads((raw/'freeze.json').read_text())
     frozen={}
     for name,sha in freeze['hashes'].items():
-        src=ROOT/name
+        archived=raw/'frozen-inputs'/name
+        src=archived if archived.is_file() else ROOT/name
         assert hashlib.sha256(src.read_bytes()).hexdigest()==sha, 'Frozen input changed: '+name
         target=dest/'frozen-inputs'/name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(src,target)
         frozen[name]={'sha256':sha,'file':target.relative_to(dest).as_posix()}
@@ -136,7 +137,7 @@ def summarize_study(raw,dest):
     for r in sorted(rows,key=lambda x:(x['project'],x['seed'],x['arm'],x['stage'])):
         text+=f"| {r['project']} | {r['seed']} | {r['arm']} | {r['stage']} | {r['public_final']['passed']} | {r['hidden_primary']['passed']} → {r['hidden_final']['passed']} | {sum(p['completed'] for p in r['phases'])}/{len(r['phases'])} | {len(r['repairs'])} |\n"
     text+='\nRead the frozen protocol and summary.json for cached/uncached/generated tokens, native timing, stage wall time, regressions and workflow completion. Feature counts are separate from unchanged upstream tests; dependent checkpoints are not pooled as independent tasks. Repeated upstream case names use discovery-order occurrence identifiers because this pytest configuration omits class names. Public repair feedback is not hidden grading. Hidden cases were controller-authored; projects were convenience selected. Two seeds are not statistical proof. Raw requests/native reasoning stay local with hashes; exact public prompt replay is unavailable. Earlier failures and calibration work are reported separately, never erased.\n'
-    text+='\nThe frozen adapter repeatedly tokenizes retained history while trimming each request; it does not persist that pruning into the session history. This adds CPU/HTTP overhead as conversations grow. The lower bound on these helper requests is reported separately; they are not extra model-generation tokens. Stage wall time includes preflight, tools, grading and container work. Controller audits also ran on the host during generation. Do not attribute all wall-time differences to Spec Kit or the AEE engine alone.\n'
+    text+='\nThe earlier interrupted pilot used a linear context selector with repeated tokenization overhead. This fresh campaign uses a native-calibrated binary search for the same first-fitting cutoff. Helper requests are reported separately; they are not extra model-generation tokens. Stage wall time includes preflight, tools, grading and container work. Controller audits also ran on the host during generation. Do not attribute all wall-time differences to Spec Kit or the AEE engine alone.\n'
     (dest/'README.md').write_text(text,encoding='utf-8')
 
 

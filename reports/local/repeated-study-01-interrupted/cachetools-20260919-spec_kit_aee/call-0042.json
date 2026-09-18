@@ -1,0 +1,60 @@
+{
+  "budget_debit": 30250,
+  "ended_at": "2026-09-18T02:55:57.974968+00:00",
+  "max_output": 4096,
+  "original_sha256": "8b1f15560f2f4599529307e4215519c6779542a85cc386c0acdbcb91b662a418",
+  "phase": "plan",
+  "preflight_input_tokens": 28657,
+  "removed_history_messages": 6,
+  "request_seconds": 30.70299999997951,
+  "request_sha256": "751e0a811624f66a78b9173a165a587ac26d3bf0c3cd715142171ccc909acafc",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\": \"cat > /testbed/specs/001-transactions/quickstart.md << 'QS_EOF'\\n# Quickstart: TaggedCache Validation Guide\\n\\n**Date**: 2026-09-18\\n\\n## Prerequisites\\n\\n- Python 3.7+ installed\\n- Repository cloned at `/testbed`\\n- `pytest` available (`pip install pytest`)\\n- PYTHONPATH includes `src` directory\\n\\n## Setup\\n\\n```bash\\ncd /testbed\\nexport PYTHONPATH=src:.\\n```\\n\\n## Validation Scenarios\\n\\n### Scenario 1: Basic Put and Get\\n\\n**Goal**: Verify `put` stores an entry with tags and `get` returns a deep copy.\\n\\n```bash\\npython3 -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\nassert c.get('a') == 1\\nassert len(c) == 1\\nprint('PASS: basic put/get')\\n\\\"\\n```\\n\\n**Expected**: No errors; prints `PASS: basic put/get`.\\n\\n**Reference**: spec.md User Story 1, FR-002, FR-003\\n\\n---\\n\\n### Scenario 2: Tag-Based Invalidation\\n\\n**Goal**: Verify `invalidate(tag)` removes exactly matching entries.\\n\\n```bash\\npython3 -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\nc.put('b', 2, ['x'])\\nremoved = c.invalidate('x')\\nassert removed == 2, f'Expected 2, got {removed}'\\nassert len(c) == 0\\nprint('PASS: tag-based invalidation')\\n\\\"\\n```\\n\\n**Expected**: No errors; prints `PASS: tag-based invalidation`.\\n\\n**Reference**: spec.md User Story 2, FR-005\\n\\n---\\n\\n### Scenario 3: Replacement Removes Old Tags\\n\\n**Goal**: Verify replacing a key removes its old tag memberships.\\n\\n```bash\\npython3 -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\nc = TaggedCache(2)\\nc.put('a', 1, ['old'])\\nc.put('a', 2, ['new'])\\nremoved = c.invalidate('old')\\nassert removed == 0, f'Expected 0, got {removed}'\\nassert c.get('a') == 2\\nprint('PASS: replacement removes old tags')\\n\\\"\\n```\\n\\n**Expected**: No errors; prints `PASS: replacement removes old tags`.\\n\\n**Reference**: spec.md User Story 2, FR-006, acceptance_public.py `test_public_replacement`\\n\\n---\\n\\n### Scenario 4: Input Validation\\n\\n**Goal**: Verify bare string and non-string tags raise ValueError before state change.\\n\\n```bash\\npython3 -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\nc = TaggedCache(2)\\n\\n# Bare string should raise ValueError\\ntry:\\n    c.put('a', 1, 'x')\\n    assert False, 'Should have raised ValueError'\\nexcept ValueError:\\n    pass\\n\\n# Non-string entry should raise ValueError\\ntry:\\n    c.put('a', 1, ['x', 42])\\n    assert False, 'Should have raised ValueError'\\nexcept ValueError:\\n    pass\\n\\n# Cache should be empty (no state change)\\nassert len(c) == 0\\nprint('PASS: input validation')\\n\\\"\\n```\\n\\n**Expected**: No errors; prints `PASS: input validation`.\\n\\n**Reference**: spec.md User Story 4, FR-009, FR-010\\n\\n---\\n\\n### Scenario 5: Maxsize Validation\\n\\n**Goal**: Verify maxsize rejects bool and non-positive values.\\n\\n```bash\\npython3 -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# True should raise ValueError\\ntry:\\n    TaggedCache(maxsize=True)\\n    assert False, 'Should have raised ValueError'\\nexcept ValueError:\\n    pass\\n\\n# Negative should raise ValueError\\ntry:\\n    TaggedCache(maxsize=-1)\\n    assert False, 'Should have raised ValueError'\\nexcept ValueError:\\n    pass\\n\\n# Zero should raise ValueError\\ntry:\\n    TaggedCache(maxsize=0)\\n    assert False, 'Should have raised ValueError'\\nexcept ValueError:\\n    pass\\n\\nprint('PASS: maxsize validation')\\n\\\"\\n```\\n\\n**Expected**: No errors; prints `PASS: maxsize validation`.\\n\\n**Reference**: spec.md User Story 5, FR-012\\n\\n---\\n\\n### Scenario 6: LRU Eviction with Tag Integrity\\n\\n**Goal**: Verify LRU eviction does not leave stale tag memberships.\\n\\n```bash\\npython3 -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\nc.put('b', 2, ['y'])\\nc.put('c', 3, ['z'])  # 'a' should be evicted (LRU)\\nassert len(c) == 2\\n\\n# Evicted key 'a' with tag 'x' should not be found\\nremoved = c.invalidate('x')\\nassert removed == 0, f'Expected 0 stale removals, got {removed}'\\nprint('PASS: LRU eviction with tag integrity')\\n\\\"\\n```\\n\\n**Expected**: No errors; prints `PASS: LRU eviction with tag integrity`.\\n\\n**Reference**: spec.md User Story 3, FR-007\\n\\n---\\n\\n### Scenario 7: Deep Copy Semantics\\n\\n**Goal**: Verify get returns a detached deep copy.\\n\\n```bash\\npython3 -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\nc = TaggedCache(2)\\nc.put('a', [1, 2, 3], ['x'])\\nval = c.get('a')\\nassert val == [1, 2, 3]\\nassert val is not [1, 2, 3]  # Different object\\nval.append(4)\\nassert c.get('a') == [1, 2, 3]  # Original unchanged\\nprint('PASS: deep copy semantics')\\n\\\"\\n```\\n\\n**Expected**: No errors; prints `PASS: deep copy semantics`.\\n\\n**Reference**: spec.md User Story 1, FR-014\\n\\n---\\n\\n### Scenario 8: Public Acceptance Tests\\n\\n**Goal**: Run the public acceptance test suite.\\n\\n```bash\\ncd /testbed\\npython3 -m pytest acceptance_public.py -v\\n```\\n\\n**Expected**: All tests pass.\\n\\n**Reference**: acceptance_public.py\\nQS_EOF\"}",
+          "reasoning_sha256": "d66ddb28976f0d1acc3b6a6ee1d4bee2492781f81aaa3705e9f0fb646bdb8e4b",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789700157,
+    "id": "chatcmpl-VapDe8CAaqd7akVaooc8tZZKMB62nIVi",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 2775,
+      "predicted_ms": 19434.804,
+      "predicted_n": 1593,
+      "predicted_per_second": 81.91489865295271,
+      "predicted_per_token_ms": 12.207791457286433,
+      "prompt_ms": 11041.191,
+      "prompt_n": 25882,
+      "prompt_per_second": 2344.1311720809827,
+      "prompt_per_token_ms": 0.4265972876902867
+    },
+    "usage": {
+      "completion_tokens": 1593,
+      "prompt_tokens": 28657,
+      "prompt_tokens_details": {
+        "cached_tokens": 2775
+      },
+      "total_tokens": 30250
+    }
+  },
+  "seconds": 30.70299999997951,
+  "stage": 1,
+  "started_at": "2026-09-18T02:55:27.261390+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1593,
+    "prompt_tokens": 28657,
+    "prompt_tokens_details": {
+      "cached_tokens": 2775
+    },
+    "total_tokens": 30250
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "tasks.md Phase 2-3"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [],
+      "falsification_tests": [
+        "put('a',1,'x') must raise ValueError and leave cache empty",
+        "put('a',1,['x',42]) must raise ValueError and leave cache empty",
+        "put('a',1,['x','x']) must deduplicate to ['x']"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "milestone R01",
+      "status": "unsupported",
+      "text": "put(key,value,tags=()) inserts/replaces an entry; get(key) returns a detached deep copy or raises KeyError; tags must be a finite iterable of strings; deduplicate tags; reject bare string as tags and nonstring tag entries with ValueError before changing existing state",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "tasks.md Phase 2-5"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "put('a',1,['x']),put('b',2,['x']),invalidate('x') returns 2 and len==0",
+        "put('a',1,['old']),put('a',2,['new']),invalidate('old') returns 0",
+        "invalidate('z') on non-existent tag returns 0"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "milestone R02",
+      "status": "unsupported",
+      "text": "invalidate(tag) removes exactly currently cached entries carrying that tag and returns the number removed; replacing a key removes its old tag memberships; LRU eviction must not leave stale memberships; get refreshes LRU recency; len(cache) counts live entries",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "tasks.md Phase 2,7"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [],
+      "falsification_tests": [
+        "TaggedCache(maxsize=True) raises ValueError",
+        "c.maxsize=True on TaggedCache(2) raises ValueError and maxsize stays 2",
+        "c.maxsize=-1 raises ValueError"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "milestone R03",
+      "status": "unsupported",
+      "text": "maxsize must be a positive integer, excluding bool; invalid replacement input must leave old value/tags/recency unchanged; values cost one capacity slot regardless of object size",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

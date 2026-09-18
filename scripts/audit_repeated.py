@@ -13,7 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 def audit(raw, kind):
     freeze = json.loads((raw / 'freeze.json').read_text())
     for name, expected in freeze['hashes'].items():
-        assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected, name
+        archived=raw/'frozen-inputs'/name
+        source=archived if archived.is_file() else ROOT/name
+        assert hashlib.sha256(source.read_bytes()).hexdigest() == expected, name
     records = []
     for path in sorted(raw.rglob('call-*.json')):
         record = json.loads(path.read_text())

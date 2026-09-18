@@ -91,12 +91,23 @@ and use it to stop a process on another machine.
 
 ## Reporting
 
+Study01 was interrupted before hidden grading; its evidence is retained in
+`reports/local/repeated-study-01-interrupted`. The replacement uses the same
+model, tasks, budgets and grading with a calibrated equivalent context search.
+On the measured host, `scripts/run_repeated_revision.py` waits for matched-repair01
+and restoration, then starts study02 and restores the service again afterward.
+It requires `artifacts/context-selection-01/result.json` from
+`scripts/calibrate_context_selection.py`. That calibration uses long saved local
+request traces; public exports retain their hashes rather than full requests.
+A replication must supply its own saved long histories, verify equivalent
+selection under its pinned template, and record a fresh calibration/freeze.
+
 After all generation and hidden grading complete:
 
 ```powershell
-.venv-gpu/Scripts/python.exe scripts/audit_repeated.py study artifacts/repeated-study-01
+.venv-gpu/Scripts/python.exe scripts/audit_repeated.py study artifacts/repeated-study-02
 .venv-gpu/Scripts/python.exe scripts/audit_repeated.py repair artifacts/matched-repair-01
-.venv-gpu/Scripts/python.exe scripts/report_repeated.py study artifacts/repeated-study-01 reports/local/repeated-study-01
+.venv-gpu/Scripts/python.exe scripts/report_repeated.py study artifacts/repeated-study-02 reports/local/repeated-study-02
 .venv-gpu/Scripts/python.exe scripts/report_repeated.py repair artifacts/matched-repair-01 reports/local/matched-repair-01
 .venv-gpu/Scripts/python.exe scripts/report_repeated_setup.py reports/local/repeated-setup-01
 .venv-gpu/Scripts/python.exe scripts/check_evidence.py

@@ -1,0 +1,60 @@
+{
+  "budget_debit": 10913,
+  "ended_at": "2026-09-18T04:38:07.600093+00:00",
+  "max_output": 4096,
+  "original_sha256": "54bd20de14039139a75605f817472c54cd3b09bb3e7c294e0e47a09f24b92144",
+  "phase": "constitution",
+  "preflight_input_tokens": 10765,
+  "removed_history_messages": 0,
+  "request_seconds": 1.9060000000172295,
+  "request_sha256": "690e6790a6f71ca878d214ff578776ca117baac1eb41ad25431ad31cc0d10ff9",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\", \"command\": \"cd /testbed && python3 -c \\\"\\nimport re\\nwith open('.specify/memory/constitution.md') as f:\\n    content = f.read()\\n# Check for any remaining [ALL_CAPS] placeholder tokens\\nmatches = re.findall(r'\\\\[([A-Z_]+)\\\\]', content)\\nif matches:\\n    print(f'Remaining placeholders: {matches}')\\nelse:\\n    print('No remaining placeholder tokens - document is clean.')\\n\\\"\\n\"}",
+          "reasoning_sha256": "c27daec8729faf3737b12df4696f7299ef1748428b2f81e37fc8a8a7d6e4af3d",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789706287,
+    "id": "chatcmpl-01X1VII8OSTOhXn1m8diuSfzSn4DsOya",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 10539,
+      "predicted_ms": 1629.272,
+      "predicted_n": 148,
+      "predicted_per_second": 90.22434559729746,
+      "predicted_per_token_ms": 11.08348299319728,
+      "prompt_ms": 264.486,
+      "prompt_n": 226,
+      "prompt_per_second": 854.4875721210196,
+      "prompt_per_token_ms": 1.17029203539823
+    },
+    "usage": {
+      "completion_tokens": 148,
+      "prompt_tokens": 10765,
+      "prompt_tokens_details": {
+        "cached_tokens": 10539
+      },
+      "total_tokens": 10913
+    }
+  },
+  "seconds": 1.9060000000172295,
+  "stage": 1,
+  "started_at": "2026-09-18T04:38:05.688952+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 148,
+    "prompt_tokens": 10765,
+    "prompt_tokens_details": {
+      "cached_tokens": 10539
+    },
+    "total_tokens": 10913
+  }
+}

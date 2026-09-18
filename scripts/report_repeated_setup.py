@@ -16,7 +16,7 @@ def copy_evidence(source, target):
     for path in source.rglob('*'):
         if not path.is_file() or '__pycache__' in path.parts:
             continue
-        if path.suffix not in ('.json', '.jsonl', '.tar', '.md', '.py') and 'objects' not in path.parts:
+        if path.suffix not in ('.json', '.jsonl', '.tar', '.md', '.py', '.ps1') and 'objects' not in path.parts:
             continue
         destination = target / path.relative_to(source)
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -40,17 +40,21 @@ def run(destination):
     destination.mkdir(parents=True, exist_ok=False)
     folders = sorted(ROOT.glob('artifacts/repeated-workflow-*'))
     folders += [ROOT / 'artifacts' / name for name in (
-        'repeated-latency-01', 'repeated-calibration-01', 'matched-calibration-01')]
+        'repeated-latency-01', 'repeated-calibration-01', 'matched-calibration-01', 'context-selection-01')]
     rows = []
     all_records = []
     for folder in folders:
         records = [json.loads(p.read_text(encoding='utf-8-sig')) for p in sorted(folder.rglob('call-*.json'))]
         all_records.extend(records)
-        result_path = folder / ('result.json' if 'workflow' in folder.name else 'calibration.json')
+        result_path = folder / ('result.json' if (folder/'result.json').exists() else 'calibration.json')
         result = json.loads(result_path.read_text())
         rows.append(dict(scope=folder.name, passed=result['passed'], economics=accounting(records)))
         copy_evidence(folder, destination / folder.name)
     copy_evidence(ROOT / 'artifacts/repeated-assets', destination / 'controller-assets')
+    interrupted=ROOT/'artifacts/repeated-study-01'
+    records=[json.loads(p.read_text()) for p in interrupted.glob('*/call-*.json')]
+    all_records.extend(records)
+    rows.append(dict(scope='repeated-study-01-interrupted',passed=False,economics=accounting(records),evidence='../repeated-study-01-interrupted/README.md'))
     notices = destination / 'licenses'
     notices.mkdir()
     shutil.copyfile(ROOT / 'docs/spec-kit-LICENSE.txt', notices / 'spec-kit-LICENSE.txt')
@@ -61,7 +65,7 @@ def run(destination):
     write_json(destination / 'summary.json', dict(rows=rows, economics=accounting(all_records),
         note='All preparation attempts retained. No scored success claim; controller work is unpriced.'))
     scored_rows = []
-    for name in ('repeated-study-01', 'matched-repair-01'):
+    for name in ('repeated-study-02', 'matched-repair-01'):
         source = ROOT / 'artifacts' / name
         assert (source / 'results.json').exists(), 'Complete generation and grading before final inventory'
         records = [json.loads(p.read_text()) for p in source.rglob('call-*.json')]

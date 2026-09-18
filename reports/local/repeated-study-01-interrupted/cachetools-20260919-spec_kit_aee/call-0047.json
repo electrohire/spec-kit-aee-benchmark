@@ -1,0 +1,60 @@
+{
+  "budget_debit": 28654,
+  "ended_at": "2026-09-18T02:57:06.914694+00:00",
+  "max_output": 4096,
+  "original_sha256": "58806252d3e6a9ba4e2e2ad8a05ef90132a9ea27397bd8440b2d8a49ffd05e3e",
+  "phase": "tasks",
+  "preflight_input_tokens": 28481,
+  "removed_history_messages": 40,
+  "request_seconds": 12.920999999972992,
+  "request_sha256": "d22f19db53877fd3d4ddb0c7e33479ce2072c3bf24c92de11d4cd127a22c0a37",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\": \"cd /testbed && python3 .specify/scripts/python/setup_tasks.py --json 2>/dev/null | python3 -c \\\"\\nimport json, sys\\nraw = sys.stdin.read()\\n# The output has the JSON embedded - find it\\nstart = raw.find('{')\\nend = raw.rfind('}') + 1\\nif start >= 0 and end > start:\\n    data = json.loads(raw[start:end])\\n    print(json.dumps(data, indent=2))\\nelse:\\n    print('RAW:', raw[:500])\\n\\\"\"}",
+          "reasoning_sha256": "5a3130791ff67e2087a713adfe2da01e6c18ce951236a1b65c0ae43394edd2ab",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789700226,
+    "id": "chatcmpl-CiHqmiYkTsMxQErhpreHmg9zYkBk92dZ",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 3832,
+      "predicted_ms": 2089.718,
+      "predicted_n": 173,
+      "predicted_per_second": 82.30775635755639,
+      "predicted_per_token_ms": 12.149523255813953,
+      "prompt_ms": 10596.923,
+      "prompt_n": 24649,
+      "prompt_per_second": 2326.052572053227,
+      "prompt_per_token_ms": 0.4299128970749321
+    },
+    "usage": {
+      "completion_tokens": 173,
+      "prompt_tokens": 28481,
+      "prompt_tokens_details": {
+        "cached_tokens": 3832
+      },
+      "total_tokens": 28654
+    }
+  },
+  "seconds": 12.920999999972992,
+  "stage": 1,
+  "started_at": "2026-09-18T02:56:54.003904+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 173,
+    "prompt_tokens": 28481,
+    "prompt_tokens_details": {
+      "cached_tokens": 3832
+    },
+    "total_tokens": 28654
+  }
+}

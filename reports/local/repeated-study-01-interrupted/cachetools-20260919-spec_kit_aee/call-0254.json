@@ -1,0 +1,60 @@
+{
+  "budget_debit": 28014,
+  "ended_at": "2026-09-18T04:09:57.308262+00:00",
+  "max_output": 4096,
+  "original_sha256": "dfefeec505c197829933f794fe5208f675be27c0b3c01db41088c92c88de9a8a",
+  "phase": "plan",
+  "preflight_input_tokens": 27273,
+  "removed_history_messages": 80,
+  "request_seconds": 9.702999999979511,
+  "request_sha256": "09735346c71f18e1864643316dd1fb5d7df0f92a4e209120c09d3d11b4e52b6d",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\n  \"action\": \"shell\",\n  \"command\": \"PYTHONPATH=src:. python3 -c \\\"\\nfrom cachetools.tagged import TaggedCache\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\nprint('put done')\\nprint('len:', len(c))\\nprint('get:', c.get('a'))\\n\\\"\"}",
+          "reasoning_sha256": "2ab1ad3260c50c2d8a83c29bbb46a126c0c7b3cbbf862afad352c7bac7c6fe43",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789704597,
+    "id": "chatcmpl-QXMIm9ASoKgDsnpSfX2zdEiIQgklfUha",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 27006,
+      "predicted_ms": 9120.504,
+      "predicted_n": 741,
+      "predicted_per_second": 81.1358670529611,
+      "predicted_per_token_ms": 12.325005405405406,
+      "prompt_ms": 541.65,
+      "prompt_n": 267,
+      "prompt_per_second": 492.9382442536694,
+      "prompt_per_token_ms": 2.028651685393258
+    },
+    "usage": {
+      "completion_tokens": 741,
+      "prompt_tokens": 27273,
+      "prompt_tokens_details": {
+        "cached_tokens": 27006
+      },
+      "total_tokens": 28014
+    }
+  },
+  "seconds": 9.702999999979511,
+  "stage": 3,
+  "started_at": "2026-09-18T04:09:47.601635+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 741,
+    "prompt_tokens": 27273,
+    "prompt_tokens_details": {
+      "cached_tokens": 27006
+    },
+    "total_tokens": 28014
+  }
+}

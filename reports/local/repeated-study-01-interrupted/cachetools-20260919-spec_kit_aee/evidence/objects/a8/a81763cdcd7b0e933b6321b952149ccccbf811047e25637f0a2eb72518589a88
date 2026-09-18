@@ -1,0 +1,1 @@
+{"command": "PYTHONPATH=src:. python3 -c \"\nfrom cachetools import LRUCache\nc = LRUCache(3)\nc['a'] = 1\nc['b'] = 2\nprint('before:', dict(c))\nc.clear()\nprint('after:', dict(c))\nprint('type of clear:', type(c.clear))\n\"", "exit_code": 0, "stderr": "", "stdout": "before: {'a': 1, 'b': 2}\nafter: {}\ntype of clear: <class 'method'>\n"}

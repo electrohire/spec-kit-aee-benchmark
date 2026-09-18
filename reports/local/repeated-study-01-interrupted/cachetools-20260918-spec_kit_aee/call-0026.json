@@ -1,0 +1,60 @@
+{
+  "budget_debit": 22064,
+  "ended_at": "2026-09-18T04:39:36.788204+00:00",
+  "max_output": 4096,
+  "original_sha256": "6b5bcf72d4a59f0bc2a00154a70b7af9c1dc6575df4e2c775f208a479349c67f",
+  "phase": "specify",
+  "preflight_input_tokens": 21911,
+  "removed_history_messages": 0,
+  "request_seconds": 2.1410000000032596,
+  "request_sha256": "aeb5ee7e2486c225fa4f1ecb30420572327ae4c5ceae20fc6a4622e3091abeec",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\", \"command\": \"cd /testbed && echo \\\"=== Spec File ===\\\" && ls -la specs/001-transactions/spec.md && echo \\\"\\\" && echo \\\"=== Checklist ===\\\" && ls -la specs/001-transactions/checklists/requirements.md && echo \\\"\\\" && echo \\\"=== Feature JSON ===\\\" && cat .specify/feature.json && echo \\\"\\\" && echo \\\"=== Constitution ===\\\" && ls -la .specify/memory/constitution.md && echo \\\"\\\" && echo \\\"=== No extensions ===\\\" && ls .specify/extensions.yml 2>&1 || true\"}",
+          "reasoning_sha256": "dfdaa34751cd6342a7f1fa496dd40545f6a0c2261b37e76fb7aedc93555511f5",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789706376,
+    "id": "chatcmpl-OgZzdXNQk3IYzxYb1SrbWvLIaGjN4aSu",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 21696,
+      "predicted_ms": 1825.773,
+      "predicted_n": 153,
+      "predicted_per_second": 83.252408705792,
+      "predicted_per_token_ms": 12.01166447368421,
+      "prompt_ms": 297.134,
+      "prompt_n": 215,
+      "prompt_per_second": 723.5792605356506,
+      "prompt_per_token_ms": 1.3820186046511629
+    },
+    "usage": {
+      "completion_tokens": 153,
+      "prompt_tokens": 21911,
+      "prompt_tokens_details": {
+        "cached_tokens": 21696
+      },
+      "total_tokens": 22064
+    }
+  },
+  "seconds": 2.1410000000032596,
+  "stage": 1,
+  "started_at": "2026-09-18T04:39:34.635152+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 153,
+    "prompt_tokens": 21911,
+    "prompt_tokens_details": {
+      "cached_tokens": 21696
+    },
+    "total_tokens": 22064
+  }
+}

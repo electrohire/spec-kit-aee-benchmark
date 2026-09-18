@@ -1,0 +1,60 @@
+{
+  "budget_debit": 27072,
+  "ended_at": "2026-09-18T04:11:59.331961+00:00",
+  "max_output": 4096,
+  "original_sha256": "1dbe1a31d03b1cda212198b63fa34f002835e6c04391b304baf45e6142f97709",
+  "phase": "tasks",
+  "preflight_input_tokens": 26674,
+  "removed_history_messages": 94,
+  "request_seconds": 14.796999999962281,
+  "request_sha256": "e5ad4543a603ccd4549a91dd25bf4574e43847140597049ba5da2e5fa5e07673",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\n  \"action\": \"shell\",\n  \"command\": \"PYTHONPATH=src:. python3 -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# Test R02: LRU eviction must not leave stale memberships\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\nc.put('b', 2, ['x'])\\nassert c.invalidate('x') == 2  # removes both\\nassert c._tags.get('x') is None  # tag entry fully cleaned up\\n\\n# Now test: put 'a' again after eviction, then evict via LRU\\nc2 = TaggedCache(2)\\nc2.put('a', 1, ['x'])\\nc2.put('b', 2, ['x'])\\nc2.put('c', 3, ['y'])  # evicts 'a'\\nassert 'a' not in c2  # 'a' was evicted\\nassert c2.invalidate('x') == 1  # only 'b' remains with tag 'x'\\nprint('LRU eviction tag cleanup works')\\n\\n# Test R03: maxsize property\\nc3 = TaggedCache(5)\\nassert c3.maxsize == 5\\nc3.maxsize = 10\\nassert c3.maxsize == 10\\nprint('maxsize property works')\\n\\n# Test R03: invalid replacement input leaves old value unchanged\\nc4 = TaggedCache(5)\\nc4.put('a', 1, ['x'])\\ntry:\\n    c4.maxsize = True\\nexcept ValueError:\\n    pass\\nassert c4.maxsize == 5\\nassert c4.get('a') == 1\\nprint('Invalid maxsize replacement preserves state')\\n\\\"\\n\"}",
+          "reasoning_sha256": "408ab6e7dce5d4287e00dfc6991b5bf990266d4028b2e5fdd9c3c8365490e540",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789704719,
+    "id": "chatcmpl-CgKC67q8ihtdgCSGrfHONvCc7Ahe2iN1",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 4800,
+      "predicted_ms": 4716.834,
+      "predicted_n": 398,
+      "predicted_per_second": 84.16662532537715,
+      "predicted_per_token_ms": 11.881193954659949,
+      "prompt_ms": 9855.446,
+      "prompt_n": 21874,
+      "prompt_per_second": 2219.4835221054427,
+      "prompt_per_token_ms": 0.45055527109810733
+    },
+    "usage": {
+      "completion_tokens": 398,
+      "prompt_tokens": 26674,
+      "prompt_tokens_details": {
+        "cached_tokens": 4800
+      },
+      "total_tokens": 27072
+    }
+  },
+  "seconds": 14.796999999962281,
+  "stage": 3,
+  "started_at": "2026-09-18T04:11:44.523208+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 398,
+    "prompt_tokens": 26674,
+    "prompt_tokens_details": {
+      "cached_tokens": 4800
+    },
+    "total_tokens": 27072
+  }
+}

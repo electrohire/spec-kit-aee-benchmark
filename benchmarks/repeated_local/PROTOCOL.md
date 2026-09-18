@@ -123,3 +123,29 @@ API expenditure0; electricity/hardware/controller work unpriced. ElectroHire mai
 the evaluated packages and benchmark; independent replication remains absent.
 
 A third calibration exhausted its plan phase while still writing supporting artifacts. Phase quotas were increased to32 with160 primary calls/stage before scored generation; this is preparation cost, not a scored model improvement. All failed calibration requests remain in the inventory.
+
+## Context-selector correction before the fresh study02 freeze
+
+Study01 was interrupted in its second trajectory, before any hidden grading.
+Its357 calls and8,987,818 measured tokens remain in the preparation inventory,
+with all available checkpoints and exact frozen inputs. The adapter's linear
+context selection repeatedly rendered/tokenized retained history; some requests
+needed about145 iterations. This spent stage time outside model generation.
+
+Study02 replaces that search with binary search for the same first-fitting
+two-message cutoff. The pinned Qwen template's token length decreases as old
+delimited messages are removed. Native calibration compares the selected message
+arrays and token counts with the former linear algorithm on four long fixtures
+derived from saved traces; property tests cover many lengths and budgets.
+Calibration must pass and its selector hash must match before the new freeze.
+Model parameters, requirements, seeds, arms, quotas, time/token budgets, grading,
+and repair rules remain unchanged. The arithmetic workflow calibration remains
+applicable to the unchanged action/assessment logic; this additional calibration
+targets context-selection equivalence and records helper HTTP counts/timing.
+
+Matched-repair01 continues under its original separately archived source freeze.
+Its short repair trajectories use the original selector. A roughly25-second,
+CPU-only context calibration overlapped early matched-repair generation; repair
+timing therefore remains exploratory. No extra model-generation calls were made
+for the selector check. Do not attribute this adapter optimization to an AEE
+correctness advantage, and do not update the email or article from it.

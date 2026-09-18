@@ -16,6 +16,7 @@ from benchmark_runner.workflow import assess, grounded_claims
 from gpu_experiment import local_json, digest
 from long_horizon import Sandbox, CLAIMS, skill, PHASE_GOALS
 from report_long_horizon import source_digest
+from context_window import select_context
 
 ROOT = Path(__file__).resolve().parents[1]
 TASK = ROOT / 'benchmarks/repeated_local'
@@ -41,7 +42,7 @@ the stage-three handoff but conversation history is cleared for every arm.
 CONFIG = dict(context=32768, max_output=4096, primary_calls=160, repair_calls=8,
               repair_rounds=2, stage_seconds=2400, token_cap=18000000,
               seeds=SEEDS, temperature=0.6, top_p=0.95, top_k=20,
-              history='drop oldest complete pairs at context boundary; explicit stage3 reset',
+              history='first-fitting oldest two-message cutoff by calibrated binary search; explicit stage3 reset',
               unknown_policy='retain null native usage; reserve input+max_output; wait for idle slot; continue within cap')
 
 
@@ -103,17 +104,26 @@ def grade(project,snapshot,stage,public,expected=None):
 class Provider:
     def __init__(self,folder,seed,timeout):
         self.folder=folder; self.seed=seed; self.timeout=timeout; self.calls=[]
+        self.preflights=[]
         self.folder.mkdir(parents=True,exist_ok=True)
     def query(self,messages,phase,stage,deadline):
         if (self.folder.parent/'CANCEL').exists(): raise KeyboardInterrupt('cancelled')
-        chosen=[dict(m) for m in messages]; removed=0
-        while True:
-            prompt=local_json('/apply-template',dict(messages=chosen,chat_template_kwargs={'enable_thinking':True}))['prompt']
-            count=len(local_json('/tokenize',dict(content=prompt,add_special=False))['tokens'])
-            if count+CONFIG['max_output']<=CONFIG['context']: break
-            if len(chosen)<=3: raise RuntimeError('fixed_instructions_exceed_context')
-            # Keep system/current requirements; drop the oldest exchange only.
-            del chosen[2:4]; removed+=2
+        preflight=dict(stage=stage,phase=phase,started_at=utc(),http_requests=0)
+        self.preflights.append(preflight);preflight_begin=time.monotonic()
+        def measure(selected):
+            preflight['http_requests']+=1
+            prompt=local_json('/apply-template',dict(messages=selected,chat_template_kwargs={'enable_thinking':True}))['prompt']
+            preflight['http_requests']+=1
+            return len(local_json('/tokenize',dict(content=prompt,add_special=False))['tokens'])
+        try:
+            chosen,count,removed=select_context(messages,measure,CONFIG['context'],CONFIG['max_output'])
+            preflight.update(input_tokens=count,removed_history_messages=removed)
+        except Exception as exc:
+            preflight['error']=repr(exc)
+            raise
+        finally:
+            preflight.update(seconds=time.monotonic()-preflight_begin,ended_at=utc())
+            write_json(self.folder/f'preflight-{len(self.preflights)-1:04}.json',preflight)
         if sum(reservation(c) for c in self.calls)+count+CONFIG['max_output']>CONFIG['token_cap']:
             raise RuntimeError('reserved_token_cap')
         remaining=deadline-time.monotonic()
@@ -123,7 +133,8 @@ class Provider:
                      cache_prompt=bool(self.calls),response_format={'type':'json_object'},
                      chat_template_kwargs={'enable_thinking':True})
         record=dict(stage=stage,phase=phase,started_at=utc(),request=request,usage=None,unknown_reason='pending',
-                    preflight_input_tokens=count,max_output=CONFIG['max_output'],removed_history_messages=removed)
+                    preflight_input_tokens=count,max_output=CONFIG['max_output'],removed_history_messages=removed,
+                    preflight_http_requests=preflight['http_requests'],preflight_seconds=preflight['seconds'])
         path=self.folder/f'call-{len(self.calls):04}.json';self.calls.append(record);write_json(path,record,exclusive=True)
         begin=time.monotonic()
         try:
@@ -258,6 +269,8 @@ def campaign(out,preflight,timeout):
     cal=json.loads((preflight/'calibration.json').read_text());assert cal['passed']
     gate=json.loads((ROOT/'artifacts/repeated-workflow-04/result.json').read_text());assert gate['passed']
     latency_result=json.loads((ROOT/'artifacts/repeated-latency-01/calibration.json').read_text());assert latency_result['passed'] and timeout==latency_result['timeout']
+    context_calibration=json.loads((ROOT/'artifacts/context-selection-01/result.json').read_text())
+    assert context_calibration['passed'] and context_calibration['selector_sha256']==digest(ROOT/'scripts/context_window.py')
     for project,meta in PROJECTS.items():
         actual=subprocess.check_output(['git','-c','safe.directory='+str((ROOT/meta['upstream']).resolve()).replace('\\','/'),'-C',str(ROOT/meta['upstream']),'rev-parse','HEAD'],text=True).strip()
         assert actual==meta['revision']
@@ -269,12 +282,15 @@ def campaign(out,preflight,timeout):
     for name in ('hardware.json','server-launch.json','package-versions.json'):
         item=ROOT/'artifacts/repeated-assets'/name;hashes[str(item.relative_to(ROOT))]=digest(item)
     hashes['scripts/calibrate_repeated_workflow.py']=digest(ROOT/'scripts/calibrate_repeated_workflow.py')
+    hashes['scripts/context_window.py']=digest(ROOT/'scripts/context_window.py')
+    hashes['scripts/calibrate_context_selection.py']=digest(ROOT/'scripts/calibrate_context_selection.py')
+    hashes['artifacts/context-selection-01/result.json']=digest(ROOT/'artifacts/context-selection-01/result.json')
     hashes['scripts/gpu_experiment.py']=digest(ROOT/'scripts/gpu_experiment.py')
     hashes['scripts/report_long_horizon.py']=digest(ROOT/'scripts/report_long_horizon.py')
     hashes['uv.lock']=digest(ROOT/'uv.lock')
     hashes['.specify/memory/constitution.md']=digest(ROOT/'.specify/memory/constitution.md')
     hashes['scripts/repeated_local.py']=digest(__file__);hashes['scripts/long_horizon.py']=digest(ROOT/'scripts/long_horizon.py')
-    freeze=dict(created_at=utc(),config={**CONFIG,'timeout':timeout},schedule=schedule,hashes=hashes,projects=PROJECTS,image=IMAGE,server_props=local_json('/props'),calibration=cal,workflow_calibration=gate,latency_calibration=latency_result)
+    freeze=dict(created_at=utc(),config={**CONFIG,'timeout':timeout},schedule=schedule,hashes=hashes,projects=PROJECTS,image=IMAGE,server_props=local_json('/props'),calibration=cal,workflow_calibration=gate,latency_calibration=latency_result,context_selection_calibration=context_calibration)
     write_json(out/'freeze.json',freeze,exclusive=True)
     rows=[]
     for project,seed,arm in schedule:

@@ -1,0 +1,60 @@
+{
+  "budget_debit": 30674,
+  "ended_at": "2026-09-18T03:50:05.762997+00:00",
+  "max_output": 4096,
+  "original_sha256": "03b677547847f2a28f9e152e4f14cfa298417ad5466d563d11833d35d5edec39",
+  "phase": "plan",
+  "preflight_input_tokens": 27615,
+  "removed_history_messages": 304,
+  "request_seconds": 38.40600000001723,
+  "request_sha256": "e8a5bc22b860fc2a2b7832cad8fcfcea1e915a26d102acf023fc2d7a1ab5e2e3",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\n  \"action\": \"shell\",\n  \"command\": \"cd /testbed && cat > /tmp/patch_tagged.py << 'PYEOF'\\nimport re\\n\\nwith open('src/cachetools/tagged.py', 'r') as f:\\n    content = f.read()\\n\\n# Add invalidate_many and resize methods before the helpers section\\n# Find the line with \\\"# ------------------------------------------------------------------ helpers\\\"\\ninsert_marker = \\\"    # ------------------------------------------------------------------ helpers\\\"\\n\\nnew_methods = '''    # ------------------------------------------------------------------ invalidate_many\\n    def invalidate_many(self, tags, mode='any'):\\n        \\\"\\\"\\\"Remove entries by tag(s) and return the count removed.\\n\\n        Args:\\n            tags: Iterable of string tags to match.\\n            mode: 'any' removes entries matching at least one tag (union),\\n                  'all' removes entries matching every tag (intersection).\\n\\n        Returns:\\n            int: Number of distinct keys removed.\\n\\n        Raises:\\n            ValueError: If mode is invalid or tags contain non-string entries,\\n                        before any mutation.\\n        \\\"\\\"\\\"\\n        # --- validate BEFORE any state mutation ---\\n        if mode not in ('any', 'all'):\\n            raise ValueError(\\\"mode must be 'any' or 'all'\\\")\\n        if isinstance(tags, str):\\n            raise ValueError(\\\"tags must not be a bare string\\\")\\n        if not isinstance(tags, Iterable):\\n            raise ValueError(\\\"tags must be an iterable\\\")\\n        tag_list = list(tags)\\n        for t in tag_list:\\n            if not isinstance(t, str):\\n                raise ValueError(\\\"all tag entries must be strings\\\")\\n\\n        # Empty requested tags -> remove zero entries\\n        if not tag_list:\\n            return 0\\n\\n        if mode == 'any':\\n            # Union: any key that has at least one of the requested tags\\n            keys_to_remove = set()\\n            for t in tag_list:\\n                keys_to_remove.update(self._tags.get(t, set()))\\n        else:  # mode == 'all'\\n            # Intersection: keys that have ALL requested tags\\n            if not tag_list:\\n                return 0\\n            # Start with keys of first tag\\n            keys_to_remove = set(self._tags.get(tag_list[0], set()))\\n            for t in tag_list[1:]:\\n                keys_to_remove.intersection_update(self._tags.get(t, set()))\\n\\n        # Remove each key from the cache (which also cleans tag index)\\n        count = 0\\n        for k in keys_to_remove:\\n            if k in self:\\n                del self[k]\\n                count += 1\\n        return count\\n\\n    # ------------------------------------------------------------------ resize\\n    def resize(self, maxsize):\\n        \\\"\\\"\\\"Resize the cache to a new maxsize.\\n\\n        Validates that maxsize is a positive integer (not bool) first.\\n        Shrinking evicts least-recently-used entries; growing does not evict.\\n        Failed resizing preserves all state.\\n\\n        Args:\\n            maxsize: New maximum number of entries.\\n\\n        Raises:\\n            ValueError: If maxsize is not a positive integer or is a bool.\\n        \\\"\\\"\\\"\\n        # --- validate BEFORE any state mutation ---\\n        if isinstance(maxsize, bool) or not isinstance(maxsize, int) or maxsize <= 0:\\n            raise ValueError(\\\"maxsize must be a positive integer (not bool)\\\")\\n\\n        # If shrinking, evict LRU entries until currsize <= maxsize\\n        if maxsize < self.currsize:\\n            while self.currsize > maxsize:\\n                self.popitem()\\n\\n        # Update maxsize (name-mangled in LRUCache)\\n        self._Cache__maxsize = maxsize\\n\\n'''\\n\\n# Insert new methods before helpers\\ncontent = content.replace(insert_marker, new_methods + insert_marker)\\n\\nwith open('src/cachetools/tagged.py', 'w') as f:\\n    f.write(content)\\n\\nprint(\\\"Patch applied successfully\\\")\\nPYEOF\\npython /tmp/patch_tagged.py\", \"evidence_ref\": \"objects/62/62a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6\", \"source_id\": \"62a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6\"\n}",
+          "reasoning_sha256": "a73ea32ba305c87bdc8bed4f56d3e4328365d017951e70d5c08ecb9c0f735128",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789703405,
+    "id": "chatcmpl-9tdOP2DB5rQtAA4BR6BSwiPyYAfRHrBH",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 27122,
+      "predicted_ms": 37356.218,
+      "predicted_n": 3059,
+      "predicted_per_second": 81.8605352394078,
+      "predicted_per_token_ms": 12.215898626553303,
+      "prompt_ms": 1005.606,
+      "prompt_n": 493,
+      "prompt_per_second": 490.2516492542805,
+      "prompt_per_token_ms": 2.0397687626774847
+    },
+    "usage": {
+      "completion_tokens": 3059,
+      "prompt_tokens": 27615,
+      "prompt_tokens_details": {
+        "cached_tokens": 27122
+      },
+      "total_tokens": 30674
+    }
+  },
+  "seconds": 38.40600000001723,
+  "stage": 2,
+  "started_at": "2026-09-18T03:49:27.359556+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 3059,
+    "prompt_tokens": 27615,
+    "prompt_tokens_details": {
+      "cached_tokens": 27122
+    },
+    "total_tokens": 30674
+  }
+}

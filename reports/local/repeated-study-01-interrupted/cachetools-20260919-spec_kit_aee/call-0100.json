@@ -1,0 +1,60 @@
+{
+  "budget_debit": 27622,
+  "ended_at": "2026-09-18T03:12:31.706354+00:00",
+  "max_output": 4096,
+  "original_sha256": "fb9401ed30faf044676bdbb25ba8e2e0bd0c76e29865b44854fc4d78c1fc5a75",
+  "phase": "implement",
+  "preflight_input_tokens": 26226,
+  "removed_history_messages": 136,
+  "request_seconds": 17.70299999997951,
+  "request_sha256": "3d0178f002f2904c2a8851d8060823249f83455680b795ee83da95ab1348a894",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\": \"cat > /testbed/src/cachetools/tagged.py << 'PYEOF'\\n\\\"\\\"\\\"TaggedCache - a tag-aware bounded cache built on LRUCache.\\\"\\\"\\\"\\n\\nimport copy\\nfrom collections.abc import Iterable\\n\\nfrom cachetools import LRUCache\\n\\n\\nclass TaggedCache(LRUCache):\\n    \\\"\\\"\\\"A cache that supports per-entry string tags for group-based invalidation.\\n\\n    Inherits from cachetools.LRUCache for bounded storage and LRU eviction.\\n    Supports tagging entries, tag-based invalidation, and deep-copy semantics.\\n    \\\"\\\"\\\"\\n\\n    def __init__(self, maxsize, getsizeof=None):\\n        \\\"\\\"\\\"Create a TaggedCache with the given maxsize.\\n\\n        Args:\\n            maxsize: Maximum number of entries. Must be a positive integer\\n                     (bool is excluded).\\n            getsizeof: Optional callable returning the size of a value.\\n\\n        Raises:\\n            ValueError: If maxsize is not a positive integer or is a bool.\\n        \\\"\\\"\\\"\\n        if isinstance(maxsize, bool) or not isinstance(maxsize, int) or maxsize <= 0:\\n            raise ValueError(\\\"maxsize must be a positive integer (not bool)\\\")\\n        super().__init__(maxsize, getsizeof)\\n        self._tags = {}  # tag -> set of keys\\n\\n    # ------------------------------------------------------------------ maxsize\\n    @property\\n    def maxsize(self):\\n        \\\"\\\"\\\"The maximum size of the cache.\\\"\\\"\\\"\\n        return super().maxsize\\n\\n    @maxsize.setter\\n    def maxsize(self, value):\\n        \\\"\\\"\\\"Set maxsize, validating it is a positive integer (not bool).\\\"\\\"\\\"\\n        if isinstance(value, bool) or not isinstance(value, int) or value <= 0:\\n            raise ValueError(\\\"maxsize must be a positive integer (not bool)\\\")\\n        # Cache uses name-mangled _Cache__maxsize\\n        self._Cache__maxsize = value\\n\\n    # ------------------------------------------------------------------ put\\n    def put(self, key, value, tags=()):\\n        \\\"\\\"\\\"Insert or replace an entry with the given key, value, and tags.\\n\\n        Args:\\n            key: Hashable key.\\n            value: Value to cache (deep-copied on input).\\n            tags: Iterable of string tags (deduplicated). Must not be a bare\\n                  string and must not contain non-string entries.\\n\\n        Raises:\\n            ValueError: If tags is a bare string or contains non-string entries.\\n        \\\"\\\"\\\"\\n        # --- validate tags BEFORE any state mutation ---\\n        if isinstance(tags, str):\\n            raise ValueError(\\\"tags must not be a bare string\\\")\\n        if not isinstance(tags, Iterable):\\n            raise ValueError(\\\"tags must be an iterable\\\")\\n        tag_list = list(tags)\\n        for t in tag_list:\\n            if not isinstance(t, str):\\n                raise ValueError(\\\"all tag entries must be strings\\\")\\n        # deduplicate while preserving order\\n        seen = set()\\n        deduped = []\\n        for t in tag_list:\\n            if t not in seen:\\n                seen.add(t)\\n                deduped.append(t)\\n\\n        # --- remove old tag memberships if key already exists ---\\n        if key in self:\\n            self._remove_key_from_tags(key)\\n\\n        # --- deep-copy value and store ---\\n        copied_value = copy.deepcopy(value)\\n        super().__setitem__(key, copied_value)\\n\\n        # --- record new tag memberships ---\\n        for t in deduped:\\n            self._tags.setdefault(t, set()).add(key)\\n\\n    # ------------------------------------------------------------------ get\\n    def get(self, key, default=None):\\n        \\\"\\\"\\\"Return a deep copy of the value for *key*, or *default*.\\n\\n        Refreshes LRU recency on access.  Raises ``KeyError`` when *key* is\\n        missing and no *default* is provided (mirrors dict semantics).\\n        \\\"\\\"\\\"\\n        if key in self:\\n            value = super().__getitem__(key)  # triggers LRU update\\n            return copy.deepcopy(value)\\n        elif default is not None:\\n            return default\\n        else:\\n            raise KeyError(key)\\n\\n    # ------------------------------------------------------------------ invalidate\\n    def invalidate(self, tag):\\n        \\\"\\\"\\\"Remove all entries carrying *tag* and return the count removed.\\\"\\\"\\\"\\n        keys = self._tags.pop(tag, set())\\n        count = 0\\n        for k in keys:\\n            if k in self:\\n                del self[k]\\n                count += 1\\n        return count\\n\\n    # ------------------------------------------------------------------ helpers\\n    def _remove_key_from_tags(self, key):\\n        \\\"\\\"\\\"Remove *key* from every tag set it belongs to.\\\"\\\"\\\"\\n        for tag, key_set in list(self._tags.items()):\\n            key_set.discard(key)\\n            if not key_set:\\n                del self._tags[tag]\\n\\n    def _evict_stale_tags(self, key):\\n        \\\"\\\"\\\"Remove *key* from every tag set it belongs to (alias for cleanup).\\\"\\\"\\\"\\n        self._remove_key_from_tags(key)\\n\\n    # ------------------------------------------------------------------ __delitem__\\n    def __delitem__(self, key):\\n        \\\"\\\"\\\"Delete a key and clean up tag memberships.\\\"\\\"\\\"\\n        self._evict_stale_tags(key)\\n        super().__delitem__(key)\\n\\n    # ------------------------------------------------------------------ clear\\n    def clear(self):\\n        \\\"\\\"\\\"Remove all entries and reset tag index.\\\"\\\"\\\"\\n        self._tags.clear()\\n        super().clear()\\nPYEOF\\necho \\\"tagged.py updated\\\"\"}",
+          "reasoning_sha256": "9d76139c95d3ccdbfa4b4bac95c515a1fb15f84865b40a7a46c09e76dfa86fa1",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789701151,
+    "id": "chatcmpl-LnW9Vy8V0ilGfygUnZKYBClq5uaHAZF7",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 25642,
+      "predicted_ms": 16760.011,
+      "predicted_n": 1396,
+      "predicted_per_second": 83.23383558638477,
+      "predicted_per_token_ms": 12.014344802867383,
+      "prompt_ms": 896.462,
+      "prompt_n": 584,
+      "prompt_per_second": 651.4498104771869,
+      "prompt_per_token_ms": 1.5350376712328766
+    },
+    "usage": {
+      "completion_tokens": 1396,
+      "prompt_tokens": 26226,
+      "prompt_tokens_details": {
+        "cached_tokens": 25642
+      },
+      "total_tokens": 27622
+    }
+  },
+  "seconds": 17.70299999997951,
+  "stage": 1,
+  "started_at": "2026-09-18T03:12:13.999929+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1396,
+    "prompt_tokens": 26226,
+    "prompt_tokens_details": {
+      "cached_tokens": 25642
+    },
+    "total_tokens": 27622
+  }
+}
