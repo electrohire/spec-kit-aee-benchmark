@@ -1,0 +1,208 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: smoke.py exists at /testbed/smoke.py (486 bytes)",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "shell_evidence_19f5c3ab",
+          "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "/testbed/smoke.py does not exist"
+      ],
+      "id": "R01a",
+      "kind": "requirement",
+      "source_ref": "user requirement R01",
+      "status": "supported",
+      "text": "/testbed/smoke.py exists as a standalone Python module",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01a"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: 15 tests passed including test_add_positive_integers(add(2,3)==5), test_add_zeros(add(0,0)==0), test_add_negative_integers(add(-5,-3)==-8)",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "shell_evidence_19f5c3ab",
+          "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "add(2,3) returns 6",
+        "add(-1,-2) returns 3",
+        "add(0,0) returns 1"
+      ],
+      "id": "R01b",
+      "kind": "requirement",
+      "source_ref": "user requirement R01",
+      "status": "supported",
+      "text": "add(a, b) returns a + b for integer inputs",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01a"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: Tests test_add_floats(add(1.5,2.5)==4.0), test_add_floats_precision(math.isclose(add(0.1,0.2),0.3)), test_add_mixed_int_float(add(1,2.5)==3.5) all passed",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "shell_evidence_19f5c3ab",
+          "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "add(1.5,2.5) returns 3.0",
+        "add(0.1,0.2) returns 0.2"
+      ],
+      "id": "R02a",
+      "kind": "requirement",
+      "source_ref": "user requirement R02",
+      "status": "supported",
+      "text": "add(a, b) supports float inputs and returns correct sum",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01a"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: grep -i 'tinydb' /testbed/smoke.py returned no matches - no TinyDB references found",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "shell_evidence_d6054ba5",
+          "source_id": "d6054ba5d498c25b92f73082db6bbed945c70aa6f406e36d18e47966bb8f53a8",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "smoke.py contains 'import tinydb'",
+        "smoke.py modifies any file in tinydb/ directory"
+      ],
+      "id": "R02b",
+      "kind": "requirement",
+      "source_ref": "user requirement R02",
+      "status": "supported",
+      "text": "smoke.py does not import or modify any TinyDB source files",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01a"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: test_smoke.py exists (3042 bytes) and pytest collected 15 tests successfully",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "shell_evidence_19f5c3ab",
+          "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "/testbed/tests/test_smoke.py does not exist",
+        "pytest cannot discover tests in test_smoke.py"
+      ],
+      "id": "R03a",
+      "kind": "requirement",
+      "source_ref": "user requirement R03",
+      "status": "supported",
+      "text": "test suite exists at /testbed/tests/test_smoke.py",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R03a",
+        "R01b"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: Tests test_add_negative_integers(add(-5,-3)==-8), test_add_negative_and_positive(add(-1,1)==0), test_add_negative_float(add(-0.5,0.5)==0.0), test_add_negative_float(add(-1.5,-2.5)==-4.0) all passed",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "shell_evidence_19f5c3ab",
+          "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "test_smoke.py contains no test with negative numbers",
+        "add(-1,-2) test does not exist"
+      ],
+      "id": "R03b",
+      "kind": "requirement",
+      "source_ref": "user requirement R03",
+      "status": "supported",
+      "text": "test suite includes tests for negative values",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R03a",
+        "R01b"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: Tests test_add_zeros(add(0,0)==0), test_add_positive_and_zero(add(10,0)==10), test_add_zero_and_negative(add(0,-7)==-7), test_add_zero_float(add(0.0,0.0)==0.0) all passed",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "shell_evidence_19f5c3ab",
+          "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "test_smoke.py contains no test with zero",
+        "add(0,0) test does not exist"
+      ],
+      "id": "R03c",
+      "kind": "requirement",
+      "source_ref": "user requirement R03",
+      "status": "supported",
+      "text": "test suite includes tests for zero values",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

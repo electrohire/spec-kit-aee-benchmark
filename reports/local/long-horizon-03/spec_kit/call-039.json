@@ -1,0 +1,58 @@
+{
+  "ended_at": "2026-09-17T22:42:07.411856+00:00",
+  "original_sha256": "4ab164b9845295ca2ce26fc28c8be7a4d00d5bd1fd18e7cdaff19bb4630b3eb5",
+  "phase": "plan",
+  "preflight_input_tokens": 42484,
+  "removed_history_messages": 0,
+  "request_omission": "Full request retained locally. Omitted native reasoning prevents exact reconstruction from the public response/tool trace.",
+  "request_sha256": "05f5946fbb0c92008e788899d9fd2b8257e74810376e151b86e85b6e09fc0e6b",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\": \"mkdir -p /testbed/specs/001-transactions/contracts && cat > /testbed/specs/001-transactions/contracts/transactional-api.md << 'CONTRACT_EOF'\\n# Contract: TransactionalTinyDB Public API\\n\\n**Date**: 2026-09-17\\n**Feature**: Opt-in Transactions for TinyDB\\n\\n## Overview\\n\\nThis document defines the public API contract for `TransactionalTinyDB`, the transactional extension to TinyDB.\\n\\n## Import\\n\\n```python\\nfrom tinydb import TransactionalTinyDB\\n```\\n\\n## Class: TransactionalTinyDB\\n\\n### Constructor\\n\\n```python\\nTransactionalTinyDB(*args, **kwargs) -> TransactionalTinyDB\\n```\\n\\n**Parameters**: Same as `TinyDB` constructor.\\n- `storage` (keyword-only, default `JSONStorage`): The storage class to use.\\n- All other `*args` and `**kwargs` are passed to the storage class.\\n\\n**Returns**: A new `TransactionalTinyDB` instance.\\n\\n**Behavior**: Identical to `TinyDB` constructor. All existing constructor arguments and keyword arguments are accepted and passed through to the storage backend.\\n\\n### Method: transaction()\\n\\n```python\\ndb.transaction() -> TransactionContext\\n```\\n\\n**Returns**: A context manager (`TransactionContext`) that yields the database instance itself.\\n\\n**Usage**:\\n```python\\nwith db.transaction() as current:\\n    assert current is db  # Yields the same db instance\\n    db.insert({'key': 'value'})\\n    # Changes are buffered, not written to storage\\n# On exit: changes are written to storage exactly once\\n```\\n\\n**Behavior**:\\n1. On `__enter__`: Takes a snapshot of the current database state. Replaces `storage.write` with a no-op. Returns the database instance.\\n2. On `__exit__` (no exception): Writes the accumulated database state to storage exactly once.\\n3. On `__exit__` (exception): Restores the snapshot to storage. Clears all query caches. Propagates the exception.\\n\\n**Raises**: `RuntimeError` if called while already inside a transaction (nesting is not supported in this release).\\n\\n## Class: TransactionContext\\n\\nA context manager. Users do not instantiate this class directly.\\n\\n```python\\nwith db.transaction() as ctx:\\n    # ctx is the same as db\\n    ...\\n```\\n\\n## API Compatibility\\n\\nAll existing `TinyDB` methods work identically within a transaction:\\n- `db.insert(document)` \u2014 Buffered during transaction, written on commit.\\n- `db.update(fields, cond)` \u2014 Buffered during transaction, written on commit.\\n- `db.remove(cond)` \u2014 Buffered during transaction, written on commit.\\n- `db.search(cond)` \u2014 Returns results from the current (potentially modified) state.\\n- `db.get(cond, doc_id)` \u2014 Returns the current document (potentially modified).\\n- `db.table(name)` \u2014 Returns the same table instance as outside a transaction.\\n- `db.drop_table(name)` \u2014 Buffered during transaction, written on commit.\\n- `db.drop_tables()` \u2014 Buffered during transaction, written on commit.\\n\\n## Error Contract\\n\\n| Error Type | When Raised | Behavior |\\n|-----------|-------------|----------|\\n| `RuntimeError` | `transaction()` called while already in a transaction | Propagates to caller; parent transaction remains usable |\\n| Any exception from user code | Raised inside `with db.transaction():` block | Transaction rolls back; exception propagates; zero writes |\\n| `BaseException` (e.g., `KeyboardInterrupt`) | Raised inside `with db.transaction():` block | Transaction rolls back; exception propagates; zero writes |\\n\\n## Persistence Contract\\n\\n| Scenario | Committed Data Survives Close/Reopen? | Rollback Changes Persisted State? |\\n|----------|---------------------------------------|-----------------------------------|\\n| `JSONStorage` | Yes | No |\\n| `MemoryStorage` | N/A (in-memory only) | N/A (in-memory only) |\\nCONTRACT_EOF\\n\"}",
+          "reasoning_sha256": "5707db021e72d22ff1f5772c5bc9a260cff6adb226e738dd3704821062fbab14",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789684927,
+    "id": "chatcmpl-0drmpXbCNchbfZvJjUBsG8pf1a3ZT0qe",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 42335,
+      "predicted_ms": 12247.824,
+      "predicted_n": 924,
+      "predicted_per_second": 75.36032523001636,
+      "predicted_per_token_ms": 13.269581798483207,
+      "prompt_ms": 241.544,
+      "prompt_n": 149,
+      "prompt_per_second": 616.864836220316,
+      "prompt_per_token_ms": 1.6211006711409397
+    },
+    "usage": {
+      "completion_tokens": 924,
+      "prompt_tokens": 42484,
+      "prompt_tokens_details": {
+        "cached_tokens": 42335
+      },
+      "total_tokens": 43408
+    }
+  },
+  "seconds": 12.546999999991385,
+  "stage": 1,
+  "started_at": "2026-09-17T22:41:54.852608+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 924,
+    "prompt_tokens": 42484,
+    "prompt_tokens_details": {
+      "cached_tokens": 42335
+    },
+    "total_tokens": 43408
+  }
+}

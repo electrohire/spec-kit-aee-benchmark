@@ -1,0 +1,941 @@
+{
+  "schema_version": "1.0",
+  "methodology_version": "1.0",
+  "project": "aee-assessment-aqjeicel",
+  "phase": "after_tasks",
+  "outcome": "iterate",
+  "summary": "Assessed 16 claim(s); found 8 failure mode(s); 14 claim(s) below the 0.70 confidence threshold.",
+  "created_at": "2026-09-18T00:00:44.184617Z",
+  "claims": [
+    {
+      "id": "R01a",
+      "text": "TransactionalTinyDB accepts the same constructor arguments as TinyDB (storage class, path, kwargs).",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-001"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "objects/06/064bfd7f6d6018df780fe98a5d6603050520d9614dc9018555d63576db73dc01",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "primary",
+          "description": "TinyDB.__init__ accepts *args, **kwargs and passes them to storage class",
+          "source_id": "064bfd7f6d6018df780fe98a5d6603050520d9614dc9018555d63576db73dc01",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "Passing storage=MemoryStorage, path='file.json', or kwargs should work identically to TinyDB"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R01",
+      "domain": "",
+      "confidence": 0.8725,
+      "confidence_band": "high",
+      "failures": [
+        {
+          "id": "AEE-R01a-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R01a",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R01b",
+      "text": "Existing nontransactional TinyDB operations work normally with TransactionalTinyDB.",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-002"
+      ],
+      "depends_on": [
+        "R01a"
+      ],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "objects/f6/f60fc56bac8b1b947ffd0a2e9e2284ed06ca6147a66b78da5864362c7d39736c",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "primary",
+          "description": "TinyDB.table() method exists and returns table instances from _tables dict",
+          "source_id": "f60fc56bac8b1b947ffd0a2e9e2284ed06ca6147a66b78da5864362c7d39736c",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "db.insert(), db.search(), db.table() should behave identically to TinyDB outside transactions"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R01",
+      "domain": "",
+      "confidence": 0.8725,
+      "confidence_band": "high",
+      "failures": [],
+      "metadata": {}
+    },
+    {
+      "id": "R02a",
+      "text": "with db.transaction() as current: yields the same db instance (current is db).",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-003"
+      ],
+      "depends_on": [
+        "R01a"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "with db.transaction() as current: assert current is db should pass"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R02",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [],
+      "metadata": {}
+    },
+    {
+      "id": "R02b",
+      "text": "Mutations through the db or table handles obtained before entering the transaction are visible within the transaction scope.",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-004"
+      ],
+      "depends_on": [
+        "R02a"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "table.insert() before transaction entry should be visible via table.all() inside transaction"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R02",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R02b-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R02b",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R03a",
+      "text": "No backend storage write call occurs during a transaction execution.",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-005"
+      ],
+      "depends_on": [
+        "R02a"
+      ],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "objects/16/164c5aa31af435cf1f923808452a4fdbcf68e18487ae4842cbbe38bba70f4e67",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "primary",
+          "description": "Storage.write is the single abstraction for persisting the full database dict",
+          "source_id": "164c5aa31af435cf1f923808452a4fdbcf68e18487ae4842cbbe38bba70f4e67",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "Instrument storage.write during transaction body: count should be 0"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R03",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R03a-NEGATION-CONFLICT-CHALLE",
+          "claim_id": "R03a",
+          "challenge": "Negation conflict challenge",
+          "breakpoint": "R03a may contradict R03b",
+          "severity": "medium",
+          "category": "contradiction",
+          "recovery_hint": "Confirm whether the claims share a boundary and preserve both pending review.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R03b",
+      "text": "A successful transaction commit writes the complete logical database exactly once via a single storage.write call.",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-006"
+      ],
+      "depends_on": [
+        "R03a"
+      ],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "objects/ce/ce3fc67bf52e495135a4b5a6a32dc44feb234266266016e7ed98bd02f3eb164b",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "primary",
+          "description": "MemoryStorage.write stores the entire data dict in self.memory",
+          "source_id": "ce3fc67bf52e495135a4b5a6a32dc44feb234266266016e7ed98bd02f3eb164b",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "Two table.insert() calls in one transaction should produce exactly one storage.write"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R03",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [],
+      "metadata": {}
+    },
+    {
+      "id": "R04a",
+      "text": "Any exception (including BaseException subclasses) propagating out of a transaction triggers a full rollback with zero backend writes.",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-007"
+      ],
+      "depends_on": [
+        "R03a"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "Raising ValueError inside transaction should leave storage.writes at 0"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R04",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [],
+      "metadata": {}
+    },
+    {
+      "id": "R04b",
+      "text": "After a rolled-back transaction, a later transaction continues to work normally.",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-008"
+      ],
+      "depends_on": [
+        "R04a"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "A second transaction after a failed one should succeed without errors"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R04",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R04b-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R04b",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R05a",
+      "text": "Rollback restores nested mutable values changed through callable updates (e.g., list.append inside lambda).",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-009"
+      ],
+      "depends_on": [
+        "R04a"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "update(lambda doc: doc['nested'].append(2)) inside failed transaction should leave nested value unchanged"
+      ],
+      "uncertainty": "medium",
+      "severity": "medium",
+      "source_ref": "task R05",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R05a-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R05a",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R05b",
+      "text": "Rollback restores table creation and deletion operations.",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-010"
+      ],
+      "depends_on": [
+        "R04a"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "table creation inside failed transaction should not persist after rollback"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R05",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R05b-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R05b",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R05c",
+      "text": "Query caches do not return data from discarded work after rollback.",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-011"
+      ],
+      "depends_on": [
+        "R04a"
+      ],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "objects/49/495bdff9bb6757d6b431233a86c8b6d2a9d6376d035702dc64a9920840c91ca2",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "primary",
+          "description": "Table uses LRUCache for query results; cache is discarded on write operations",
+          "source_id": "495bdff9bb6757d6b431233a86c8b6d2a9d6376d035702dc64a9920840c91ca2",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "table.all() before transaction should not include documents inserted in failed transaction"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R05",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R05c-NEGATION-CONFLICT-CHALLE",
+          "claim_id": "R05c",
+          "challenge": "Negation conflict challenge",
+          "breakpoint": "R05c may contradict R06a",
+          "severity": "medium",
+          "category": "contradiction",
+          "recovery_hint": "Confirm whether the claims share a boundary and preserve both pending review.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R06a",
+      "text": "After commit or rollback, existing table handles can insert new documents without ID collisions with IDs consumed by rolled-back work.",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-012"
+      ],
+      "depends_on": [
+        "R05a"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "Insert after rollback should return an ID not equal to any ID consumed during the rolled-back transaction"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R06",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R06a-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R06a",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R07a",
+      "text": "Nesting transaction() calls raises RuntimeError before altering the parent transaction state.",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-013"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "with db.transaction(): inside that, with db.transaction(): should raise RuntimeError"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R07",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [],
+      "metadata": {}
+    },
+    {
+      "id": "R07b",
+      "text": "A caught RuntimeError from nested transaction leaves the parent transaction usable.",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-014"
+      ],
+      "depends_on": [
+        "R07a"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "Insert after catching RuntimeError from nested transaction should succeed"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R07",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [],
+      "metadata": {}
+    },
+    {
+      "id": "R08a",
+      "text": "A committed JSONStorage database survives close/reopen with all committed data intact.",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-015"
+      ],
+      "depends_on": [
+        "R03b"
+      ],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "objects/16/164c5aa31af435cf1f923808452a4fdbcf68e18487ae4842cbbe38bba70f4e67",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "primary",
+          "description": "JSONStorage.write persists the full database dict to a JSON file",
+          "source_id": "164c5aa31af435cf1f923808452a4fdbcf68e18487ae4842cbbe38bba70f4e67",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "Close db, reopen from same file, verify committed documents are present"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R08",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [],
+      "metadata": {}
+    },
+    {
+      "id": "R08b",
+      "text": "A rolled-back transaction leaves the persisted state of JSONStorage unchanged.",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "specs/001-transactions/spec.md FR-016"
+      ],
+      "depends_on": [
+        "R04a"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "Rollback, close, reopen, verify pre-transaction documents are present"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "task R08",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [],
+      "metadata": {}
+    }
+  ],
+  "scores": {
+    "R01a": {
+      "claim_id": "R01a",
+      "direct_score": 0.8725,
+      "propagated_score": 0.8725,
+      "band": "high",
+      "components": {
+        "evidence": 0.95,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R01b": {
+      "claim_id": "R01b",
+      "direct_score": 0.8725,
+      "propagated_score": 0.8725,
+      "band": "high",
+      "components": {
+        "evidence": 0.95,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R02a": {
+      "claim_id": "R02a",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R02b": {
+      "claim_id": "R02b",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R03a": {
+      "claim_id": "R03a",
+      "direct_score": 0.8725,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.95,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Capped by weakest dependency at 0.250"
+      ]
+    },
+    "R03b": {
+      "claim_id": "R03b",
+      "direct_score": 0.8725,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.95,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Capped by weakest dependency at 0.250"
+      ]
+    },
+    "R04a": {
+      "claim_id": "R04a",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R04b": {
+      "claim_id": "R04b",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R05a": {
+      "claim_id": "R05a",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R05b": {
+      "claim_id": "R05b",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R05c": {
+      "claim_id": "R05c",
+      "direct_score": 0.8725,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.95,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Capped by weakest dependency at 0.250"
+      ]
+    },
+    "R06a": {
+      "claim_id": "R06a",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R07a": {
+      "claim_id": "R07a",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R07b": {
+      "claim_id": "R07b",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R08a": {
+      "claim_id": "R08a",
+      "direct_score": 0.8725,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.95,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Capped by weakest dependency at 0.250"
+      ]
+    },
+    "R08b": {
+      "claim_id": "R08b",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    }
+  },
+  "recoveries": [
+    {
+      "failure_id": "AEE-R01a-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R01a",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R02b-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R02b",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R03a-NEGATION-CONFLICT-CHALLE",
+      "claim_id": "R03a",
+      "strategy": "resolve_contradiction",
+      "action": "Confirm whether the claims share a boundary and preserve both pending review.",
+      "priority": 3,
+      "verification": "Both positions remain recorded; discriminating evidence resolves or scopes them."
+    },
+    {
+      "failure_id": "AEE-R04b-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R04b",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R05a-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R05a",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R05b-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R05b",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R05c-NEGATION-CONFLICT-CHALLE",
+      "claim_id": "R05c",
+      "strategy": "resolve_contradiction",
+      "action": "Confirm whether the claims share a boundary and preserve both pending review.",
+      "priority": 3,
+      "verification": "Both positions remain recorded; discriminating evidence resolves or scopes them."
+    },
+    {
+      "failure_id": "AEE-R06a-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R06a",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    }
+  ],
+  "metadata": {
+    "threshold": 0.7,
+    "input": "C:/Users/trist/Development/AXIOVEX/spec-kit-aee-benchmark/artifacts/tmp-gpu/aee-assessment-aqjeicel/claims.json"
+  }
+}

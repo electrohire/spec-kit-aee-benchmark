@@ -2,6 +2,7 @@
 import argparse
 import collections
 import hashlib
+import importlib.metadata
 import json
 import shutil
 import statistics
@@ -26,7 +27,11 @@ def omit_reasoning(record):
 
 def usage(calls):
     known=all(c.get('usage') is not None for c in calls)
-    return dict(calls=len(calls),input_tokens=sum(c['usage']['prompt_tokens'] for c in calls) if known else None,
+    return dict(calls=len(calls),known_input_tokens=sum(c['usage']['prompt_tokens'] for c in calls if c.get('usage') is not None),
+        known_output_tokens=sum(c['usage']['completion_tokens'] for c in calls if c.get('usage') is not None),
+        known_cached_tokens=sum(c['usage'].get('prompt_tokens_details',{}).get('cached_tokens',0) for c in calls if c.get('usage') is not None),
+        known_uncached_input_tokens=sum(c['usage']['prompt_tokens']-c['usage'].get('prompt_tokens_details',{}).get('cached_tokens',0) for c in calls if c.get('usage') is not None),
+        known_total_tokens=sum(c['usage']['total_tokens'] for c in calls if c.get('usage') is not None),input_tokens=sum(c['usage']['prompt_tokens'] for c in calls) if known else None,
         output_tokens=sum(c['usage']['completion_tokens'] for c in calls) if known else None,
         total_tokens=sum(c['usage']['total_tokens'] for c in calls) if known else None,
         cached_tokens=sum(c['usage'].get('prompt_tokens_details',{}).get('cached_tokens',0) for c in calls) if known else None,
@@ -65,13 +70,30 @@ def export(source,target):
     shutil.copy2(Path('scripts/long_horizon.py'),frozen_inputs/'scripts/long_horizon.py')
     shutil.copytree(Path('benchmarks/long_horizon'),frozen_inputs/'benchmarks/long_horizon',ignore=shutil.ignore_patterns('__pycache__'))
     # Preserve exact bytes even where Git normally normalizes source line endings.
-    root=Path.cwd().resolve()
+    root=Path.cwd().resolve();input_map={}
     for name in frozen['hashes']:
         original=Path(name)
-        if original.is_relative_to(root):
-            destination=frozen_inputs/original.relative_to(root)
+        if 'site-packages' in original.parts:
+            relative=Path('installed-packages',*original.parts[original.parts.index('site-packages')+1:])
+        elif original.is_relative_to(root):
+            relative=original.relative_to(root)
+        else:
+            raise ValueError('Unmapped frozen source: '+name)
+        destination=frozen_inputs/relative
+        destination.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copy2(original,destination)
+        input_map[name]=dict(path=destination.relative_to(target).as_posix(),sha256=sha(original))
+    write_json(target/'frozen-input-map.json',input_map)
+    for notice in ('docs/spec-kit-LICENSE.txt','.specify/extensions/aee/LICENSE','.specify/extensions/evaluator/LICENSE'):
+        destination=frozen_inputs/notice
+        destination.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copy2(Path(notice),destination)
+    distribution=importlib.metadata.distribution('applied-epistemic-engineering')
+    for notice in distribution.files:
+        if '/licenses/' in str(notice).replace('\\','/'):
+            destination=frozen_inputs/'installed-packages/notices/aee'/Path(notice).name
             destination.parent.mkdir(parents=True,exist_ok=True)
-            shutil.copy2(original,destination)
+            shutil.copy2(distribution.locate_file(notice),destination)
     allcalls=[];armstats={};stages=[];phase_stats={}
     for arm in frozen['schedule']:
         folder=target/arm;folder.mkdir()
@@ -92,7 +114,7 @@ def export(source,target):
                 assert 0<=u['prompt_tokens_details']['cached_tokens']<=u['prompt_tokens'],p
                 if not calls:assert u['prompt_tokens_details']['cached_tokens']==0,p
             c.update(request_sha256=hashlib.sha256(canonical(request)).hexdigest(),original_sha256=sha(p),
-                request_omission='Regenerate from frozen inputs, model responses, and tool evidence; original retained locally.')
+                request_omission='Full request retained locally. Omitted native reasoning prevents exact reconstruction from the public response/tool trace.')
             write_json(folder/p.name,c);calls.append(c)
         allcalls.extend(calls)
         own=[r for r in rows if r['arm']==arm]
@@ -108,13 +130,21 @@ def export(source,target):
         final_pass=sum(r['hidden_final']['passed'] for r in own)
         outcomes=collections.Counter(a.get('outcome','adapter_error') for r in own for a in r['assessments'])
         armstats[arm]=dict(**u,runtime=runtime(calls),primary=primary,repair=repairs,hidden_primary_passes=primary_pass,hidden_final_passes=final_pass,
+            total_token_reservation_upper_bound=u['known_total_tokens']+sum(c['preflight_input_tokens']+frozen['max_output'] for c in calls if c.get('usage') is None),
+            calls_with_history_omissions=sum(c.get('removed_history_messages',0)>0 for c in calls),
+            max_history_messages_omitted_per_call=max((c.get('removed_history_messages',0) for c in calls),default=0),
+            model_call_errors=dict(collections.Counter(c['error'] for c in calls if c.get('error'))),
             final_project_pass=own[-1]['hidden_final']['passed'],
+            tokens_per_accepted_project=u['total_tokens'] if own[-1]['hidden_final']['passed'] else None,
             tokens_per_accepted_milestone=u['total_tokens']/final_pass if final_pass and u['total_tokens'] is not None else None,
             primary_tokens_per_accepted_milestone=primary['total_tokens']/primary_pass if primary_pass and primary['total_tokens'] is not None else None,
             repair_rounds=sum(len(r['repairs']) for r in own),
+            repair_rounds_blocked_by_unknown_usage=sum('unknown_usage_stop' in (repair.get('error') or '') for r in own for repair in r['repairs']),
+            repair_errors=dict(collections.Counter(repair['error'] for r in own for repair in r['repairs'] if repair.get('error'))),
             repair_rounds_with_source_changes=changed_repairs,
             evidence_rework_rounds_attempted=len({c['stage'] for c in calls if c['phase']=='evidence_rework'}),
             hidden_repairs_fixed=sum(not r['hidden_primary']['passed'] and r['hidden_final']['passed'] for r in own),
+            repair_tokens_per_hidden_milestone_fixed=(repairs['total_tokens']/sum(not r['hidden_primary']['passed'] and r['hidden_final']['passed'] for r in own)) if repairs['total_tokens'] is not None and any(not r['hidden_primary']['passed'] and r['hidden_final']['passed'] for r in own) else None,
             tool_calls=sum(r['tool_calls'] for r in own),stage_seconds=sum(r['seconds'] for r in own),assessment_outcomes=dict(outcomes),
             workflow_errors=[dict(stage=r['stage'],error=r['error']) for r in own if r['error']])
         for phase in sorted({c['phase'] for c in calls}):phase_stats[arm+'/'+phase]=usage([c for c in calls if c['phase']==phase])
@@ -162,25 +192,50 @@ def export(source,target):
         note='Setup and aborted work are separate from comparable arm economics, never erased. No paid inference.'))
     shutil.copy2(Path('artifacts/tinydb-upstream/LICENSE'),target/'TINYDB-LICENSE')
     lines=['# Staged TinyDB local study','',
-        'One real repository, three cumulative milestones, one trajectory per arm. These are dependent checkpoints, not nine independent tasks. Hidden cases were withheld from solver feedback but authored by this study. See the frozen protocol and full traces.','',
+        'One real repository, three cumulative milestones, one trajectory per arm. These are dependent checkpoints, not nine independent tasks. Hidden cases were withheld from solver feedback but authored by this study. See the frozen protocol and published response/tool traces.','',
         '| Arm | Hidden primary / 3 | Hidden after repairs / 3 | All tokens | Tokens / accepted milestone | Repair rounds | Stage wall seconds |',
         '|---|---:|---:|---:|---:|---:|---:|']
     for arm,s in armstats.items():
         ratio=f"{s['tokens_per_accepted_milestone']:,.1f}" if s['tokens_per_accepted_milestone'] is not None else 'undefined'
-        total=f"{s['total_tokens']:,}" if s['total_tokens'] is not None else 'unknown'
-        lines.append(f"| {arm} | {s['hidden_primary_passes']} | {s['hidden_final_passes']} | {total} | {ratio} | {s['repair_rounds']} | {s['stage_seconds']:.1f} |")
+        total=f"{s['total_tokens']:,}" if s['total_tokens'] is not None else f"at least {s['known_total_tokens']:,}; {s['unknown_calls']} unknown call(s)"
+        lines.append(f"| {arm} | {s['hidden_primary_passes']} | {s['hidden_final_passes']} | {total} | {ratio} | {s['repair_rounds']} ({s['repair_rounds_blocked_by_unknown_usage']} blocked by unknown usage) | {s['stage_seconds']:.1f} |")
     lines+=['','All model phases, failed calls with known usage, and repairs count. API expenditure: $0; hardware, electricity and controller labor unpriced. Functional grading does not prove workflow completion.','',
         '| Arm | Stage | Public primary → final | Hidden primary → final | Hidden feature cases final | Regressions | Error |',
         '|---|---:|---|---|---:|---:|---|']
     for s in stages:
         lines.append(f"| {s['arm']} | {s['stage']} | {s['public_primary']} → {s['public_final']} | {s['hidden_primary']} → {s['hidden_final']} | {s['feature_cases_passed']}/{s['feature_cases_total']} | {len(s['regressions_from_previous_stage'])} | {s['error'] or 'none'} |")
+    def number(value):
+        return 'undefined' if value is None else (f'{value:,}' if isinstance(value,int) else f'{value:,.1f}')
+    def token_value(stats,key):
+        return number(stats[key]) if stats[key] is not None else 'at least '+number(stats['known_'+key])
+    lines+=['','## Token and repair accounting','',
+        'Cached input is included in input, never added again. Values labeled at least exclude calls with unknown native usage. Reservation bounds are configuration limits, not measured usage.','',
+        '| Arm | Input | Output (includes reasoning) | Cached input | Uncached input | Unknown calls | Total reservation bound |',
+        '|---|---:|---:|---:|---:|---:|---:|']
+    for arm,s in armstats.items():
+        lines.append(f"| {arm} | {token_value(s,'input_tokens')} | {token_value(s,'output_tokens')} | {token_value(s,'cached_tokens')} | {token_value(s,'uncached_input_tokens')} | {s['unknown_calls']} | {number(s['total_token_reservation_upper_bound'])} |")
+    lines+=['','| Arm | Primary tokens | Repair tokens | Repair rounds with source changes | Hidden milestones fixed by repairs | Evidence-rework rounds |',
+        '|---|---:|---:|---:|---:|---:|']
+    for arm,s in armstats.items():
+        lines.append(f"| {arm} | {token_value(s['primary'],'total_tokens')} | {token_value(s['repair'],'total_tokens')} | {s['repair_rounds_with_source_changes']} | {s['hidden_repairs_fixed']} | {s['evidence_rework_rounds_attempted']} |")
+    lines+=['','## Inference and context','',
+        'Native rates use completed calls with returned timing records; HTTP time includes failed calls. HTTP latency is not time to first token. Stage wall time includes tools, preparation, assessment and public grading. Energy is unpriced.','',
+        '| Arm | Native timing calls | Prompt tokens/s | Decode tokens/s | Median HTTP s | P95 HTTP s | Calls omitting older history | Maximum messages omitted per call |',
+        '|---|---:|---:|---:|---:|---:|---:|---:|']
+    for arm,s in armstats.items():
+        r=s['runtime']
+        lines.append(f"| {arm} | {r['native_timing_calls']} | {number(r['weighted_prompt_tokens_per_second'])} | {number(r['weighted_decode_tokens_per_second'])} | {number(r['median_http_seconds'])} | {number(r['p95_http_seconds'])} | {s['calls_with_history_omissions']} | {s['max_history_messages_omitted_per_call']} |")
+    lines+=['','Per-phase and per-stage detail is in `summary.json`; every call remains separately auditable. History omission counts describe each request, not unique lost requirements.']
     lines+=['','## Evidence and limits','',
         '- `summary.json` includes input/output/cache tokens, phase accounting, repairs, tool calls, time, assessment outcomes and stage regressions.',
         '- `results.json` retains every test case and failure, public repair feedback, model phase completions and AEE results.',
-        '- Per-arm folders retain generated source snapshots, workflow artifacts, response/usage records and content-addressed shell evidence. Full prompts remain local with recorded hashes.',
+        '- Per-arm folders retain generated source snapshots, workflow artifacts, response/usage records and content-addressed shell evidence. Full requests and native reasoning remain local with recorded hashes; exact prompt reconstruction from the public trace is not possible.',
+        '- Rework counts refer to explicit public-feedback repair rounds and implementation evidence-rework rounds. Internal debugging remains in phase tokens and shell traces; repeated commands or nonzero exits are not automatically classified as distinct semantic repairs.',
         '- Calibration passed all six test combinations; unchanged upstream failed new features. Smoke is separate and excluded from scored economics.',
         '- A fixed sampling seed is not a guarantee of bitwise deterministic GPU execution. One shuffled run does not remove order effects or establish statistical significance.',
         '- Limited context, call/time ceilings, single-model and adapter behavior constrain interpretation. The previous smaller-model exploration remains separate.',
+        '- The combined adapter forwards full composed assessment JSON with nested metadata. Measured token overhead is specific to this adapter, not the minimum intrinsic cost of AEE.',
+        '- A 120-second request timeout can interrupt valid slow work. Unknown native usage stops that arm; exact totals remain null, known-call totals are lower bounds, and configured reservation upper bounds are separately labeled rather than imputed as measured usage.',
         '- Two staged pilots and several preliminary smokes exposed integration failures; all costs remain in the separate setup ledger. Run 03 follows a revised full-context freeze. This is iterative benchmark development, not a single pristine preregistered experiment.',
         '- Run 03 freezes workflow scripts/templates and adapter hashes before generation. Run 02 had a disclosed supplemental-provenance limitation; its original evidence remains.',
         '- ElectroHire maintains AEE/Evaluator and the benchmark. No external replication or blinded independent test authorship is claimed.','']

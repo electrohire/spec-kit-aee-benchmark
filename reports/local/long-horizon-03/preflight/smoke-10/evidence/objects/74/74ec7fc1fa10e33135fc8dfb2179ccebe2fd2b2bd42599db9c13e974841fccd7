@@ -1,0 +1,475 @@
+{
+  "schema_version": "1.0",
+  "methodology_version": "1.0",
+  "project": "aee-assessment-rcs5atao",
+  "phase": "after_plan",
+  "outcome": "iterate",
+  "summary": "Assessed 7 claim(s); found 8 failure mode(s); 7 claim(s) below the 0.70 confidence threshold.",
+  "created_at": "2026-09-17T22:22:10.054246Z",
+  "claims": [
+    {
+      "id": "R01",
+      "text": "The file /testbed/smoke.py MUST define a function add(a, b) that returns the sum of its two arguments",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "plan phase"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "Calling add(2, 3) returns 4 instead of 5"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "FR-001",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R01",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        },
+        {
+          "id": "AEE-R01-NEGATION-CONFLICT-CHALLE",
+          "claim_id": "R01",
+          "challenge": "Negation conflict challenge",
+          "breakpoint": "R01 may contradict R06",
+          "severity": "medium",
+          "category": "contradiction",
+          "recovery_hint": "Confirm whether the claims share a boundary and preserve both pending review.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R02",
+      "text": "add(a, b) MUST accept integer inputs and return an integer result",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "plan phase"
+      ],
+      "depends_on": [
+        "R01"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "Calling add(2, 3) returns 2.0 (float) instead of 2 (int)"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "FR-002",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R02",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R03",
+      "text": "add(a, b) MUST accept float inputs and return a float result",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "plan phase"
+      ],
+      "depends_on": [
+        "R01"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "Calling add(1.5, 2.5) returns 4 (int) instead of 4.0 (float)"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "FR-003",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R03",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R04",
+      "text": "add(a, b) MUST correctly handle negative values for both arguments",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "plan phase"
+      ],
+      "depends_on": [
+        "R01"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "Calling add(-3, -7) returns 10 instead of -10"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "FR-004",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R04-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R04",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R05",
+      "text": "add(a, b) MUST correctly handle zero as either or both arguments",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "plan phase"
+      ],
+      "depends_on": [
+        "R01"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "Calling add(0, 5) returns 1 instead of 5"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "FR-005",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R05-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R05",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R06",
+      "text": "/testbed/smoke.py MUST NOT import, reference, or modify any TinyDB source code",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "plan phase"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "grep -i tinydb /testbed/smoke.py returns exit code 0 (matches found)"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "FR-006",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R06-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R06",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R07",
+      "text": "Automated tests MUST exist covering integer addition, float addition, negative values, and zero",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "plan phase"
+      ],
+      "depends_on": [
+        "R01"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "No test file exists at /testbed/test_smoke.py",
+        "pytest /testbed/test_smoke.py reports missing test for negative values"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "FR-007",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R07-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R07",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    }
+  ],
+  "scores": {
+    "R01": {
+      "claim_id": "R01",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R02": {
+      "claim_id": "R02",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R03": {
+      "claim_id": "R03",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R04": {
+      "claim_id": "R04",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R05": {
+      "claim_id": "R05",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R06": {
+      "claim_id": "R06",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R07": {
+      "claim_id": "R07",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    }
+  },
+  "recoveries": [
+    {
+      "failure_id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R01",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R01-NEGATION-CONFLICT-CHALLE",
+      "claim_id": "R01",
+      "strategy": "resolve_contradiction",
+      "action": "Confirm whether the claims share a boundary and preserve both pending review.",
+      "priority": 3,
+      "verification": "Both positions remain recorded; discriminating evidence resolves or scopes them."
+    },
+    {
+      "failure_id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R02",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R03",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R04-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R04",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R05-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R05",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R06-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R06",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R07-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R07",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    }
+  ],
+  "metadata": {
+    "threshold": 0.7,
+    "input": "C:/Users/trist/Development/AXIOVEX/spec-kit-aee-benchmark/artifacts/tmp-gpu/aee-assessment-rcs5atao/claims.json"
+  }
+}

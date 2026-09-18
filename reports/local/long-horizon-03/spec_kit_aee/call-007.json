@@ -1,0 +1,58 @@
+{
+  "ended_at": "2026-09-17T23:50:28.883303+00:00",
+  "original_sha256": "e74063026723744a708dcbaf74320744356f48aee4943ea0acce7b6e80001545",
+  "phase": "constitution",
+  "preflight_input_tokens": 9270,
+  "removed_history_messages": 0,
+  "request_omission": "Full request retained locally. Omitted native reasoning prevents exact reconstruction from the public response/tool trace.",
+  "request_sha256": "08d0d903d8113d8d9d096fc6a25856f0ce604600f2ab93313a03ae75a5212b59",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && grep -n '\\\\[' .specify/memory/constitution.md | grep -v '^#' | grep -v '//' | grep -v '\\\\*' || echo \\\"NO_REMAINING_PLACEHOLDERS\\\"\"}",
+          "reasoning_sha256": "ea17c08414cfb96627577df84651a6c18785be1f258b84ee78f1dc29e31cc938",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789689028,
+    "id": "chatcmpl-rpsOHJ2AiGl1CCdXjqsGQbsknsHVkfiC",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 9121,
+      "predicted_ms": 885.581,
+      "predicted_n": 82,
+      "predicted_per_second": 91.46537696721136,
+      "predicted_per_token_ms": 10.9330987654321,
+      "prompt_ms": 191.305,
+      "prompt_n": 149,
+      "prompt_per_second": 778.860981155746,
+      "prompt_per_token_ms": 1.2839261744966444
+    },
+    "usage": {
+      "completion_tokens": 82,
+      "prompt_tokens": 9270,
+      "prompt_tokens_details": {
+        "cached_tokens": 9121
+      },
+      "total_tokens": 9352
+    }
+  },
+  "seconds": 1.0940000000409782,
+  "stage": 1,
+  "started_at": "2026-09-17T23:50:27.774098+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 82,
+    "prompt_tokens": 9270,
+    "prompt_tokens_details": {
+      "cached_tokens": 9121
+    },
+    "total_tokens": 9352
+  }
+}

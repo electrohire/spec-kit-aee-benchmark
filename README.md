@@ -1,13 +1,19 @@
 # Spec Kit + AEE benchmark
 
 An ElectroHire experiment comparing ordinary coding agents, Spec Kit, and Spec Kit
-with Evaluator + Applied Epistemic Engineering on SWE-bench Verified.
+with Evaluator + Applied Epistemic Engineering using local GPU inference.
 
-**Status: free GPU small-task exploration and supplemental repairs completed.**
-See [actual results, token economics and failures](reports/local/gpu-20260917/README.md).
-The user requested a stronger long-horizon comparison; that campaign is being prepared.
+**Status: runtime measurements, the six-task exploration and repairs, and the
+staged TinyDB comparison are complete.** Read the [measurement index and complete
+token ledger](reports/local/README.md), [small-task results](reports/local/gpu-20260917/README.md),
+and [longer-project results](reports/local/long-horizon-03/README.md).
+
+The long study produced no complete hidden milestone passes. Final feature coverage
+was 21/24 baseline, 5/24 Spec Kit, 3/24 combined; all three arms timed out and have
+incomplete exact usage. Six reserved long-study repair attempts were blocked before
+inference. The earlier small-task repairs ran and brought all arms to 5/6.
+These measurements do not demonstrate a workflow correctness or token-saving advantage.
 The original SWE-bench pilot (20 tasks × 3 repetitions × 3 arms) remains unrun.
-The small-task experiment does not support a superiority or token-saving claim.
 
 The controller uses Spec Kit, Evaluator and AEE. Solver treatments are isolated.
 The maintenance-triage example is illustrative and is not benchmark evidence.

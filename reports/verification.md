@@ -1,4 +1,32 @@
 # Requirement-to-evidence matrix
+
+## GPU continuation evidence
+
+- [Measurement index and ledger](local/README.md): 1,001 benchmark-model calls,
+  at least 33,983,869 tokens, three unknown native usages, $0 API expenditure.
+- [Small exploration and repairs](local/gpu-20260917/README.md): actual model calls,
+  separately frozen common repairs, all failures and feedback-exposure limits.
+- [Staged TinyDB study](local/long-horizon-03/README.md): frozen inputs and hashes,
+  actual isolated tool work, nine primary/final hidden grades, exact test counts,
+  source/workflow review, native usage, timeouts and blocked repair rounds.
+- [Workflow audit](local/long-horizon-03/workflow-audit.json): actual phases and
+  three planning AEE/Evaluator assessments. No implementation assessment or
+  evidence-rework run completed. This is not full successful workflow validation.
+- [Grade audit](local/long-horizon-03/grade-audit.json): all expected tests discovered;
+  all 223 upstream tests pass in every snapshot. No hidden milestone fully passes.
+- [Restoration](local/long-horizon-03/service-restoration.json): original local model
+  loaded after the owned benchmark server stopped.
+
+Controller deviations: the long supplement reused existing Spec Kit/AEE
+infrastructure rather than executing a fresh sequential controller planning cycle.
+Two interrupted integration pilots preceded the final freeze; all costs remain.
+The user explicitly authorized the changed workload and free local inference.
+Constitution 1.2 records that scope after the run; frozen 1.1 bytes remain available.
+Public traces omit full requests/native reasoning and cannot reproduce exact prompts.
+The original SWE-bench pilot remains unrun; its historical matrix follows.
+
+## Historical offline matrix
+
 Latest command, timestamp, exit status and SHA-256: [latest-offline.json](latest-offline.json).
 Its run directory holds append-only assessments, raw and normalized composition,
 human-readable reports and immutable objects. All model responses in tests are synthetic.

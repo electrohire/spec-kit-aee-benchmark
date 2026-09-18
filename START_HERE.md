@@ -1,30 +1,41 @@
 # Resume the ElectroHire benchmark
-## GPU continuation — 2026-09-17
 
-Current workspace is the `spec-kit-aee-benchmark` subdirectory of AXIOVEX.
-Both GPUs verified: RTX 4070 SUPER 12282 MiB and RTX 5060 Ti 16311 MiB.
-The free-local six-task/three-arm exploration and separately frozen repair loops
-are complete. Read [measured results](reports/local/gpu-20260917/README.md),
-[GPU protocol](docs/gpu-experiment-protocol.md),
-[repair protocol](docs/gpu-repair-protocol.md) and
-[reproduction](docs/gpu-reproduction.md). All failures and token overhead remain.
-Primary passes: 5/6 baseline, 2/6 adapted Spec Kit, 1/6 adapted combined arm.
-After shared same-test-feedback repairs: 5/6 each. This is not full Spec Kit validation.
+## Completed GPU continuation — 2026-09-17 local date
 
-**Latest user direction:** add a better long-horizon benchmark, with real repository
-tools and requirements carried through implementation/change/repair. Preserve the
-small-task results; do not promote them as the final project study. Long-horizon
-task/model/protocol must be frozen before its generation. Include token economics,
-tokens per correct result, and actual repair loops. Article and final PR update wait
-for this additional work. No paid inference/credits, merge or LinkedIn posting.
+Workspace: `spec-kit-aee-benchmark` under AXIOVEX. Branch `feat/benchmark-harness`;
+existing draft PR https://github.com/electrohire/spec-kit-aee-benchmark/pull/1.
+Do not merge or publish to LinkedIn. No paid inference or credits are authorized.
 
-Host dependencies: `.venv-gpu`, Python 3.12.6, locked packages; use project-local
-`artifacts/tmp-gpu` as TEMP/TMP due intermittent shared-cache/temp ACL errors.
-49 regression tests pass. Existing Qwen3.6 router at localhost:8081 was restored
-with its original preset and model loaded after the first campaign; the user has
-authorized temporarily pausing/restoring it or using it if suitable.
+Both GPUs verified: RTX 4070 SUPER 12282 MiB and RTX 5060 Ti 16311 MiB. Host:
+i9-14900F, 64 GB RAM, Windows 11, NVIDIA driver 610.88. Measurements and the
+[complete token ledger](reports/local/README.md) are now saved. The original local
+Qwen service on port 8081 is restored and loaded; the benchmark server is stopped.
 
-The older notes below describe the pre-GPU laptop state and are historical.
+- [Runtime and six-task study](reports/local/gpu-20260917/README.md): primary
+  baseline 5/6, document-adapted Spec Kit 2/6, combined 1/6; actual shared repairs
+  bring every arm to 5/6. These are feedback-exposed tests, not held-out repair grades.
+- [Staged TinyDB study](reports/local/long-horizon-03/README.md): transactions,
+  nested savepoints, backup/restore. All nine hidden milestones fail strict acceptance;
+  final feature coverage is 21/24, 5/24, 3/24 respectively. All arms hit a request
+  timeout; exact usage is unknown for one call per arm. Six common repair attempts
+  were blocked before inference. Three actual planning AEE assessments returned
+  iterate; implementation assessment and evidence rework were not reached.
+- Earlier interrupted pilots and all 11 development smokes remain in the ledger.
+  No favorable reruns or model changes were made after the run03 freeze.
+- The original 180-attempt SWE-bench pilot remains unrun. These studies establish
+  no general correctness, reliability or token-saving advantage.
+
+Reproduction: [long study](docs/long-horizon-reproduction.md),
+[small study](docs/gpu-reproduction.md). Exact measured source bytes are preserved
+in the long report's frozen-inputs directory and map. Full request/native reasoning
+traces remain local with hashes; public traces do not support exact prompt replay.
+
+Use `.venv-gpu` (Python 3.12.6, locked packages) and project-local `artifacts/tmp-gpu`
+for TEMP/TMP on this host. 54 regression tests passed during this continuation;
+final validation is recorded with the result publication. The article is generated
+from the pushed results commit in the final publication step. No LinkedIn posting.
+
+The older laptop handoff below is historical and does not describe current GPU results.
 
 ## Latest handoff — paused at user request, 2026-09-17
 Read [docs/gpu-machine-handoff.md](docs/gpu-machine-handoff.md) first. The user

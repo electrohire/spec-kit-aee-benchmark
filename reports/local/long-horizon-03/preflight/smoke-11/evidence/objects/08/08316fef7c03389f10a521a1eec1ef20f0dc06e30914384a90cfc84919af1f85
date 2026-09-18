@@ -1,0 +1,67 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [],
+      "falsification_tests": [
+        "smoke.py does not exist",
+        "add(2,3) does not return 5",
+        "add returns a different type than sum"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "user requirement R01",
+      "status": "unsupported",
+      "text": "create /testbed/smoke.py with add(a,b) returning a+b",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "add(1.5,2.5) returns non-float",
+        "smoke.py imports or modifies tinydb package"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "user requirement R02",
+      "status": "unsupported",
+      "text": "support integers and floats without changing TinyDB source",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01",
+        "R02"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "test suite does not exist",
+        "add(0,0) fails",
+        "add(-1,-2) fails",
+        "test suite does not run"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "user requirement R03",
+      "status": "unsupported",
+      "text": "add and run tests, including negative values and zero",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

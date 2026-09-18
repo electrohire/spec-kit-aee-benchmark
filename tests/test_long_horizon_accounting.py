@@ -19,6 +19,7 @@ def test_unknown_call_prevents_complete_cost_claim():
     result = module.usage(calls)
     assert result['total_tokens'] is None and result['input_tokens'] is None
     assert result['unknown_calls'] == 1 and result['calls'] == 2
+    assert result['known_total_tokens'] == 24
     assert result['http_seconds'] == 7
 
 def test_repair_source_change_ignores_archive_timestamp(tmp_path):

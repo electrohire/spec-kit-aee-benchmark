@@ -1,5 +1,6 @@
-<!-- Sync impact: 1.0.0 -> 1.1.0. Add separately labeled free-local exploration
-authorized by GPU handoff; original pilot and five principles remain unchanged. -->
+<!-- Sync impact: 1.1.0 -> 1.2.0. Record the user-authorized staged-project
+supplement and its reporting boundaries. This amendment follows the measured
+run; the exact 1.1.0 constitution in its freeze remains preserved. -->
 # ElectroHire Benchmark Constitution
 
 ## Core Principles
@@ -38,6 +39,12 @@ Exercism exploration. It MUST NOT be presented as execution of that pilot or
 full Spec Kit integration. Report document adaptation, convenience selection,
 generic controller claims, public-test contamination and every failure.
 
+The user also authorized a separately frozen, free-local staged TinyDB comparison
+with supplemental repair loops. It MUST retain failed and interrupted work, unknown
+usage, actual workflow-completion limits, and every adaptation. Dependent milestones
+MUST NOT be presented as independent tasks. The measured run03 freeze retains
+version 1.1.0; this amendment records scope and does not rewrite that historical freeze.
+
 ## Development Workflow
 Apply constitution, specification, plan, tasks, implementation and convergence
 in sequence. Run AEE explicitly after specification, plan, tasks and implementation;
@@ -49,4 +56,4 @@ Amend through a reviewed commit with rationale and semantic version increment.
 Every PR MUST report compliance and deviations. The provided implementation brief
 defines scope; this constitution constrains evidence and execution, not user intent.
 
-**Version**: 1.1.0 | **Ratified**: 2026-09-17 | **Last Amended**: 2026-09-17
+**Version**: 1.2.0 | **Ratified**: 2026-09-17 | **Last Amended**: 2026-09-17

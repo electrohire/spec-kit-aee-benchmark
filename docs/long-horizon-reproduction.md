@@ -71,7 +71,10 @@ No resume/overwrite is supported: retain interrupted directories and start a new
 frozen campaign for protocol changes. A `CANCEL` file in the campaign root stops
 at the next model step. A request already in flight can finish; pending request
 records preserve uncertain usage if interrupted. Full requests remain local,
-with response records and request hashes exported. Source/workflow snapshots,
+with response records and request hashes exported. Native reasoning is omitted
+from the public responses, so exact historical requests cannot be reconstructed
+from the public trace alone. New runs can repeat the frozen protocol, without a
+claim of bitwise replay. Source/workflow snapshots,
 shell evidence and all grading failures are exported with file checksums.
 
 ## Controller workflow and limitations
@@ -100,3 +103,11 @@ for the exact upstream path, without changing global Git configuration. That
 unused, unmounted temporary container was inspected and removed. Intermittent
 sandbox denial of the Docker pipe also occurred during cleanup; it did not
 interrupt the already-running scored process.
+
+The final export includes `frozen-input-map.json` and exact source bytes under
+`frozen-inputs`, including a separately named copy of the installed AEE source and
+upstream license notices. Original absolute paths identify the measured host;
+the map identifies the portable artifact for each hash. The repository may evolve
+after a run, so use its frozen inputs and locked dependencies when reproducing
+that configuration. Create a fresh run/freeze on a new host instead of rewriting
+the historical manifest or claiming an old source freeze matches changed files.

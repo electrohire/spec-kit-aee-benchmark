@@ -1,0 +1,3406 @@
+{
+  "calibration": {
+    "passed": true
+  },
+  "hardware": "name, memory.total [MiB], memory.used [MiB], driver_version\nNVIDIA GeForce RTX 4070 SUPER, 12282 MiB, 11240 MiB, 610.88\nNVIDIA GeForce RTX 5060 Ti, 16311 MiB, 13695 MiB, 610.88\n",
+  "launch": {
+    "arguments": [
+      "-m",
+      "C:\\Models\\Qwen3.6-35B-A3B-UD-Q4_K_M.gguf",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "8091",
+      "--alias",
+      "long-coder",
+      "--ctx-size",
+      "131072",
+      "--parallel",
+      "1",
+      "--n-gpu-layers",
+      "999",
+      "--split-mode",
+      "layer",
+      "--tensor-split",
+      "9,14",
+      "--flash-attn",
+      "on",
+      "--cache-type-k",
+      "q8_0",
+      "--cache-type-v",
+      "q8_0",
+      "--fit",
+      "off",
+      "--threads",
+      "8",
+      "--reasoning-budget",
+      "2048",
+      "--batch-size",
+      "512",
+      "--ubatch-size",
+      "256"
+    ],
+    "launched_at": "2026-09-17T22:14:25.9469120Z",
+    "pid": 54164
+  },
+  "model": {
+    "repo": "unsloth/Qwen3.6-35B-A3B-GGUF",
+    "revision": "a483e9e6cbd595906af30beda3187c2663a1118c",
+    "sha256": "ac0e2c1189e055faa36eff361580e79c5bd6f8e76bffb4ce547f167d53e31a61"
+  },
+  "ready": {
+    "health": {
+      "status": "ok"
+    },
+    "observed_at": "2026-09-17T22:38:30.110126+00:00",
+    "startup_seconds": null,
+    "reason": "Full-context restart readiness duration not measured; original launch timings retained separately."
+  },
+  "smoke": {
+    "assessments": [
+      {
+        "evaluation": {
+          "evaluator": {
+            "id": "composed",
+            "name": "Composed (strict)",
+            "version": "1.0"
+          },
+          "findings": [
+            {
+              "description": "Claim may contain multiple independently falsifiable propositions",
+              "evidence_refs": [],
+              "id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+              "kind": "coverage_gap",
+              "provenance_refs": [
+                "user requirement R01"
+              ],
+              "rationale": "Irreducibility challenge",
+              "recommended_action": "revise",
+              "severity": "medium",
+              "subject": "user requirement R01",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim may contain multiple independently falsifiable propositions",
+              "evidence_refs": [],
+              "id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+              "kind": "coverage_gap",
+              "provenance_refs": [
+                "user requirement R02",
+                "R01"
+              ],
+              "rationale": "Irreducibility challenge",
+              "recommended_action": "revise",
+              "severity": "medium",
+              "subject": "user requirement R02",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim may contain multiple independently falsifiable propositions",
+              "evidence_refs": [],
+              "id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+              "kind": "coverage_gap",
+              "provenance_refs": [
+                "user requirement R03",
+                "R01",
+                "R02"
+              ],
+              "rationale": "Irreducibility challenge",
+              "recommended_action": "revise",
+              "severity": "medium",
+              "subject": "user requirement R03",
+              "uncertainty": "low"
+            }
+          ],
+          "metadata": {
+            "artifacts_evaluated": [],
+            "composition_strategy": "strict",
+            "contradictory_findings": [],
+            "deterministic": true,
+            "duration_ms": 0,
+            "evaluator_count": 1,
+            "evaluator_results": [
+              {
+                "evaluator_id": "aee",
+                "findings_count": 3,
+                "outcome": "iterate"
+              }
+            ],
+            "timestamp": "2026-09-17T22:28:45Z"
+          },
+          "next_action": {
+            "kind": "iterate",
+            "message": "Composed outcome: iterate.",
+            "target_phase": "specify"
+          },
+          "outcome": "iterate",
+          "phase": "after_specify",
+          "schema_version": "1.0",
+          "state": {
+            "aee": {
+              "aee": {
+                "claims": [
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+                        "category": "coverage_gap",
+                        "challenge": "Irreducibility challenge",
+                        "claim_id": "R01",
+                        "id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+                        "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+                        "resolved": false,
+                        "severity": "medium"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "smoke.py does not exist",
+                      "add(2,3) does not return 5",
+                      "add returns a different type than sum"
+                    ],
+                    "id": "R01",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R01",
+                    "status": "unsupported",
+                    "text": "create /testbed/smoke.py with add(a,b) returning a+b",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R01"
+                    ],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+                        "category": "coverage_gap",
+                        "challenge": "Irreducibility challenge",
+                        "claim_id": "R02",
+                        "id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+                        "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+                        "resolved": false,
+                        "severity": "medium"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "add(1.5,2.5) returns non-float",
+                      "smoke.py imports or modifies tinydb package"
+                    ],
+                    "id": "R02",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R02",
+                    "status": "unsupported",
+                    "text": "support integers and floats without changing TinyDB source",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R01",
+                      "R02"
+                    ],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+                        "category": "coverage_gap",
+                        "challenge": "Irreducibility challenge",
+                        "claim_id": "R03",
+                        "id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+                        "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+                        "resolved": false,
+                        "severity": "medium"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "test suite does not exist",
+                      "add(0,0) fails",
+                      "add(-1,-2) fails",
+                      "test suite does not run"
+                    ],
+                    "id": "R03",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R03",
+                    "status": "unsupported",
+                    "text": "add and run tests, including negative values and zero",
+                    "uncertainty": "low"
+                  }
+                ],
+                "project": "aee-assessment-rmz1v2sq",
+                "recoveries": [
+                  {
+                    "action": "Split the claim into atomic propositions and link them explicitly.",
+                    "claim_id": "R01",
+                    "failure_id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+                    "priority": 3,
+                    "strategy": "decompose",
+                    "verification": "Every resulting claim contains one independently falsifiable proposition."
+                  },
+                  {
+                    "action": "Split the claim into atomic propositions and link them explicitly.",
+                    "claim_id": "R02",
+                    "failure_id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+                    "priority": 3,
+                    "strategy": "decompose",
+                    "verification": "Every resulting claim contains one independently falsifiable proposition."
+                  },
+                  {
+                    "action": "Split the claim into atomic propositions and link them explicitly.",
+                    "claim_id": "R03",
+                    "failure_id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+                    "priority": 3,
+                    "strategy": "decompose",
+                    "verification": "Every resulting claim contains one independently falsifiable proposition."
+                  }
+                ],
+                "scores": {
+                  "R01": {
+                    "band": "low",
+                    "claim_id": "R01",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  },
+                  "R02": {
+                    "band": "low",
+                    "claim_id": "R02",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  },
+                  "R03": {
+                    "band": "low",
+                    "claim_id": "R03",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  }
+                }
+              }
+            }
+          },
+          "summary": "1 evaluator(s) ran. Outcomes: aee=iterate. 3 finding(s) total."
+        },
+        "phase": "specify"
+      },
+      {
+        "evaluation": {
+          "evaluator": {
+            "id": "composed",
+            "name": "Composed (strict)",
+            "version": "1.0"
+          },
+          "findings": [
+            {
+              "description": "Claim may contain multiple independently falsifiable propositions",
+              "evidence_refs": [],
+              "id": "AEE-R01b-IRREDUCIBILITY-CHALLENGE",
+              "kind": "coverage_gap",
+              "provenance_refs": [
+                "user requirement R01",
+                "R01a"
+              ],
+              "rationale": "Irreducibility challenge",
+              "recommended_action": "revise",
+              "severity": "medium",
+              "subject": "user requirement R01",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim may contain multiple independently falsifiable propositions",
+              "evidence_refs": [],
+              "id": "AEE-R02a-IRREDUCIBILITY-CHALLENGE",
+              "kind": "coverage_gap",
+              "provenance_refs": [
+                "user requirement R02",
+                "R01a"
+              ],
+              "rationale": "Irreducibility challenge",
+              "recommended_action": "revise",
+              "severity": "medium",
+              "subject": "user requirement R02",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim may contain multiple independently falsifiable propositions",
+              "evidence_refs": [],
+              "id": "AEE-R02b-IRREDUCIBILITY-CHALLENGE",
+              "kind": "coverage_gap",
+              "provenance_refs": [
+                "user requirement R02",
+                "R01a"
+              ],
+              "rationale": "Irreducibility challenge",
+              "recommended_action": "revise",
+              "severity": "medium",
+              "subject": "user requirement R02",
+              "uncertainty": "low"
+            }
+          ],
+          "metadata": {
+            "artifacts_evaluated": [],
+            "composition_strategy": "strict",
+            "contradictory_findings": [],
+            "deterministic": true,
+            "duration_ms": 0,
+            "evaluator_count": 1,
+            "evaluator_results": [
+              {
+                "evaluator_id": "aee",
+                "findings_count": 3,
+                "outcome": "iterate"
+              }
+            ],
+            "timestamp": "2026-09-17T22:30:01Z"
+          },
+          "next_action": {
+            "kind": "iterate",
+            "message": "Composed outcome: iterate.",
+            "target_phase": "plan"
+          },
+          "outcome": "iterate",
+          "phase": "after_plan",
+          "schema_version": "1.0",
+          "state": {
+            "aee": {
+              "aee": {
+                "claims": [
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [],
+                    "falsification_tests": [
+                      "/testbed/smoke.py does not exist"
+                    ],
+                    "id": "R01a",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R01",
+                    "status": "unsupported",
+                    "text": "/testbed/smoke.py exists as a standalone Python module",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R01a"
+                    ],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+                        "category": "coverage_gap",
+                        "challenge": "Irreducibility challenge",
+                        "claim_id": "R01b",
+                        "id": "AEE-R01b-IRREDUCIBILITY-CHALLENGE",
+                        "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+                        "resolved": false,
+                        "severity": "medium"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "add(2,3) returns 6",
+                      "add(-1,-2) returns 3",
+                      "add(0,0) returns 1"
+                    ],
+                    "id": "R01b",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R01",
+                    "status": "unsupported",
+                    "text": "add(a, b) returns a + b for integer inputs",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R01a"
+                    ],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+                        "category": "coverage_gap",
+                        "challenge": "Irreducibility challenge",
+                        "claim_id": "R02a",
+                        "id": "AEE-R02a-IRREDUCIBILITY-CHALLENGE",
+                        "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+                        "resolved": false,
+                        "severity": "medium"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "add(1.5,2.5) returns 3.0",
+                      "add(0.1,0.2) returns 0.2"
+                    ],
+                    "id": "R02a",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R02",
+                    "status": "unsupported",
+                    "text": "add(a, b) supports float inputs and returns correct sum",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R01a"
+                    ],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+                        "category": "coverage_gap",
+                        "challenge": "Irreducibility challenge",
+                        "claim_id": "R02b",
+                        "id": "AEE-R02b-IRREDUCIBILITY-CHALLENGE",
+                        "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+                        "resolved": false,
+                        "severity": "medium"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "smoke.py contains 'import tinydb'",
+                      "smoke.py modifies any file in tinydb/ directory"
+                    ],
+                    "id": "R02b",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R02",
+                    "status": "unsupported",
+                    "text": "smoke.py does not import or modify any TinyDB source files",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R01a"
+                    ],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [],
+                    "falsification_tests": [
+                      "/testbed/tests/test_smoke.py does not exist",
+                      "pytest cannot discover tests in test_smoke.py"
+                    ],
+                    "id": "R03a",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R03",
+                    "status": "unsupported",
+                    "text": "test suite exists at /testbed/tests/test_smoke.py",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R03a",
+                      "R01b"
+                    ],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [],
+                    "falsification_tests": [
+                      "test_smoke.py contains no test with negative numbers",
+                      "add(-1,-2) test does not exist"
+                    ],
+                    "id": "R03b",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R03",
+                    "status": "unsupported",
+                    "text": "test suite includes tests for negative values",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R03a",
+                      "R01b"
+                    ],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [],
+                    "falsification_tests": [
+                      "test_smoke.py contains no test with zero",
+                      "add(0,0) test does not exist"
+                    ],
+                    "id": "R03c",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R03",
+                    "status": "unsupported",
+                    "text": "test suite includes tests for zero values",
+                    "uncertainty": "low"
+                  }
+                ],
+                "project": "aee-assessment-v8_e5qq3",
+                "recoveries": [
+                  {
+                    "action": "Split the claim into atomic propositions and link them explicitly.",
+                    "claim_id": "R01b",
+                    "failure_id": "AEE-R01b-IRREDUCIBILITY-CHALLENGE",
+                    "priority": 3,
+                    "strategy": "decompose",
+                    "verification": "Every resulting claim contains one independently falsifiable proposition."
+                  },
+                  {
+                    "action": "Split the claim into atomic propositions and link them explicitly.",
+                    "claim_id": "R02a",
+                    "failure_id": "AEE-R02a-IRREDUCIBILITY-CHALLENGE",
+                    "priority": 3,
+                    "strategy": "decompose",
+                    "verification": "Every resulting claim contains one independently falsifiable proposition."
+                  },
+                  {
+                    "action": "Split the claim into atomic propositions and link them explicitly.",
+                    "claim_id": "R02b",
+                    "failure_id": "AEE-R02b-IRREDUCIBILITY-CHALLENGE",
+                    "priority": 3,
+                    "strategy": "decompose",
+                    "verification": "Every resulting claim contains one independently falsifiable proposition."
+                  }
+                ],
+                "scores": {
+                  "R01a": {
+                    "band": "low",
+                    "claim_id": "R01a",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  },
+                  "R01b": {
+                    "band": "low",
+                    "claim_id": "R01b",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  },
+                  "R02a": {
+                    "band": "low",
+                    "claim_id": "R02a",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  },
+                  "R02b": {
+                    "band": "low",
+                    "claim_id": "R02b",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  },
+                  "R03a": {
+                    "band": "low",
+                    "claim_id": "R03a",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  },
+                  "R03b": {
+                    "band": "low",
+                    "claim_id": "R03b",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  },
+                  "R03c": {
+                    "band": "low",
+                    "claim_id": "R03c",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  }
+                }
+              }
+            }
+          },
+          "summary": "1 evaluator(s) ran. Outcomes: aee=iterate. 3 finding(s) total."
+        },
+        "phase": "plan"
+      },
+      {
+        "evaluation": {
+          "evaluator": {
+            "id": "composed",
+            "name": "Composed (strict)",
+            "version": "1.0"
+          },
+          "findings": [
+            {
+              "description": "Claim may contain multiple independently falsifiable propositions",
+              "evidence_refs": [],
+              "id": "AEE-R01b-IRREDUCIBILITY-CHALLENGE",
+              "kind": "coverage_gap",
+              "provenance_refs": [
+                "user requirement R01",
+                "R01a"
+              ],
+              "rationale": "Irreducibility challenge",
+              "recommended_action": "revise",
+              "severity": "medium",
+              "subject": "user requirement R01",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim may contain multiple independently falsifiable propositions",
+              "evidence_refs": [],
+              "id": "AEE-R02a-IRREDUCIBILITY-CHALLENGE",
+              "kind": "coverage_gap",
+              "provenance_refs": [
+                "user requirement R02",
+                "R01a"
+              ],
+              "rationale": "Irreducibility challenge",
+              "recommended_action": "revise",
+              "severity": "medium",
+              "subject": "user requirement R02",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim may contain multiple independently falsifiable propositions",
+              "evidence_refs": [],
+              "id": "AEE-R02b-IRREDUCIBILITY-CHALLENGE",
+              "kind": "coverage_gap",
+              "provenance_refs": [
+                "user requirement R02",
+                "R01a"
+              ],
+              "rationale": "Irreducibility challenge",
+              "recommended_action": "revise",
+              "severity": "medium",
+              "subject": "user requirement R02",
+              "uncertainty": "low"
+            }
+          ],
+          "metadata": {
+            "artifacts_evaluated": [],
+            "composition_strategy": "strict",
+            "contradictory_findings": [],
+            "deterministic": true,
+            "duration_ms": 0,
+            "evaluator_count": 1,
+            "evaluator_results": [
+              {
+                "evaluator_id": "aee",
+                "findings_count": 3,
+                "outcome": "iterate"
+              }
+            ],
+            "timestamp": "2026-09-17T22:31:08Z"
+          },
+          "next_action": {
+            "kind": "iterate",
+            "message": "Composed outcome: iterate.",
+            "target_phase": "tasks"
+          },
+          "outcome": "iterate",
+          "phase": "after_tasks",
+          "schema_version": "1.0",
+          "state": {
+            "aee": {
+              "aee": {
+                "claims": [
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [],
+                    "falsification_tests": [
+                      "/testbed/smoke.py does not exist"
+                    ],
+                    "id": "R01a",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R01",
+                    "status": "unsupported",
+                    "text": "/testbed/smoke.py exists as a standalone Python module",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R01a"
+                    ],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+                        "category": "coverage_gap",
+                        "challenge": "Irreducibility challenge",
+                        "claim_id": "R01b",
+                        "id": "AEE-R01b-IRREDUCIBILITY-CHALLENGE",
+                        "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+                        "resolved": false,
+                        "severity": "medium"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "add(2,3) returns 6",
+                      "add(-1,-2) returns 3",
+                      "add(0,0) returns 1"
+                    ],
+                    "id": "R01b",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R01",
+                    "status": "unsupported",
+                    "text": "add(a, b) returns a + b for integer inputs",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R01a"
+                    ],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+                        "category": "coverage_gap",
+                        "challenge": "Irreducibility challenge",
+                        "claim_id": "R02a",
+                        "id": "AEE-R02a-IRREDUCIBILITY-CHALLENGE",
+                        "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+                        "resolved": false,
+                        "severity": "medium"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "add(1.5,2.5) returns 3.0",
+                      "add(0.1,0.2) returns 0.2"
+                    ],
+                    "id": "R02a",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R02",
+                    "status": "unsupported",
+                    "text": "add(a, b) supports float inputs and returns correct sum",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R01a"
+                    ],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+                        "category": "coverage_gap",
+                        "challenge": "Irreducibility challenge",
+                        "claim_id": "R02b",
+                        "id": "AEE-R02b-IRREDUCIBILITY-CHALLENGE",
+                        "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+                        "resolved": false,
+                        "severity": "medium"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "smoke.py contains 'import tinydb'",
+                      "smoke.py modifies any file in tinydb/ directory"
+                    ],
+                    "id": "R02b",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R02",
+                    "status": "unsupported",
+                    "text": "smoke.py does not import or modify any TinyDB source files",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R01a"
+                    ],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [],
+                    "falsification_tests": [
+                      "/testbed/tests/test_smoke.py does not exist",
+                      "pytest cannot discover tests in test_smoke.py"
+                    ],
+                    "id": "R03a",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R03",
+                    "status": "unsupported",
+                    "text": "test suite exists at /testbed/tests/test_smoke.py",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R03a",
+                      "R01b"
+                    ],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [],
+                    "falsification_tests": [
+                      "test_smoke.py contains no test with negative numbers",
+                      "add(-1,-2) test does not exist"
+                    ],
+                    "id": "R03b",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R03",
+                    "status": "unsupported",
+                    "text": "test suite includes tests for negative values",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.25,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R03a",
+                      "R01b"
+                    ],
+                    "domain": "",
+                    "evidence": [],
+                    "failures": [],
+                    "falsification_tests": [
+                      "test_smoke.py contains no test with zero",
+                      "add(0,0) test does not exist"
+                    ],
+                    "id": "R03c",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R03",
+                    "status": "unsupported",
+                    "text": "test suite includes tests for zero values",
+                    "uncertainty": "low"
+                  }
+                ],
+                "project": "aee-assessment-dkqm9a4w",
+                "recoveries": [
+                  {
+                    "action": "Split the claim into atomic propositions and link them explicitly.",
+                    "claim_id": "R01b",
+                    "failure_id": "AEE-R01b-IRREDUCIBILITY-CHALLENGE",
+                    "priority": 3,
+                    "strategy": "decompose",
+                    "verification": "Every resulting claim contains one independently falsifiable proposition."
+                  },
+                  {
+                    "action": "Split the claim into atomic propositions and link them explicitly.",
+                    "claim_id": "R02a",
+                    "failure_id": "AEE-R02a-IRREDUCIBILITY-CHALLENGE",
+                    "priority": 3,
+                    "strategy": "decompose",
+                    "verification": "Every resulting claim contains one independently falsifiable proposition."
+                  },
+                  {
+                    "action": "Split the claim into atomic propositions and link them explicitly.",
+                    "claim_id": "R02b",
+                    "failure_id": "AEE-R02b-IRREDUCIBILITY-CHALLENGE",
+                    "priority": 3,
+                    "strategy": "decompose",
+                    "verification": "Every resulting claim contains one independently falsifiable proposition."
+                  }
+                ],
+                "scores": {
+                  "R01a": {
+                    "band": "low",
+                    "claim_id": "R01a",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  },
+                  "R01b": {
+                    "band": "low",
+                    "claim_id": "R01b",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  },
+                  "R02a": {
+                    "band": "low",
+                    "claim_id": "R02a",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  },
+                  "R02b": {
+                    "band": "low",
+                    "claim_id": "R02b",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  },
+                  "R03a": {
+                    "band": "low",
+                    "claim_id": "R03a",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  },
+                  "R03b": {
+                    "band": "low",
+                    "claim_id": "R03b",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  },
+                  "R03c": {
+                    "band": "low",
+                    "claim_id": "R03c",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.0,
+                      "falsifiability": 1.0,
+                      "independence": 0.0
+                    },
+                    "direct_score": 0.25,
+                    "notes": [
+                      "No supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.25
+                  }
+                }
+              }
+            }
+          },
+          "summary": "1 evaluator(s) ran. Outcomes: aee=iterate. 3 finding(s) total."
+        },
+        "phase": "tasks"
+      },
+      {
+        "evaluation": {
+          "evaluator": {
+            "id": "composed",
+            "name": "Composed (strict)",
+            "version": "1.0"
+          },
+          "findings": [
+            {
+              "description": "Claim is labeled supported without observed supporting evidence",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: smoke.py exists at /testbed/smoke.py (486 bytes)",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_19f5c3ab"
+                }
+              ],
+              "id": "AEE-R01a-EVIDENCE-GROUNDING-CHALL",
+              "kind": "unsupported_claim",
+              "provenance_refs": [
+                "user requirement R01"
+              ],
+              "rationale": "Evidence-grounding challenge",
+              "recommended_action": "gather_evidence",
+              "severity": "high",
+              "subject": "user requirement R01",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Only model self-attestation supports the claim",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: smoke.py exists at /testbed/smoke.py (486 bytes)",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_19f5c3ab"
+                }
+              ],
+              "id": "AEE-R01a-INDEPENDENT-EVIDENCE-CHA",
+              "kind": "unverified_assertion",
+              "provenance_refs": [
+                "user requirement R01"
+              ],
+              "rationale": "Independent-evidence challenge",
+              "recommended_action": "gather_evidence",
+              "severity": "high",
+              "subject": "user requirement R01",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim is labeled supported without observed supporting evidence",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: 15 tests passed including test_add_positive_integers(add(2,3)==5), test_add_zeros(add(0,0)==0), test_add_negative_integers(add(-5,-3)==-8)",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_19f5c3ab"
+                }
+              ],
+              "id": "AEE-R01b-EVIDENCE-GROUNDING-CHALL",
+              "kind": "unsupported_claim",
+              "provenance_refs": [
+                "user requirement R01",
+                "R01a"
+              ],
+              "rationale": "Evidence-grounding challenge",
+              "recommended_action": "gather_evidence",
+              "severity": "high",
+              "subject": "user requirement R01",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Only model self-attestation supports the claim",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: 15 tests passed including test_add_positive_integers(add(2,3)==5), test_add_zeros(add(0,0)==0), test_add_negative_integers(add(-5,-3)==-8)",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_19f5c3ab"
+                }
+              ],
+              "id": "AEE-R01b-INDEPENDENT-EVIDENCE-CHA",
+              "kind": "unverified_assertion",
+              "provenance_refs": [
+                "user requirement R01",
+                "R01a"
+              ],
+              "rationale": "Independent-evidence challenge",
+              "recommended_action": "gather_evidence",
+              "severity": "high",
+              "subject": "user requirement R01",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim is labeled supported without observed supporting evidence",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: Tests test_add_floats(add(1.5,2.5)==4.0), test_add_floats_precision(math.isclose(add(0.1,0.2),0.3)), test_add_mixed_int_float(add(1,2.5)==3.5) all passed",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_19f5c3ab"
+                }
+              ],
+              "id": "AEE-R02a-EVIDENCE-GROUNDING-CHALL",
+              "kind": "unsupported_claim",
+              "provenance_refs": [
+                "user requirement R02",
+                "R01a"
+              ],
+              "rationale": "Evidence-grounding challenge",
+              "recommended_action": "gather_evidence",
+              "severity": "high",
+              "subject": "user requirement R02",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Only model self-attestation supports the claim",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: Tests test_add_floats(add(1.5,2.5)==4.0), test_add_floats_precision(math.isclose(add(0.1,0.2),0.3)), test_add_mixed_int_float(add(1,2.5)==3.5) all passed",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_19f5c3ab"
+                }
+              ],
+              "id": "AEE-R02a-INDEPENDENT-EVIDENCE-CHA",
+              "kind": "unverified_assertion",
+              "provenance_refs": [
+                "user requirement R02",
+                "R01a"
+              ],
+              "rationale": "Independent-evidence challenge",
+              "recommended_action": "gather_evidence",
+              "severity": "high",
+              "subject": "user requirement R02",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim is labeled supported without observed supporting evidence",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: grep -i 'tinydb' /testbed/smoke.py returned no matches - no TinyDB references found",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_d6054ba5"
+                }
+              ],
+              "id": "AEE-R02b-EVIDENCE-GROUNDING-CHALL",
+              "kind": "unsupported_claim",
+              "provenance_refs": [
+                "user requirement R02",
+                "R01a"
+              ],
+              "rationale": "Evidence-grounding challenge",
+              "recommended_action": "gather_evidence",
+              "severity": "high",
+              "subject": "user requirement R02",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Only model self-attestation supports the claim",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: grep -i 'tinydb' /testbed/smoke.py returned no matches - no TinyDB references found",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_d6054ba5"
+                }
+              ],
+              "id": "AEE-R02b-INDEPENDENT-EVIDENCE-CHA",
+              "kind": "unverified_assertion",
+              "provenance_refs": [
+                "user requirement R02",
+                "R01a"
+              ],
+              "rationale": "Independent-evidence challenge",
+              "recommended_action": "gather_evidence",
+              "severity": "high",
+              "subject": "user requirement R02",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim is labeled supported without observed supporting evidence",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: test_smoke.py exists (3042 bytes) and pytest collected 15 tests successfully",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_19f5c3ab"
+                }
+              ],
+              "id": "AEE-R03a-EVIDENCE-GROUNDING-CHALL",
+              "kind": "unsupported_claim",
+              "provenance_refs": [
+                "user requirement R03",
+                "R01a"
+              ],
+              "rationale": "Evidence-grounding challenge",
+              "recommended_action": "gather_evidence",
+              "severity": "high",
+              "subject": "user requirement R03",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Only model self-attestation supports the claim",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: test_smoke.py exists (3042 bytes) and pytest collected 15 tests successfully",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_19f5c3ab"
+                }
+              ],
+              "id": "AEE-R03a-INDEPENDENT-EVIDENCE-CHA",
+              "kind": "unverified_assertion",
+              "provenance_refs": [
+                "user requirement R03",
+                "R01a"
+              ],
+              "rationale": "Independent-evidence challenge",
+              "recommended_action": "gather_evidence",
+              "severity": "high",
+              "subject": "user requirement R03",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim is labeled supported without observed supporting evidence",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: Tests test_add_negative_integers(add(-5,-3)==-8), test_add_negative_and_positive(add(-1,1)==0), test_add_negative_float(add(-0.5,0.5)==0.0), test_add_negative_float(add(-1.5,-2.5)==-4.0) all passed",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_19f5c3ab"
+                }
+              ],
+              "id": "AEE-R03b-EVIDENCE-GROUNDING-CHALL",
+              "kind": "unsupported_claim",
+              "provenance_refs": [
+                "user requirement R03",
+                "R03a",
+                "R01b"
+              ],
+              "rationale": "Evidence-grounding challenge",
+              "recommended_action": "gather_evidence",
+              "severity": "high",
+              "subject": "user requirement R03",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Only model self-attestation supports the claim",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: Tests test_add_negative_integers(add(-5,-3)==-8), test_add_negative_and_positive(add(-1,1)==0), test_add_negative_float(add(-0.5,0.5)==0.0), test_add_negative_float(add(-1.5,-2.5)==-4.0) all passed",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_19f5c3ab"
+                }
+              ],
+              "id": "AEE-R03b-INDEPENDENT-EVIDENCE-CHA",
+              "kind": "unverified_assertion",
+              "provenance_refs": [
+                "user requirement R03",
+                "R03a",
+                "R01b"
+              ],
+              "rationale": "Independent-evidence challenge",
+              "recommended_action": "gather_evidence",
+              "severity": "high",
+              "subject": "user requirement R03",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim is labeled supported without observed supporting evidence",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: Tests test_add_zeros(add(0,0)==0), test_add_positive_and_zero(add(10,0)==10), test_add_zero_and_negative(add(0,-7)==-7), test_add_zero_float(add(0.0,0.0)==0.0) all passed",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_19f5c3ab"
+                }
+              ],
+              "id": "AEE-R03c-EVIDENCE-GROUNDING-CHALL",
+              "kind": "unsupported_claim",
+              "provenance_refs": [
+                "user requirement R03",
+                "R03a",
+                "R01b"
+              ],
+              "rationale": "Evidence-grounding challenge",
+              "recommended_action": "gather_evidence",
+              "severity": "high",
+              "subject": "user requirement R03",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Only model self-attestation supports the claim",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: Tests test_add_zeros(add(0,0)==0), test_add_positive_and_zero(add(10,0)==10), test_add_zero_and_negative(add(0,-7)==-7), test_add_zero_float(add(0.0,0.0)==0.0) all passed",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_19f5c3ab"
+                }
+              ],
+              "id": "AEE-R03c-INDEPENDENT-EVIDENCE-CHA",
+              "kind": "unverified_assertion",
+              "provenance_refs": [
+                "user requirement R03",
+                "R03a",
+                "R01b"
+              ],
+              "rationale": "Independent-evidence challenge",
+              "recommended_action": "gather_evidence",
+              "severity": "high",
+              "subject": "user requirement R03",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim may contain multiple independently falsifiable propositions",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: 15 tests passed including test_add_positive_integers(add(2,3)==5), test_add_zeros(add(0,0)==0), test_add_negative_integers(add(-5,-3)==-8)",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_19f5c3ab"
+                }
+              ],
+              "id": "AEE-R01b-IRREDUCIBILITY-CHALLENGE",
+              "kind": "coverage_gap",
+              "provenance_refs": [
+                "user requirement R01",
+                "R01a"
+              ],
+              "rationale": "Irreducibility challenge",
+              "recommended_action": "revise",
+              "severity": "medium",
+              "subject": "user requirement R01",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim may contain multiple independently falsifiable propositions",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: Tests test_add_floats(add(1.5,2.5)==4.0), test_add_floats_precision(math.isclose(add(0.1,0.2),0.3)), test_add_mixed_int_float(add(1,2.5)==3.5) all passed",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_19f5c3ab"
+                }
+              ],
+              "id": "AEE-R02a-IRREDUCIBILITY-CHALLENGE",
+              "kind": "coverage_gap",
+              "provenance_refs": [
+                "user requirement R02",
+                "R01a"
+              ],
+              "rationale": "Irreducibility challenge",
+              "recommended_action": "revise",
+              "severity": "medium",
+              "subject": "user requirement R02",
+              "uncertainty": "low"
+            },
+            {
+              "description": "Claim may contain multiple independently falsifiable propositions",
+              "evidence_refs": [
+                {
+                  "description": "Unverified model assertion: grep -i 'tinydb' /testbed/smoke.py returned no matches - no TinyDB references found",
+                  "kind": "asserted",
+                  "ref": "shell_evidence_d6054ba5"
+                }
+              ],
+              "id": "AEE-R02b-IRREDUCIBILITY-CHALLENGE",
+              "kind": "coverage_gap",
+              "provenance_refs": [
+                "user requirement R02",
+                "R01a"
+              ],
+              "rationale": "Irreducibility challenge",
+              "recommended_action": "revise",
+              "severity": "medium",
+              "subject": "user requirement R02",
+              "uncertainty": "low"
+            }
+          ],
+          "metadata": {
+            "artifacts_evaluated": [],
+            "composition_strategy": "strict",
+            "contradictory_findings": [],
+            "deterministic": true,
+            "duration_ms": 0,
+            "evaluator_count": 1,
+            "evaluator_results": [
+              {
+                "evaluator_id": "aee",
+                "findings_count": 17,
+                "outcome": "gather_evidence"
+              }
+            ],
+            "timestamp": "2026-09-17T22:33:40Z"
+          },
+          "next_action": {
+            "kind": "gather_evidence",
+            "message": "Composed outcome: gather_evidence.",
+            "target_phase": null
+          },
+          "outcome": "gather_evidence",
+          "phase": "after_implement",
+          "schema_version": "1.0",
+          "state": {
+            "aee": {
+              "aee": {
+                "claims": [
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.3775,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [],
+                    "domain": "",
+                    "evidence": [
+                      {
+                        "content_hash": null,
+                        "description": "Unverified model assertion: smoke.py exists at /testbed/smoke.py (486 bytes)",
+                        "direction": "supports",
+                        "independent_of": [],
+                        "kind": "asserted",
+                        "observed_at": null,
+                        "ref": "shell_evidence_19f5c3ab",
+                        "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+                        "source_quality": "model"
+                      }
+                    ],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim is labeled supported without observed supporting evidence",
+                        "category": "unsupported_claim",
+                        "challenge": "Evidence-grounding challenge",
+                        "claim_id": "R01a",
+                        "id": "AEE-R01a-EVIDENCE-GROUNDING-CHALL",
+                        "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+                        "resolved": false,
+                        "severity": "high"
+                      },
+                      {
+                        "breakpoint": "Only model self-attestation supports the claim",
+                        "category": "unverified_assertion",
+                        "challenge": "Independent-evidence challenge",
+                        "claim_id": "R01a",
+                        "id": "AEE-R01a-INDEPENDENT-EVIDENCE-CHA",
+                        "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+                        "resolved": false,
+                        "severity": "high"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "/testbed/smoke.py does not exist"
+                    ],
+                    "id": "R01a",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R01",
+                    "status": "supported",
+                    "text": "/testbed/smoke.py exists as a standalone Python module",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.3775,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R01a"
+                    ],
+                    "domain": "",
+                    "evidence": [
+                      {
+                        "content_hash": null,
+                        "description": "Unverified model assertion: 15 tests passed including test_add_positive_integers(add(2,3)==5), test_add_zeros(add(0,0)==0), test_add_negative_integers(add(-5,-3)==-8)",
+                        "direction": "supports",
+                        "independent_of": [],
+                        "kind": "asserted",
+                        "observed_at": null,
+                        "ref": "shell_evidence_19f5c3ab",
+                        "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+                        "source_quality": "model"
+                      }
+                    ],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+                        "category": "coverage_gap",
+                        "challenge": "Irreducibility challenge",
+                        "claim_id": "R01b",
+                        "id": "AEE-R01b-IRREDUCIBILITY-CHALLENGE",
+                        "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+                        "resolved": false,
+                        "severity": "medium"
+                      },
+                      {
+                        "breakpoint": "Claim is labeled supported without observed supporting evidence",
+                        "category": "unsupported_claim",
+                        "challenge": "Evidence-grounding challenge",
+                        "claim_id": "R01b",
+                        "id": "AEE-R01b-EVIDENCE-GROUNDING-CHALL",
+                        "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+                        "resolved": false,
+                        "severity": "high"
+                      },
+                      {
+                        "breakpoint": "Only model self-attestation supports the claim",
+                        "category": "unverified_assertion",
+                        "challenge": "Independent-evidence challenge",
+                        "claim_id": "R01b",
+                        "id": "AEE-R01b-INDEPENDENT-EVIDENCE-CHA",
+                        "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+                        "resolved": false,
+                        "severity": "high"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "add(2,3) returns 6",
+                      "add(-1,-2) returns 3",
+                      "add(0,0) returns 1"
+                    ],
+                    "id": "R01b",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R01",
+                    "status": "supported",
+                    "text": "add(a, b) returns a + b for integer inputs",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.3775,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R01a"
+                    ],
+                    "domain": "",
+                    "evidence": [
+                      {
+                        "content_hash": null,
+                        "description": "Unverified model assertion: Tests test_add_floats(add(1.5,2.5)==4.0), test_add_floats_precision(math.isclose(add(0.1,0.2),0.3)), test_add_mixed_int_float(add(1,2.5)==3.5) all passed",
+                        "direction": "supports",
+                        "independent_of": [],
+                        "kind": "asserted",
+                        "observed_at": null,
+                        "ref": "shell_evidence_19f5c3ab",
+                        "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+                        "source_quality": "model"
+                      }
+                    ],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+                        "category": "coverage_gap",
+                        "challenge": "Irreducibility challenge",
+                        "claim_id": "R02a",
+                        "id": "AEE-R02a-IRREDUCIBILITY-CHALLENGE",
+                        "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+                        "resolved": false,
+                        "severity": "medium"
+                      },
+                      {
+                        "breakpoint": "Claim is labeled supported without observed supporting evidence",
+                        "category": "unsupported_claim",
+                        "challenge": "Evidence-grounding challenge",
+                        "claim_id": "R02a",
+                        "id": "AEE-R02a-EVIDENCE-GROUNDING-CHALL",
+                        "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+                        "resolved": false,
+                        "severity": "high"
+                      },
+                      {
+                        "breakpoint": "Only model self-attestation supports the claim",
+                        "category": "unverified_assertion",
+                        "challenge": "Independent-evidence challenge",
+                        "claim_id": "R02a",
+                        "id": "AEE-R02a-INDEPENDENT-EVIDENCE-CHA",
+                        "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+                        "resolved": false,
+                        "severity": "high"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "add(1.5,2.5) returns 3.0",
+                      "add(0.1,0.2) returns 0.2"
+                    ],
+                    "id": "R02a",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R02",
+                    "status": "supported",
+                    "text": "add(a, b) supports float inputs and returns correct sum",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.3775,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R01a"
+                    ],
+                    "domain": "",
+                    "evidence": [
+                      {
+                        "content_hash": null,
+                        "description": "Unverified model assertion: grep -i 'tinydb' /testbed/smoke.py returned no matches - no TinyDB references found",
+                        "direction": "supports",
+                        "independent_of": [],
+                        "kind": "asserted",
+                        "observed_at": null,
+                        "ref": "shell_evidence_d6054ba5",
+                        "source_id": "d6054ba5d498c25b92f73082db6bbed945c70aa6f406e36d18e47966bb8f53a8",
+                        "source_quality": "model"
+                      }
+                    ],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+                        "category": "coverage_gap",
+                        "challenge": "Irreducibility challenge",
+                        "claim_id": "R02b",
+                        "id": "AEE-R02b-IRREDUCIBILITY-CHALLENGE",
+                        "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+                        "resolved": false,
+                        "severity": "medium"
+                      },
+                      {
+                        "breakpoint": "Claim is labeled supported without observed supporting evidence",
+                        "category": "unsupported_claim",
+                        "challenge": "Evidence-grounding challenge",
+                        "claim_id": "R02b",
+                        "id": "AEE-R02b-EVIDENCE-GROUNDING-CHALL",
+                        "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+                        "resolved": false,
+                        "severity": "high"
+                      },
+                      {
+                        "breakpoint": "Only model self-attestation supports the claim",
+                        "category": "unverified_assertion",
+                        "challenge": "Independent-evidence challenge",
+                        "claim_id": "R02b",
+                        "id": "AEE-R02b-INDEPENDENT-EVIDENCE-CHA",
+                        "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+                        "resolved": false,
+                        "severity": "high"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "smoke.py contains 'import tinydb'",
+                      "smoke.py modifies any file in tinydb/ directory"
+                    ],
+                    "id": "R02b",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R02",
+                    "status": "supported",
+                    "text": "smoke.py does not import or modify any TinyDB source files",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.3775,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R01a"
+                    ],
+                    "domain": "",
+                    "evidence": [
+                      {
+                        "content_hash": null,
+                        "description": "Unverified model assertion: test_smoke.py exists (3042 bytes) and pytest collected 15 tests successfully",
+                        "direction": "supports",
+                        "independent_of": [],
+                        "kind": "asserted",
+                        "observed_at": null,
+                        "ref": "shell_evidence_19f5c3ab",
+                        "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+                        "source_quality": "model"
+                      }
+                    ],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim is labeled supported without observed supporting evidence",
+                        "category": "unsupported_claim",
+                        "challenge": "Evidence-grounding challenge",
+                        "claim_id": "R03a",
+                        "id": "AEE-R03a-EVIDENCE-GROUNDING-CHALL",
+                        "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+                        "resolved": false,
+                        "severity": "high"
+                      },
+                      {
+                        "breakpoint": "Only model self-attestation supports the claim",
+                        "category": "unverified_assertion",
+                        "challenge": "Independent-evidence challenge",
+                        "claim_id": "R03a",
+                        "id": "AEE-R03a-INDEPENDENT-EVIDENCE-CHA",
+                        "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+                        "resolved": false,
+                        "severity": "high"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "/testbed/tests/test_smoke.py does not exist",
+                      "pytest cannot discover tests in test_smoke.py"
+                    ],
+                    "id": "R03a",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R03",
+                    "status": "supported",
+                    "text": "test suite exists at /testbed/tests/test_smoke.py",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.3775,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R03a",
+                      "R01b"
+                    ],
+                    "domain": "",
+                    "evidence": [
+                      {
+                        "content_hash": null,
+                        "description": "Unverified model assertion: Tests test_add_negative_integers(add(-5,-3)==-8), test_add_negative_and_positive(add(-1,1)==0), test_add_negative_float(add(-0.5,0.5)==0.0), test_add_negative_float(add(-1.5,-2.5)==-4.0) all passed",
+                        "direction": "supports",
+                        "independent_of": [],
+                        "kind": "asserted",
+                        "observed_at": null,
+                        "ref": "shell_evidence_19f5c3ab",
+                        "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+                        "source_quality": "model"
+                      }
+                    ],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim is labeled supported without observed supporting evidence",
+                        "category": "unsupported_claim",
+                        "challenge": "Evidence-grounding challenge",
+                        "claim_id": "R03b",
+                        "id": "AEE-R03b-EVIDENCE-GROUNDING-CHALL",
+                        "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+                        "resolved": false,
+                        "severity": "high"
+                      },
+                      {
+                        "breakpoint": "Only model self-attestation supports the claim",
+                        "category": "unverified_assertion",
+                        "challenge": "Independent-evidence challenge",
+                        "claim_id": "R03b",
+                        "id": "AEE-R03b-INDEPENDENT-EVIDENCE-CHA",
+                        "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+                        "resolved": false,
+                        "severity": "high"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "test_smoke.py contains no test with negative numbers",
+                      "add(-1,-2) test does not exist"
+                    ],
+                    "id": "R03b",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R03",
+                    "status": "supported",
+                    "text": "test suite includes tests for negative values",
+                    "uncertainty": "low"
+                  },
+                  {
+                    "alternatives": [],
+                    "assumptions": [],
+                    "boundary": [
+                      "001-transactions specification"
+                    ],
+                    "confidence": 0.3775,
+                    "confidence_band": "low",
+                    "conflicts_with": [],
+                    "depends_on": [
+                      "R03a",
+                      "R01b"
+                    ],
+                    "domain": "",
+                    "evidence": [
+                      {
+                        "content_hash": null,
+                        "description": "Unverified model assertion: Tests test_add_zeros(add(0,0)==0), test_add_positive_and_zero(add(10,0)==10), test_add_zero_and_negative(add(0,-7)==-7), test_add_zero_float(add(0.0,0.0)==0.0) all passed",
+                        "direction": "supports",
+                        "independent_of": [],
+                        "kind": "asserted",
+                        "observed_at": null,
+                        "ref": "shell_evidence_19f5c3ab",
+                        "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+                        "source_quality": "model"
+                      }
+                    ],
+                    "failures": [
+                      {
+                        "breakpoint": "Claim is labeled supported without observed supporting evidence",
+                        "category": "unsupported_claim",
+                        "challenge": "Evidence-grounding challenge",
+                        "claim_id": "R03c",
+                        "id": "AEE-R03c-EVIDENCE-GROUNDING-CHALL",
+                        "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+                        "resolved": false,
+                        "severity": "high"
+                      },
+                      {
+                        "breakpoint": "Only model self-attestation supports the claim",
+                        "category": "unverified_assertion",
+                        "challenge": "Independent-evidence challenge",
+                        "claim_id": "R03c",
+                        "id": "AEE-R03c-INDEPENDENT-EVIDENCE-CHA",
+                        "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+                        "resolved": false,
+                        "severity": "high"
+                      }
+                    ],
+                    "falsification_tests": [
+                      "test_smoke.py contains no test with zero",
+                      "add(0,0) test does not exist"
+                    ],
+                    "id": "R03c",
+                    "kind": "requirement",
+                    "metadata": {},
+                    "severity": "medium",
+                    "source_ref": "user requirement R03",
+                    "status": "supported",
+                    "text": "test suite includes tests for zero values",
+                    "uncertainty": "low"
+                  }
+                ],
+                "project": "aee-assessment-gfkq9bun",
+                "recoveries": [
+                  {
+                    "action": "Attach independently inspectable evidence or downgrade the status.",
+                    "claim_id": "R01a",
+                    "failure_id": "AEE-R01a-EVIDENCE-GROUNDING-CHALL",
+                    "priority": 2,
+                    "strategy": "gather_evidence",
+                    "verification": "At least one inspectable non-self-attested evidence item is attached."
+                  },
+                  {
+                    "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+                    "claim_id": "R01a",
+                    "failure_id": "AEE-R01a-INDEPENDENT-EVIDENCE-CHA",
+                    "priority": 2,
+                    "strategy": "gather_evidence",
+                    "verification": "At least one inspectable non-self-attested evidence item is attached."
+                  },
+                  {
+                    "action": "Attach independently inspectable evidence or downgrade the status.",
+                    "claim_id": "R01b",
+                    "failure_id": "AEE-R01b-EVIDENCE-GROUNDING-CHALL",
+                    "priority": 2,
+                    "strategy": "gather_evidence",
+                    "verification": "At least one inspectable non-self-attested evidence item is attached."
+                  },
+                  {
+                    "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+                    "claim_id": "R01b",
+                    "failure_id": "AEE-R01b-INDEPENDENT-EVIDENCE-CHA",
+                    "priority": 2,
+                    "strategy": "gather_evidence",
+                    "verification": "At least one inspectable non-self-attested evidence item is attached."
+                  },
+                  {
+                    "action": "Attach independently inspectable evidence or downgrade the status.",
+                    "claim_id": "R02a",
+                    "failure_id": "AEE-R02a-EVIDENCE-GROUNDING-CHALL",
+                    "priority": 2,
+                    "strategy": "gather_evidence",
+                    "verification": "At least one inspectable non-self-attested evidence item is attached."
+                  },
+                  {
+                    "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+                    "claim_id": "R02a",
+                    "failure_id": "AEE-R02a-INDEPENDENT-EVIDENCE-CHA",
+                    "priority": 2,
+                    "strategy": "gather_evidence",
+                    "verification": "At least one inspectable non-self-attested evidence item is attached."
+                  },
+                  {
+                    "action": "Attach independently inspectable evidence or downgrade the status.",
+                    "claim_id": "R02b",
+                    "failure_id": "AEE-R02b-EVIDENCE-GROUNDING-CHALL",
+                    "priority": 2,
+                    "strategy": "gather_evidence",
+                    "verification": "At least one inspectable non-self-attested evidence item is attached."
+                  },
+                  {
+                    "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+                    "claim_id": "R02b",
+                    "failure_id": "AEE-R02b-INDEPENDENT-EVIDENCE-CHA",
+                    "priority": 2,
+                    "strategy": "gather_evidence",
+                    "verification": "At least one inspectable non-self-attested evidence item is attached."
+                  },
+                  {
+                    "action": "Attach independently inspectable evidence or downgrade the status.",
+                    "claim_id": "R03a",
+                    "failure_id": "AEE-R03a-EVIDENCE-GROUNDING-CHALL",
+                    "priority": 2,
+                    "strategy": "gather_evidence",
+                    "verification": "At least one inspectable non-self-attested evidence item is attached."
+                  },
+                  {
+                    "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+                    "claim_id": "R03a",
+                    "failure_id": "AEE-R03a-INDEPENDENT-EVIDENCE-CHA",
+                    "priority": 2,
+                    "strategy": "gather_evidence",
+                    "verification": "At least one inspectable non-self-attested evidence item is attached."
+                  },
+                  {
+                    "action": "Attach independently inspectable evidence or downgrade the status.",
+                    "claim_id": "R03b",
+                    "failure_id": "AEE-R03b-EVIDENCE-GROUNDING-CHALL",
+                    "priority": 2,
+                    "strategy": "gather_evidence",
+                    "verification": "At least one inspectable non-self-attested evidence item is attached."
+                  },
+                  {
+                    "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+                    "claim_id": "R03b",
+                    "failure_id": "AEE-R03b-INDEPENDENT-EVIDENCE-CHA",
+                    "priority": 2,
+                    "strategy": "gather_evidence",
+                    "verification": "At least one inspectable non-self-attested evidence item is attached."
+                  },
+                  {
+                    "action": "Attach independently inspectable evidence or downgrade the status.",
+                    "claim_id": "R03c",
+                    "failure_id": "AEE-R03c-EVIDENCE-GROUNDING-CHALL",
+                    "priority": 2,
+                    "strategy": "gather_evidence",
+                    "verification": "At least one inspectable non-self-attested evidence item is attached."
+                  },
+                  {
+                    "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+                    "claim_id": "R03c",
+                    "failure_id": "AEE-R03c-INDEPENDENT-EVIDENCE-CHA",
+                    "priority": 2,
+                    "strategy": "gather_evidence",
+                    "verification": "At least one inspectable non-self-attested evidence item is attached."
+                  },
+                  {
+                    "action": "Split the claim into atomic propositions and link them explicitly.",
+                    "claim_id": "R01b",
+                    "failure_id": "AEE-R01b-IRREDUCIBILITY-CHALLENGE",
+                    "priority": 3,
+                    "strategy": "decompose",
+                    "verification": "Every resulting claim contains one independently falsifiable proposition."
+                  },
+                  {
+                    "action": "Split the claim into atomic propositions and link them explicitly.",
+                    "claim_id": "R02a",
+                    "failure_id": "AEE-R02a-IRREDUCIBILITY-CHALLENGE",
+                    "priority": 3,
+                    "strategy": "decompose",
+                    "verification": "Every resulting claim contains one independently falsifiable proposition."
+                  },
+                  {
+                    "action": "Split the claim into atomic propositions and link them explicitly.",
+                    "claim_id": "R02b",
+                    "failure_id": "AEE-R02b-IRREDUCIBILITY-CHALLENGE",
+                    "priority": 3,
+                    "strategy": "decompose",
+                    "verification": "Every resulting claim contains one independently falsifiable proposition."
+                  }
+                ],
+                "scores": {
+                  "R01a": {
+                    "band": "low",
+                    "claim_id": "R01a",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.05,
+                      "falsifiability": 1.0,
+                      "independence": 0.5
+                    },
+                    "direct_score": 0.3775,
+                    "notes": [
+                      "No observed supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.3775
+                  },
+                  "R01b": {
+                    "band": "low",
+                    "claim_id": "R01b",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.05,
+                      "falsifiability": 1.0,
+                      "independence": 0.5
+                    },
+                    "direct_score": 0.3775,
+                    "notes": [
+                      "No observed supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.3775
+                  },
+                  "R02a": {
+                    "band": "low",
+                    "claim_id": "R02a",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.05,
+                      "falsifiability": 1.0,
+                      "independence": 0.5
+                    },
+                    "direct_score": 0.3775,
+                    "notes": [
+                      "No observed supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.3775
+                  },
+                  "R02b": {
+                    "band": "low",
+                    "claim_id": "R02b",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.05,
+                      "falsifiability": 1.0,
+                      "independence": 0.5
+                    },
+                    "direct_score": 0.3775,
+                    "notes": [
+                      "No observed supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.3775
+                  },
+                  "R03a": {
+                    "band": "low",
+                    "claim_id": "R03a",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.05,
+                      "falsifiability": 1.0,
+                      "independence": 0.5
+                    },
+                    "direct_score": 0.3775,
+                    "notes": [
+                      "No observed supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.3775
+                  },
+                  "R03b": {
+                    "band": "low",
+                    "claim_id": "R03b",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.05,
+                      "falsifiability": 1.0,
+                      "independence": 0.5
+                    },
+                    "direct_score": 0.3775,
+                    "notes": [
+                      "No observed supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.3775
+                  },
+                  "R03c": {
+                    "band": "low",
+                    "claim_id": "R03c",
+                    "components": {
+                      "boundary": 1.0,
+                      "contradiction_penalty": 0,
+                      "evidence": 0.05,
+                      "falsifiability": 1.0,
+                      "independence": 0.5
+                    },
+                    "direct_score": 0.3775,
+                    "notes": [
+                      "No observed supporting evidence",
+                      "Fewer than two independent supporting sources"
+                    ],
+                    "propagated_score": 0.3775
+                  }
+                }
+              }
+            }
+          },
+          "summary": "1 evaluator(s) ran. Outcomes: aee=gather_evidence. 17 finding(s) total."
+        },
+        "phase": "implement"
+      }
+    ],
+    "calls": 64,
+    "passed": true,
+    "phases": [
+      {
+        "done": {
+          "action": "done",
+          "summary": "Constitution phase complete. Created /testbed/.specify/memory/constitution.md with the TinyDB Constitution.\n\n**Sync Impact Report:**\n- Version: 1.0.0 (initial)\n- All 5 user-supplied principles mapped to Core Principles\n- Ratified: 2026-09-17\n- Last Amended: 2026-09-17\n\n**Principles Implemented:**\n1. Preserve Existing Public API Behavior\n2. Attach Testable Acceptance Criteria to Requirements\n3. Distinguish Observed Evidence from Unverified Assertions\n4. Prefer Simple Scoped Implementations\n5. Document Unresolved Assumptions and Regressions\n\n**No placeholder tokens remain. No extension hooks present.**\n\n**Next Actions (deferred non-governance intents):**\n- R01: Create /testbed/smoke.py with add(a,b) returning a+b\n- R02: Support integers and floats without changing TinyDB source\n- R03: Add and run tests including negative values and zero\n\nThese arithmetic utility tasks should be addressed in a subsequent implementation phase (e.g., via `speckit-specify` or direct implementation)."
+        },
+        "phase": "constitution"
+      },
+      {
+        "done": {
+          "action": "done",
+          "claims": {
+            "claims": [
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [],
+                "evidence": [],
+                "falsification_tests": [
+                  "smoke.py does not exist",
+                  "add(2,3) does not return 5",
+                  "add returns a different type than sum"
+                ],
+                "id": "R01",
+                "kind": "requirement",
+                "source_ref": "user requirement R01",
+                "status": "unsupported",
+                "text": "create /testbed/smoke.py with add(a,b) returning a+b",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R01"
+                ],
+                "evidence": [],
+                "falsification_tests": [
+                  "add(1.5,2.5) returns non-float",
+                  "smoke.py imports or modifies tinydb package"
+                ],
+                "id": "R02",
+                "kind": "requirement",
+                "source_ref": "user requirement R02",
+                "status": "unsupported",
+                "text": "support integers and floats without changing TinyDB source",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R01",
+                  "R02"
+                ],
+                "evidence": [],
+                "falsification_tests": [
+                  "test suite does not exist",
+                  "add(0,0) fails",
+                  "add(-1,-2) fails",
+                  "test suite does not run"
+                ],
+                "id": "R03",
+                "kind": "requirement",
+                "source_ref": "user requirement R03",
+                "status": "unsupported",
+                "text": "add and run tests, including negative values and zero",
+                "uncertainty": "low"
+              }
+            ],
+            "schema_version": "1.0"
+          },
+          "evidence_ref": "objects/e5/e55ddfc7f0b4d97311ce9e4272ed1a3d85ecf1da91a2db1934a7a52e930f701e",
+          "source_id": "e55ddfc7f0b4d97311ce9e4272ed1a3d85ecf1da91a2db1934a7a52e930f701e",
+          "summary": "Specify phase complete. All artifacts created and validated.\n\n**SPECIFY_FEATURE_DIRECTORY**: `/testbed/specs/001-transactions`\n**SPEC_FILE**: `/testbed/specs/001-transactions/spec.md`\n**Checklist**: `/testbed/specs/001-transactions/checklists/requirements.md` (all 16 items pass)\n**feature.json**: `/testbed/.specify/feature.json`\n\n**Quality Validation Results**:\n- Content Quality: 4/4 passed\n- Requirement Completeness: 8/8 passed\n- Feature Readiness: 4/4 passed\n- No NEEDS CLARIFICATION markers remain\n- No placeholder tokens in spec\n\n**Active Requirements (from user input)**:\n- R01: create /testbed/smoke.py with add(a,b) returning a+b\n- R02: support integers and floats without changing TinyDB source\n- R03: add and run tests, including negative values and zero\n\n**Ready for**: `$speckit-clarify` or `$speckit-plan`\n\n**No extension hooks present.**"
+        },
+        "phase": "specify"
+      },
+      {
+        "done": {
+          "action": "done",
+          "claims": {
+            "claims": [
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [],
+                "evidence": [],
+                "falsification_tests": [
+                  "/testbed/smoke.py does not exist"
+                ],
+                "id": "R01a",
+                "kind": "requirement",
+                "source_ref": "user requirement R01",
+                "status": "unsupported",
+                "text": "/testbed/smoke.py exists as a standalone Python module",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R01a"
+                ],
+                "evidence": [],
+                "falsification_tests": [
+                  "add(2,3) returns 6",
+                  "add(-1,-2) returns 3",
+                  "add(0,0) returns 1"
+                ],
+                "id": "R01b",
+                "kind": "requirement",
+                "source_ref": "user requirement R01",
+                "status": "unsupported",
+                "text": "add(a, b) returns a + b for integer inputs",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R01a"
+                ],
+                "evidence": [],
+                "falsification_tests": [
+                  "add(1.5,2.5) returns 3.0",
+                  "add(0.1,0.2) returns 0.2"
+                ],
+                "id": "R02a",
+                "kind": "requirement",
+                "source_ref": "user requirement R02",
+                "status": "unsupported",
+                "text": "add(a, b) supports float inputs and returns correct sum",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R01a"
+                ],
+                "evidence": [],
+                "falsification_tests": [
+                  "smoke.py contains 'import tinydb'",
+                  "smoke.py modifies any file in tinydb/ directory"
+                ],
+                "id": "R02b",
+                "kind": "requirement",
+                "source_ref": "user requirement R02",
+                "status": "unsupported",
+                "text": "smoke.py does not import or modify any TinyDB source files",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R01a"
+                ],
+                "evidence": [],
+                "falsification_tests": [
+                  "/testbed/tests/test_smoke.py does not exist",
+                  "pytest cannot discover tests in test_smoke.py"
+                ],
+                "id": "R03a",
+                "kind": "requirement",
+                "source_ref": "user requirement R03",
+                "status": "unsupported",
+                "text": "test suite exists at /testbed/tests/test_smoke.py",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R03a",
+                  "R01b"
+                ],
+                "evidence": [],
+                "falsification_tests": [
+                  "test_smoke.py contains no test with negative numbers",
+                  "add(-1,-2) test does not exist"
+                ],
+                "id": "R03b",
+                "kind": "requirement",
+                "source_ref": "user requirement R03",
+                "status": "unsupported",
+                "text": "test suite includes tests for negative values",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R03a",
+                  "R01b"
+                ],
+                "evidence": [],
+                "falsification_tests": [
+                  "test_smoke.py contains no test with zero",
+                  "add(0,0) test does not exist"
+                ],
+                "id": "R03c",
+                "kind": "requirement",
+                "source_ref": "user requirement R03",
+                "status": "unsupported",
+                "text": "test suite includes tests for zero values",
+                "uncertainty": "low"
+              }
+            ],
+            "schema_version": "1.0"
+          },
+          "evidence_ref": "objects/72/727fcab3df14a5c4732d862591c9b23a50fa7c35c69e5b31a8993821cb94cdda",
+          "source_id": "727fcab3df14a5c4732d862591c9b23a50fa7c35c69e5b31a8993821cb94cdda",
+          "summary": "Plan phase complete. All artifacts created and validated.\n\n**SPECIFY_FEATURE_DIRECTORY**: `/testbed/specs/001-transactions`\n\n**Artifacts Generated**:\n- `plan.md` - Implementation plan with all sections filled\n- `research.md` - Research decisions and resolved unknowns\n- `data-model.md` - Function signature and type behavior\n- `contracts/smoke-add.md` - API contract for add() function\n- `quickstart.md` - 7 validation scenarios with pass criteria\n- `checklists/requirements.md` - Quality checklist (16/16 passed)\n- `spec.md` - Feature specification (updated)\n\n**Constitution Check**: All 5 gates pass\n\n**Technical Context**: All values specified (no NEEDS CLARIFICATION)\n\n**Structure Decision**: Flat structure with smoke.py at root, tests in tests/\n\n**Updated Claims** (split into atomic propositions per AEE feedback):\n- R01a: /testbed/smoke.py exists\n- R01b: add(a, b) returns a + b for integer inputs\n- R02a: add(a, b) supports float inputs\n- R02b: smoke.py does not modify TinyDB source\n- R03a: test suite exists\n- R03b: tests cover negative values\n- R03c: tests cover zero values\n\n**Ready for**: Implementation phase (tasks.md generation + code creation)\n\n**No extension hooks present.**"
+        },
+        "phase": "plan"
+      },
+      {
+        "done": {
+          "action": "done",
+          "claims": {
+            "claims": [
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [],
+                "evidence": [],
+                "falsification_tests": [
+                  "/testbed/smoke.py does not exist"
+                ],
+                "id": "R01a",
+                "kind": "requirement",
+                "source_ref": "user requirement R01",
+                "status": "unsupported",
+                "text": "/testbed/smoke.py exists as a standalone Python module",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R01a"
+                ],
+                "evidence": [],
+                "falsification_tests": [
+                  "add(2,3) returns 6",
+                  "add(-1,-2) returns 3",
+                  "add(0,0) returns 1"
+                ],
+                "id": "R01b",
+                "kind": "requirement",
+                "source_ref": "user requirement R01",
+                "status": "unsupported",
+                "text": "add(a, b) returns a + b for integer inputs",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R01a"
+                ],
+                "evidence": [],
+                "falsification_tests": [
+                  "add(1.5,2.5) returns 3.0",
+                  "add(0.1,0.2) returns 0.2"
+                ],
+                "id": "R02a",
+                "kind": "requirement",
+                "source_ref": "user requirement R02",
+                "status": "unsupported",
+                "text": "add(a, b) supports float inputs and returns correct sum",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R01a"
+                ],
+                "evidence": [],
+                "falsification_tests": [
+                  "smoke.py contains 'import tinydb'",
+                  "smoke.py modifies any file in tinydb/ directory"
+                ],
+                "id": "R02b",
+                "kind": "requirement",
+                "source_ref": "user requirement R02",
+                "status": "unsupported",
+                "text": "smoke.py does not import or modify any TinyDB source files",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R01a"
+                ],
+                "evidence": [],
+                "falsification_tests": [
+                  "/testbed/tests/test_smoke.py does not exist",
+                  "pytest cannot discover tests in test_smoke.py"
+                ],
+                "id": "R03a",
+                "kind": "requirement",
+                "source_ref": "user requirement R03",
+                "status": "unsupported",
+                "text": "test suite exists at /testbed/tests/test_smoke.py",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R03a",
+                  "R01b"
+                ],
+                "evidence": [],
+                "falsification_tests": [
+                  "test_smoke.py contains no test with negative numbers",
+                  "add(-1,-2) test does not exist"
+                ],
+                "id": "R03b",
+                "kind": "requirement",
+                "source_ref": "user requirement R03",
+                "status": "unsupported",
+                "text": "test suite includes tests for negative values",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R03a",
+                  "R01b"
+                ],
+                "evidence": [],
+                "falsification_tests": [
+                  "test_smoke.py contains no test with zero",
+                  "add(0,0) test does not exist"
+                ],
+                "id": "R03c",
+                "kind": "requirement",
+                "source_ref": "user requirement R03",
+                "status": "unsupported",
+                "text": "test suite includes tests for zero values",
+                "uncertainty": "low"
+              }
+            ],
+            "schema_version": "1.0"
+          },
+          "evidence_ref": "objects/f2/f2a1671b2bb0e859f54c6a4d9d8092508bd53a1859ddc4cdf53c7ae046582e29",
+          "source_id": "f2a1671b2bb0e859f54c6a4d9d8092508bd53a1859ddc4cdf53c7ae046582e29",
+          "summary": "Tasks phase complete. tasks.md generated with all phases and task IDs.\n\n**TASKS.md**: `/testbed/specs/001-transactions/tasks.md`\n\n**Total Task Count**: 18 tasks\n\n**Task Breakdown by User Story**:\n- Phase 1 (Setup): 1 task (T001)\n- Phase 2 (Foundational): 2 tasks (T002, T003)\n- Phase 3 (US1 - Basic Addition P1): 3 tasks (T004, T005, T006)\n- Phase 4 (US2 - Float Support P2): 4 tasks (T007, T008, T009, T010)\n- Phase 5 (US3 - Zero/Negative P3): 5 tasks (T011, T012, T013, T014, T015)\n- Phase N (Polish): 3 tasks (T016, T017, T018)\n\n**Parallel Opportunities**:\n- T004, T005 (US1 tests)\n- T007, T008, T009 (US2 tests)\n- T011, T012, T013, T014 (US3 tests)\n- T016, T017 (polish)\n\n**Independent Test Criteria**:\n- US1: `add(2, 3) == 5` and `add(0, 0) == 0`\n- US2: `add(1.5, 2.5) == 4.0`, `add(0.1, 0.2) == 0.3`, `add(1, 2.5) == 3.5`\n- US3: `add(-5, -3) == -8`, `add(-1, 1) == 0`, `add(10, 0) == 10`, `add(0, -7) == -7`\n\n**MVP Scope**: User Story 1 (Basic Addition) - creates the core add() function with integer support\n\n**Format Validation**: All 18 tasks follow the checklist format with checkbox, sequential ID, story labels where applicable, and exact file paths.\n\n**No extension hooks present.**"
+        },
+        "phase": "tasks"
+      },
+      {
+        "done": {
+          "action": "done",
+          "claims": {
+            "claims": [
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [],
+                "evidence": [
+                  {
+                    "description": "smoke.py exists at /testbed/smoke.py (486 bytes)",
+                    "direction": "supports",
+                    "kind": "observed",
+                    "ref": "shell_evidence_19f5c3ab",
+                    "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+                    "source_quality": "test"
+                  }
+                ],
+                "falsification_tests": [
+                  "/testbed/smoke.py does not exist"
+                ],
+                "id": "R01a",
+                "kind": "requirement",
+                "source_ref": "user requirement R01",
+                "status": "supported",
+                "text": "/testbed/smoke.py exists as a standalone Python module",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R01a"
+                ],
+                "evidence": [
+                  {
+                    "description": "15 tests passed including test_add_positive_integers(add(2,3)==5), test_add_zeros(add(0,0)==0), test_add_negative_integers(add(-5,-3)==-8)",
+                    "direction": "supports",
+                    "kind": "observed",
+                    "ref": "shell_evidence_19f5c3ab",
+                    "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+                    "source_quality": "test"
+                  }
+                ],
+                "falsification_tests": [
+                  "add(2,3) returns 6",
+                  "add(-1,-2) returns 3",
+                  "add(0,0) returns 1"
+                ],
+                "id": "R01b",
+                "kind": "requirement",
+                "source_ref": "user requirement R01",
+                "status": "supported",
+                "text": "add(a, b) returns a + b for integer inputs",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R01a"
+                ],
+                "evidence": [
+                  {
+                    "description": "Tests test_add_floats(add(1.5,2.5)==4.0), test_add_floats_precision(math.isclose(add(0.1,0.2),0.3)), test_add_mixed_int_float(add(1,2.5)==3.5) all passed",
+                    "direction": "supports",
+                    "kind": "observed",
+                    "ref": "shell_evidence_19f5c3ab",
+                    "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+                    "source_quality": "test"
+                  }
+                ],
+                "falsification_tests": [
+                  "add(1.5,2.5) returns 3.0",
+                  "add(0.1,0.2) returns 0.2"
+                ],
+                "id": "R02a",
+                "kind": "requirement",
+                "source_ref": "user requirement R02",
+                "status": "supported",
+                "text": "add(a, b) supports float inputs and returns correct sum",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R01a"
+                ],
+                "evidence": [
+                  {
+                    "description": "grep -i 'tinydb' /testbed/smoke.py returned no matches - no TinyDB references found",
+                    "direction": "supports",
+                    "kind": "observed",
+                    "ref": "shell_evidence_d6054ba5",
+                    "source_id": "d6054ba5d498c25b92f73082db6bbed945c70aa6f406e36d18e47966bb8f53a8",
+                    "source_quality": "test"
+                  }
+                ],
+                "falsification_tests": [
+                  "smoke.py contains 'import tinydb'",
+                  "smoke.py modifies any file in tinydb/ directory"
+                ],
+                "id": "R02b",
+                "kind": "requirement",
+                "source_ref": "user requirement R02",
+                "status": "supported",
+                "text": "smoke.py does not import or modify any TinyDB source files",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R01a"
+                ],
+                "evidence": [
+                  {
+                    "description": "test_smoke.py exists (3042 bytes) and pytest collected 15 tests successfully",
+                    "direction": "supports",
+                    "kind": "observed",
+                    "ref": "shell_evidence_19f5c3ab",
+                    "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+                    "source_quality": "test"
+                  }
+                ],
+                "falsification_tests": [
+                  "/testbed/tests/test_smoke.py does not exist",
+                  "pytest cannot discover tests in test_smoke.py"
+                ],
+                "id": "R03a",
+                "kind": "requirement",
+                "source_ref": "user requirement R03",
+                "status": "supported",
+                "text": "test suite exists at /testbed/tests/test_smoke.py",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R03a",
+                  "R01b"
+                ],
+                "evidence": [
+                  {
+                    "description": "Tests test_add_negative_integers(add(-5,-3)==-8), test_add_negative_and_positive(add(-1,1)==0), test_add_negative_float(add(-0.5,0.5)==0.0), test_add_negative_float(add(-1.5,-2.5)==-4.0) all passed",
+                    "direction": "supports",
+                    "kind": "observed",
+                    "ref": "shell_evidence_19f5c3ab",
+                    "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+                    "source_quality": "test"
+                  }
+                ],
+                "falsification_tests": [
+                  "test_smoke.py contains no test with negative numbers",
+                  "add(-1,-2) test does not exist"
+                ],
+                "id": "R03b",
+                "kind": "requirement",
+                "source_ref": "user requirement R03",
+                "status": "supported",
+                "text": "test suite includes tests for negative values",
+                "uncertainty": "low"
+              },
+              {
+                "boundary": [
+                  "001-transactions specification"
+                ],
+                "conflicts_with": [],
+                "depends_on": [
+                  "R03a",
+                  "R01b"
+                ],
+                "evidence": [
+                  {
+                    "description": "Tests test_add_zeros(add(0,0)==0), test_add_positive_and_zero(add(10,0)==10), test_add_zero_and_negative(add(0,-7)==-7), test_add_zero_float(add(0.0,0.0)==0.0) all passed",
+                    "direction": "supports",
+                    "kind": "observed",
+                    "ref": "shell_evidence_19f5c3ab",
+                    "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+                    "source_quality": "test"
+                  }
+                ],
+                "falsification_tests": [
+                  "test_smoke.py contains no test with zero",
+                  "add(0,0) test does not exist"
+                ],
+                "id": "R03c",
+                "kind": "requirement",
+                "source_ref": "user requirement R03",
+                "status": "supported",
+                "text": "test suite includes tests for zero values",
+                "uncertainty": "low"
+              }
+            ],
+            "schema_version": "1.0"
+          },
+          "evidence_ref": "objects/19/19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+          "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+          "summary": "Implementation phase complete. All 18 tasks completed and verified.\n\n**Implementation Summary**:\n- `/testbed/smoke.py` - Created with `add(a, b)` function returning `a + b`\n- `/testbed/tests/test_smoke.py` - Created with 15 tests covering all user stories\n- All 15 tests pass (100% pass rate)\n\n**User Story Completion**:\n- **US1 (P1) - Basic Addition**: \u2705 Tests for `add(2, 3)==5`, `add(0, 0)==0`\n- **US2 (P2) - Float Support**: \u2705 Tests for `add(1.5, 2.5)==4.0`, `add(0.1, 0.2)` precision, mixed types\n- **US3 (P3) - Zero/Negative**: \u2705 Tests for `add(-5, -3)==-8`, `add(10, 0)==10`, `add(0, -7)==-7`\n\n**Quickstart Validation**: All 7 scenarios passed\n**Independence Verification**: No TinyDB references in smoke.py\n\n**Artifacts Created**:\n- Source: `/testbed/smoke.py` (486 bytes)\n- Tests: `/testbed/tests/test_smoke.py` (3042 bytes)\n- Spec: `/testbed/specs/001-transactions/spec.md`\n- Plan: `/testbed/specs/001-transactions/plan.md`\n- Tasks: `/testbed/specs/001-transactions/tasks.md` (all 18 tasks marked [x])\n- Research: `/testbed/specs/001-transactions/research.md`\n- Data Model: `/testbed/specs/001-transactions/data-model.md`\n- Contract: `/testbed/specs/001-transactions/contracts/smoke-add.md`\n- Quickstart: `/testbed/specs/001-transactions/quickstart.md`\n- Checklist: `/testbed/specs/001-transactions/checklists/requirements.md`\n\n**No extension hooks present.**"
+        },
+        "phase": "implement"
+      },
+      {
+        "done": {
+          "action": "done",
+          "claims": {
+            "claims": [],
+            "convergence_summary": {
+              "findings_by_gap_type": {
+                "contradicts": 0,
+                "missing": 0,
+                "partial": 0,
+                "unrequested": 0
+              },
+              "findings_by_severity": {
+                "critical": 0,
+                "high": 0,
+                "low": 0,
+                "medium": 0
+              },
+              "status": "converged",
+              "tasks_appended": 0,
+              "tasks_remaining": 0
+            },
+            "schema_version": "1.0"
+          },
+          "summary": "Converge phase complete. Feature fully implemented and verified.\n\n## Convergence Findings\n\n| ID | Gap Type | Severity | Source | Evidence | Remaining Work |\n|----|----------|----------|--------|----------|----------------|\n| (none) | - | - | - | - | - |\n\n**Summary metrics:**\n- Requirements / acceptance criteria checked: 8 FRs, 4 SCs, 3 user stories\n- Plan decisions checked: All 5 technical context items specified\n- Constitution principles checked: All 5 principles verified compliant\n- Findings by gap type: missing=0, partial=0, contradicts=0, unrequested=0\n- Findings by severity: CRITICAL=0, HIGH=0, MEDIUM=0, LOW=0\n\n## Implementation Verification\n\n**All 8 Functional Requirements satisfied:**\n- FR-001: \u2705 smoke.py exists with add(a, b) function\n- FR-002: \u2705 Integer support tested (test_add_positive_integers, test_add_zeros)\n- FR-003: \u2705 Float support tested (test_add_floats, test_add_floats_precision)\n- FR-004: \u2705 Zero values tested (test_add_zeros, test_add_positive_and_zero)\n- FR-005: \u2705 Negative values tested (test_add_negative_integers, test_add_negative_and_positive)\n- FR-006: \u2705 Mixed int/float tested (test_add_mixed_int_float, test_add_mixed_float_int)\n- FR-007: \u2705 No TinyDB imports (grep verified)\n- FR-008: \u2705 Test suite exists with 15 tests\n\n**All 4 Success Criteria satisfied:**\n- SC-001: \u2705 15/15 tests pass\n- SC-002: \u2705 100% accuracy on all assertions\n- SC-003: \u2705 Only standard library imports (math, pytest)\n- SC-004: \u2705 No TinyDB modifications\n\n**All 5 Constitution Principles verified:**\n- I. Preserve Existing Public API Behavior \u2705\n- II. Attach Testable Acceptance Criteria \u2705\n- III. Distinguish Observed Evidence \u2705\n- IV. Prefer Simple Scoped Implementations \u2705\n- V. Document Unresolved Assumptions \u2705\n\n**tasks.md**: All 18 tasks marked complete, 0 remaining\n\n**\u2705 Converged \u2014 the implementation satisfies the spec, plan, and tasks.**\n\nNo tasks appended to tasks.md (byte-for-byte unchanged).\n\n**No extension hooks present.**"
+        },
+        "phase": "converge"
+      },
+      {
+        "done": {
+          "action": "done",
+          "claims": {
+            "claims": [],
+            "convergence_summary": {
+              "findings_by_gap_type": {
+                "contradicts": 0,
+                "missing": 0,
+                "partial": 0,
+                "unrequested": 0
+              },
+              "findings_by_severity": {
+                "critical": 0,
+                "high": 0,
+                "low": 0,
+                "medium": 0
+              },
+              "status": "converged",
+              "tasks_appended": 0,
+              "tasks_remaining": 0
+            },
+            "schema_version": "1.0"
+          },
+          "evidence_ref": "objects/53/534cbd638bc5d15d52c70f4aa7efc20f0d2243fa1f7112db6007e3bdc8d0340e",
+          "source_id": "534cbd638bc5d15d52c70f4aa7efc20f0d2243fa1f7112db6007e3bdc8d0340e",
+          "summary": "Final implementation phase complete. All phases executed successfully.\n\n## Phase Summary\n\n| Phase | Status | Key Artifacts |\n|-------|--------|---------------|\n| constitution | \u2705 Complete | `.specify/memory/constitution.md` (5 principles) |\n| specify | \u2705 Complete | `specs/001-transactions/spec.md` (8 FRs, 3 user stories) |\n| plan | \u2705 Complete | `specs/001-transactions/plan.md` + research.md, data-model.md, contracts/smoke-add.md, quickstart.md |\n| tasks | \u2705 Complete | `specs/001-transactions/tasks.md` (18 tasks) |\n| implement | \u2705 Complete | `smoke.py`, `tests/test_smoke.py` (15 tests) |\n| converge | \u2705 Complete | No gaps found |\n\n## Implementation Verification\n\n**Source Files:**\n- `/testbed/smoke.py` - Standalone arithmetic utility with `add(a, b)` function\n- `/testbed/tests/test_smoke.py` - Complete test suite (15 tests)\n\n**Test Results:** 15/15 passed (100%)\n\n**Requirements Coverage:**\n- FR-001: Module exists \u2705\n- FR-002: Integer support \u2705\n- FR-003: Float support \u2705\n- FR-004: Zero values \u2705\n- FR-005: Negative values \u2705\n- FR-006: Mixed types \u2705\n- FR-007: Independent of TinyDB \u2705\n- FR-008: Test suite exists \u2705\n\n**All 18 tasks marked complete in tasks.md.**\n\n**No extension hooks present.**\n\n**\u2705 Feature converged and fully implemented.**"
+        },
+        "phase": "final_implement"
+      }
+    ],
+    "tool_calls": 61,
+    "verification": {
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    }
+  },
+  "verified_files": {
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-assets\\calibrate.py": "4824ab2c361d1b4c3beb8cb67b1343906dacbabb7f165501f013469d846dc5d9",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-assets\\calibration.json": "2c9544153474e254ed4609009a07508aaaa5e4393077324883a9d85c73d006cd",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-assets\\smoke-v11.py": "929b2a349744271ebaaa8b78ccc8ae1d75ea3f24c74569b90d66ab13c91fd294",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-assets\\server-launch.json": "ebd8c2015823a1ad97af287bb829c4addffe14198ef6cfde929b2668574024ca",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-01\\call-000.json": "a03871cd46afd380a4f6cb71d8b33f0434a8271b4bf1ae4db02fc0e9935d6b92",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-01\\call-001.json": "63268816f5cc94d2f76c75494112cd832e9223337857eec58c39c8024454eac7",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-01\\call-002.json": "a9ac339ca57951d8548ebbe7780e490c7aab697b30647ee95f821433f0c0ff1e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-01\\call-003.json": "cacca51b9ee67935fba27e9d98a89ec22b4dba9b8a722ff103c708d3ac5c6724",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-01\\call-004.json": "5724c7e5a5eb1a05d65c289bd3897e3353b59431623b9e81957273dc3fe5eb72",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-01\\call-005.json": "152740b60ce56fdc8b48932f9f154d240866b7b33f3cafd9100ec258e75303bd",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-01\\result.json": "f9af21b95de421c7aee98dff29f569083d7c8153a98fa197a9a9963e37ab11d4",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-000.json": "606e009010cb29396f641452fbd2f20b7d84f3435c192c91dad4f408ba67bd53",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-001.json": "8386efc16681e517d872fd5af8ee705d35f7d2c39a5e1fc9412edeb4f1a42065",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-002.json": "721bdba958ff9036b2a3598451bc9ec9bbe86d5af26a26519a4457f965b37d3c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-003.json": "db01fa8b926ed1615645ded08c4ec79302110feaadebcd67426f1e9fa19d438e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-004.json": "64c89b57595b41c6532b4780925976e7c5b54f094f8e99da66169937bc2b7960",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-005.json": "f5c9cf63e4f531921b6458bb005df4f02d76a8c3bc056538543eed536b679778",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-006.json": "8b60234be93617e646b0f17da6e5fdc5591fe188bbd9c47ad97276832f127c10",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-007.json": "d1910855b6ef8e523378346648cfcb35c2bcbad0e781db0fb79d503a1ce92620",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-008.json": "1199f45839d4e586082e07bf2e5c2c54a2168eecc1525ba24ca37770a1107936",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-009.json": "718cab72942ead9d45e5ff7a5fd97c4a4c4b778f51c7039d84b27d0103c2acd2",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-010.json": "a1aa8cea9a4990231d4c54766844370ebe12407c5bf62e8dc014d44ef257e15c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-011.json": "2b7f6ede440fa3dc474c941a560856af5ad7a546eddcc8f3fcad4cad5c2d1f94",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-012.json": "e054e2679476fad0738d8045260daf92d496bb8c26bb5836bda5a4a291794f19",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-013.json": "b20f5ec2fb7a9508e136162a098772d4a35a70756580b0217e45f322e35947e0",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-014.json": "5d6e8b9d34edd6cf6ea05147a359186703faa8a4f65e929c0797b297060ee37d",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-015.json": "b164d82ff5cb85fc91171854f4313ff89c87a70da25f7b0e63ce2b2790d744d1",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-016.json": "7e3f09f4c5a4cea389eddc6b6711202df83ff2a19c8729bef7b018177eddf7f0",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-017.json": "2c3aba494eb2ea4cc1f41d6f00b14924f7842bc029dd2e3279f2f26d6dfe7ffb",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-018.json": "7f75235fd9f116490dae09a91f6a885790051f54c3dbed64243ccd71e7104cc0",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-019.json": "c2b0b5b6332ae58ea4a9162a2a1d419f5bb564fb329d958e39b16256174885b3",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-020.json": "15272ec9761d91eb781f37cbe29003ab1518d9b6d72a084405b9e7297971e854",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-021.json": "28701831424b40ffa71d188d7d935ca3fd16028a90f1950f1314f9c9ef3fdb4f",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-022.json": "6af323802aaf80fe30f7e3eb0aa4bfe5724c97f1aa2126dbad13965d9ced8403",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-023.json": "c93ab555e16b32ff89cf7a2f70fc25aad172340f73b73b8f29969f10e94ddc4e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-02\\call-024.json": "9908bd08ee0b435d2b9b1826c791cb014e3e04aba235f2ccb864ac61829e7ed2",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-000.json": "83acc67b61ec4055ee666fb652ba2440ab2476b29386f442d00af5139e4055b9",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-001.json": "af5764e982dfa30aa04f895f08bf2da1735c37c7e48d404ba85ebc3f8dd7a049",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-002.json": "a5413d49771b678186e266d95a920c9865a973cadb548d5d8a9f8934d7054869",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-003.json": "bd832d0280316e7452fa4307acb2b3af9cd2dd56ed8ec67d903481a799e34604",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-004.json": "ed91fa319f64a8d008c51f85a82c4d0e53c7f28a65b9dbda2e96e4eac34b7846",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-005.json": "f6bb669f7f1ca6a076ee844ba9ac2ad9679806c783a455514a7572d199b1c44f",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-006.json": "98787a3db72fba8a0f6c85d931602e66d9c66160afb2e8d6fa4e6eac84d6fbdc",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-007.json": "150866a1ef19119803594e6efa1b9f8de1b4f4767906eefda592b0e3b617e78c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-008.json": "2bc0285cb0ffb9f78d561675aaa7cba4438638d921216aa6565d1e7edaf4f6a1",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-009.json": "6305b5b409fdd711e02fd005360a1db09b3161a4de1148a076ed96fde7b39e00",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-010.json": "383382528d1ec0489248793fa663313f21c8bef8b9069d7b5eb8b980e6f272b8",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-011.json": "e58405550d6b26b492026e30842aed4d51b0e877d422250c25cfed6fd15cd587",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-012.json": "e6ff749a8b2694bc755e5d04a0a50c8905971b59251ef3b4193218e76a9a886c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-013.json": "8ca29c9cc6912f5ac34263ec1d2b31a7d5f968c9460dab4b4d6dc464659509e5",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-014.json": "566265f9f95f61cf8e6958e8d760c8870c4c7cf99152a8017a9465ff7e433e42",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-015.json": "f3e4950ada7bee36df19add01b1841570477150095239196bd018ca578f89f1e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-016.json": "167ec71f454fbadbdf0737106d1232fe5ca486ed994d45b6c3e0059dcfe443ae",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-017.json": "203fab18979cd574b2937925422b7ff838dc4a06249f7a2801a61738a6d4d4f7",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-018.json": "697bf3c848b987b8ac565c37357cbc9bd4e263b8f760ac662469369787dec08d",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-019.json": "d1c97e44579c8ffea95652c0d7540278edff368b764e5d7271bddf1b8934adff",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-020.json": "97ad20756cb557fc373a55b1f5dc1321f29ea08b6dcda91db74e775d561be67c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-021.json": "3ae1ef03d2570060d81b985c09078172a0006017dcb3d2ace1b7649f77fccc38",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-022.json": "1ddfc4436eba7cc32c4d347d53060964941d84540d8ec3014babc4aaf3259c2c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-023.json": "803fc3640f0bde73dcf75c18432444f55004fa0291382420b88c567edf9058a4",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-03\\call-024.json": "3d43ce609162b4c9a0d50dcb35157380e7aab4d3a82ac454da8cd71ec17048d8",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-04\\call-000.json": "341c2c4801c7b1e0bb8331fbef8da05ddc6c9d1e346e9cb1bee5e08e3f97478c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-04\\call-001.json": "0ec2f2f046164f70b05f5ced5db8a5875d54d759a3c0a45e92a42c9e87ff8d10",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-04\\call-002.json": "777d323178ad842598780b30c8f41d632bc7aa209fbe107584ee84aa713ec6f1",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-04\\call-003.json": "e07a8be482c60c136d37cf9c0aa855b84615bb910b857db0a939bf177bac406f",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-04\\call-004.json": "904ddc44be85733f0d74c943ebdc23e7b82f3776e9966d3d981fe3da206af672",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-04\\call-005.json": "3272c8ef9b24266a8d500be6ce9e682e62ec5ff757841deb7b834196377a0320",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-04\\call-006.json": "3b6983279d17a5c907126d6bbbdf7d9fe3f098f86634843fbada520796e11bd4",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-04\\call-007.json": "c1fd89d0809e2b529deab61c4fd2426f768c3294657b63db2a9a50f8dc9271ab",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-04\\call-008.json": "6ab0d85789b8cb1a958b46d6dc3fedc6a0576b8912417ea7696b61265ae9f640",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-04\\call-009.json": "52fcc66ade58b019a81f56e50b6223b4489f5ab6b56bd5e0d05c77dd9f604271",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-04\\call-010.json": "256ce4c4d73654c29e39a838f7b6d1217e0b94b60de5308f392bc48377ba73a8",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-04\\result.json": "d02bafa0244d14902802c2672631de36ee8d8e55b03c6fdd035c6d8cd2bba492",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-000.json": "06990753caf3ba643e9ea054402617afbd0ec5e149954f40a1712090722ac0c8",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-001.json": "7f158afcff7a2524876a26286160b6e6182f0a9ac25808cb6649f3ca87135b69",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-002.json": "e94ccd0b5878e92f457e541c892c997b76acba5cb16af7112f980fae10170ab0",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-003.json": "356b5825af18accbc3fd9b26eac4f6b630bbec09f0e6397b337dcfa0706bc313",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-004.json": "29ecb04c318051aa0331f9e4b854cfbab20387286ea88ae6c7a209062e1df8df",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-005.json": "e7c73d5b5b90dfc223acd4e9a7af0818f8d9f7b7615d865ce74c96db248c8c2d",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-006.json": "e28fe155cd68c33f9d9d840527ea5ae39efbe76e0392ba6ecbed73306576605e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-007.json": "3df29c7c553f0b6e58ffbf9c75daad90a8ccba850f99a86b8d90b3eae084d378",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-008.json": "71140ac77b5e36e7956e9bc49d7d178bde17fac5427523ca8c035bfc059abb17",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-009.json": "bed093a8784c8d2221b067f7bc29edce74f2f6fb3f12901819689d25c687ef68",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-010.json": "fbb67ea443a08132934ced84480dc9559e7c436095ea9d6d7a2485a859cd45dc",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-011.json": "ee63a5247c2190a71fe260292f9d941d256f3ba8b76226ca84db91fc7565d3db",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-012.json": "245977eb50f203964a4884c4453173d1a5a1e4072afbe8ad4ff82ffe61ace7b7",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-013.json": "210182cf110c3e070dbdf71e3f5bbc03e2cb8a9dbd4017dad497bf0fb985b82c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-014.json": "4fbedeb3c50a5c7b01d5b8b9e4282ac6b51b7b63e72862d2bda59b615285d933",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-015.json": "2ebd5dd1c82c8876bab6b8e514eff5d0714b58e72d0feac25fcb77c09a7df359",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-016.json": "bbb98da00cda2d8db2b8fa50b9085911077e37a5794bbe1b6202053e20fecfda",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-017.json": "3485362c4896c54eca435cb62cf688e46cfde5c97e0145d21fd449d18adf697d",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-018.json": "3bed232b0d23edd022e0c99bcceeb870e94eccf98e4fcae9b946b59d3e9f3bd0",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-019.json": "79d00f51cc1cc02378830d828cb7378346bf2406fbf5a38d1be861a2cf1769ef",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-020.json": "83f704010f6a2c5d2f81bcecf6700f7d119478ca90233817d565a6065c3c4253",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-021.json": "60f0106e3bc06d6b679c167e9bc9d00c52f632c1a6b43117adfaad9e998ce001",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-022.json": "0e023ad157d5cf587c6dbd9a98424e96f8e93a247d596b136afc94dde6f0505d",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-023.json": "e4ed68ae063dcf9314e35e691f1f71cf73c34670e030aaab82c29baf871dc6da",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-05\\call-024.json": "6f80c9ce4ff2b19f63072558d3976cfe9f402798a77df5205974698643492a18",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-000.json": "cb2ff0d37f56fb3a30fa7c871dc855ef28e81e8443be13dc5b58d1d525bf4b80",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-001.json": "c03148a9aba24dd10d89ace88d715d3ac3e82680e802d63ba591c57c7d06a412",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-002.json": "ece278f3bd004e1030b140f5faac0209255b09d5b490817a2fe6712cac2ee443",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-003.json": "643a1657b411528183aaa2d3103657cfcfd5addeae18ec4f6a486f7d99519b31",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-004.json": "ca8402eb08e4ebf08c16655543e8edca424c983785a2548aad8d28d4e402c0b0",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-005.json": "a595a1c2b148c56d63ddaa3b93476805b724b6e90261eb8d28f737605ad83ab3",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-006.json": "805e77ce91302c0155b1e75219482261bb8fdbaa3be03e95210809a6f4ccadf2",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-007.json": "f4a9334a7515e282bcbbd1803d86a6809d27acb679a239bd7f54af9ca1fd5c89",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-008.json": "9aeff6db6b0c2ee19e48e02ee98737fb71fa737955e3b6ed88d96a5e037b9f88",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-009.json": "08ffd9a937a4761e32cb0d921a024a495ff001c1866c94275e0370da165c51de",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-010.json": "272afe4251ec85e2bf7bfcc78eaa5eedf86047a211806797249c699518163497",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-011.json": "11ac70b73d56abee1189c2b7e4634bcdf33229ac0a09cf9a10a1ac35d95e6944",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-012.json": "0950c78ff4e48d197faad722977a35ef8b9c0a368e09afd28f60710c9c514e2c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-013.json": "c20ef1143bf9bd9ab88fa8961c3b6299ff3f3449a88456528d21f466ded21560",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-014.json": "b4435bab8424c8ac946cd8050cc971bc34670f4252694210c6e8cdcaa0f4ae4a",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-015.json": "56970b2d8471b128eebea9d77e8171dd9a64c49ac3d7de5ba48a32ced55997bd",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-016.json": "a399f5fe7b7a0734d0a25d29a415a8a081202ac92bc8e126b66f6181a38118f6",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-017.json": "5ec33dc37dc9fccc709c3de439c02e82c810e242429b1f30c097fdd4de59ba9f",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-018.json": "26dd0a858cd85641e90577cea55dfbb0c56c29fd478ddfb777fb75034d0278c2",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-019.json": "fc5678348fc177234127776de07c4dc9148cf70649c91f72f09db6e1039b98f1",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-020.json": "6562b1174ef41bf2b056c220bb882d2fe8402f7f23933dfd3f2b5c3d62597c50",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-021.json": "d528d3579ebf86a4a139761cb633b1dcf79deb7b28751631ba6c9309a8d94d68",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-022.json": "a1b65984cb0701abf901196f1d3967937744e7791ad89002becb16db5500dbaa",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-023.json": "6622b5940d471c9c3e5ec2f91cd219d32c56707a25819e2ed730814338d81a89",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-06\\call-024.json": "caaee49975e6d0bf54373b8958c5520d6143f989bbf7f9997053b6a789af2f90",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-000.json": "caa2fe8acc680d8ce386e60cfa0d343421b927e8715e5041ea3df1d45d927be5",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-001.json": "a5c5ff693b583870dbe9c2fcae43ad8ff9d38dd541f0a0b029cf14ec60834083",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-002.json": "dc0b98c499dbbcff9a22b6ae62176c5195effcfd0979e070312de61999d0faf0",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-003.json": "86803b53192e00d0eb92d7dfc7d71083eeb9f60c3a9c924aee3d952d8a891165",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-004.json": "835a24dc6ddfec45b897e2fb23d39fac1a77eb3bc695f39258c2d412af353a2a",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-005.json": "16c0f2dc996c399eff494da00bb8fc5e949c0e05f1802df98f71fecb59eda7c6",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-006.json": "c16ebc44c282b8ed82513deedfd8568e0c293cf589ed6844044bc8c1894721fb",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-007.json": "afa58447cf3775e00d63f4b9c13f17fcff48924ed7ff677291ddf8ef929eba8a",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-008.json": "5a22831790b462cf44cd92d2e8e17952b3b8f30b87313ad3fadac5b5b38cf9dd",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-009.json": "1331ab15d6ff91a2ed8125c1eff2f3f68fc0732c030a18482225e8fdffd8c703",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-010.json": "b50c458a86740e7b6e26e3dcfe80439970822d3a6668f938a4347d3282d0ef81",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-011.json": "b1dc7ca029be96ccf52bf55acc17dc61d1cf43d3e345c9c2f45ee74e4e886439",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-012.json": "4493e2423559beb93f8f65d29a2e6af334f8b98fd00a0f90eae00c447bfab81c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-013.json": "b07930de483ca1b1aa1195067958074b6348941446eba2c15f73834d2f85aeb2",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\call-014.json": "ac84b5c4576e95402e56728dddac6fe61cf638a173250e2c8c8facb4dc25bc4a",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-07\\result.json": "0db21a27d616714362abd5fdf121a11e96a82ca7903afa6dbeff47f8cd67c97d",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-000.json": "de996a2805bc3e56df0d047b03951025625ad2fbca3efae0e1e61bb057dc6d6d",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-001.json": "7985b0d80436aef6825a627417064ef802c66a7c7a8b3df18e10df0581a5b20c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-002.json": "0bf353593497b9119e0df5c6a6e18f4b90c7de21be7fd45840154a5cce8c3292",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-003.json": "2bfa1bf21200b0408ffa7103472f6a133248a0245f3b384633e5cf7061ec54bc",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-004.json": "0b565d646e288be90815215dc60b77e2f2774dcdf8f728d5a44f8934746c4756",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-005.json": "0a4f57c29c606996c1e6260f3a6982ba4bf6bcc55f802d7a77294289b22e8282",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-006.json": "93a55ca8c4daefeabfb914ad0dca133a301b2af4285fc1a6a83d4e7b254adc5e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-007.json": "cc07e20f26e2ca24e8e296a268396d11b6751348d5f769c0b3db0487241f6926",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-008.json": "933113ceb18a8e82977db1f68a6d94772db8c98f6cd070ab0edada16845cb774",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-009.json": "b574647bf38905cfeecd11e86e76a28009e3e0a2a19dcb0f29170b97a93272fc",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-010.json": "b2712470d11c480e84cc5cfd66963ea9bd6716a5bf67ddc2d78a88bf7c4e7b29",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-011.json": "1cf2e9917045d89dfcb07d81f1b05f15789112b896fd3a41ad0a4d88fdb207f2",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-012.json": "1be309991115697f9c7224b96125f10efeded4f5cf31805d387b4a3fadfe549c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-013.json": "30a5ee5bd7d13e305b587a7ebf35ae513ab28e30ef64af59bb279eb7e5c19e93",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\call-014.json": "ec320f9c109025b56f85ff9a4f6f0a1f2848c25377a63cf29fe4a35f95c11d30",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-08\\result.json": "497bc7df8598ac1f9b3a4f9e8e2568f21ceccdecebd28eb0bb600a437eee940d",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-000.json": "feaadf381df70286c0ea0b1dff8c2ee652afcef6d4348d507f01817747350f81",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-001.json": "16ce0d5d594257326195ffa70d8f301b8133d97da616f0ea129ec95f33462bfc",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-002.json": "c7b72e23277c560bc61fae13468be2e574c402c64b15ff9090ab46332f261fa7",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-003.json": "b5cbc75c6f278cf19e0e319dc2f5e5a852380e66e17ab45b46a7c2a61365fd78",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-004.json": "a058e75d93dbc20ecc444bedaf4a66d6cf54b7d6d0d5624833354e81d1e46a2f",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-005.json": "d62bb4253406d217bdf2d9850d78fb9ed5867e2182f552638d528482f923ce82",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-006.json": "3cbfbede64f62f8dd395714a7254b82d5d31a9163f0d86a21b85b8f24e504235",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-007.json": "e0687f9505cfe74fa84a086742ae5c9f23937fa21fa4e397f1228b6011f88a46",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-008.json": "47cf75bb2ea1dae3c0ad3746abeedebcbe115a991fa2877c923f80b9f0250baa",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-009.json": "85f6ebddea84914d5a2374385a7acc9268e1259ce1c0831160b55c6cc219a1ed",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-010.json": "824f607bc5d354021f644eb434dd524940999b3f436d21f4db7c49d45a9d72a6",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-011.json": "189e80887ee346916a8776388742de2bee34691dfaae8807eb2cb0a751102343",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-012.json": "4ab001d706061d4f8b3aba666c0d985bc3dc66e199ec3b4b1715aa44e0dc4b9c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-013.json": "2fc31b04ccd8321e6fd8be93041a135d54eb59f070b6c0a5a6cec147a28ad8b2",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-014.json": "1b6f11d1e28d53844cc7fec6d580e7b2f29c354f8da830f8934664dae5657ebd",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-015.json": "4afb3e915f6139ae7de973a47edfd016309f64b84b8d0be30d2fd99614b7bdca",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-016.json": "bda7294809b445cbadb1d36764895fc01c1f9ff3a69bbbe734f3bea92b14f6a4",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-017.json": "96748295100f43155b0ffa53e47bd8bc82c7748f7013a64f643f87d9c28bdfef",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-018.json": "97594443b74284953a40d883f41230dad8cb1555f6a3a752e5c41929775f159e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-019.json": "0e9f16e6ce7ff0684c79d0f3e8beb17fd141a1df9d5a589c7818d8f10b00ebb4",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-020.json": "d8b9f67df467f244725e1d8f8692a7af6d7ac1c5da28df97b9f365f36c766f17",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-021.json": "74ed2176448d1fc235164f719a45f2ba179113551da68c28d5ac08884f499e15",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-022.json": "57702ca0f3ade1ba6bd727a00f46d7e8a32063edc21a45447acba8766d0b3645",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-023.json": "ff9f5711720b1d28e105d4508d361a8581c1f689d53e90895f5e6a0efd8a51e8",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-024.json": "c92999d21170580bc007b90b62cc111f5f977f6d56adcf4a56321a8ca3f82ff6",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\call-025.json": "7b7268da95af56662e28a7e02b846c6849434c9f978ff41d2fbce0529a0b1326",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-09\\result.json": "f848dd2e751dce015877a26a949d64c841d0430d519b4ba0e071cc90e9a882cb",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-000.json": "7aab17b35f2ef78aa953ce60e455093301837e3ef233e89bb93ef2f5ec62f196",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-001.json": "bd334fa44a948de2627885b76e4ad80ec06e4b1fa8a68f06f57c7862a7655f50",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-002.json": "2ce113a7c887ec0d366b7e350f4ec94f2c4f23a9e93fc5f5a8abd0afb4d50334",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-003.json": "f85999a6397b9f94ef132a947e35550ec8b9313be9dd0e770fb774927d9d58c4",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-004.json": "f865bcffaf6c39cd786729a37589fc04072dc2159e605dd9acc47d0a62f09d52",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-005.json": "f4508e2938e7ac2f863dd6f41de1b3e9595f48bc4ac9b6cec2ed6e0bfc0441cc",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-006.json": "e79669cf4e7cc6ced85b9a571b03e9d4e0a6d50cf663efdf974c8aa8dfd726a1",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-007.json": "1572b66d95738cba8aab59307e2dd4f2680626203781364d8ea20e0e2e5da20b",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-008.json": "dbdc83d39f1cee0b2f55a0c9c1bbe820e815868bdfb539fb5e1ae3fe9e3c7dc6",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-009.json": "6137c9c58772db1e6a3d15eb81429712d0441e213b7e74785289d93df9376881",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-010.json": "fc9d6d2f20d1551b8addcba5ffe19cd594207f40e3fe5da6bf8d54a359807f3d",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-011.json": "01ec9741b02ccaeaa062422003ff645098b2c36e1b5c150b231ae432e7b89f1d",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-012.json": "0a001f7c348052f1785408e772342a3d10a968ddf40ca8995291f1efbe487b86",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-013.json": "80d4367ae40723debfd40e4721f83a00de885163107c4c1ac5634603e2b545c4",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-014.json": "3f4c24e30e20c36613058dfbd91da9e026ed7878a5497363dbd68da2db5222b2",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-015.json": "4fdc5d5056010694f16a6c15b62e7a1a5ffabedf9779e3b575022088520f1642",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-016.json": "1f3d3a7fe8d6832a8162576c89196a4f72c163c93c1e269ff55c08bb9779fc42",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-017.json": "b573ecf47ef456f16f13c03908425978d99696e3317819638c6c950e18182ede",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-018.json": "8f877ed089bc720200fa261761263bab6369d0b8b29566c0a7b54a1daf25dc8d",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-019.json": "4382f48d34543c9cf2164c8f6e8f928decbb011cf5d53f250329eb727c9ebf50",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-020.json": "6f2b66211f67525408aa05a27a714e845306b0b3abc3454604ea0ddc59a393c1",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-021.json": "1f2d0d12c1665965565560989c7a02e3ecf41a3dd46f8d56448214681a2b6121",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-022.json": "b5b7ff221713b6e8b7a41c640d8506387fd3af94dc0543eee4523b9295c4995e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-023.json": "5efe550b62d505f3d6cad03aff8c9a6f3ad97882b4b454b1a78b0106ddfa28a4",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-024.json": "20199ce216dbc32fc2d2d149f857d2d18f37559257b8e61bf7066f42b80d3829",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-025.json": "5858c64f015c9e970389b40e5b3ce786da3cd9f41908557f6a9c960ff25b7a91",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-026.json": "b24ff13e76a4d1d63891b014ae306b34e4f9f8317433fe479a5e830d0ab5d38c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-027.json": "c871d567121d28f95530b7b1e8dd291b3cf7ac865e772ef7605c81d70fc8d57b",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-028.json": "8b90cda126cb6fc584e4ca4bc384f11391f810f6dea099d209d0f0eedba97b0b",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-029.json": "add2c3478731be8c3790692a115650cf4b7d5869aa0874e90692b41b20703d5c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-030.json": "34022be60da3cb15106f4ad4492d3de4738818a6c80714cf3cad4daea82ea5c0",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-031.json": "186c78829f4399dcb4321b50830146c4ecc6e8afbf29ff78ad94670096b9cb77",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-032.json": "93221494d0d2ab63204966bd8b9a03ffd4674555877781893777a62e9f8ee3f5",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-033.json": "6828e9fb477e80ce5e2543212fee38cd09bbdd642baf6c2df4b0d4674d2d8c8a",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-034.json": "1078975b9b638a6794c08fb1a1d99fb7e7643d99f27e03f87fff257e1b7acd16",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-035.json": "e21e81aed5bd889d7320e91e24cbc135a9c4edea366a8066cded9338a4908590",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-036.json": "1a2c06301d2da05ccc17b8eea54233726df3c8b42ba6518f29cf350209c3018e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-037.json": "07bcbf2a097f9ba60b1fd183fd2cf4f4a012c01ddd312e7ffa536eaf3ff9f433",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-038.json": "3204c5b8257fcadbdc4859dc90a91d2e3ede9cfe90da5ffaa5a7cbf2d52151a0",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-039.json": "8c953a4313d3161be57419454ebf5221036fd9959a0daec677ebea9e331547d1",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-040.json": "15bb037ca50229ba6bf1287e3190f4553362acef53974045ee26180da9a1d30c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-041.json": "0ec592c5cb8fe73f64c7bb5810e0e0e2b35f06e9d303b7db3d00aa15cfae256e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-042.json": "2320f8e4b753643a6ba133d8b0c590b35e4211e5206650511b69c0e2d148585d",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-043.json": "2885734ab004d5eefa50eb6a706f92ec3179e59050d01d70596d46d69cfd68ea",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-044.json": "baf90f75d1661f6ba86653d6754b57b2a6cd26a6d76b70fefee32cc5cba1c02c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-045.json": "d11a27e98a43efa695529e5c5f371fbe273be098a577528bb75e05f43e79c076",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-046.json": "e0ff8d20281d1f782af7119f45eeccab94f436af8086e64d27ae3c35ec875b8f",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-047.json": "4e69dc2a9696ac838abaef2487f53954fbbc780f942865c69b2f2f3901103cf0",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-048.json": "1062ec4eda20278597d27ddaa9b13c987bebb80812f9d43512b63882590827c8",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-049.json": "b90192dd0b00d0f423b642ffd1a307c5a7bad655829b7c49dc5e9f5b672d5bee",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-050.json": "4bfb46ee8c6529a2546d475fabbcbd8186c0252404c4c023ab703af4bdb7f797",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-051.json": "d1a555a47eb7a98b59aa29617fb59c2e4ca145ff35ba15ec90a25f324f68d64d",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-052.json": "4b77fe7d9bdb24d55ce8ca31c78e05aed5f18fa4200beb8fdef4fe419a775a20",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-053.json": "9ec55bb5d11be558e6a9c907e970c7f04a7e28b783fe5a56a4331d1e3be7a909",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-054.json": "0a9c87d4e9a7b7765e0c995125c5c6ddb92389f2e91bb8e7a61ee9d499d83af7",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-055.json": "563c691359978ed66942f28b2b2ede7cb803e90a7f86cc420171f0c613194f98",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-056.json": "9f2755c803a67513f0d2eec1c54afa00e1967259811b69f8e4eac24307e5b829",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-057.json": "4e6925206c37adc0daa98bd52b888b342497c033489caa10fb62d113957b0569",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-058.json": "8d97db9e1146f0e3878d1359443a8a6d5e1be5595cc192e6a6b195aab3be958c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-059.json": "1a27881c2a0d82f231ef8b2be1df41cfaf7a20e2396c5330c84dcb1299b308b0",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-060.json": "68ea68f73679f46b8cde30ff51d6452f168d8c136f59af318f62773ab7592705",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-061.json": "4bcf49eabf7f5e0bc688302b178e6d1165741e66f7ee79b1eab6be552bb74d13",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-062.json": "ecffc273e373e74f77057141cb05046ea626c1fcda2cf97d676d4ad4379e3bfa",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-063.json": "7184ca9159e19aa0f6d6af3a9cbcb321dc3699889f594558d820d96bac9626a0",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-064.json": "9221ba8ea7ac97c820627e0bc7b327853d8fd2599c90b196e2f00caa3927a844",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-065.json": "391e30266abb1f06f8cf79bb4497206da53bf1ac6c0b0c85f443e507ef943728",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-066.json": "3a84e46f8e08a11a26a1893c88c1f448ad5e5b4741940a4d4f050557a2f57448",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-067.json": "6e8021ce94f3504cf4ca2557de4c75cd01277e8a6e60fb531dcb794b596a6e43",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-068.json": "387cc9fa2a11e3eda9798b0ba9645533dcd240cba1ae1ec19e6f9ee42b6715a0",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\call-069.json": "e60a58b04db3c6fd874f2b02cecadf85da7eab8c8e4dbe3e42f6df7d585c009b",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-10\\result.json": "db7ce9c9ccaf534b7c81258db6050bbb48eb10b4aac45ce54c8b340dbcdc4f17",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-000.json": "f3bc5784fac4c8619b96e627af5671714d36c5aa8f40e93078d3cffe9c9221a4",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-001.json": "32a700c8ffe4383dd141c2c678d822ab7d07dc0ebb3762b422e6d8c9a86bff2e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-002.json": "ad221f24084c45c9e62c7f911b4503c8da578b8437529dd246c619a9f37df56a",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-003.json": "da1718fe503208aecfd4269234e5a0673e3695da5f165a62083aa61de5dfde64",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-004.json": "6fb7745a80aa7cee7d50a8c178ffee1e3b9c785d421e0c086d7deff371aa3134",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-005.json": "586fc174d014a16ec9ca6e10891c2804b5a6fb5177555858b9a27455d3949699",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-006.json": "5d18fb45822e02d66fce467954f095e0ff1bb1bedc3c9d80eea0865be4e92371",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-007.json": "5e03411ffa1129cd063aabf8b5263fdb282912aff84d3fb8cc4025750829f48f",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-008.json": "dfad1a125b5f8c134043ef67be7ec4ab784edcc9a935036820d014e4ef2ad299",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-009.json": "c93cc2b289cdcc05c3be86879bc0e5f4ddd1fce361c255d5704858adc3250c7a",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-010.json": "32f030bb57ccd5279a26926fb2a586e63e9c34ba6a1e63a4c6cf3381da4c9de4",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-011.json": "6df211e4bfad7aede6bcbff8b7d7b1e9b033b6b29a44d341c945eed90bf49ee1",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-012.json": "bb030f7d9eec0a926e5a8b842846478710a703a9d9debc1ca0a94f2b6751c5d7",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-013.json": "7a0d8cbe4c6998552f935b581dfc741301764b0b25fe0ab90df93768a313e5e1",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-014.json": "ce1c003e3f272576258b25d38a68617595bd0e9e9639cc169e1589a4b4065e45",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-015.json": "20b4f07ff98b9692b231542bfdb51041c09ed71ce0ccd4cfa011881c77d5b822",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-016.json": "ded5b32db831eab187ba4e1c0f4840549b71b579f96ee15be1a144c346b16fc1",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-017.json": "f2c08cb3b9303139882732195934421382f4f696ba7d8ac82c5c1ad8320055e9",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-018.json": "46cf03375686a061bda80004014a58fe4581eb57128925685c012b14afde9286",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-019.json": "d982095128a4ad6d2ba893103bd71d41fd4d5f952e9519fc0d0fde39237b88c1",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-020.json": "f8fa386e0a198d63588def172251fff7d632b9d13c1ff3952bc08f324492dec8",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-021.json": "c119530e8948c747d93aa14205112a9c6ae290a568136b539595739c1672f7d8",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-022.json": "fcb524393f70a3ebd416ff0abfaeb783ca181f2940e06aea241ea9c05e0d846f",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-023.json": "dd593fdcbfed07fbbb5360851e7eaa782145f2887ad4472b7c3e5b177a117d2f",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-024.json": "924300813937e840e8c7874e05e176d1618149591d98d01b5cc8fbc461ea2172",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-025.json": "bd5b7532b64674bd48669991bfffee89c5f566ea4c981b306e6b32909364e06e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-026.json": "5c4916ec2ebf95878c58ade4630b85fbaab92644a42668d90675c7a974c21e3d",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-027.json": "0bf0eba86dc6372130c81d0342708d9f164058e6f52140200c9fe9c27f14a575",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-028.json": "6cefc6241bb9c8123e92d451d9230f7d5c3ecba095aaae0b66b42a2d4b98643b",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-029.json": "a2faba94cf09984880c9dff23ecf28f1b551cf67d540792534877567bf004d65",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-030.json": "6aaf92278e684172f28113982be686f264be8d0121a61ee29ca616bc3afb85fe",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-031.json": "aa62c8b74ddc5504c668198641d5b79ebb14a3918bd774688d08d6a75cfa4ef1",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-032.json": "d4a81b81251cffacb31abc5912f296a26cff1562a61485918f41ec20cc8d7ab6",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-033.json": "24cef5b9909c028cb6cb7401eb20437f38b348796cc0ca4f25067a4db967b8a2",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-034.json": "77d5d2e0a407334ecff3a9772703447c5079eea05c2d77b9f53b693e0cd890e8",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-035.json": "d706ac240d18348762c5e14d09c18840bf04426b0af33cfb47c1ee7d2dee3889",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-036.json": "39103b04f493387af6baa2e27fac5891d32b99469aa1a2aeff898134af703cb9",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-037.json": "bacbb42c25528b33dee82f5e6c234256dec3c85179edf32b3f3c837b5d472f5a",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-038.json": "769ac84f75f45b52b707413a653ab3752af7df13c0a184f443075bf87df760bb",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-039.json": "6b12bfd5bcb8f1ddd6cb84f0548dd59888df4c3fbb5a3e2ba8293d140be2eb77",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-040.json": "ed0c57307c8968433168b9eb6fbb615d317b203201bcd223c4fe3e98e535e9c9",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-041.json": "3ba1e9427810ab64fafb3dbc4097de84e988ecbcdf7d082223a09329e120038e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-042.json": "d39eebe28143435fdde942a0353c6b6fa66c14af71cc0abab0320218da246bac",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-043.json": "0edc03ecdc4771babb146c7e07a96e91dba4f30f86ec3527897531bdc1a52e93",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-044.json": "12386a7289b91cb8415ea1c4a648b226aa97979d008a60eefbb055331287003b",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-045.json": "83d7753ff11742c5161751b4154653898640b52ed10ceed1fa0e04bf69f716a9",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-046.json": "2884f5fa8b5ec53d7382b73136d225cdd5dc10fc8bc1590b2c81e44c15f64ea4",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-047.json": "4dbc8d28662e978cc8d1f5b1703797a23fe6e99aa42d2a2f94bc3161b2f2bac4",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-048.json": "e05557e8c7ba2bcf108f8d53dbf3bcc03eeb1ceb79022c6bb7733dd50792c82f",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-049.json": "ebd3a70607cc5c29bdb881b91b7f627c547b9b7a70dee1301d2c2b4ed433ede4",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-050.json": "fc3a640fcb7bfac9f973f5fb704dea82c00bdefcbf800c073b29be6cc8853ecd",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-051.json": "569482fd5c1b44ef4205dbb7a951173258fa741c5e4073555f272e4dd7bfb9aa",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-052.json": "60b837bf4dd02a1e901ddb370fcb9f483c645407223019cf4ab0a59e6c78c53e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-053.json": "fa74f65c77610685691885a0765ade752b99632367e543a1140829a7094a4304",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-054.json": "f9a4c068951ec61084c3ae88e23bf205de406c69cf075656fb706662088581ff",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-055.json": "4df2026482d808f5dc555ca36402a0b71e792d33b1e8059ac843c543e9ad4ed6",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-056.json": "28047a2f5faea211e95c29255fe6bf82e7e67c571e952dd0ea35247a046433a5",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-057.json": "7df7283bf402c5113995701a74450f4c74b027df3f463a227c7de80bd881d108",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-058.json": "288fe0a079026bec3b83dd21438aba672b7f369264e0158d428df30095b87e58",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-059.json": "acbf712f0b73dd7a2f63d40973e5dbaccd22b7a2b7851fe527a070c3da7dcac9",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-060.json": "2a2b1b61057aa0f7a7c23a8d3be563913c88c69dfa26978599c699b17d073682",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-061.json": "7fe09ce1df866f640651c3ee8304c9a05e1fbeda2c2779da44f3d3bad4aea7bd",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-062.json": "ac03d2a33c0ac26fecbb817c1f947ff7ec0f2efb862b2269f86abb72ca868707",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\call-063.json": "736f35eeaa05d25a8c42678bf9ad162e8a6d48cc8307092d607adf649745b722",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-smoke-11\\result.json": "7e99677fcf6118820c6f759c0ffa4ea549ab8cf27ff0edbb2d9d65aa74a92add",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-assets\\diagnostic-fixture\\assessment_errors.jsonl": "3949118dd30f20c7156f86db9302b968ba5b207e38c76986b0d5c32739eede0c",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-assets\\diagnostic-fixture\\README.txt": "c070bd6c096178969a3c5ab54b90e2c2f0d0f512273553ad44879fba5233273e",
+    "C:\\Users\\trist\\Development\\AXIOVEX\\spec-kit-aee-benchmark\\artifacts\\long-assets\\diagnostic-fixture\\objects\\36\\367cf5875371c1a834766c6728f41bde383d9bdc67addb9495886f58761b6e36": "367cf5875371c1a834766c6728f41bde383d9bdc67addb9495886f58761b6e36"
+  }
+}

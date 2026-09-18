@@ -1,0 +1,135 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "tasks phase"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [],
+      "falsification_tests": [
+        "Calling add(2, 3) returns 4 instead of 5"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "FR-001",
+      "status": "unsupported",
+      "text": "The file /testbed/smoke.py MUST define a function add(a, b) that returns the sum of its two arguments",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "tasks phase"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "Calling add(2, 3) returns 2.0 (float) instead of 2 (int)"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "FR-002",
+      "status": "unsupported",
+      "text": "add(a, b) MUST accept integer inputs and return an integer result",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "tasks phase"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "Calling add(1.5, 2.5) returns 4 (int) instead of 4.0 (float)"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "FR-003",
+      "status": "unsupported",
+      "text": "add(a, b) MUST accept float inputs and return a float result",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "tasks phase"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "Calling add(-3, -7) returns 10 instead of -10"
+      ],
+      "id": "R04",
+      "kind": "requirement",
+      "source_ref": "FR-004",
+      "status": "unsupported",
+      "text": "add(a, b) MUST correctly handle negative values for both arguments",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "tasks phase"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "Calling add(0, 5) returns 1 instead of 5"
+      ],
+      "id": "R05",
+      "kind": "requirement",
+      "source_ref": "FR-005",
+      "status": "unsupported",
+      "text": "add(a, b) MUST correctly handle zero as either or both arguments",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "tasks phase"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [],
+      "falsification_tests": [
+        "grep -i tinydb /testbed/smoke.py returns exit code 0 (matches found)"
+      ],
+      "id": "R06",
+      "kind": "requirement",
+      "source_ref": "FR-006",
+      "status": "unsupported",
+      "text": "/testbed/smoke.py MUST NOT import, reference, or modify any TinyDB source code",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "tasks phase"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "No test file exists at /testbed/test_smoke.py",
+        "pytest /testbed/test_smoke.py reports missing test for negative values"
+      ],
+      "id": "R07",
+      "kind": "requirement",
+      "source_ref": "FR-007",
+      "status": "unsupported",
+      "text": "Automated tests MUST exist covering integer addition, float addition, negative values, and zero",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

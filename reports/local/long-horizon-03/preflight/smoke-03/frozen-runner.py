@@ -1,0 +1,308 @@
+"""Tool-backed staged TinyDB study. All inference is explicit localhost HTTP."""
+import argparse
+import io
+import json
+import os
+import random
+import subprocess
+import tarfile
+import time
+import uuid
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+from benchmark_runner.store import Store, canonical, utc, write_json
+from benchmark_runner.workflow import assess, grounded_claims
+from benchmark_runner.runner import MiniModel, MiniEnvironment
+from gpu_experiment import local_json, digest, source_hashes
+
+ROOT=Path(__file__).resolve().parents[1]
+TASK=ROOT/'benchmarks/long_horizon'
+ARMS=['baseline','spec_kit','spec_kit_aee']
+COMMON='''You are a capable software engineering agent working in a real TinyDB repository.
+Inspect files, plan as useful, edit code, add your own tests and run existing tests.
+Preserve earlier active requirements as new milestones arrive. You may keep notes.
+No internet or human assistance. All shell commands run inside /testbed in an isolated
+container. Use exactly one JSON action: {"action":"shell","command":"..."} or
+{"action":"done","summary":"what you implemented and actually verified"}.
+Commands may use cd explicitly. Do not claim tests ran without command evidence.
+Upstream tests are visible; public milestone tests are acceptance_public.py. Hidden
+tests are unavailable and will not be supplied as feedback. The newest task text
+is authoritative. Source implementation belongs in /testbed/tinydb. Do not modify
+upstream tests to make them pass. Workflow artifacts are outside the submitted code.
+'''
+CLAIMS='''At phase completion, include a claims object in your done JSON. Extract actual
+active requirements, not a generic assertion. Example shape (replace example values):
+"claims":{"schema_version":"1.0","claims":[{"id":"R01","text":"bounded claim",
+"kind":"requirement","status":"unsupported","boundary":["this milestone"],
+"depends_on":[],"conflicts_with":[],"falsification_tests":["specific counterexample"],
+"source_ref":"milestone requirement R01","uncertainty":"high","evidence":[]}]}
+For actual shell evidence use kind="observed", source_quality="test" or "primary",
+ref=<evidence_ref returned by shell>, source_id=<source_id returned by shell>,
+direction="supports" and a scoped description. A test you authored is an observed
+test result, not independent validation. Unverified prose remains asserted/model.
+'''
+
+
+def archive_files(files):
+    buffer=io.BytesIO()
+    with tarfile.open(fileobj=buffer,mode='w') as tar:
+        for name,data in files.items():
+            info=tarfile.TarInfo(name)
+            info.size=len(data);info.mode=0o644
+            tar.addfile(info,io.BytesIO(data))
+    return buffer.getvalue()
+
+
+class Sandbox:
+    def __init__(self,image,upstream):
+        self.name='aee-long-'+uuid.uuid4().hex
+        self.image,self.upstream=image,upstream
+    def __enter__(self):
+        subprocess.run(['docker','run','-d','--name',self.name,'--network','none','--cap-drop','ALL',
+            '--security-opt','no-new-privileges','--pids-limit','128','--memory','2g','--cpus','2',
+            '--user','1000:1000',self.image],check=True,capture_output=True,timeout=60)
+        info=json.loads(subprocess.check_output(['docker','inspect',self.name]))[0]
+        assert not info['Mounts'] and info['HostConfig']['NetworkMode']=='none'
+        data=subprocess.check_output(['git','-c','safe.directory='+self.upstream.resolve().as_posix(),'-C',str(self.upstream),'archive','HEAD'],timeout=30)
+        self.put_archive(data,'/testbed')
+        self.execute('git init -q && git add . && git -c user.name=Benchmark -c user.email=benchmark@example.invalid commit -qm base')
+        return self
+    def put_archive(self,data,target):
+        subprocess.run(['docker','exec','-i',self.name,'tar','--no-same-owner','-xf','-','-C',target],
+                       input=data,check=True,capture_output=True,timeout=30)
+    def put(self,files,target='/testbed'):
+        self.put_archive(archive_files(files),target)
+    def execute(self,command,timeout=60):
+        # Linux timeout terminates commands inside container, not only the Docker client.
+        limit=max(1,int(timeout))
+        result=subprocess.run(['docker','exec',self.name,'timeout','-k','2',str(limit),
+            'bash','-lc',command],capture_output=True,timeout=limit+10)
+        return dict(exit_code=result.returncode,stdout=result.stdout.decode(errors='replace'),stderr=result.stderr.decode(errors='replace'))
+    def stage_workflow(self):
+        files={}
+        for part in ('scripts/python','templates'):
+            for p in (ROOT/'.specify'/part).rglob('*'):
+                if p.is_file() and '__pycache__' not in p.parts:
+                    files['.specify/'+part+'/'+p.relative_to(ROOT/'.specify'/part).as_posix()]=p.read_bytes()
+        files['.specify/memory/constitution.md']=(ROOT/'.specify/templates/constitution-template.md').read_bytes()
+        self.put(files,'/workflow')
+        self.execute('cd /workflow && git init -q && mkdir -p specs/001-transactions')
+    def snapshot(self,path):
+        # Only source modules cross into grading. No solver tests/config/hooks.
+        command="import io,tarfile,pathlib,sys; b=io.BytesIO(); t=tarfile.open(fileobj=b,mode='w'); files=sorted(pathlib.Path('tinydb').rglob('*.py')); assert all(not p.is_symlink() for p in files); [t.add(p,arcname=str(p)) for p in files]; t.close(); sys.stdout.buffer.write(b.getvalue())"
+        data=subprocess.check_output(['docker','exec',self.name,'python','-c',command],timeout=30)
+        path.write_bytes(data)
+    def __exit__(self,*args):
+        subprocess.run(['docker','rm','-f',self.name],capture_output=True,timeout=30)
+
+
+def acceptance(stage,kind):
+    paths=[TASK/f'{kind}_base.py']
+    paths += [TASK/f'{kind}_stage1.py'] if stage==1 else [TASK/f'{kind}_stage2.py']
+    if stage==3:paths.append(TASK/f'{kind}_stage3.py')
+    return b'\n\n'.join(p.read_bytes() for p in paths)
+
+
+def grade(snapshot,stage,kind,image,upstream):
+    with Sandbox(image,upstream) as sandbox:
+        sandbox.execute('rm -rf /testbed/tinydb')
+        sandbox.put_archive(snapshot.read_bytes(),'/testbed')
+        sandbox.put({'test_acceptance.py':acceptance(stage,kind)},'/grade')
+        result=sandbox.execute('PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest -c /dev/null -q tests /grade/test_acceptance.py --junitxml=/tmp/grade.xml',120)
+        xml=sandbox.execute('cat /tmp/grade.xml')
+        try:
+            root=ET.fromstring(xml['stdout'])
+            cases=[dict(name=n.attrib.get('name'),file=n.attrib.get('classname'),passed=not any(n.find(t) is not None for t in ('failure','error','skipped')),
+                        failures=[dict(kind=c.tag,message=c.attrib.get('message'),text=c.text) for c in n if c.tag in ('failure','error','skipped')]) for n in root.iter('testcase')]
+        except ET.ParseError:
+            cases=[]
+        expected={'public':{1:227,2:228,3:231},'holdout':{1:229,2:231,3:247}}[kind][stage]
+        return dict(passed=result['exit_code']==0 and len(cases)==expected and all(c['passed'] for c in cases),
+                    expected_test_count=expected,
+                    exit_code=result['exit_code'],cases=cases,test_count=len(cases),
+                    passed_count=sum(c['passed'] for c in cases),output=result['stdout']+result['stderr'])
+
+
+class Provider:
+    def __init__(self,folder,stage_spec):
+        self.folder=folder;self.calls=[];self.stage_spec=stage_spec;self.instructions='';self.stage=0
+    def query(self,messages,phase,timeout):
+        # Deterministic recent-history window plus complete active instructions.
+        history=[m for m in messages if m['role']!='system' and not m['content'].startswith('CONTROL_PHASE:')]
+        history=history[-16:]
+        prefix=[dict(role='system',content=COMMON),dict(role='user',content=self.stage_spec)]
+        ledger=[]
+        for number,call in enumerate(self.calls):
+            try:
+                action=json.loads(call['response']['choices'][0]['message']['content'])
+                ledger.append(f"{number+1}. stage={call['stage']} phase={call['phase']} "+
+                    action.get('action','?')+': '+str(action.get('command',action.get('summary','')))[:300])
+            except (KeyError,ValueError,TypeError):
+                ledger.append(f'{number+1}. response unavailable or invalid')
+        tail=dict(role='user',content='CURRENT PHASE: '+phase+'\n'+self.instructions+
+            '\nDURABLE ACTION LEDGER (actions requested, not proof of success):\n'+'\n'.join(ledger)+
+            '\nUse this ledger to avoid repeating completed inspections when their output leaves the recent history. '
+            'Keep your own concise notes on disk as needed. Finish this phase with done when its artifacts are ready. '
+            'You have a shared 50-call stage budget; plan inspection and implementation accordingly.')
+        removed=max(0,len(messages)-len(history))
+        while True:
+            chosen=prefix+history+[tail]
+            rendered=local_json('/apply-template',dict(messages=chosen,chat_template_kwargs={'enable_thinking':False}))['prompt']
+            token_count=len(local_json('/tokenize',dict(content=rendered,add_special=False))['tokens'])
+            if token_count+6144<=32768:break
+            if not history:raise RuntimeError('Instructions exceed context')
+            history=history[2:];removed+=2
+        if len(self.calls)>=150 or sum((c.get('usage') or {}).get('total_tokens',0) for c in self.calls)+token_count+6144>2000000:
+            raise RuntimeError('whole_project_token_or_call_limit')
+        if any(c.get('usage') is None for c in self.calls):raise RuntimeError('unknown_usage_stop')
+        payload=dict(model='long-coder',messages=chosen,temperature=0.7,top_p=0.8,top_k=20,min_p=0.0,presence_penalty=1.5,repeat_penalty=1.0,seed=20260917,max_tokens=6144,
+                     cache_prompt=False,response_format={'type':'json_object'},reasoning_effort='none',
+                     chat_template_kwargs={'enable_thinking':False})
+        path=self.folder/f'call-{len(self.calls):03}.json'
+        record=dict(stage=self.stage,phase=phase,started_at=utc(),request=payload,usage=None,
+                    unknown_reason='pending',removed_history_messages=removed,preflight_input_tokens=token_count)
+        self.calls.append(record);write_json(path,record,exclusive=True)
+        start=time.monotonic()
+        try:
+            response=local_json('/v1/chat/completions',payload,min(timeout,180))
+            record.update(response=response,usage=response.get('usage'),unknown_reason=None)
+            choice=response['choices'][0]
+            if choice['finish_reason']!='stop':raise RuntimeError('response_limit:'+choice['finish_reason'])
+            return choice['message']['content']
+        except BaseException as exc:
+            record['error']=type(exc).__name__+': '+str(exc)
+            if record['usage'] is None:record['unknown_reason']='failed_or_interrupted_call'
+            raise
+        finally:
+            record.update(seconds=time.monotonic()-start,ended_at=utc());write_json(path,record)
+            print(f'{self.folder.name} stage={self.stage} phase={phase} call={len(self.calls)} seconds={record["seconds"]:.1f}',flush=True)
+
+
+def skill(phase):
+    part='implement' if phase in ('final_implement','repair') else phase
+    return (ROOT/f'prompts/skills/speckit-{part}.md').read_text(encoding='utf-8')
+
+PHASE_GOALS={
+    'constitution':'Write /workflow/.specify/memory/constitution.md with project principles. This phase does not implement the requested feature. Inspect only what is needed for those principles, then return done.',
+    'specify':'Create or update spec.md in /workflow/specs/001-transactions for the current requirements, retaining active earlier requirements. Finish this specification phase with done.',
+    'plan':'Create or update plan.md and needed supporting design artifacts for the current milestone, then return done.',
+    'tasks':'Create or update tasks.md with executable tasks for this milestone, then return done.',
+    'implement':'Implement the tasks in /testbed/tinydb, run tests, and update tasks.md with honest completion status, then return done.',
+    'converge':'Review current artifacts, implementation and test evidence; document unresolved gaps and any follow-up tasks, then return done.',
+    'final_implement':'Complete outstanding convergence tasks, rerun relevant checks, and report unresolved gaps, then return done.'}
+
+
+def run_phase(agent,model,provider,phase,instructions,deadline,max_stage_calls,stage_start_count):
+    provider.instructions=instructions;model.phase=phase;model.deadline=deadline
+    agent.add_messages(dict(role='user',content='CONTROL_PHASE: '+phase+'\n'+instructions))
+    while True:
+        if (provider.folder.parent/'CANCEL').exists():raise KeyboardInterrupt('campaign_cancelled')
+        if time.monotonic()>=deadline:raise TimeoutError('stage_time_limit')
+        if len(provider.calls)-stage_start_count>=max_stage_calls:raise RuntimeError('stage_call_limit')
+        agent.step()
+        if model.last['action']=='done':return model.last
+
+
+def campaign(output,upstream,image,metadata):
+    meta=json.loads(metadata.read_text(encoding='utf-8-sig'))
+    assert meta['smoke']['passed'] and meta['calibration']['passed']
+    for path,sha in meta['verified_files'].items():
+        assert digest(path)==sha, 'changed preflight file: '+path
+    output.mkdir(parents=True,exist_ok=False)
+    hashes=source_hashes()
+    hashes.update({str(p.resolve()):digest(p) for p in TASK.rglob('*') if p.is_file()})
+    hashes[str(Path(__file__).resolve())]=digest(__file__)
+    schedule=ARMS.copy();random.Random(20260917).shuffle(schedule)
+    freeze=dict(timestamp=utc(),hashes=hashes,upstream_revision=subprocess.check_output(['git','-c','safe.directory='+upstream.resolve().as_posix(),'-C',str(upstream),'rev-parse','HEAD'],text=True).strip(),
+        image=image,metadata=meta,server_props=local_json('/props'),schedule=schedule,
+        stage_seconds=900,stage_max_calls=50,project_max_calls=150,project_token_cap=2000000,
+        context=32768,max_output=6144,temperature=0.7,top_p=0.8,top_k=20,min_p=0.0,presence_penalty=1.5,seed=20260917,reasoning='disabled',public_repair_rounds=2)
+    write_json(output/'freeze.json',freeze,exclusive=True)
+    os.environ['MSWEA_GLOBAL_CONFIG_DIR']=str(output/'mini-config')
+    os.environ['MSWEA_SILENT_STARTUP']='1'
+    from minisweagent.agents.default import DefaultAgent
+    rows=[]
+    for arm in schedule:
+        folder=output/arm;folder.mkdir();store=Store(folder/'evidence')
+        provider=Provider(folder,'');identity=dict(attempt_id=arm)
+        with Sandbox(image,upstream) as sandbox:
+            if arm!='baseline':sandbox.stage_workflow()
+            model=MiniModel(provider,time.monotonic()+900)
+            environment=MiniEnvironment(sandbox,model.deadline,store,identity)
+            agent=DefaultAgent(model,environment,system_template='',instance_template='',cost_limit=0)
+            agent.add_messages(dict(role='system',content=COMMON))
+            for stage in (1,2,3):
+                begin=time.monotonic();deadline=begin+900;environment.deadline=deadline
+                provider.stage=stage
+                provider.stage_spec='\n\n'.join((TASK/f'stage{s}.md').read_text() for s in range(1,stage+1))
+                sandbox.put({'acceptance_public.py':acceptance(stage,'public'),f'TASK_STAGE_{stage}.md':provider.stage_spec.encode()})
+                row=dict(arm=arm,stage=stage,started_at=utc(),phases=[],assessments=[],repairs=[],error=None)
+                rows.append(row);start_count=len(provider.calls);start_tools=environment.tool_calls
+                phases=['solve'] if arm=='baseline' else (['constitution'] if stage==1 else [])+['specify','plan','tasks','implement','converge','final_implement']
+                try:
+                    for phase in phases:
+                        instructions='Implement this milestone, using any planning and repository tests you find useful. Finish only when ready for acceptance.' if arm=='baseline' else (
+                            (ROOT/'prompts/adapter.md').read_text()+f'\nUse SPECIFY_FEATURE_DIRECTORY=/workflow/specs/001-transactions when running setup scripts.\n'+skill(phase))
+                        if phase=='final_implement':instructions+='\nImplement outstanding convergence tasks and rerun tests. Finish with done; do not repeat planning.'
+                        if arm!='baseline':instructions+='\nCURRENT PHASE DELIVERABLE: '+PHASE_GOALS[phase]
+                        if arm=='spec_kit_aee' and phase in ('specify','plan','tasks','implement'):instructions+='\n'+CLAIMS
+                        done=run_phase(agent,model,provider,phase,instructions,deadline,50,start_count)
+                        row['phases'].append(dict(phase=phase,done=done));write_json(output/'attempts.json',rows)
+                        if arm=='spec_kit_aee' and phase in ('specify','plan','tasks','implement'):
+                            try:
+                                claims=grounded_claims(done.get('claims') or {},store,arm)
+                                evaluation=assess(ROOT,claims,phase,store)
+                                row['assessments'].append(dict(phase=phase,outcome=evaluation['outcome'],claims=claims,evaluation=evaluation))
+                                agent.add_messages(dict(role='user',content='AEE/Evaluator evidence gaps (not hidden-test grades): '+json.dumps(evaluation)))
+                                if phase=='implement' and evaluation['outcome'] not in ('pass','warn'):
+                                    done=run_phase(agent,model,provider,'evidence_rework','Gather available repository evidence and address the implementation gaps, preserving unresolved uncertainty. '+CLAIMS,deadline,50,start_count)
+                                    claims=grounded_claims(done.get('claims') or {},store,arm)
+                                    again=assess(ROOT,claims,'implement',store)
+                                    row['assessments'].append(dict(phase='implement_rework',outcome=again['outcome'],claims=claims,evaluation=again))
+                            except Exception as exc:
+                                row['assessments'].append(dict(phase=phase,error=type(exc).__name__+': '+str(exc)))
+                except Exception as exc:
+                    row['error']=type(exc).__name__+': '+str(exc)
+                snapshot=folder/f'stage{stage}-primary.tar';sandbox.snapshot(snapshot)
+                row['primary_snapshot']=snapshot.relative_to(output).as_posix()
+                row['public_primary']=grade(snapshot,stage,'public',image,upstream)
+                current=row['public_primary']
+                for repair_round in (1,2):
+                    if current['passed'] or time.monotonic()+30>=deadline or len(provider.calls)-start_count>=50:break
+                    repair=dict(round=repair_round,error=None)
+                    row['repairs'].append(repair)
+                    try:
+                        instructions='Repair the current implementation using public acceptance/regression feedback. Preserve all active requirements. Use shell edits/tests; do not change upstream/public tests.\n'+current['output'][-20000:]
+                        repair['done']=run_phase(agent,model,provider,'repair',instructions,deadline,50,start_count)
+                    except Exception as exc:repair['error']=type(exc).__name__+': '+str(exc)
+                    snapshot=folder/f'stage{stage}-repair{repair_round}.tar';sandbox.snapshot(snapshot)
+                    current=grade(snapshot,stage,'public',image,upstream)
+                    repair.update(snapshot=snapshot.relative_to(output).as_posix(),grade=current)
+                final=folder/f'stage{stage}-final.tar';sandbox.snapshot(final)
+                row.update(final_snapshot=final.relative_to(output).as_posix(),public_final=current,
+                    seconds=time.monotonic()-begin,calls=len(provider.calls)-start_count,
+                    tool_calls=environment.tool_calls-start_tools,ended_at=utc())
+                if arm!='baseline':
+                    workflow=subprocess.check_output(['docker','exec',sandbox.name,'tar','--exclude=.git','-cf','-','-C','/workflow','.'],timeout=30)
+                    (folder/f'stage{stage}-workflow.tar').write_bytes(workflow)
+                patch=sandbox.execute('git diff --stat; git status --short')
+                row['changes']=patch
+                write_json(output/'attempts.json',rows)
+                print(f'CHECKPOINT {arm} stage {stage}: public={current["passed"]} calls={row["calls"]} error={row["error"]}',flush=True)
+    # Hidden cases never reach solver containers or feedback. Grade only now.
+    for row in rows:
+        row['hidden_primary']=grade(output/row['primary_snapshot'],row['stage'],'holdout',image,upstream)
+        row['hidden_final']=grade(output/row['final_snapshot'],row['stage'],'holdout',image,upstream)
+        write_json(output/'results.json',rows)
+    print('All long-horizon stages and hidden grading complete',flush=True)
+
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser()
+    parser.add_argument('output',type=Path)
+    parser.add_argument('--upstream',type=Path,required=True)
+    parser.add_argument('--image',required=True)
+    parser.add_argument('--metadata',type=Path,required=True)
+    args=parser.parse_args()
+    campaign(args.output,args.upstream,args.image,args.metadata)

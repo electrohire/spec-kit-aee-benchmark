@@ -15,8 +15,15 @@ labels={'baseline':'Ordinary coding agent','spec_kit':'Spec Kit through our adap
 rows=[]
 for arm in ('baseline','spec_kit','spec_kit_aee'):
     s=summary['arms'][arm]
-    ratio=f"{s['tokens_per_accepted_milestone']:,.0f}" if s['tokens_per_accepted_milestone'] is not None else 'undefined (no fully accepted milestones)'
-    rows.append(f"{labels[arm]}: {s['hidden_primary_passes']}/3 milestones passed before public-feedback repairs; {s['hidden_final_passes']}/3 afterward. {s['total_tokens']:,} total tokens, {s['repair_rounds']} repair rounds, {ratio} tokens per accepted milestone.")
+    ratio=f"{s['tokens_per_accepted_milestone']:,.0f}" if s['tokens_per_accepted_milestone'] is not None else 'undefined ('+'; '.join(reason for reason,applies in [('no fully accepted milestones',not s['hidden_final_passes']),('usage incomplete',s['unknown_calls'])] if applies)+')'
+    tokens=f"{s['total_tokens']:,} total tokens" if s['total_tokens'] is not None else f"at least {s['known_total_tokens']:,} recorded tokens; {s['unknown_calls']} call(s) with unknown usage"
+    rows.append(f"{labels[arm]}: {s['hidden_primary_passes']}/3 milestones passed before public-feedback repairs; {s['hidden_final_passes']}/3 afterward. {tokens}, {s['repair_rounds']} repair rounds attempted ({s['repair_rounds_blocked_by_unknown_usage']} blocked by unknown usage), {ratio} tokens per accepted milestone.")
+
+workflow_errors='; '.join(labels[arm]+': '+', '.join(f"stage {e['stage']} ({e['error']})" for e in values['workflow_errors']) for arm,values in summary['arms'].items() if values['workflow_errors']) or 'none recorded'
+aee_counts=summary['arms']['spec_kit_aee']['assessment_outcomes']
+aee_completed=sum(n for outcome,n in aee_counts.items() if outcome!='adapter_error')
+aee_errors=aee_counts.get('adapter_error',0)
+final_features='; '.join(f"{labels[row['arm']]} {row['feature_cases_passed']}/{row['feature_cases_total']}" for row in summary['stages'] if row['stage']==3)
 
 article=f'''Try Spec Kit + AEE on work that changes—and measure the rework
 
@@ -26,7 +33,7 @@ Can the agent preserve the behavior we already agreed on? Can it distinguish a t
 
 That is why I think Spec Kit + Applied Epistemic Engineering is worth trying on a bounded project. Spec Kit provides an explicit specification, plan and task workflow. AEE adds a way to challenge claims, retain uncertainty and link evidence. Those are useful capabilities to evaluate. They are not a promise of cheaper or more accurate code.
 
-I put that proposition through a free-local experiment. The results and failures are public.
+I put that proposition through an experiment using local inference. The results and failures are public. These runs did not demonstrate a correctness or token-saving advantage; the invitation is to test the workflow, with its costs and failures visible.
 
 What ran
 
@@ -34,7 +41,7 @@ The machine had an i9-14900F, 64 GB RAM, an RTX 4070 SUPER with 12,282 MiB dedic
 
 All benchmark model calls went to localhost through llama.cpp. API expenditure was $0. Hardware, electricity and setup work were not priced, so I am not calling the experiment cost-free.
 
-The first exploration used six small Exercism tasks and Qwen2.5-Coder-14B. Before repairs, ordinary coding passed 5/6, the document-adapted Spec Kit arm 2/6, and the adapted combined arm 1/6. Seven workflow responses hit their document token limit. After shared repair loops, all three arms passed 5/6 of the feedback-exposed test suites.
+The first exploration used six small Exercism tasks and Qwen2.5-Coder-14B. Before repairs, ordinary coding passed 5/6, the Spec Kit arm using document prompts 2/6, and the adapted combined arm 1/6. Seven workflow responses hit their document token limit. After shared repair loops, all three arms passed 5/6 of the test suites already used for repair feedback.
 
 Their cumulative tokens per passing answer were 957, 23,524 and 27,116, respectively. That sample does not show a token-saving advantage. All three remaining failures involved the same required punctuation in an error message, despite repair feedback. The workflow adaptation and low document cap limit what this says about full Spec Kit.
 
@@ -46,17 +53,29 @@ Each arm had repository tools, could write its own tests and kept its code acros
 
 {chr(10).join(rows)}
 
+All three arms hit the 120-second request timeout: baseline and Spec Kit in milestone three, and the combined arm in milestone one. A passing source snapshot does not erase an interrupted workflow. Missing native usage remains unknown; the report preserves measured lower bounds and separately labeled reservation bounds.
+
 “Accepted milestone” means every required hidden acceptance and unchanged upstream regression test passed. The three milestones are dependent checkpoints in one project, not three independent tasks. The hidden tests were written by this study; the upstream regression tests were independently authored. Neither internal AEE outcomes nor a model saying “done” counted as a correctness grade.
 
-The economics include input, output and reasoning usage for every phase and failed attempt. Reasoning tokens already included in native completion usage were not counted twice. Repairs and tokens spent on failures stay in the numerator. With zero accepted milestones, tokens per accepted milestone are undefined, not zero.
+Every arm failed the hidden retained-handle/cache and document-ID rollback cases. The baseline also failed the final restore/retained-handle case. This run provides no evidence of a correctness or token-efficiency advantage for the workflow treatments.
+
+The six scheduled long-study repair attempts were blocked before inference by the unknown-usage rule. No repair model calls ran in this long study; the actual repair successes reported above belong to the separate six-task exploration.
+
+Final-stage hidden feature-case coverage was: {final_features}. These cases include related and parameterized checks; they are not independent answers.
+
+The combined arm completed {aee_completed} AEE/Evaluator assessments and recorded {aee_errors} assessment-adapter errors. All three completed assessments were planning assessments returning iterate; the run stopped before implementation assessment or evidence rework. Planning gaps were advisory, with a bounded implementation evidence-rework opportunity. Later convergence edits and common repairs were not reassessed, so those outcomes do not certify final source. The adapter forwards full assessment JSON; its token overhead is specific to this implementation, not a minimum cost inherent to AEE.
+
+The combined arm produced explicit records of claims, evidence references and unresolved gaps. That is a concrete artifact readers can inspect. In the first specification assessment, AEE flagged a possible contradiction between one write on successful commit and zero writes on rollback. Those are different exit conditions, so the flag was a review prompt, not proof of a bug. Structured evidence still needs interpretation.
+
+The economics include input, output and reasoning usage for every phase and failed attempt. Reasoning tokens already included in native completion usage were not counted twice. Cached input stays in the logical token total, with cached and uncached processing reported separately. Repairs and tokens spent on failures stay in the numerator. With zero accepted milestones, tokens per accepted milestone are undefined, not zero.
 
 The setup failures matter too
 
-Two initial staged pilots were interrupted after repeated file-reading loops and failed implementation. I retained their 285 calls and 5,266,572 tokens, then corrected the adapter through separate development smokes. Those checks exposed directory-layout assumptions, unchanged documents behind “done” responses, and a lost phase-transition message. The final pilot uses the larger 131,072-token context supported by the same GPUs, full conversation and model-reasoning retention, and within-arm prompt caching. It had a new freeze and a full-workflow preflight. No hidden-test result guided those fixes.
+Two initial staged pilots were interrupted after repeated file-reading loops and failed implementation. I retained their 285 calls and 5,266,572 tokens, then revised the adapter through separate development smokes. Those checks exposed directory-layout assumptions, unchanged documents behind “done” responses, and a lost phase-transition message. The final pilot uses the larger 131,072-token context supported by the same GPUs, full conversation and model-reasoning retention, and within-arm prompt caching. It had a new freeze and a preflight covering every workflow phase. No TinyDB hidden-test result guided those revisions.
 
-Across the staged study’s development smokes and interrupted runs, setup overhead was {setup['setup_plus_aborted_tokens']:,} tokens, separate from the completed comparison. This was iterative harness development, not a pristine experiment that worked on its first try. The full revision history is part of the evidence.
+Across the staged study’s development smokes and interrupted runs, setup overhead was {setup['setup_plus_aborted_tokens']:,} tokens, separate from the completed comparison. This was iterative harness development, not a pristine experiment that worked on its first try. The full revision history is part of the evidence. Across both studies and all retained development work, the ledger contains 1,001 model calls and at least 33,983,869 tokens, with three unknown usages. This is a work inventory, not a pooled success-rate comparison.
 
-Runtime overhead was measured separately from coding inference. For seven measured repetitions after warmup, the installed AEE + Evaluator pipeline had a median of about 661.5 ms for 10 claims and 800.0 ms for 100 claims. These are specific local workloads with ordinary desktop background activity, not universal latency promises.
+CPU-side runtime overhead was measured separately from coding inference. For seven measured repetitions after warmup, the installed AEE + Evaluator pipeline had a median of about 661.5 ms for 10 claims and 800.0 ms for 100 claims. These are specific local workloads with ordinary desktop background activity, not universal latency promises.
 
 What I would invite you to try
 
@@ -71,6 +90,7 @@ Disclosure: ElectroHire maintains AEE, the Evaluator extension and this benchmar
 Try it, inspect the failures, and measure whether it helps your own work.
 
 Results and exact protocol: {url}/reports/local/long-horizon-03
+Complete work ledger: {url}/reports/local
 Earlier small-task results and repairs: {url}/reports/local/gpu-20260917
 Interrupted staged runs: {url}/reports/local/long-horizon-01-interrupted and {url}/reports/local/long-horizon-02-interrupted
 Spec Kit: https://github.com/github/spec-kit
