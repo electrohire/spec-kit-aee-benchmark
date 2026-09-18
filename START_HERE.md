@@ -1,5 +1,24 @@
 # Resume the ElectroHire benchmark
 
+## Active expanded comparison — 2026-09-17
+
+The user authorized all five follow-up improvements: calibrated runtime limits,
+full workflow/repair calibration, longer staged work, identical-start repair
+diagnostics, and multiple projects/seeds. See
+[the frozen protocol](benchmarks/repeated_local/PROTOCOL.md) and
+[reproduction instructions](docs/repeated-local-reproduction.md).
+
+The full workflow calibration passed after three retained failed preparations:
+95 local model calls, all seven phases, five actual AEE/Evaluator assessments,
+and a repaired injected regression checked independently. The scored suite started
+at 22:51 America/New_York on September 17. Results are not yet available.
+The dedicated benchmark service currently uses both GPUs; the wrapper restores
+the original service after execution. Do not start a duplicate run.
+
+Both repository PRs are ready for review, not drafts. No merge or publication is
+authorized. Leave the email and existing article unchanged. Prior measurements
+below remain historical evidence and are not replaced by this new campaign.
+
 ## Completed GPU continuation — 2026-09-17 local date
 
 Workspace: `spec-kit-aee-benchmark` under AXIOVEX. Branch `feat/benchmark-harness`;

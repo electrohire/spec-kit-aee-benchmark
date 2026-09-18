@@ -56,8 +56,11 @@ all work. Review the full freeze and pinned source hashes before a new run.
 After all generation and hidden grading complete:
 
 ```powershell
+.venv-gpu/Scripts/python.exe scripts/audit_repeated.py study artifacts/repeated-study-01
+.venv-gpu/Scripts/python.exe scripts/audit_repeated.py repair artifacts/matched-repair-01
 .venv-gpu/Scripts/python.exe scripts/report_repeated.py study artifacts/repeated-study-01 reports/local/repeated-study-01
 .venv-gpu/Scripts/python.exe scripts/report_repeated.py repair artifacts/matched-repair-01 reports/local/matched-repair-01
+.venv-gpu/Scripts/python.exe scripts/report_repeated_setup.py reports/local/repeated-setup-01
 .venv-gpu/Scripts/python.exe scripts/check_evidence.py
 ```
 

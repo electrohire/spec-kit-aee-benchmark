@@ -2,6 +2,7 @@
 import argparse
 import collections
 import hashlib
+import importlib.metadata
 import json
 import shutil
 from pathlib import Path
@@ -51,6 +52,13 @@ def export(raw,dest):
             src=ROOT/'artifacts'/f'{project}-upstream'/name
             if src.is_file():
                 target=dest/'licenses'/f'{project}-{name}';target.parent.mkdir(exist_ok=True);shutil.copyfile(src,target)
+    for name in ('docs/spec-kit-LICENSE.txt','.specify/extensions/aee/LICENSE','.specify/extensions/evaluator/LICENSE'):
+        source=ROOT/name
+        target=dest/'licenses'/name.replace('/','-');target.parent.mkdir(exist_ok=True);shutil.copyfile(source,target)
+    distribution=importlib.metadata.distribution('applied-epistemic-engineering')
+    for name in distribution.files:
+        if '/licenses/' in str(name).replace('\\','/'):
+            shutil.copyfile(distribution.locate_file(name),dest/'licenses'/('aee-engine-'+Path(name).name))
     write_json(dest/'frozen-input-map.json',frozen)
 
 
@@ -80,6 +88,11 @@ def summarize_study(raw,dest):
             completed_milestone_workflows=completed,assessments=sum(len(r['assessments']) for r in subset),
             assessment_errors=sum('error' in a for r in subset for a in r['assessments']),
             evidence_rework_rounds=sum(p['phase']=='evidence_rework' for r in subset for p in r['phases']),planning_source_edits=[dict(project=r['project'],seed=r['seed'],stage=r['stage'],phase=p['phase']) for r in subset for p in r['phases'] if p['phase'] in ('constitution','specify','plan','tasks') and p.get('source_changed')],regressions=regressions)
+        summary['arms'][arm]['by_phase']={phase:accounting([c for c in records if c['phase']==phase]) for phase in sorted({c['phase'] for c in records})}
+        summary['arms'][arm]['request_errors']=dict(collections.Counter(c['error'] for c in records if c.get('error')))
+        summary['arms'][arm]['assessment_seconds']=sum(a.get('seconds',0) for r in subset for a in r['assessments'])
+        fully_accepted=summary['arms'][arm]['projects_accepted']
+        summary['arms'][arm]['tokens_per_entire_accepted_trajectory']=economics['total_tokens']/fully_accepted if fully_accepted and economics['total_tokens'] is not None else None
     write_json(dest/'summary.json',summary)
     text='# Repeated two-project local comparison\n\n'+summary['scope']+'. All inference is local. API expenditure $0; hardware, energy and controller work unpriced.\n\n'
     text+='| Arm | Primary /12 | Final /12 | Entire trajectories /4 | Known tokens | Unknown calls | Tokens/accepted | Repair rounds | Completed milestone workflows |\n|---|---:|---:|---:|---:|---:|---:|---:|---:|\n'
@@ -97,6 +110,10 @@ def summarize_repair(raw,dest):
     rows=json.loads((raw/'results.json').read_text());summary={'arms':{},'pairs':16,'cases_per_arm':16}
     diagnostics=[c for f in raw.glob('*/diagnostic') for c in calls(f)]
     summary['shared_diagnostic_physical_work']=accounting(diagnostics)
+    pairs=[json.loads(p.read_text()) for p in sorted(raw.glob('*/pair.json'))]
+    summary['assessment_seconds']=sum(p.get('assessment_seconds',0) for p in pairs)
+    summary['valid_diagnostic_pairs']=sum(p.get('claims') is not None for p in pairs)
+    summary['diagnostic_source_changes']=sum(p['diagnostic_changed_source'] for p in pairs)
     findings=[]
     for p in sorted(raw.glob('*/pair.json')):
         meta=json.loads(p.read_text());evaluation=meta.get('evaluation') or {}

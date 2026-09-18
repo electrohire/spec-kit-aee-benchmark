@@ -52,6 +52,24 @@ def run(destination):
     copy_evidence(ROOT / 'artifacts/repeated-assets', destination / 'controller-assets')
     write_json(destination / 'summary.json', dict(rows=rows, economics=accounting(all_records),
         note='All preparation attempts retained. No scored success claim; controller work is unpriced.'))
+    scored_rows = []
+    for name in ('repeated-study-01', 'matched-repair-01'):
+        source = ROOT / 'artifacts' / name
+        assert (source / 'results.json').exists(), 'Complete generation and grading before final inventory'
+        records = [json.loads(p.read_text()) for p in source.rglob('call-*.json')]
+        all_records.extend(records)
+        scored_rows.append(dict(scope=name, economics=accounting(records)))
+    historical = json.loads((ROOT / 'reports/local/token-ledger.json').read_text())
+    current = accounting(all_records)
+    write_json(destination / 'physical-inventory.json', dict(
+        preparation=rows, scored=scored_rows, new_work=current,
+        historical_inventory='../token-ledger.json',
+        all_campaigns_calls=historical['calls']+current['calls'],
+        all_campaigns_known_tokens=historical['known_tokens']+current['known_total_tokens'],
+        all_campaigns_unknown_calls=historical['unknown_calls']+current['unknown_calls'],
+        all_campaigns_reservation_bound=historical['configured_reservation_upper_bound']+current['budget_reservation_total'],
+        api_expenditure_usd=0,
+        note='Physical diagnostic calls counted once. Mixed models/tasks: inventory only, not a pooled efficiency comparison. Hardware, energy and controller work unpriced.'))
     (destination / 'README.md').write_text(
         '# Repeated campaign preparation\n\nAll full-workflow calibration attempts, including failures, are retained. '
         'These requests are setup costs, separate from scored treatment comparisons. '
