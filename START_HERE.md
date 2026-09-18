@@ -32,8 +32,9 @@ traces remain local with hashes; public traces do not support exact prompt repla
 
 Use `.venv-gpu` (Python 3.12.6, locked packages) and project-local `artifacts/tmp-gpu`
 for TEMP/TMP on this host. 54 regression tests passed during this continuation;
-final validation is recorded with the result publication. The article is generated
-from the pushed results commit in the final publication step. No LinkedIn posting.
+final validation is recorded with the result publication. The copy/paste article is ready in [plain text](docs/linkedin-article.txt) and
+[Markdown](docs/linkedin-article.md), citing results commit
+835573aff15520a580c7c3862b3534b347101e18. No LinkedIn posting.
 
 The older laptop handoff below is historical and does not describe current GPU results.
 

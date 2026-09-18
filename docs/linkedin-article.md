@@ -1,108 +1,92 @@
-# Does Specification-Driven Development Pay for Itself? Measuring Spec Kit and AEE
-**Draft — benchmark results not run. Do not publish as a completed study.**
+# Try Spec Kit + AEE on work that changes—and measure the rework
 
-A specification workflow costs time and tokens. The useful question is whether
-those costs buy more correctly resolved tasks, or less rework. We built a
-reproducible experiment to measure that tradeoff rather than assume it.
+The coding task I care about is the one that comes back next week with a new requirement. Earlier promises still have to hold. A passing demo is only the beginning.
 
-The public [ElectroHire benchmark repository](https://github.com/electrohire/spec-kit-aee-benchmark)
-contains the protocol, task selection, instrumented runner, tests and teaching
-example. The experiment compares one model and runner across ordinary coding,
-Spec Kit, and Spec Kit plus Evaluator and Applied Epistemic Engineering (AEE).
+That is where I would invite people to try Spec Kit + Applied Epistemic Engineering: a bounded project with requirements to preserve, evidence to inspect and repair costs to measure.
 
-## What is ready, and what is not
-Offline tests exercise accounting, failure handling, isolation arguments, actual
-mini-SWE-agent phase execution with synthetic model responses, and deterministic
-AEE/Evaluator execution. These are implementation checks, not coding performance.
-The scored pilot and real model smoke are **not run**. There is no success-rate
-improvement, token saving or cost-saving number to report.
+Spec Kit provides a specification, plan and task workflow. AEE adds structured claims, evidence references and questions about uncertainty. My local tests did not demonstrate a correctness or token-saving advantage. They produced a public record of what worked, what failed and what needs a better test.
 
-| Treatment | Planned attempts | Scored results | Model cost |
-|---|---:|---|---|
-| Ordinary agent | 60 | Not run | Not measured |
-| Spec Kit | 60 | Not run | Not measured |
-| Spec Kit + Evaluator + AEE | 60 | Not run | Not measured |
+The rig and the rules
 
-## Installing the workflow
-```bash
-uv tool install specify-cli==1.0.0
-specify init my-project --integration codex --integration-options=--skills
-python -m pip install applied-epistemic-engineering==1.0.2
-specify extension add evaluator --from https://github.com/electrohire/spec-kit-evaluator/archive/refs/tags/v1.0.0.zip
-specify extension add aee --from https://github.com/electrohire/spec-kit-aee/archive/refs/tags/v1.0.0.zip
-specify extension enable evaluator
-specify extension enable aee
-specify extension list
-```
-Use Python 3.12 for this pinned Evaluator release. In Codex skills mode the
-installed names include $speckit-constitution, $speckit-specify, $speckit-plan,
-$speckit-tasks, $speckit-implement and $speckit-converge. We execute AEE explicitly
-after the relevant phases and compose/report its outcomes. Installation and hook
-registration alone are not evidence that assessments ran.
+I verified an i9-14900F, 64 GB RAM, an RTX 4070 SUPER with 12,282 MiB dedicated VRAM and an RTX 5060 Ti with 16,311 MiB. Shared system memory was not counted as VRAM.
 
-## A small Python walkthrough
-Our maintenance-triage CLI is deliberately simple: read synthetic asset readings,
-reject malformed data, flag illustrative threshold crossings, and atomically
-write deterministic JSON. Requirements have stable IDs and acceptance tests.
-It is not a validated maintenance or safety system.
+All benchmark inference used localhost through llama.cpp. The longer study split Qwen3.6-35B-A3B across both GPUs with a 131,072-token context. API expenditure was $0. Hardware, electricity and controller work were unpriced.
 
-```python
-reasons = []
-if vibration >= 7.1:
-    reasons.append("vibration_mm_s >= 7.1")
-if temperature >= 80:
-    reasons.append("temperature_c >= 80")
-```
+Three arms received the same model configuration, repository tools and resource limits: an ordinary coding agent, Spec Kit through our adapter, and Spec Kit + Evaluator + AEE through that adapter. The baseline could plan, keep notes and write tests.
 
-The interesting requirements are at the boundaries: equality must flag, NaN must
-fail, duplicate IDs must fail, and validation failure must preserve an existing
-output. Those details become claims with falsification tests and evidence links.
-A passing test supports its actual scope; it does not prove every claim.
-Run it with:
-```bash
-uv run maintenance-triage examples/maintenance_triage/sample.csv output.json
-uv run pytest tests/test_triage.py -q
-```
+Start with the small result
 
-Codex discovers reusable skills through SKILL.md files with name and description
-metadata. This repository adds narrow skills for experiments, evidence review and
-article drafting. Its root AGENTS.md stays short. Those controller instructions
-must never leak into baseline solver sessions.
+The first exploration used six Exercism tasks and Qwen2.5-Coder-14B. Before repairs, baseline passed 5/6, Spec Kit using document prompts 2/6, and the adapted combined arm 1/6. Seven workflow responses hit their document token limit.
 
-## The experiment
-We selected 20 Python tasks deterministically from the 500-task SWE-bench Verified
-set, stratifying by repository before any results. Three independent repetitions
-per arm produce 180 attempts. SWE-bench independently grades patches after solvers
-finish. The tutorial illustrates greenfield development; SWE-bench measures
-repairs to existing repositories. They answer different questions.
+Actual supplemental repair loops brought all three arms to 5/6. Their cumulative tokens per passing answer were 957, 23,524 and 27,116, respectively. Seven initially failing submissions were fixed; the three remaining failures concerned required punctuation in an error message, despite feedback.
 
-Fresh isolated containers and frozen prompts keep treatments separate. All phases,
-assessments and repairs count against the same ceilings. The primary three-arm
-study measures the combined Evaluator+AEE treatment, not AEE alone.
+Those repair tests were already exposed to the agents. The small sample and document-only adaptation cannot establish full Spec Kit effectiveness, and the result provides no token-saving claim.
 
-## Measuring economics honestly
-We record provider-native input, cached input and output tokens per request.
-Reasoning tokens already included in output are not charged twice. Unknown usage
-stays unknown. Failed attempts stay in the denominator:
-**cost per resolved task = cost of all attempts / resolved attempts**.
-Zero resolutions do not imply zero cost. List-price estimates are not invoices,
-and subscription-based Codex usage is not automatically attributable API spend.
+A longer test: requirements that must survive change
 
-The analysis pairs tasks and repetitions and bootstraps task clusters, rather than
-pretending repeated runs are independent tasks. Setup, infrastructure and human
-time are separate. AEE's internal assessment is compared to the independent grade
-only after the attempt ends, including false acceptance and unnecessary blocking.
+The second workload used the real TinyDB repository and three cumulative milestones: transactions, nested savepoints, then backup and restore. Each arm kept its code and history across stages. Later changes had to preserve earlier guarantees about rollback, caches, retained table handles, document IDs and persistence.
 
-## Limits and next step
-A pilot cannot establish general superiority. Public benchmarks may overlap model
-training data. Workflow fidelity and usage semantics still need a real smoke run.
-The next step is a capped, authorized smoke, followed by the frozen pilot if its
-gates pass. The repository records missing budget, credentials and infrastructure
-evidence rather than filling the results table with estimates.
+Public tests were available during development. Separate hidden cases were withheld until all generation ended. A fully accepted milestone required every hidden acceptance case and all 223 unchanged upstream tests to pass.
 
-**Disclosure:** ElectroHire maintains the Evaluator/AEE projects being studied.
-That connection is a conflict of interest; independent grading, frozen protocols
-and public evidence are intended to make the work inspectable.
+No arm passed a complete hidden milestone, before or after the scheduled repair attempts. Recorded logical token totals were:
 
-## Versioned reproduction links
-[Runner source](https://github.com/electrohire/spec-kit-aee-benchmark/tree/9f2257dd6138a738b6b63960d4bb8447219d866e/src/benchmark_runner), [tutorial code](https://github.com/electrohire/spec-kit-aee-benchmark/blob/9f2257dd6138a738b6b63960d4bb8447219d866e/src/benchmark_runner/triage.py), [offline evidence](https://github.com/electrohire/spec-kit-aee-benchmark/blob/9f2257dd6138a738b6b63960d4bb8447219d866e/reports/latest-offline.json), and [frozen task manifest](https://github.com/electrohire/spec-kit-aee-benchmark/blob/9f2257dd6138a738b6b63960d4bb8447219d866e/manifests/tasks.json). [Draft PR](https://github.com/electrohire/spec-kit-aee-benchmark/pull/1).
+- Ordinary coding agent: at least 6,943,953 tokens.
+- Spec Kit through our adapter: at least 8,799,193 tokens.
+- Spec Kit + Evaluator + AEE through our adapter: at least 7,076,311 tokens.
+
+Each arm had one call with unknown native usage. Tokens per accepted milestone are undefined because there were no fully accepted milestones; exact usage is also incomplete. Unknown is not zero.
+
+Final-stage hidden feature coverage was 21/24 for baseline, 5/24 for Spec Kit and 3/24 for the combined arm. Every snapshot passed the 223 upstream tests, but every arm missed retained-handle/cache and document-ID rollback cases. Related and parameterized cases are not independent answers, so these counts should not become a broad accuracy percentage.
+
+All three arms hit the 120-second request timeout: baseline and Spec Kit in milestone three, the combined arm in milestone one. Baseline's saved source passed its public tests despite its interrupted workflow. Source correctness and workflow completion are separate facts.
+
+The frozen unknown-usage rule stopped further inference in an affected arm. Six reserved repair attempts were therefore blocked before a model call. The actual repair successes belong to the earlier six-task study; the longer run does not establish how effective its repair loops would have been.
+
+What AEE actually contributed
+
+The combined arm completed three planning assessments, all returning iterate, with no assessment-adapter errors. It stopped before implementation assessment, evidence rework or convergence. Planning findings were advisory in this adapted workflow, not a final-code certificate.
+
+It did produce explicit records of claims, evidence references and unresolved gaps. One assessment flagged a possible contradiction between one write on successful commit and zero writes on rollback. Those are different exit conditions, so the flag was a review prompt, not proof of a bug. Structured evidence still needs interpretation.
+
+That is a concrete artifact worth inspecting in a trial. This run does not show that it improved the code or paid for its extra work. Our adapter also forwards full assessment JSON; its token overhead is not a minimum cost inherent to AEE.
+
+Count the work that failed
+
+Two earlier staged pilots were interrupted after integration problems and failed implementation. Their 285 calls and 5,266,572 tokens remain published. Development smokes exposed directory assumptions, unchanged documents behind “done” responses, phase-handoff problems and invalid claim types. The final run had a new freeze and a passing preflight covering every workflow phase. No TinyDB hidden-test result guided those revisions.
+
+The staged study's smokes and interrupted pilots used 10,906,371 tokens, separate from the scored arms. Across both studies and all retained development work, the ledger contains 1,001 model calls and at least 33,983,869 tokens, with three unknown usages. That is a work inventory across different models and tasks, not a pooled efficiency estimate.
+
+Cached input remains in logical token totals and is reported separately from uncached input. Native completion already includes reasoning, so it is not added twice. Failures stay in the cost numerator.
+
+Runtime was measured too. Completed calls in the longer study had native weighted decoding rates of 61.5–63.8 tokens/second across arms. Long prompt processing still constrained the workflow: one recorded call spent about 66 seconds processing its prompt before decoding. These are specific measurements on this rig, not universal speed promises.
+
+Separately, seven measured repetitions after warmup gave the CPU-side AEE + Evaluator pipeline a median of about 661.5 ms for 10 claims and 800.0 ms for 100 claims. The report retains the desktop-activity and timing limitations.
+
+Try it as an engineering experiment
+
+Choose work with requirements that must survive a later change. Write acceptance criteria before generation. Run a capable ordinary-agent baseline alongside Spec Kit, then add AEE. Keep initial results separate from repairs using test feedback. Count planning, implementation, retries and failures.
+
+Look for a requirement preserved, an unsupported assumption made visible or a repair avoided. Check whether that benefit justifies the extra tokens and time. Publish the result even when the hoped-for advantage does not appear.
+
+This was one project trajectory per arm, with dependent milestones, tests written for this study, a quantized local model, fixed limits and an adapted workflow that did not complete successfully in every arm. It is not full Spec Kit validation or evidence of general superiority. The original 180-attempt SWE-bench pilot remains unrun. Public traces retain responses, usage, tools and hashes; full requests and native reasoning remain local, so exact prompt replay is unavailable from the public record.
+
+Disclosure: ElectroHire maintains AEE, the Evaluator extension and this benchmark. Independent replication is needed.
+
+Try Spec Kit + AEE where evidence and changing requirements matter. Measure whether it helps your work, and keep the failures visible.
+
+Results and exact protocol: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03
+Complete work ledger: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local
+Earlier small-task results and repairs: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/gpu-20260917
+Interrupted staged runs: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-01-interrupted and https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-02-interrupted
+Spec Kit: https://github.com/github/spec-kit
+Spec Kit AEE extension: https://github.com/electrohire/spec-kit-aee
+Evaluator extension: https://github.com/electrohire/spec-kit-evaluator
+AEE engine: https://github.com/electrohire/applied-epistemic-engineering
+Benchmark repository and reproduction: https://github.com/electrohire/spec-kit-aee-benchmark
+TinyDB source: https://github.com/msiemens/tinydb/tree/19066e03139e904c24410e23901e4b069d715a2e
+Exercism source: https://github.com/exercism/python/tree/1f6aab8667bf653b10cc3799f94352fcdb749db6
+mini-SWE-agent: https://github.com/SWE-agent/mini-swe-agent
+llama.cpp runtime: https://github.com/ggml-org/llama.cpp/releases/tag/b11026
+Qwen3.6 model: https://huggingface.co/Qwen/Qwen3.6-35B-A3B
+Measured quantization: https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/tree/a483e9e6cbd595906af30beda3187c2663a1118c
+Earlier Qwen2.5 coder: https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF

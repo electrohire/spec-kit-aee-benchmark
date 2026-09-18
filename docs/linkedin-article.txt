@@ -1,18 +1,4 @@
-"""Render copy/paste article numbers directly from the audited local reports."""
-import argparse
-import json
-from pathlib import Path
-
-parser=argparse.ArgumentParser()
-parser.add_argument('results_commit')
-args=parser.parse_args()
-root=Path(__file__).resolve().parents[1]
-report=root/'reports/local/long-horizon-03'
-summary=json.loads((report/'summary.json').read_text())
-setup=json.loads((report/'setup-accounting.json').read_text())
-url='https://github.com/electrohire/spec-kit-aee-benchmark/tree/'+args.results_commit
-labels={'baseline':'Ordinary coding agent','spec_kit':'Spec Kit through our adapter','spec_kit_aee':'Spec Kit + Evaluator + AEE through our adapter'}
-article=f'''Try Spec Kit + AEE on work that changes—and measure the rework
+Try Spec Kit + AEE on work that changes—and measure the rework
 
 The coding task I care about is the one that comes back next week with a new requirement. Earlier promises still have to hold. A passing demo is only the beginning.
 
@@ -44,7 +30,9 @@ Public tests were available during development. Separate hidden cases were withh
 
 No arm passed a complete hidden milestone, before or after the scheduled repair attempts. Recorded logical token totals were:
 
-{chr(10).join(f"- {labels[arm]}: at least {summary['arms'][arm]['known_total_tokens']:,} tokens." for arm in ('baseline','spec_kit','spec_kit_aee'))}
+- Ordinary coding agent: at least 6,943,953 tokens.
+- Spec Kit through our adapter: at least 8,799,193 tokens.
+- Spec Kit + Evaluator + AEE through our adapter: at least 7,076,311 tokens.
 
 Each arm had one call with unknown native usage. Tokens per accepted milestone are undefined because there were no fully accepted milestones; exact usage is also incomplete. Unknown is not zero.
 
@@ -66,7 +54,7 @@ Count the work that failed
 
 Two earlier staged pilots were interrupted after integration problems and failed implementation. Their 285 calls and 5,266,572 tokens remain published. Development smokes exposed directory assumptions, unchanged documents behind “done” responses, phase-handoff problems and invalid claim types. The final run had a new freeze and a passing preflight covering every workflow phase. No TinyDB hidden-test result guided those revisions.
 
-The staged study's smokes and interrupted pilots used {setup['setup_plus_aborted_tokens']:,} tokens, separate from the scored arms. Across both studies and all retained development work, the ledger contains 1,001 model calls and at least 33,983,869 tokens, with three unknown usages. That is a work inventory across different models and tasks, not a pooled efficiency estimate.
+The staged study's smokes and interrupted pilots used 10,906,371 tokens, separate from the scored arms. Across both studies and all retained development work, the ledger contains 1,001 model calls and at least 33,983,869 tokens, with three unknown usages. That is a work inventory across different models and tasks, not a pooled efficiency estimate.
 
 Cached input remains in logical token totals and is reported separately from uncached input. Native completion already includes reasoning, so it is not added twice. Failures stay in the cost numerator.
 
@@ -86,10 +74,10 @@ Disclosure: ElectroHire maintains AEE, the Evaluator extension and this benchmar
 
 Try Spec Kit + AEE where evidence and changing requirements matter. Measure whether it helps your work, and keep the failures visible.
 
-Results and exact protocol: {url}/reports/local/long-horizon-03
-Complete work ledger: {url}/reports/local
-Earlier small-task results and repairs: {url}/reports/local/gpu-20260917
-Interrupted staged runs: {url}/reports/local/long-horizon-01-interrupted and {url}/reports/local/long-horizon-02-interrupted
+Results and exact protocol: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03
+Complete work ledger: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local
+Earlier small-task results and repairs: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/gpu-20260917
+Interrupted staged runs: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-01-interrupted and https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-02-interrupted
 Spec Kit: https://github.com/github/spec-kit
 Spec Kit AEE extension: https://github.com/electrohire/spec-kit-aee
 Evaluator extension: https://github.com/electrohire/spec-kit-evaluator
@@ -102,7 +90,3 @@ llama.cpp runtime: https://github.com/ggml-org/llama.cpp/releases/tag/b11026
 Qwen3.6 model: https://huggingface.co/Qwen/Qwen3.6-35B-A3B
 Measured quantization: https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/tree/a483e9e6cbd595906af30beda3187c2663a1118c
 Earlier Qwen2.5 coder: https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF
-'''
-(root/'docs/linkedin-article.txt').write_text(article,encoding='utf-8')
-(root/'docs/linkedin-article.md').write_text('# '+article,encoding='utf-8')
-print('Wrote Markdown and plain-text article; not published.')

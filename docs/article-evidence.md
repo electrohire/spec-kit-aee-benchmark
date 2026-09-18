@@ -1,0 +1,31 @@
+# Article claim-to-evidence review
+
+The article cites immutable results commit `835573aff15520a580c7c3862b3534b347101e18`.
+The rows below define claim scope and a concrete way to falsify the numerical or
+interpretive statement. Observed results remain distinct from general effectiveness,
+which is not established. Assessment outputs are review prompts, not correctness grades.
+
+| Claim ID | Article statement | Evidence | Boundary and falsification check |
+|---|---|---|---|
+| ART-HW | Dedicated VRAM 12282/16311 MiB; i9-14900F and 64 GB RAM | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03/freeze.json) | Measured host; shared RAM excluded. Compare frozen hardware observations and preflight/runtime-machine.json. |
+| ART-SMALL | Primary 5/6, 2/6, 1/6; repaired 5/6 each; cumulative tokens/correct 957, 23524, 27116 rounded | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/gpu-20260917/comparison.csv) | Six convenience tasks, one run per arm, document adaptation; repairs see the tests. Recompute from coding/results.json and repair/summary.json. |
+| ART-REPAIR | Seven initially failing submissions fixed; three punctuation failures remain | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/gpu-20260917/repair/summary.json) | Sum cases_repaired and remaining_failures across arms; inspect raw failure output. No hidden repair-effect claim. |
+| ART-LONG | 0/3 full hidden milestones per arm; final feature cases 21/24, 5/24, 3/24 | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03/summary.json) | One project, dependent stages, study-authored hidden tests. Recompute case outcomes and strict full-pass rule from results.json. |
+| ART-TOKENS | Known long-study lower bounds 6943953, 8799193, 7076311; one unknown call each | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03/summary.json) | Sum returned native usage; keep missing usage null. No exact-total or finite cost-per-success claim when denominator is zero. |
+| ART-TIMEOUT | All arms timed out; six repairs blocked before inference | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03/results.json) | Check timeout records, repair errors and zero repair model calls. A source grade is separate from workflow completion. |
+| ART-AEE | Three planning assessments returned iterate; implementation assessment/rework not reached | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03/workflow-audit.json) | Count actual assessments and completed phases; do not substitute the successful arithmetic smoke for scored workflow completion. |
+| ART-AEE-REVIEW | R03/R04 conditional-contradiction flag requires interpretation | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03/assessment-interpretation.md) | Claim and finding hashes are linked. Successful commit and exceptional rollback have distinct conditions; this is not counted as a confirmed bug detected. |
+| ART-LEDGER | 1001 calls, at least 33983869 tokens, three unknown usages across all benchmark-model work | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/token-ledger.json) | Recompute scripts/build_local_ledger.py. Development plus scored work across different models is an inventory, not pooled treatment efficiency. |
+| ART-RUNTIME | CPU pipeline medians 661.5/800.0 ms for 10/100 claims | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/gpu-20260917/runtime-final/runtime-summary.json) | Seven measured repetitions after warmup; specific desktop workloads. Recompute from retained runtime.json samples; preserve overlap/background limits. |
+| ART-INFERENCE | Native weighted decode 61.5–63.8 tokens/s; one prompt stage about 66 s | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03/summary.json) | Completed calls with native timing only; inspect baseline/call-081.json for the prompt example. HTTP time is not TTFT. |
+| ART-API | Zero benchmark API expenditure | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03/frozen-inputs/scripts/long_horizon.py) | Loopback-only provider, no external fallback; also see the small-study frozen source and launches. Hardware, energy and controller labor are unpriced. |
+| ART-BOUNDARY | No demonstrated workflow correctness or token-saving advantage in these attempts | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03/README.md) | Depends on ART-SMALL, ART-LONG, ART-TOKENS and ART-TIMEOUT. This is not a claim about general effectiveness or an independently replicated causal estimate. |
+
+Dependencies: ART-BOUNDARY uses the comparison and cost claims above; ART-AEE-REVIEW
+uses the model-extracted claims and actual composed assessment. Hardware observations
+support configuration identity, not performance generalization. Public requests/native
+reasoning are omitted with hashes, so exact prompt replay is not claimed. ElectroHire
+maintains AEE/Evaluator and the study; no external blinded test authorship is claimed.
+
+Repository and model/runtime source URLs are included in both article versions.
+The article is a draft for user publication; it has not been posted to LinkedIn.
