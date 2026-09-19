@@ -174,16 +174,53 @@ class Session:
                   dict(role='user',content=spec)] + list(self.history)
         messages.append(dict(role='user',content=f'Begin the current {phase} phase now. You have at most {limit} actions in this phase, including done. Complete its requested deliverable, then return done.'))
         done=None;errors=[];start=len(self.provider.calls)
+        # Structural termination and staged deliverables apply to claim-bearing
+        # phases only. Measured diagnostics show models ignore final-call nudges
+        # and never emit done, so the final step is done-only (a non-done final
+        # action is not executed; an honest terminal done is recorded instead)
+        # and a mid-phase draft claims object is required. Non-claim phases keep
+        # the previous nudge behavior.
+        draft_step=limit//2 if (claims and limit>=6) else None
+        draft_claims=None
         for step in range(limit):
-            if step==limit-1:
-                messages.append(dict(role='user',content='This is the last allocated action for this phase. Return done now with an honest summary of completed and unresolved work'+(' and the required claims object.' if claims else '. Do not perform another shell action.')))
-            if step==limit-2:
+            if step==limit-1 and claims:
+                messages.append(dict(role='user',content='FINAL STEP: this is the last allocated action for this phase. Only a done action is accepted now. Return {"action":"done","summary":"...","claims":{"schema_version":"1.0","claims":[...]}} with your best current claims object'+(' (finalize your recorded mid-phase draft)' if draft_claims else '')+'. Shell actions are no longer available: any other action ends the phase and the harness records an honest terminal done.'))
+            elif step==limit-1:
+                messages.append(dict(role='user',content='This is the last allocated action for this phase. Return done now with an honest summary of completed and unresolved work. Do not perform another shell action.'))
+            elif draft_step is not None and step==draft_step:
+                messages.append(dict(role='user',content='MID-PHASE CHECKPOINT (action %d of %d). Return a draft claims object now: {"action":"draft","claims":{"schema_version":"1.0","claims":[...]}} with your current best hypothesis claims; they may be refined later, and you may also return done if finished. Shell exploration may continue afterwards, but this step does not accept shell actions.' % (step+1,limit)))
+            elif step==limit-2:
                 messages.append(dict(role='user',content='Two actions remain in this phase. Finish the requested artifact/check now and use done to report its actual state; preserve unresolved issues.'))
             try:
                 text=self.provider.query(messages,phase,stage,deadline)
                 action=json.loads(text)
                 if not isinstance(action,dict):raise ValueError('Action must be an object')
                 messages.append(dict(role='assistant',content=text))
+                if claims and step==limit-1 and action.get('action')!='done':
+                    # Structural termination: the final-call nudge was ignored in
+                    # 15/16 measured diagnostics, so a non-done final action is
+                    # not executed. A draft returned on the final step is adopted
+                    # as the terminal claims; otherwise an honest terminal done
+                    # is synthesized (never inventing grounded claims).
+                    if action.get('action')=='draft':
+                        bundle=action.get('claims')
+                        if isinstance(bundle,dict) and bundle.get('claims'):
+                            from aee.model import Claim
+                            for c in bundle['claims']:Claim.from_dict(c)
+                            draft_claims=bundle
+                    done=self._terminal_done(phase,limit,draft_claims)
+                    errors.append('TerminalActionCoerced: non-done action on the final step was not executed; recorded honest terminal done')
+                    break
+                if draft_step is not None and step==draft_step and action.get('action') not in ('draft','done'):
+                    raise ValueError('Mid-phase draft claims required on this step: return {"action":"draft","claims":{...}} or done')
+                if claims and action.get('action')=='draft':
+                    from aee.model import Claim
+                    bundle=action.get('claims')
+                    if not isinstance(bundle,dict) or not bundle.get('claims'):raise ValueError('Nonempty draft claims required')
+                    for c in bundle['claims']:Claim.from_dict(c)
+                    draft_claims=bundle
+                    messages.append(dict(role='user',content='Draft claims recorded (%d claim(s)). Continue exploration or refinement; your final done must still include the complete claims object.' % len(bundle['claims'])))
+                    continue
                 if action.get('action')=='done':
                     if claims:
                         from aee.model import Claim
@@ -209,6 +246,31 @@ class Session:
         # Bound history promptly as well as by measured tokenization on next call.
         self.store.append('history',dict(phase=phase,stage=stage,messages=len(self.history)))
         return dict(phase=phase,done=done,completed=done is not None,errors=errors,calls=len(self.provider.calls)-start)
+
+    @staticmethod
+    def _terminal_done(phase,limit,draft_claims):
+        """Honest terminal done for a claim-bearing phase that exhausts its
+        action budget without the model returning done. Never invents grounded
+        claims: it either finalizes the recorded mid-phase draft as unrefined,
+        or records a single explicitly unsupported non-termination claim."""
+        from aee.model import Claim
+        if draft_claims is not None:
+            bundle=draft_claims
+            summary=('Phase %s ended without an explicit done: the model did not terminate within its %d allocated actions. '
+                     'The recorded mid-phase draft claims are reported as the terminal claims; treat them as unrefined.' % (phase,limit))
+        else:
+            bundle={"schema_version":"1.0","claims":[{
+                "id":"DIAG-NONTERMINATION-01",
+                "text":("The %s phase exhausted its %d allocated actions without the model returning done. "
+                        "No grounded defect claims were established; every defect claim remains unsupported." % (phase,limit)),
+                "kind":"hypothesis","status":"unsupported","boundary":[phase],
+                "depends_on":[],"conflicts_with":[],
+                "falsification_tests":["Re-run the phase and observe whether done is returned within the action budget"],
+                "source_ref":"phase transcript","uncertainty":"high","evidence":[]}]}
+            summary=('Phase %s exhausted its %d allocated actions without the model returning done. '
+                     'No grounded claims were produced; the terminal claim records this non-termination honestly.' % (phase,limit))
+        for c in bundle['claims']:Claim.from_dict(c)
+        return {"action":"done","summary":summary,"claims":bundle,"terminal_synthesized":True}
 
 
 def do_assessment(session,row,phase,done):

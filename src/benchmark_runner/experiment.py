@@ -65,7 +65,7 @@ def schedule(tasks, repeats, seed):
 def frozen_paths(root):
     paths = ["configs/experiment.yaml", "manifests/tasks.json", "manifests/versions.json",
              "docs/protocol.md", "uv.lock"]
-    for directory in ("configs/arms", "prompts", "src/benchmark_runner", ".specify/scripts/python", ".specify/templates", ".specify/extensions/aee", ".specify/extensions/evaluator"):
+    for directory in ("configs/arms", "prompts", "scripts", "src/benchmark_runner", ".specify/scripts/python", ".specify/templates", ".specify/extensions/aee", ".specify/extensions/evaluator"):
         paths += [p.relative_to(root).as_posix() for p in (root/directory).rglob("*")
                   if p.is_file() and not any(x in p.parts for x in ("__pycache__", "assessments", "results", "reports", "ledger", ".pytest_cache"))]
     return sorted(paths)
