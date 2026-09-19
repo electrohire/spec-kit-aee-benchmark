@@ -1,0 +1,202 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "operations must be list of dicts",
+        "doc_id must be positive int, not bool"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "apply validation and insert/remove logic present in _simulate",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/52/52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+          "source_id": "52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+          "source_quality": "test"
+        }
+      ],
+      "falsification_tests": [],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "milestone 1 R01",
+      "status": "supported",
+      "text": "apply(operations) accepts list of {'op':'insert','document':dict} or {'op':'remove','doc_id':positive_int} ops, returns list of inserted IDs, raises ValueError on unknown/malformed ops",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "rollback must restore pre-batch state"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "_simulate writes to storage during simulation, preventing rollback",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/52/52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+          "source_id": "52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+          "source_quality": "test"
+        }
+      ],
+      "falsification_tests": [
+        "test_public_atomic"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "milestone 1 R02",
+      "status": "unsupported",
+      "text": "Batch application is atomic: validate and apply sequentially, restore complete pre-batch data on any error including missing doc_id",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "deepcopy used for documents"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "deepcopy(op['document']) used in _simulate",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "source_id": "ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "source_quality": "test"
+        }
+      ],
+      "falsification_tests": [],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "milestone 1 R03",
+      "status": "supported",
+      "text": "Inserted data must not alias caller input; mutating operation after apply cannot mutate database",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "bool is int subclass but must be rejected"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "type(ident) is not int correctly rejects bools",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "source_id": "ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "source_quality": "test"
+        }
+      ],
+      "falsification_tests": [],
+      "id": "R04",
+      "kind": "requirement",
+      "source_ref": "milestone 2 R04",
+      "status": "supported",
+      "text": "Reject bool as doc_id; validate operations structurally before committing; raise ValueError for unsupported fields, non-list ops, non-dict documents; accept empty dicts",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "preview must leave db unchanged"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "preview result [1] but len(db)==1 after preview \u2014 preview mutates state",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/52/52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+          "source_id": "52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+          "source_quality": "test"
+        }
+      ],
+      "falsification_tests": [
+        "test_public_preview"
+      ],
+      "id": "R05",
+      "kind": "requirement",
+      "source_ref": "milestone 2 R05",
+      "status": "unsupported",
+      "text": "preview(operations) returns inserted IDs that apply would produce without modifying data or consuming IDs",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "reads fresh from storage each time"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "_simulate reads fresh from self.db.storage.read() each call",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "source_id": "ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "source_quality": "test"
+        }
+      ],
+      "falsification_tests": [],
+      "id": "R06",
+      "kind": "requirement",
+      "source_ref": "milestone 2 R06",
+      "status": "supported",
+      "text": "Direct db.insert operations between wrapper calls must be seen; no stale snapshot caching",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "token must be nonempty string"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "token caching and comparison logic present in apply",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "source_id": "ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "source_quality": "test"
+        }
+      ],
+      "falsification_tests": [],
+      "id": "R07",
+      "kind": "requirement",
+      "source_ref": "milestone 3 R07",
+      "status": "supported",
+      "text": "apply(operations, token=None) supports idempotency token; repeating identical batch/token returns detached copy; different ops with same token raises ValueError; failed batches don't consume token",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "tokens stored in self.tokens dict only"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "tokens stored in self.tokens; preview calls _simulate without token handling",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "source_id": "ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "source_quality": "test"
+        }
+      ],
+      "falsification_tests": [],
+      "id": "R08",
+      "kind": "requirement",
+      "source_ref": "milestone 3 R08",
+      "status": "supported",
+      "text": "Token bookkeeping stays in BatchWriter, never in user documents; preview never records/consumes token",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

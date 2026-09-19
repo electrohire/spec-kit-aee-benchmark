@@ -1,0 +1,1 @@
+{"command": "cd /testbed && python -c \"from tinydb import TinyDB; from tinydb.storages import MemoryStorage; from tinydb.journal import BatchWriter\ndb = TinyDB(storage=MemoryStorage)\nw = BatchWriter(db)\nprint('next_id:', db.table('_default')._next_id)\nprint('storage:', db.storage.read())\n\"", "exit_code": 0, "stderr": "", "stdout": "next_id: None\nstorage: None\n"}

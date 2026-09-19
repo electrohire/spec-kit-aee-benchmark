@@ -1,0 +1,60 @@
+{
+  "budget_debit": 9792,
+  "ended_at": "2026-09-18T05:28:41.712664+00:00",
+  "max_output": 4096,
+  "original_sha256": "5d1beb73ed9108f1987a085d5663b2e44cb75a2d9a345e975e4d5503885ef7d7",
+  "phase": "repair",
+  "preflight_input_tokens": 9436,
+  "removed_history_messages": 0,
+  "request_seconds": 4.327999999979511,
+  "request_sha256": "b3a5ccafdf2bc9191b8f16511882587303dd0875ee6735489c565bda27f33c8f",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# Test: empty tags should remove zero entries\\nc = TaggedCache(3)\\nc.put('a', 1, ['x'])\\nresult = c.invalidate_many([])\\nprint(f'empty tags invalidate_many: {result}')  # should be 0\\n\\n# Test: mode='all' with empty tags should remove zero entries\\nc2 = TaggedCache(3)\\nc2.put('a', 1, ['x'])\\nresult2 = c2.invalidate_many([], mode='all')\\nprint(f'empty tags mode=all: {result2}')  # should be 0\\n\\n# Test: invalid mode raises ValueError\\ntry:\\n    c.invalidate_many(['x'], mode='invalid')\\n    print('ERROR: should have raised ValueError')\\nexcept ValueError as e:\\n    print(f'invalid mode raised ValueError: {e}')\\n\\n# Test: invalid tags (non-string) raises ValueError\\ntry:\\n    c.invalidate_many([1, 2])\\n    print('ERROR: should have raised ValueError')\\nexcept ValueError as e:\\n    print(f'non-string tags raised ValueError: {e}')\\n\\n# Test: bare string as tags raises ValueError\\ntry:\\n    c.invalidate('x')  # this is fine, it's a single tag\\n    c.invalidate_many('x')  # this should raise\\nexcept ValueError as e:\\n    print(f'bare string tags raised ValueError: {e}')\\n\\\"\\n\"}",
+          "reasoning_sha256": "408ab6e7dce5d4287e00dfc6991b5bf990266d4028b2e5fdd9c3c8365490e540",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789709321,
+    "id": "chatcmpl-6dAYw6lHWQtI1eoxlQN9Wj50L85uMFFd",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 8826,
+      "predicted_ms": 3803.053,
+      "predicted_n": 356,
+      "predicted_per_second": 93.34605644465118,
+      "predicted_per_token_ms": 10.712825352112676,
+      "prompt_ms": 497.737,
+      "prompt_n": 610,
+      "prompt_per_second": 1225.5468249296314,
+      "prompt_per_token_ms": 0.8159622950819673
+    },
+    "usage": {
+      "completion_tokens": 356,
+      "prompt_tokens": 9436,
+      "prompt_tokens_details": {
+        "cached_tokens": 8826
+      },
+      "total_tokens": 9792
+    }
+  },
+  "seconds": 4.327999999979511,
+  "stage": 3,
+  "started_at": "2026-09-18T05:28:37.381401+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 356,
+    "prompt_tokens": 9436,
+    "prompt_tokens_details": {
+      "cached_tokens": 8826
+    },
+    "total_tokens": 9792
+  }
+}

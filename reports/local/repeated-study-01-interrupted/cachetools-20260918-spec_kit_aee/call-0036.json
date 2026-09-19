@@ -1,0 +1,60 @@
+{
+  "budget_debit": 28684,
+  "ended_at": "2026-09-18T04:41:09.520132+00:00",
+  "max_output": 4096,
+  "original_sha256": "49443cc79dd70f9e78b5b1ab0229b95b745a9dab895f2ece2ff397aa59f74b65",
+  "phase": "plan",
+  "preflight_input_tokens": 27922,
+  "removed_history_messages": 6,
+  "request_seconds": 20.32800000003772,
+  "request_sha256": "ba33fb509a19d015c58f8626c517ef3d57cf3b2e769a1c486743b62825cb4a2b",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\", \"command\": \"cd /testbed && cat > specs/001-transactions/data-model.md << 'DATAMODEL_EOF'\\n# Data Model: TaggedCache\\n\\n## Entities\\n\\n### TaggedCache\\n\\nA bounded cache that wraps `cachetools.LRUCache` for storage and adds tag-based grouping.\\n\\n**Fields**:\\n- `maxsize` (int): Maximum number of entries allowed. Immutable after construction.\\n- `_cache` (LRUCache): The underlying LRUCache instance providing bounded storage.\\n- `_key_tags` (dict[key, frozenset[str]]): Maps each cached key to its set of tags.\\n- `_tag_keys` (dict[str, set[key]]): Maps each tag to the set of keys carrying it.\\n\\n**Relationships**:\\n- Composes (has-a) `LRUCache` for storage.\\n- `_key_tags` and `_tag_keys` are bidirectional indexes for tag-based operations.\\n\\n**State Transitions**:\\n1. **Construction**: `maxsize` validated \u2192 LRUCache created \u2192 empty indexes.\\n2. **put(key, value, tags)**: Validate tags \u2192 deep-copy value \u2192 store in LRUCache \u2192 update indexes.\\n3. **get(key)**: Look up in LRUCache \u2192 deep-copy value \u2192 refresh LRU recency \u2192 return copy.\\n4. **invalidate(tag)**: Look up tag in `_tag_keys` \u2192 delete each key from LRUCache \u2192 clean indexes \u2192 return count.\\n5. **Eviction**: LRUCache calls `popitem()` \u2192 TaggedCache intercepts \u2192 removes key from indexes \u2192 returns (key, value).\\n\\n**Validation Rules**:\\n- `maxsize`: Must be `int`, not `bool`, must be > 0.\\n- `tags`: Must be iterable of strings; bare `str` rejected; non-string entries rejected.\\n- Validation always occurs before any state mutation.\\n\\n### Tag\\n\\nA string label attached to a cached entry.\\n\\n**Fields**:\\n- `value` (str): The tag string.\\n\\n**Validation Rules**:\\n- Must be a Python `str` instance.\\n- Deduplicated within a single `put()` call.\\n\\n### CachedEntry\\n\\nAn internal representation of a stored key-value pair with tags.\\n\\n**Fields**:\\n- `key` (hashable): The cache key.\\n- `value` (deep copy): The stored value.\\n- `tags` (frozenset[str]): The entry's tags, deduplicated.\\n\\n**Invariants**:\\n- The key exists in `_key_tags` mapping to this frozenset.\\n- Each tag in the frozenset has the key in its `_tag_keys` set.\\n- The value is stored in the underlying LRUCache.\\n\\n## Index Consistency\\n\\nThe two tag indexes must always be consistent:\\n- `key in _key_tags[k]` iff `k in _tag_keys[t]` for all `t` in `_key_tags[k]`.\\n- On `put(key, value, tags)`: remove key from old tag sets, add to new tag sets.\\n- On eviction: remove key from all tag sets.\\n- On `invalidate(tag)`: remove tag's keys from `_tag_keys`, clear empty tag entries.\\nDATAMODEL_EOF\"}",
+          "reasoning_sha256": "3b8b7aa0a31a600892829e32b626bb9aeeb8b863d8145872b882241dddab4d71",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789706469,
+    "id": "chatcmpl-0QQheIHfamDwsuV6qnPmpu9wwZqmgUYK",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 2775,
+      "predicted_ms": 9134.122,
+      "predicted_n": 762,
+      "predicted_per_second": 83.31397369117688,
+      "predicted_per_token_ms": 12.002788436268068,
+      "prompt_ms": 10735.435,
+      "prompt_n": 25147,
+      "prompt_per_second": 2342.429533595984,
+      "prompt_per_token_ms": 0.4269071857478029
+    },
+    "usage": {
+      "completion_tokens": 762,
+      "prompt_tokens": 27922,
+      "prompt_tokens_details": {
+        "cached_tokens": 2775
+      },
+      "total_tokens": 28684
+    }
+  },
+  "seconds": 20.32800000003772,
+  "stage": 1,
+  "started_at": "2026-09-18T04:40:49.188864+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 762,
+    "prompt_tokens": 27922,
+    "prompt_tokens_details": {
+      "cached_tokens": 2775
+    },
+    "total_tokens": 28684
+  }
+}

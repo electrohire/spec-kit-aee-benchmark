@@ -1,5 +1,6 @@
-<!-- Sync impact: unfilled template -> 1.0.0. Five principles adopted.
-Added experiment constraints and development gates. No template changes required. -->
+<!-- Sync impact: 1.1.0 -> 1.2.0. Record the user-authorized staged-project
+supplement and its reporting boundaries. This amendment follows the measured
+run; the exact 1.1.0 constitution in its freeze remains preserved. -->
 # ElectroHire Benchmark Constitution
 
 ## Core Principles
@@ -33,16 +34,28 @@ grading MUST run separately after solver completion. The tutorial is illustrativ
 Use the 20-task, three-repeat, three-arm pilot. The combined treatment cannot
 isolate Evaluator from AEE. Publish no private source material or credentials.
 No LinkedIn posting, leaderboard submission or PR merge is authorized.
+The user-authorized GPU handoff also permits a separately frozen free-local
+Exercism exploration. It MUST NOT be presented as execution of that pilot or
+full Spec Kit integration. Report document adaptation, convenience selection,
+generic controller claims, public-test contamination and every failure.
+
+The user also authorized a separately frozen, free-local staged TinyDB comparison
+with supplemental repair loops. It MUST retain failed and interrupted work, unknown
+usage, actual workflow-completion limits, and every adaptation. Dependent milestones
+MUST NOT be presented as independent tasks. The measured run03 freeze retains
+version 1.1.0; this amendment records scope and does not rewrite that historical freeze.
+
+The user now authorizes a fresh two-project/two-seed staged comparison and a separate identical-start repair diagnostic with clean controls. Calibrate full workflows and runtime limits before freezing. Unknown native usage remains null, but conservative maximum-call reservations may enforce budgets without terminating every later stage. Preserve previous failed runs; do not update the email or article based on hoped-for improvements.
 
 ## Development Workflow
 Apply constitution, specification, plan, tasks, implementation and convergence
 in sequence. Run AEE explicitly after specification, plan, tasks and implementation;
 compose Evaluator results and record routing. Optional hook registration is not
-execution evidence. Use a draft PR and record actual checks and unresolved gaps.
+execution evidence. Use reviewable PRs and record actual checks and unresolved gaps. The user requested that completed PRs be marked ready for review.
 
 ## Governance
 Amend through a reviewed commit with rationale and semantic version increment.
 Every PR MUST report compliance and deviations. The provided implementation brief
 defines scope; this constitution constrains evidence and execution, not user intent.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-17 | **Last Amended**: 2026-09-17
+**Version**: 1.3.0 | **Ratified**: 2026-09-17 | **Last Amended**: 2026-09-17

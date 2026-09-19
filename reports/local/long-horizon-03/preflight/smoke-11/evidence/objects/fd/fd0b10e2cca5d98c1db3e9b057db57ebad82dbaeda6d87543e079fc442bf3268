@@ -1,0 +1,731 @@
+{
+  "schema_version": "1.0",
+  "methodology_version": "1.0",
+  "project": "aee-assessment-gfkq9bun",
+  "phase": "after_implement",
+  "outcome": "gather_evidence",
+  "summary": "Assessed 7 claim(s); found 17 failure mode(s); 7 claim(s) below the 0.70 confidence threshold.",
+  "created_at": "2026-09-17T22:33:40.202259Z",
+  "claims": [
+    {
+      "id": "R01a",
+      "text": "/testbed/smoke.py exists as a standalone Python module",
+      "kind": "requirement",
+      "status": "supported",
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "shell_evidence_19f5c3ab",
+          "kind": "asserted",
+          "direction": "supports",
+          "source_quality": "model",
+          "description": "Unverified model assertion: smoke.py exists at /testbed/smoke.py (486 bytes)",
+          "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "/testbed/smoke.py does not exist"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "user requirement R01",
+      "domain": "",
+      "confidence": 0.3775,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R01a-EVIDENCE-GROUNDING-CHALL",
+          "claim_id": "R01a",
+          "challenge": "Evidence-grounding challenge",
+          "breakpoint": "Claim is labeled supported without observed supporting evidence",
+          "severity": "high",
+          "category": "unsupported_claim",
+          "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+          "resolved": false
+        },
+        {
+          "id": "AEE-R01a-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R01a",
+          "challenge": "Independent-evidence challenge",
+          "breakpoint": "Only model self-attestation supports the claim",
+          "severity": "high",
+          "category": "unverified_assertion",
+          "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R01b",
+      "text": "add(a, b) returns a + b for integer inputs",
+      "kind": "requirement",
+      "status": "supported",
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "depends_on": [
+        "R01a"
+      ],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "shell_evidence_19f5c3ab",
+          "kind": "asserted",
+          "direction": "supports",
+          "source_quality": "model",
+          "description": "Unverified model assertion: 15 tests passed including test_add_positive_integers(add(2,3)==5), test_add_zeros(add(0,0)==0), test_add_negative_integers(add(-5,-3)==-8)",
+          "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "add(2,3) returns 6",
+        "add(-1,-2) returns 3",
+        "add(0,0) returns 1"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "user requirement R01",
+      "domain": "",
+      "confidence": 0.3775,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R01b-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R01b",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        },
+        {
+          "id": "AEE-R01b-EVIDENCE-GROUNDING-CHALL",
+          "claim_id": "R01b",
+          "challenge": "Evidence-grounding challenge",
+          "breakpoint": "Claim is labeled supported without observed supporting evidence",
+          "severity": "high",
+          "category": "unsupported_claim",
+          "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+          "resolved": false
+        },
+        {
+          "id": "AEE-R01b-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R01b",
+          "challenge": "Independent-evidence challenge",
+          "breakpoint": "Only model self-attestation supports the claim",
+          "severity": "high",
+          "category": "unverified_assertion",
+          "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R02a",
+      "text": "add(a, b) supports float inputs and returns correct sum",
+      "kind": "requirement",
+      "status": "supported",
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "depends_on": [
+        "R01a"
+      ],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "shell_evidence_19f5c3ab",
+          "kind": "asserted",
+          "direction": "supports",
+          "source_quality": "model",
+          "description": "Unverified model assertion: Tests test_add_floats(add(1.5,2.5)==4.0), test_add_floats_precision(math.isclose(add(0.1,0.2),0.3)), test_add_mixed_int_float(add(1,2.5)==3.5) all passed",
+          "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "add(1.5,2.5) returns 3.0",
+        "add(0.1,0.2) returns 0.2"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "user requirement R02",
+      "domain": "",
+      "confidence": 0.3775,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R02a-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R02a",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        },
+        {
+          "id": "AEE-R02a-EVIDENCE-GROUNDING-CHALL",
+          "claim_id": "R02a",
+          "challenge": "Evidence-grounding challenge",
+          "breakpoint": "Claim is labeled supported without observed supporting evidence",
+          "severity": "high",
+          "category": "unsupported_claim",
+          "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+          "resolved": false
+        },
+        {
+          "id": "AEE-R02a-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R02a",
+          "challenge": "Independent-evidence challenge",
+          "breakpoint": "Only model self-attestation supports the claim",
+          "severity": "high",
+          "category": "unverified_assertion",
+          "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R02b",
+      "text": "smoke.py does not import or modify any TinyDB source files",
+      "kind": "requirement",
+      "status": "supported",
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "depends_on": [
+        "R01a"
+      ],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "shell_evidence_d6054ba5",
+          "kind": "asserted",
+          "direction": "supports",
+          "source_quality": "model",
+          "description": "Unverified model assertion: grep -i 'tinydb' /testbed/smoke.py returned no matches - no TinyDB references found",
+          "source_id": "d6054ba5d498c25b92f73082db6bbed945c70aa6f406e36d18e47966bb8f53a8",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "smoke.py contains 'import tinydb'",
+        "smoke.py modifies any file in tinydb/ directory"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "user requirement R02",
+      "domain": "",
+      "confidence": 0.3775,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R02b-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R02b",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false
+        },
+        {
+          "id": "AEE-R02b-EVIDENCE-GROUNDING-CHALL",
+          "claim_id": "R02b",
+          "challenge": "Evidence-grounding challenge",
+          "breakpoint": "Claim is labeled supported without observed supporting evidence",
+          "severity": "high",
+          "category": "unsupported_claim",
+          "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+          "resolved": false
+        },
+        {
+          "id": "AEE-R02b-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R02b",
+          "challenge": "Independent-evidence challenge",
+          "breakpoint": "Only model self-attestation supports the claim",
+          "severity": "high",
+          "category": "unverified_assertion",
+          "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R03a",
+      "text": "test suite exists at /testbed/tests/test_smoke.py",
+      "kind": "requirement",
+      "status": "supported",
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "depends_on": [
+        "R01a"
+      ],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "shell_evidence_19f5c3ab",
+          "kind": "asserted",
+          "direction": "supports",
+          "source_quality": "model",
+          "description": "Unverified model assertion: test_smoke.py exists (3042 bytes) and pytest collected 15 tests successfully",
+          "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "/testbed/tests/test_smoke.py does not exist",
+        "pytest cannot discover tests in test_smoke.py"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "user requirement R03",
+      "domain": "",
+      "confidence": 0.3775,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R03a-EVIDENCE-GROUNDING-CHALL",
+          "claim_id": "R03a",
+          "challenge": "Evidence-grounding challenge",
+          "breakpoint": "Claim is labeled supported without observed supporting evidence",
+          "severity": "high",
+          "category": "unsupported_claim",
+          "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+          "resolved": false
+        },
+        {
+          "id": "AEE-R03a-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R03a",
+          "challenge": "Independent-evidence challenge",
+          "breakpoint": "Only model self-attestation supports the claim",
+          "severity": "high",
+          "category": "unverified_assertion",
+          "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R03b",
+      "text": "test suite includes tests for negative values",
+      "kind": "requirement",
+      "status": "supported",
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "depends_on": [
+        "R03a",
+        "R01b"
+      ],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "shell_evidence_19f5c3ab",
+          "kind": "asserted",
+          "direction": "supports",
+          "source_quality": "model",
+          "description": "Unverified model assertion: Tests test_add_negative_integers(add(-5,-3)==-8), test_add_negative_and_positive(add(-1,1)==0), test_add_negative_float(add(-0.5,0.5)==0.0), test_add_negative_float(add(-1.5,-2.5)==-4.0) all passed",
+          "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "test_smoke.py contains no test with negative numbers",
+        "add(-1,-2) test does not exist"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "user requirement R03",
+      "domain": "",
+      "confidence": 0.3775,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R03b-EVIDENCE-GROUNDING-CHALL",
+          "claim_id": "R03b",
+          "challenge": "Evidence-grounding challenge",
+          "breakpoint": "Claim is labeled supported without observed supporting evidence",
+          "severity": "high",
+          "category": "unsupported_claim",
+          "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+          "resolved": false
+        },
+        {
+          "id": "AEE-R03b-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R03b",
+          "challenge": "Independent-evidence challenge",
+          "breakpoint": "Only model self-attestation supports the claim",
+          "severity": "high",
+          "category": "unverified_assertion",
+          "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "R03c",
+      "text": "test suite includes tests for zero values",
+      "kind": "requirement",
+      "status": "supported",
+      "boundary": [
+        "001-transactions specification"
+      ],
+      "depends_on": [
+        "R03a",
+        "R01b"
+      ],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "shell_evidence_19f5c3ab",
+          "kind": "asserted",
+          "direction": "supports",
+          "source_quality": "model",
+          "description": "Unverified model assertion: Tests test_add_zeros(add(0,0)==0), test_add_positive_and_zero(add(10,0)==10), test_add_zero_and_negative(add(0,-7)==-7), test_add_zero_float(add(0.0,0.0)==0.0) all passed",
+          "source_id": "19f5c3ab39fe0b4f654e8d72c6edbb4aef0a362590a36017dd32dd66c15c3617",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "test_smoke.py contains no test with zero",
+        "add(0,0) test does not exist"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "user requirement R03",
+      "domain": "",
+      "confidence": 0.3775,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R03c-EVIDENCE-GROUNDING-CHALL",
+          "claim_id": "R03c",
+          "challenge": "Evidence-grounding challenge",
+          "breakpoint": "Claim is labeled supported without observed supporting evidence",
+          "severity": "high",
+          "category": "unsupported_claim",
+          "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+          "resolved": false
+        },
+        {
+          "id": "AEE-R03c-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R03c",
+          "challenge": "Independent-evidence challenge",
+          "breakpoint": "Only model self-attestation supports the claim",
+          "severity": "high",
+          "category": "unverified_assertion",
+          "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    }
+  ],
+  "scores": {
+    "R01a": {
+      "claim_id": "R01a",
+      "direct_score": 0.3775,
+      "propagated_score": 0.3775,
+      "band": "low",
+      "components": {
+        "evidence": 0.05,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No observed supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R01b": {
+      "claim_id": "R01b",
+      "direct_score": 0.3775,
+      "propagated_score": 0.3775,
+      "band": "low",
+      "components": {
+        "evidence": 0.05,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No observed supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R02a": {
+      "claim_id": "R02a",
+      "direct_score": 0.3775,
+      "propagated_score": 0.3775,
+      "band": "low",
+      "components": {
+        "evidence": 0.05,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No observed supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R02b": {
+      "claim_id": "R02b",
+      "direct_score": 0.3775,
+      "propagated_score": 0.3775,
+      "band": "low",
+      "components": {
+        "evidence": 0.05,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No observed supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R03a": {
+      "claim_id": "R03a",
+      "direct_score": 0.3775,
+      "propagated_score": 0.3775,
+      "band": "low",
+      "components": {
+        "evidence": 0.05,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No observed supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R03b": {
+      "claim_id": "R03b",
+      "direct_score": 0.3775,
+      "propagated_score": 0.3775,
+      "band": "low",
+      "components": {
+        "evidence": 0.05,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No observed supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    },
+    "R03c": {
+      "claim_id": "R03c",
+      "direct_score": 0.3775,
+      "propagated_score": 0.3775,
+      "band": "low",
+      "components": {
+        "evidence": 0.05,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No observed supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    }
+  },
+  "recoveries": [
+    {
+      "failure_id": "AEE-R01a-EVIDENCE-GROUNDING-CHALL",
+      "claim_id": "R01a",
+      "strategy": "gather_evidence",
+      "action": "Attach independently inspectable evidence or downgrade the status.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R01a-INDEPENDENT-EVIDENCE-CHA",
+      "claim_id": "R01a",
+      "strategy": "gather_evidence",
+      "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R01b-EVIDENCE-GROUNDING-CHALL",
+      "claim_id": "R01b",
+      "strategy": "gather_evidence",
+      "action": "Attach independently inspectable evidence or downgrade the status.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R01b-INDEPENDENT-EVIDENCE-CHA",
+      "claim_id": "R01b",
+      "strategy": "gather_evidence",
+      "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R02a-EVIDENCE-GROUNDING-CHALL",
+      "claim_id": "R02a",
+      "strategy": "gather_evidence",
+      "action": "Attach independently inspectable evidence or downgrade the status.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R02a-INDEPENDENT-EVIDENCE-CHA",
+      "claim_id": "R02a",
+      "strategy": "gather_evidence",
+      "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R02b-EVIDENCE-GROUNDING-CHALL",
+      "claim_id": "R02b",
+      "strategy": "gather_evidence",
+      "action": "Attach independently inspectable evidence or downgrade the status.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R02b-INDEPENDENT-EVIDENCE-CHA",
+      "claim_id": "R02b",
+      "strategy": "gather_evidence",
+      "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R03a-EVIDENCE-GROUNDING-CHALL",
+      "claim_id": "R03a",
+      "strategy": "gather_evidence",
+      "action": "Attach independently inspectable evidence or downgrade the status.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R03a-INDEPENDENT-EVIDENCE-CHA",
+      "claim_id": "R03a",
+      "strategy": "gather_evidence",
+      "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R03b-EVIDENCE-GROUNDING-CHALL",
+      "claim_id": "R03b",
+      "strategy": "gather_evidence",
+      "action": "Attach independently inspectable evidence or downgrade the status.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R03b-INDEPENDENT-EVIDENCE-CHA",
+      "claim_id": "R03b",
+      "strategy": "gather_evidence",
+      "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R03c-EVIDENCE-GROUNDING-CHALL",
+      "claim_id": "R03c",
+      "strategy": "gather_evidence",
+      "action": "Attach independently inspectable evidence or downgrade the status.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R03c-INDEPENDENT-EVIDENCE-CHA",
+      "claim_id": "R03c",
+      "strategy": "gather_evidence",
+      "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R01b-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R01b",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R02a-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R02a",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R02b-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R02b",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    }
+  ],
+  "metadata": {
+    "threshold": 0.7,
+    "input": "C:/Users/trist/Development/AXIOVEX/spec-kit-aee-benchmark/artifacts/tmp-gpu/aee-assessment-gfkq9bun/claims.json"
+  }
+}

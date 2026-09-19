@@ -1,0 +1,60 @@
+{
+  "budget_debit": 29356,
+  "ended_at": "2026-09-18T02:55:26.797832+00:00",
+  "max_output": 4096,
+  "original_sha256": "4fca942b4b35fa8651d6793f73c83b7c5d3fa2729f48862bd0d9e9c646a598be",
+  "phase": "plan",
+  "preflight_input_tokens": 28261,
+  "removed_history_messages": 4,
+  "request_seconds": 24.54599999997299,
+  "request_sha256": "1373939319576ec9fad1dbdd12b1614bd730c18aa102581932dd806907fe0ce8",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\": \"cat > /testbed/specs/001-transactions/contracts/tagged_api.md << 'CONTRACT_EOF'\\n# API Contract: TaggedCache\\n\\n**Date**: 2026-09-18\\n\\n## Module: `cachetools.tagged`\\n\\n### Class: `TaggedCache`\\n\\n```python\\nclass TaggedCache(LRUCache):\\n    \\\"\\\"\\\"Tag-aware bounded cache with deep-copy semantics.\\\"\\\"\\\"\\n    \\n    def __init__(self, maxsize: int, getsizeof: Callable[[Any], int] | None = None) -> None:\\n        \\\"\\\"\\\"Initialize TaggedCache.\\n        \\n        Args:\\n            maxsize: Maximum number of entries. Must be a positive int (not bool).\\n            getsizeof: Optional callable returning size of each value. Defaults to 1.\\n            \\n        Raises:\\n            ValueError: If maxsize is not a positive integer or is a bool.\\n        \\\"\\\"\\\"\\n        ...\\n    \\n    def put(self, key: Any, value: Any, tags: Iterable[str] = ()) -> None:\\n        \\\"\\\"\\\"Insert or replace a cache entry with tags.\\n        \\n        Args:\\n            key: Hashable cache key.\\n            value: Value to cache (deep-copied on storage).\\n            tags: Finite iterable of string tags. Must not be a bare string.\\n                  Duplicate tags are deduplicated.\\n                  \\n        Raises:\\n            ValueError: If tags is a bare string, or any tag element is not a string.\\n                        Raised before any state mutation.\\n        \\\"\\\"\\\"\\n        ...\\n    \\n    def get(self, key: Any) -> Any:\\n        \\\"\\\"\\\"Retrieve a deep copy of the cached value.\\n        \\n        Args:\\n            key: Cache key to look up.\\n            \\n        Returns:\\n            Deep copy of the stored value.\\n            \\n        Raises:\\n            KeyError: If the key is not in the cache.\\n        \\\"\\\"\\\"\\n        ...\\n    \\n    def invalidate(self, tag: str) -> int:\\n        \\\"\\\"\\\"Remove all entries carrying the specified tag.\\n        \\n        Args:\\n            tag: Tag string to invalidate.\\n            \\n        Returns:\\n            Number of entries removed.\\n        \\\"\\\"\\\"\\n        ...\\n    \\n    @property\\n    def maxsize(self) -> int:\\n        \\\"\\\"\\\"The maximum size of the cache.\\\"\\\"\\\"\\n        ...\\n    \\n    @maxsize.setter\\n    def maxsize(self, value: int) -> None:\\n        \\\"\\\"\\\"Set the maximum size.\\n        \\n        Raises:\\n            ValueError: If value is not a positive integer or is a bool.\\n        \\\"\\\"\\\"\\n        ...\\n    \\n    # Inherited from LRUCache/Cache (behavior preserved):\\n    # __len__, __contains__, __delitem__, pop, setdefault, currsize, getsizeof\\n```\\n\\n### Method: `put(key, value, tags=())`\\n\\n**Preconditions**:\\n- `key` must be hashable (enforced by dict-based storage).\\n- `tags` must be an iterable (not a bare string) of strings.\\n\\n**Postconditions**:\\n- Entry is stored with deep-copied value and deduplicated tags.\\n- If key existed, old tags are removed from tag index before new tags are added.\\n- LRU recency is updated (most recently put key is at end of order).\\n\\n**Failure modes**:\\n- `ValueError` raised for invalid tags before any state change.\\n- If `getsizeof(value) > maxsize`, raises `ValueError(\\\"value too large\\\")` from base class.\\n\\n### Method: `get(key)`\\n\\n**Preconditions**:\\n- Key exists in cache.\\n\\n**Postconditions**:\\n- Returns a deep copy of the stored value.\\n- LRU recency is updated (key moved to end of order).\\n\\n**Failure modes**:\\n- `KeyError` raised if key does not exist.\\n\\n### Method: `invalidate(tag)`\\n\\n**Preconditions**:\\n- `tag` is a string.\\n\\n**Postconditions**:\\n- All entries carrying `tag` are removed from cache, tag index, and tag mapping.\\n- Returns the count of removed entries.\\n- Entries not carrying `tag` are unaffected.\\n\\n**Failure modes**:\\n- Returns 0 if no entries carry the tag.\\n\\n### Property: `maxsize`\\n\\n**Getter**:\\n- Returns the current maximum size (positive int, not bool).\\n\\n**Setter**:\\n- Validates input is a positive int and not bool.\\n- On invalid input, raises `ValueError` and leaves old value unchanged.\\nCONTRACT_EOF\"}",
+          "reasoning_sha256": "668e4425db16ad4ea05d3f8e055543f30407178a5c8196207dc1bf7a2563cc3b",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789700126,
+    "id": "chatcmpl-HLjAauXXGfJ1BG8oWE339IO7WyuidfQ4",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 2775,
+      "predicted_ms": 13326.145,
+      "predicted_n": 1095,
+      "predicted_per_second": 82.09425906741971,
+      "predicted_per_token_ms": 12.1811197440585,
+      "prompt_ms": 10810.758,
+      "prompt_n": 25486,
+      "prompt_per_second": 2357.4665162239316,
+      "prompt_per_token_ms": 0.4241841795495566
+    },
+    "usage": {
+      "completion_tokens": 1095,
+      "prompt_tokens": 28261,
+      "prompt_tokens_details": {
+        "cached_tokens": 2775
+      },
+      "total_tokens": 29356
+    }
+  },
+  "seconds": 24.54599999997299,
+  "stage": 1,
+  "started_at": "2026-09-18T02:55:02.244152+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1095,
+    "prompt_tokens": 28261,
+    "prompt_tokens_details": {
+      "cached_tokens": 2775
+    },
+    "total_tokens": 29356
+  }
+}

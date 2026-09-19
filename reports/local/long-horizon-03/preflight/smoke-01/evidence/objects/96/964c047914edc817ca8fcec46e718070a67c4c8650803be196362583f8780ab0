@@ -1,0 +1,1 @@
+{"command": "cat > /testbed/smoke.py << 'EOF'\ndef add(a, b):\n    \"\"\"Return the sum of two numbers.\"\"\"\n    return a + b\n\n\nif __name__ == \"__main__\":\n    # Simple self-test\n    assert add(2, 3) == 5\n    assert add(-1, 1) == 0\n    assert add(0, 0) == 0\n    print(\"All smoke tests passed.\")\nEOF\n", "exit_code": 0, "stderr": "", "stdout": ""}

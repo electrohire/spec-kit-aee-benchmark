@@ -1,0 +1,1 @@
+{"command": "PYTHONPATH=src:. python3 -c \"\nfrom cachetools.tagged import TaggedCache\nc = TaggedCache(3)\nc.put('a', 1, ['x'])\nprint('popitem:', c.popitem())\nprint('after popitem:', dict(c))\n\"", "exit_code": 0, "stderr": "", "stdout": "popitem: ('a', 1)\nafter popitem: {}\n"}

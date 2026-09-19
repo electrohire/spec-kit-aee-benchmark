@@ -1,0 +1,60 @@
+{
+  "budget_debit": 10884,
+  "ended_at": "2026-09-18T05:04:26.610263+00:00",
+  "max_output": 4096,
+  "original_sha256": "9d8a59a85cb98a9db322075953f88aac617509a8f9f86fc1a0a4c04fe317b99a",
+  "phase": "repair",
+  "preflight_input_tokens": 10637,
+  "removed_history_messages": 0,
+  "request_seconds": 3.047000000020489,
+  "request_sha256": "e0ac649659ba1d67e5ad726c0b020342eb6467b908f4dcf3c4c8673a641cdd27",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# Test: resize triggers expiry properly\\nnow = [0]\\nc = TaggedCache(3, timer=lambda: now[0])\\nc.put('a', 1, ttl=2)  # expires at 2\\nc.put('b', 2, ttl=5)  # expires at 5\\nc.put('c', 3, ttl=10) # expires at 10\\nprint('After 3 puts, len =', len(c))\\nnow[0] = 3  # 'a' expired\\nprint('After time=3, len =', len(c))\\nprint('cache keys before resize:', list(c._cache))\\nc.resize(2)\\nprint('After resize(2), len =', len(c))\\nprint('cache keys after resize:', list(c._cache))\\n# resize should have expired 'a' and kept 'b','c' (2 entries fit in size 2)\\n\\\"\\n\"}",
+          "reasoning_sha256": "408ab6e7dce5d4287e00dfc6991b5bf990266d4028b2e5fdd9c3c8365490e540",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789707866,
+    "id": "chatcmpl-gj4dfB42FtACDNiJtyhNce2KvSkedA4D",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 10200,
+      "predicted_ms": 2639.92,
+      "predicted_n": 247,
+      "predicted_per_second": 93.18464195884724,
+      "predicted_per_token_ms": 10.73138211382114,
+      "prompt_ms": 391.569,
+      "prompt_n": 437,
+      "prompt_per_second": 1116.0229742395336,
+      "prompt_per_token_ms": 0.8960389016018308
+    },
+    "usage": {
+      "completion_tokens": 247,
+      "prompt_tokens": 10637,
+      "prompt_tokens_details": {
+        "cached_tokens": 10200
+      },
+      "total_tokens": 10884
+    }
+  },
+  "seconds": 3.047000000020489,
+  "stage": 3,
+  "started_at": "2026-09-18T05:04:23.554186+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 247,
+    "prompt_tokens": 10637,
+    "prompt_tokens_details": {
+      "cached_tokens": 10200
+    },
+    "total_tokens": 10884
+  }
+}

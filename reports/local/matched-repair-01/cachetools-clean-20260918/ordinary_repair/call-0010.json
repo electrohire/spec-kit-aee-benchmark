@@ -1,0 +1,60 @@
+{
+  "budget_debit": 14283,
+  "ended_at": "2026-09-18T04:56:11.580920+00:00",
+  "max_output": 4096,
+  "original_sha256": "fac39ed3435b74f55107c3afb84be659a8690f0229e0cfb82fd08c469b6cebd5",
+  "phase": "repair",
+  "preflight_input_tokens": 12225,
+  "removed_history_messages": 0,
+  "request_seconds": 23.42199999996228,
+  "request_sha256": "85c5c7346ead1c563786d3a34587b6f6af788887ed5af98a595b1caf0f6437d3",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c '\\nfrom cachetools.tagged import TaggedCache\\n\\n# R04: invalidate_many - correct expectations\\nc6 = TaggedCache(4)\\nc6.put(\\\"a\\\", 1, [\\\"x\\\"])\\nc6.put(\\\"b\\\", 2, [\\\"x\\\",\\\"y\\\"])\\nc6.put(\\\"c\\\", 3, [\\\"y\\\"])\\nc6.put(\\\"d\\\", 4, [\\\"z\\\"])\\n# mode=any: union of entries with x OR z => a(x), b(x), d(z) = 3\\nremoved = c6.invalidate_many([\\\"x\\\",\\\"z\\\"], mode=\\\"any\\\")\\nassert removed == 3, f\\\"Expected 3, got {removed}\\\"\\nassert len(c6) == 1\\nprint(\\\"PASS: invalidate_many any mode\\\")\\n\\n# mode=all: entries with BOTH x AND y => only a\\nremoved2 = c6.invalidate_many([\\\"x\\\",\\\"y\\\"], mode=\\\"all\\\")\\nassert removed2 == 0  # a already gone, b has x but not y\\nprint(\\\"PASS: invalidate_many all mode (no match)\\\")\\n\\n# Fresh test for all mode\\nc7 = TaggedCache(3)\\nc7.put(\\\"a\\\", 1, [\\\"x\\\",\\\"y\\\"])\\nc7.put(\\\"b\\\", 2, [\\\"x\\\"])\\nc7.put(\\\"c\\\", 3, [\\\"y\\\"])\\nremoved = c7.invalidate_many([\\\"x\\\",\\\"y\\\"], mode=\\\"all\\\")\\nassert removed == 1, f\\\"Expected 1, got {removed}\\\"\\nassert len(c7) == 2\\nprint(\\\"PASS: invalidate_many all mode\\\")\\n\\n# Empty tags\\nc8 = TaggedCache(3)\\nc8.put(\\\"a\\\", 1, [\\\"x\\\"])\\nassert c8.invalidate_many([]) == 0\\nassert len(c8) == 1\\nprint(\\\"PASS: empty tags removes zero\\\")\\n\\n# Invalid mode\\nc9 = TaggedCache(3)\\ntry:\\n    c9.invalidate_many([\\\"x\\\"], mode=\\\"invalid\\\")\\n    print(\\\"FAIL: invalid mode accepted\\\")\\nexcept ValueError:\\n    print(\\\"PASS: invalid mode rejected\\\")\\n\\n# R05: resize\\nc10 = TaggedCache(3)\\nc10.put(\\\"a\\\", 1, [\\\"x\\\"])\\nc10.put(\\\"b\\\", 2, [\\\"y\\\"])\\nc10.put(\\\"c\\\", 3, [\\\"z\\\"])\\nc10.resize(2)\\nassert c10.maxsize == 2\\nassert len(c10) == 2\\nprint(\\\"PASS: resize down\\\")\\n\\nc10.resize(5)\\nassert c10.maxsize == 5\\nassert len(c10) == 2\\nprint(\\\"PASS: resize up\\\")\\n\\n# Invalid resize preserves state\\ntry:\\n    c10.resize(0)\\nexcept ValueError:\\n    pass\\nassert c10.maxsize == 5\\nassert len(c10) == 2\\nprint(\\\"PASS: invalid resize preserves state\\\")\\n\\n# R06: Tags as generators\\nc11 = TaggedCache(3)\\nc11.put(\\\"a\\\", 1, tags=(t for t in [\\\"x\\\",\\\"y\\\"]))\\nassert c11.get(\\\"a\\\") == 1\\nprint(\\\"PASS: tags as generator\\\")\\n\\n# R07: TTL\\nnow = [0]\\nc12 = TaggedCache(2, timer=lambda: now[0])\\nc12.put(\\\"a\\\", 1, ttl=2)\\nassert c12.get(\\\"a\\\") == 1\\nnow[0] = 2\\ntry:\\n    c12.get(\\\"a\\\")\\n    print(\\\"FAIL: expired key not raised\\\")\\nexcept KeyError:\\n    print(\\\"PASS: TTL expiry at boundary\\\")\\n\\n# TTL=0 immediately expired\\nc13 = TaggedCache(2, timer=lambda: 0)\\nc13.put(\\\"a\\\", 1, ttl=0)\\nassert len(c13) == 0\\nprint(\\\"PASS: TTL=0 immediately expired\\\")\\n\\n# Invalid TTL\\ntry:\\n    c13.put(\\\"a\\\", 1, ttl=-1)\\n    print(\\\"FAIL: negative TTL accepted\\\")\\nexcept ValueError:\\n    print(\\\"PASS: negative TTL rejected\\\")\\n\\ntry:\\n    c13.put(\\\"a\\\", 1, ttl=True)\\n    print(\\\"FAIL: bool TTL accepted\\\")\\nexcept ValueError:\\n    print(\\\"PASS: bool TTL rejected\\\")\\n\\ntry:\\n    c13.put(\\\"a\\\", 1, ttl=float(\\\"inf\\\"))\\n    print(\\\"FAIL: inf TTL accepted\\\")\\nexcept ValueError:\\n    print(\\\"PASS: inf TTL rejected\\\")\\n\\n# R08: Expired entries removed before operations\\nnow2 = [0]\\nc14 = TaggedCache(3, timer=lambda: now2[0])\\nc14.put(\\\"a\\\", 1, [\\\"x\\\"], ttl=1)\\nc14.put(\\\"b\\\", 2, [\\\"y\\\"], ttl=2)\\nnow2[0] = 1\\nassert len(c14) == 1, f\\\"Expected 1, got {len(c14)}\\\"\\nprint(\\\"PASS: len only counts live entries\\\")\\n\\nc14.put(\\\"c\\\", 3, [\\\"z\\\"], ttl=10)\\nassert len(c14) == 2\\nprint(\\\"PASS: put expires old entries\\\")\\n\\nassert c14.invalidate(\\\"x\\\") == 0\\nassert c14.invalidate(\\\"y\\\") == 1\\nprint(\\\"PASS: invalidate counts only live entries\\\")\\n\\n# Overwriting replaces expiry\\nc15 = TaggedCache(2, timer=lambda: 0)\\nc15.put(\\\"a\\\", 1, ttl=10)\\nc15.put(\\\"a\\\", 2, ttl=1)\\nnow2[0] = 1\\ntry:\\n    c15.get(\\\"a\\\")\\n    print(\\\"FAIL: replaced entry not expired\\\")\\nexcept KeyError:\\n    print(\\\"PASS: overwrite replaces expiry\\\")\\n\\n# Invalid TTL leaves state unchanged\\nc16 = TaggedCache(2, timer=lambda: 0)\\nc16.put(\\\"a\\\", 1, ttl=10)\\ntry:\\n    c16.put(\\\"a\\\", 2, ttl=-1)\\nexcept ValueError:\\n    pass\\nassert c16.get(\\\"a\\\") == 1\\nprint(\\\"PASS: invalid TTL leaves state unchanged\\\")\\n\\n# Deep copy on get\\nc17 = TaggedCache(2)\\nval = {\\\"nested\\\": [1,2,3]}\\nc17.put(\\\"a\\\", val, tags=[\\\"x\\\"])\\nresult = c17.get(\\\"a\\\")\\nresult[\\\"nested\\\"].append(4)\\nassert c17.get(\\\"a\\\")[\\\"nested\\\"] == [1,2,3]\\nprint(\\\"PASS: deep copy on get\\\")\\n\\n# Deep copy on put\\nc18 = TaggedCache(2)\\nval2 = [1,2,3]\\nc18.put(\\\"a\\\", val2)\\nval2.append(4)\\nassert c18.get(\\\"a\\\") == [1,2,3]\\nprint(\\\"PASS: deep copy on put\\\")\\n\\n# Reject bare string\\nc19 = TaggedCache(2)\\ntry:\\n    c19.put(\\\"a\\\", 1, tags=\\\"bad\\\")\\n    print(\\\"FAIL: bare string accepted\\\")\\nexcept ValueError:\\n    print(\\\"PASS: bare string rejected\\\")\\n\\n# Reject nonstring\\nc20 = TaggedCache(2)\\ntry:\\n    c20.put(\\\"a\\\", 1, tags=[1,2])\\n    print(\\\"FAIL: non-string tags accepted\\\")\\nexcept ValueError:\\n    print(\\\"PASS: non-string tags rejected\\\")\\n\\n# Invalid input leaves state unchanged\\nc21 = TaggedCache(3)\\nc21.put(\\\"a\\\", 1, tags=[\\\"x\\\"])\\ntry:\\n    c21.put(\\\"b\\\", 2, tags=\\\"bad\\\")\\nexcept ValueError:\\n    pass\\nassert c21.get(\\\"a\\\") == 1\\nprint(\\\"PASS: invalid input leaves state unchanged\\\")\\n\\nprint(\\\"\\\\n=== ALL REQUIREMENTS VERIFIED ===\\\")\\n'\\n\"}",
+          "reasoning_sha256": "6258d50be647fb9a93329d9f3f6988db61c41b1f214b0c8cb822d283e09db53a",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789707371,
+    "id": "chatcmpl-lZxy5c8T7lJypCWLeAB2Qr9V4rEl1foN",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 10219,
+      "predicted_ms": 22355.597,
+      "predicted_n": 2058,
+      "predicted_per_second": 92.01275188490828,
+      "predicted_per_token_ms": 10.868058823529413,
+      "prompt_ms": 1049.278,
+      "prompt_n": 2006,
+      "prompt_per_second": 1911.7907742276118,
+      "prompt_per_token_ms": 0.5230697906281156
+    },
+    "usage": {
+      "completion_tokens": 2058,
+      "prompt_tokens": 12225,
+      "prompt_tokens_details": {
+        "cached_tokens": 10219
+      },
+      "total_tokens": 14283
+    }
+  },
+  "seconds": 23.42199999996228,
+  "stage": 3,
+  "started_at": "2026-09-18T04:55:48.154371+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2058,
+    "prompt_tokens": 12225,
+    "prompt_tokens_details": {
+      "cached_tokens": 10219
+    },
+    "total_tokens": 14283
+  }
+}

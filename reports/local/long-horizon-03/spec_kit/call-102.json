@@ -1,0 +1,58 @@
+{
+  "ended_at": "2026-09-17T23:02:28.026369+00:00",
+  "original_sha256": "6830909d8cc686b204c3a1912b04872bad932ccdc7ee5ff52547a0880392e138",
+  "phase": "specify",
+  "preflight_input_tokens": 124793,
+  "removed_history_messages": 10,
+  "request_omission": "Full request retained locally. Omitted native reasoning prevents exact reconstruction from the public response/tool trace.",
+  "request_sha256": "b717cbbafbf707da786294c6a810d155e3256f851e7869528b1eb3c1dc1fc3ba",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\", \"command\": \"cd /testbed && python -m pytest -c /dev/null tests acceptance_public.py -v 2>&1 | tail -20\"}",
+          "reasoning_sha256": "e035730d6d283c4766431e9f622424aa77868b443053481130d5c95e464a4dee",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789686148,
+    "id": "chatcmpl-Rgfo3AtIPCpiQ7Kftq5Lh7h4PwpIZcUb",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 6258,
+      "predicted_ms": 1081.932,
+      "predicted_n": 57,
+      "predicted_per_second": 51.75926028622871,
+      "predicted_per_token_ms": 19.320214285714286,
+      "prompt_ms": 63535.168,
+      "prompt_n": 118535,
+      "prompt_per_second": 1865.6596611187053,
+      "prompt_per_token_ms": 0.5360034420213439
+    },
+    "usage": {
+      "completion_tokens": 57,
+      "prompt_tokens": 124793,
+      "prompt_tokens_details": {
+        "cached_tokens": 6258
+      },
+      "total_tokens": 124850
+    }
+  },
+  "seconds": 65.56299999999464,
+  "stage": 2,
+  "started_at": "2026-09-17T23:01:22.461622+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 57,
+    "prompt_tokens": 124793,
+    "prompt_tokens_details": {
+      "cached_tokens": 6258
+    },
+    "total_tokens": 124850
+  }
+}

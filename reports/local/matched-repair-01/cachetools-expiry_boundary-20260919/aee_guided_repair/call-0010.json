@@ -1,0 +1,60 @@
+{
+  "budget_debit": 10148,
+  "ended_at": "2026-09-18T05:05:51.163639+00:00",
+  "max_output": 4096,
+  "original_sha256": "85f424c5d413b5dfb0ee5f156bea3704c3004794478a7ba532102e9fd72ffb4b",
+  "phase": "repair",
+  "preflight_input_tokens": 9628,
+  "removed_history_messages": 0,
+  "request_seconds": 6.110000000044238,
+  "request_sha256": "c2d7e42e48cecd09e0fdc2f396207bde1b025ff6fefdce2d99dc9fe79340da85",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{ \"action\": \"shell\", \"command\": \"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# Test R06: generators consumed once\\nc = TaggedCache(3)\\nc.put('a', 1, (x for x in ['x']))\\nassert c.get('a') == 1\\n\\n# Test R07: ttl=0 is immediately expired\\nc2 = TaggedCache(2, timer=lambda: 0)\\nc2.put('a', 1, ttl=0)\\ntry:\\n    c2.get('a')\\n    print('FAIL: should have raised KeyError for ttl=0')\\nexcept KeyError:\\n    print('PASS: ttl=0 immediately expired')\\n\\n# Test R07: invalid ttl raises ValueError\\nc3 = TaggedCache(2)\\ntry:\\n    c3.put('a', 1, ttl=-1)\\n    print('FAIL: should have raised ValueError for negative ttl')\\nexcept ValueError:\\n    print('PASS: negative ttl raises ValueError')\\n\\ntry:\\n    c3.put('a', 1, ttl=True)\\n    print('FAIL: should have raised ValueError for bool ttl')\\nexcept ValueError:\\n    print('PASS: bool ttl raises ValueError')\\n\\n# Test R03: invalid replacement leaves old state\\nc4 = TaggedCache(2)\\nc4.put('a', 1, ['x'])\\ntry:\\n    c4.resize(-1)\\nexcept ValueError:\\n    pass\\nassert len(c4) == 1\\nassert c4.get('a') == 1\\nprint('PASS: invalid resize preserves state')\\n\\n# Test R04: empty tags removes zero\\nassert c4.invalidate_many([]) == 0\\nprint('PASS: empty tags removes zero')\\n\\n# Test invalid mode\\ntry:\\n    c4.invalidate_many(['x'], mode='invalid')\\n    print('FAIL: should have raised ValueError for invalid mode')\\nexcept ValueError:\\n    print('PASS: invalid mode raises ValueError')\\n\\nprint('All edge case tests passed')\\n\\\"\\n\" }",
+          "reasoning_sha256": "785c63d974d06e01b9b65ad870ea3ae5362fa739c5c047b50d504c4d30cb088d",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789707951,
+    "id": "chatcmpl-vNefjMCeThFma4VZ1vlnjD7tcAoYKjxp",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 8714,
+      "predicted_ms": 5482.791,
+      "predicted_n": 520,
+      "predicted_per_second": 94.65981832975213,
+      "predicted_per_token_ms": 10.56414450867052,
+      "prompt_ms": 612.94,
+      "prompt_n": 914,
+      "prompt_per_second": 1491.1736874734884,
+      "prompt_per_token_ms": 0.6706126914660833
+    },
+    "usage": {
+      "completion_tokens": 520,
+      "prompt_tokens": 9628,
+      "prompt_tokens_details": {
+        "cached_tokens": 8714
+      },
+      "total_tokens": 10148
+    }
+  },
+  "seconds": 6.110000000044238,
+  "stage": 3,
+  "started_at": "2026-09-18T05:05:45.037129+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 520,
+    "prompt_tokens": 9628,
+    "prompt_tokens_details": {
+      "cached_tokens": 8714
+    },
+    "total_tokens": 10148
+  }
+}

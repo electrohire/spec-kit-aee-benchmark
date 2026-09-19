@@ -1,0 +1,69 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "specify"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [],
+      "falsification_tests": [
+        "c.put('a',1,'x') should raise ValueError and leave cache empty",
+        "c.put('a',1,['x',42]) should raise ValueError and leave cache empty",
+        "c.get('missing') should raise KeyError",
+        "c.get('a') after c.put('a',[1,2]) should return a deep copy independent of original"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R01",
+      "status": "unsupported",
+      "text": "put(key,value,tags=()) inserts/replaces an entry. get(key) returns a detached deep copy or raises KeyError for missing keys. Values are copied on input too. Keys are hashable. Tags must be a finite iterable of strings; deduplicate tags. Reject a bare string as tags and nonstring tag entries with ValueError, before changing existing state.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specify"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "c.put('a',1,['x']);c.put('b',2,['x']);c.invalidate('x') returns 2",
+        "c.put('a',1,['old']);c.put('a',2,['new']);c.invalidate('old') returns 0",
+        "After LRU eviction of key 'a' tagged 'x', c.invalidate('x') returns 0",
+        "c.get('a') after eviction of other entry must refresh recency of 'a'"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R02",
+      "status": "unsupported",
+      "text": "invalidate(tag) removes exactly currently cached entries carrying that tag and returns the number removed. Replacing a key removes its old tag memberships. LRU eviction must not leave stale memberships affecting later reuse of the same key. get refreshes LRU recency. len(cache) counts live entries.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specify"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "TaggedCache(maxsize=True) should raise ValueError",
+        "c.maxsize = -1 should raise ValueError and leave maxsize unchanged",
+        "TaggedCache(0) should raise ValueError",
+        "Each value costs 1 capacity slot regardless of object size"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R03",
+      "status": "unsupported",
+      "text": "maxsize must be a positive integer, excluding bool. Invalid replacement input must leave the old value/tags/recency unchanged. Values cost one capacity slot regardless of object size.",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

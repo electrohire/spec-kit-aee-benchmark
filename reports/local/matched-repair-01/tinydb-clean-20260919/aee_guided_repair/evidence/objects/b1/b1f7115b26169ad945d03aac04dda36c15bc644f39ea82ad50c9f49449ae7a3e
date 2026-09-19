@@ -1,0 +1,1 @@
+{"command": "cd /testbed && python -c \"\nfrom tinydb import TinyDB\nfrom tinydb.storages import MemoryStorage\ndb = TinyDB(storage=MemoryStorage)\ntable = db.table('_default')\nprint('_next_id:', table._next_id)\nprint('storage:', db.storage.read())\n\"", "exit_code": 0, "stderr": "", "stdout": "_next_id: None\nstorage: None\n"}

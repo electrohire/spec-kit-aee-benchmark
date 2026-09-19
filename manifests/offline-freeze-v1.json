@@ -1,0 +1,1860 @@
+{
+  "config": {
+    "attempt_cap_usd": null,
+    "budget_authorization": null,
+    "currency": "USD",
+    "global_cap_usd": null,
+    "grader_smoke_verified": false,
+    "max_calls": 80,
+    "max_input_tokens": null,
+    "max_output_tokens": 4096,
+    "max_recovery_rounds": 2,
+    "model": null,
+    "price_snapshot_id": null,
+    "price_source": null,
+    "prices": {
+      "cached_input": null,
+      "input": null,
+      "output": null
+    },
+    "purpose": "pilot",
+    "real_smoke_verified": false,
+    "reasoning_effort": null,
+    "repeats": 3,
+    "reservation_bound_verified": false,
+    "runner": "mini-swe-agent-2.4.6-instrumented",
+    "schema_version": 1,
+    "seed": 20260917,
+    "service_tier": "default",
+    "solver_image_audit_verified": false,
+    "temperature": null,
+    "timeout_seconds": 1800,
+    "token_cap": null
+  },
+  "files": {
+    ".specify/extensions/aee/.github/CODEOWNERS": "c38814eee4b47a74abdf559cb626391190329b5e4072788dd02252f2e3c8a651",
+    ".specify/extensions/aee/.github/ISSUE_TEMPLATE/bug_report.yml": "1b5b46a10883ca435753103e07d9f058bb4a13e510b0fb6d2b3e0183b957a5de",
+    ".specify/extensions/aee/.github/ISSUE_TEMPLATE/config.yml": "6c8d8befa5f22ba6bf24f5f7ce9cacfcca6f76ff59939903fc767a9e28027fbd",
+    ".specify/extensions/aee/.github/ISSUE_TEMPLATE/feature_request.yml": "94aa2483db514ce2dceefea78c3c6b4cc95ee5079e9443e1509f8b145e2e9b9f",
+    ".specify/extensions/aee/.github/dependabot.yml": "6a643b657f5fd2623cdab8e8b71bf3813eaaa213f477021a065bb1b3290acaf6",
+    ".specify/extensions/aee/.github/workflows/codeql.yml": "aad88aa219622f74e8c217f3ad35371c6a10b1f123e156d6ff9bdd27c788f96d",
+    ".specify/extensions/aee/.github/workflows/dependency-review.yml": "34855fcb3ed2746e7a6dddf129742c3e5934438cbbb332b3c8d7caec2441613f",
+    ".specify/extensions/aee/.github/workflows/scorecard.yml": "8f59113ecb7f70a11b9fdd73dfd7c02b03812495bc8960dc305645a844702b4d",
+    ".specify/extensions/aee/.github/workflows/test.yml": "f89f717ce385631c579600f8b27fbb3ab83230d793d9975387ab6725c3a1a22f",
+    ".specify/extensions/aee/.gitignore": "ef14e2432f4a91f014ab3f415d16f47bf0ca0cc3db624fb190c749a9548d9958",
+    ".specify/extensions/aee/CHANGELOG.md": "942eac849beac205460911597cf1f00b6c0821eccb64c05cd268e0329977e6bc",
+    ".specify/extensions/aee/CONTRIBUTING.md": "af1c190e0c5396ff5423dcc29bd71dbbe7022ecf841822c0fd592df2ad51e32f",
+    ".specify/extensions/aee/LICENSE": "b61058528a9ebf54d245c3688eb1865b0a34c780f676c45c2a6b9b7f9bdb14a1",
+    ".specify/extensions/aee/README.md": "29385fda61d85b00de0a7ccacbf32aef5d45e21136c304b58e6d870ab44fcfcb",
+    ".specify/extensions/aee/SECURITY.md": "2e0a17ff4b008f0c48339d90cf2ca3990200995faed468385099533e7a92556c",
+    ".specify/extensions/aee/aee-config.yml": "d57c89c4588aea95f197923777eb368a0e59f3a1606b89c8bba307223e39756c",
+    ".specify/extensions/aee/commands/speckit.aee.assess.md": "83f02d086b0b3eea17872e3919d954091f68c6565d159b45eb208116c4d5a3d9",
+    ".specify/extensions/aee/commands/speckit.aee.challenge.md": "9ddd18354175182ee0fd48ac9e639a725c1b1980a7b4582cafa5c9d568ad2de4",
+    ".specify/extensions/aee/commands/speckit.aee.gaps.md": "3877b77ffa08e1becbbd5e6228c8ced5ba959b20cb71437dcc5efca06924e9e5",
+    ".specify/extensions/aee/commands/speckit.aee.gate.md": "790a209a57496c9186857e4fc0977f58c0ee9fb14886251d654417ca8aed12b7",
+    ".specify/extensions/aee/commands/speckit.aee.trace.md": "eddd1591c0641d609aba03641ac7ddc32e08f841c229a0a6626532bb8258ec09",
+    ".specify/extensions/aee/commands/speckit.aee.verify.md": "44de604784c3908b80cdd4169f2024057cf517eeb1d946df04936623eae0fc83",
+    ".specify/extensions/aee/extension.yml": "1e96d5c9bfe7e2b584ef4fd08f0612fbbfca0ffc4c554e099429b139ff9ed0ca",
+    ".specify/extensions/aee/requirements/dev.in": "f2dee44966a75f06346b80214d5f821d0fac7f67e2e230fad6c1480b71cac679",
+    ".specify/extensions/aee/requirements/dev.txt": "773d38013af6ac001df948da223d31f5f4b38303267ea58233a699e1c91de10b",
+    ".specify/extensions/aee/scripts/python/run_aee.py": "9c5897f5f79baba391aa7e1abb4b22e4735c2a3723cd0e8e44905fe145e80f07",
+    ".specify/extensions/aee/templates/aee-claims.json": "92c1021cba3a3881b2a87cc1295fedfdce9f2a7108dc159120ca76db30514ebb",
+    ".specify/extensions/aee/templates/aee-config.template.yml": "d57c89c4588aea95f197923777eb368a0e59f3a1606b89c8bba307223e39756c",
+    ".specify/extensions/aee/tests/test_fuzz.py": "c945f4a2a296a383a2e9dcd44fd60993f9cbeb7dad6d9e5e5d366cf8742c6978",
+    ".specify/extensions/aee/tests/test_runner.py": "5a61de0b964e40901e548bf3b21070ce052e7728c76df2f3c3058b4c8882d34c",
+    ".specify/extensions/evaluator/.github/workflows/codeql.yml": "293774e7b59bb7d0c2e237879fc81c7c360b8cfb698a294f36c3aa9e841d6651",
+    ".specify/extensions/evaluator/.github/workflows/test.yml": "68148a9f4888ef82fcbc086244c3130fe51985dda235e1c86a52da2418207190",
+    ".specify/extensions/evaluator/.gitignore": "b144b9ec120464979d20249a0d93b7cf1a308792d4ddd8f562a5ad20aee14e69",
+    ".specify/extensions/evaluator/CHANGELOG.md": "3577889b40ca591091219a9aff4b7eb21ce73541a329ed69d6760bac8413e091",
+    ".specify/extensions/evaluator/LICENSE": "72dbc587daa64cde1c4b72bbe82461087702d074b41dd35eb664c8c58ccc2f46",
+    ".specify/extensions/evaluator/README.md": "d656cd1c145e6d0b3e321d1c90164985408bdfb19adab9896c98e5b0fc3cc09c",
+    ".specify/extensions/evaluator/commands/speckit.evaluator.compose.md": "422b59d0db216632d398e2bd4b85b4bd963d7bb6859900185cb5b21dc068b5dc",
+    ".specify/extensions/evaluator/commands/speckit.evaluator.report.md": "d24d66f19f235483c23f2331e86470445582d7f69496bcf61a91c32951c95023",
+    ".specify/extensions/evaluator/commands/speckit.evaluator.route.md": "79bc244ea1d712b16f056f515eb762ebf773d4f2b2d03566fadd1dbc0fdcd870",
+    ".specify/extensions/evaluator/commands/speckit.evaluator.run.md": "d8bce0b1020b8769bf42c6eee72927b092647c5ce009e7e89889ecd816c83b32",
+    ".specify/extensions/evaluator/examples/demo.py": "32fac29e8ae3ed5460ed5ee8df58c92b4c72274f350e27f5b67f3a3dd11f59dc",
+    ".specify/extensions/evaluator/extension.yml": "c00fb63c4bf7b852f368d1e937a42b4d52e8439df9909096a987186f4718d577",
+    ".specify/extensions/evaluator/schemas/evaluator-result.schema.json": "96d56e90abda67e60ea872a831116ce592657e270db54f90b616caf346273f3d",
+    ".specify/extensions/evaluator/scripts/bash/compose-results.sh": "7ff1b9d8a79512f2046341d180bbd24095f18c53ae9ac5818a74f07d0eb60734",
+    ".specify/extensions/evaluator/scripts/powershell/compose-results.ps1": "7845624917dba5709bf113a083ee348c1822e7a9f9a2032df5e3d4401e042ac0",
+    ".specify/extensions/evaluator/scripts/python/compose_results.py": "59a96a7710adbe028da96d7368e58259084f1c6e003c49b51a4ae501f90a9033",
+    ".specify/extensions/evaluator/templates/evaluator-result-template.json": "63b4a9f6f07edf23c567e3e2e7900243e1e567974dc674db13e217cfe749996b",
+    ".specify/scripts/python/check_prerequisites.py": "f3ef2b79a1d0dba1651a21b84e34ead4991fcbe4d07a1da29a4a8339706bf965",
+    ".specify/scripts/python/common.py": "fa8c8726ef1b805b68a21c993d5cf934b36230fe752a1734f4578629204aac93",
+    ".specify/scripts/python/create_new_feature.py": "89ecff00e1db79a15547aa6480dc37f6bce977f79cc9d8ab7174ae1086d1a64e",
+    ".specify/scripts/python/resolve_template.py": "2e80e872519609b21480e16f1b1ad7620e4469b4faf88af1ecefa8f778c768a0",
+    ".specify/scripts/python/setup_plan.py": "272d106ce8e5325dd6f4e741f6a5efd1bb0290f415b448fecc8d877d606d321b",
+    ".specify/scripts/python/setup_tasks.py": "9133333ba0971723d165d5575493404b43ec8d227e96ddbd3a9f63ad2cf174fe",
+    ".specify/templates/checklist-template.md": "70bbc48e884fab372ffb09e83e78ff983e28b69caebf8cd9964a02b6836683ac",
+    ".specify/templates/constitution-template.md": "ce7549540fa45543cca797a150201d868e64495fdff39dc38246fb17bd4024b3",
+    ".specify/templates/plan-template.md": "a828ad6206526574ab3fc99be6d0154588cb1c9774c5919d71b81ab5b2dbffa0",
+    ".specify/templates/spec-template.md": "3945437fc35cd30a5b2bf7beea680337c3516826d3efa5a6b92c4a7eca1ba28e",
+    ".specify/templates/tasks-template.md": "b0f527d41e546af0c31903e04f9b20965b6b497b573792198f663a64ce128863",
+    "configs/arms/baseline.json": "cffb4c47f604c994dc3534d56b5fd855d3bb4338d09e5dd6dc13bebf8a72797e",
+    "configs/arms/spec_kit.json": "b82ff0f684459ad033f7bd8b0e90db285905da25b5f3c822063bf8e6cc60561e",
+    "configs/arms/spec_kit_aee.json": "4f973d705aad0982ff2ce5f33a3c1d9e30bb1f83dae1bcb13a84be6dc3f8fa92",
+    "configs/experiment.yaml": "62f27118f426e6266aca7c530a4308d80d88278681e84d3d60b14dcd0fc435c4",
+    "docs/protocol.md": "e271ea8d918bd199ed90792b396a85543ece900944bff34a7000bd82cbfa8099",
+    "manifests/tasks.json": "858f784bc606a39a40d5a3057ce28ebccc9494fdd613f89311f5398dcbe362f3",
+    "manifests/versions.json": "4a5f9528b56f6410a0503aa1c725623ca32ba23cb77f125d6e5b370c1cf23286",
+    "prompts/adapter.md": "af0cf5bff1434a916082fc43a6e0a13e9355be877fab992bfe11ba87a882aaeb",
+    "prompts/common.md": "c3712405e37f405fda01ca1abdb5dc2a598253f885c1184e00247cd6b12fb5fa",
+    "prompts/skills/speckit-constitution.md": "b4457c9d192422f2d6eda71d015a154bc89e8d71abfb5870915a6a1c39cb1e10",
+    "prompts/skills/speckit-converge.md": "6f93da84f2a0ec14aea867770f21b20a7844cc7d1dd3e6c18c47a3301dddfbfc",
+    "prompts/skills/speckit-implement.md": "82489dde5dddaf4e7da12ab80152a9dbb7ff5a59a932b776a4b1cb8b002023cb",
+    "prompts/skills/speckit-plan.md": "e33f014769e8e5d57d5327becfabb9bba80e567d0792506bdd78b6bd2c799157",
+    "prompts/skills/speckit-specify.md": "88d7fab201de66297f16b6c271a418a0f2c198d714456dfd707e623348ec47c1",
+    "prompts/skills/speckit-tasks.md": "cb22535dd2ad764857b8d41909e60c7148af7e1871036b4f49fdd66383a6e4a9",
+    "src/benchmark_runner/__init__.py": "073b98e6a7413e1581cb9318468686e15513bd27dfe1f63b38dde097e45ce929",
+    "src/benchmark_runner/accounting.py": "6c7b8d202a565679e0239302f9822e1957446e242138c867cb0028739eb0671b",
+    "src/benchmark_runner/cli.py": "5a195fef59ae68a58f82ea728f65ea70b52f21042bdf5448db00f95c4ed345e9",
+    "src/benchmark_runner/experiment.py": "093cc4eb9025e8a36166c6b649c5cf9bd3de38a716249638023f3a11dd55d312",
+    "src/benchmark_runner/grading.py": "d908be1602d821a76310f70a621007fda0032d34f73640e82cda4147f0e07b7f",
+    "src/benchmark_runner/isolation.py": "2f93157ea8663ea7ae57d3ffad559cbfc98ec85d8a27773a31c4644f1ed8fb9d",
+    "src/benchmark_runner/provider.py": "0f752b18c071f2a38f25bcc3607bff188fc72d79eb7e0a10a926a4863fc664bc",
+    "src/benchmark_runner/reporting.py": "0899c31971614cfbfacc5eecc8a124dd0f46122c34dec169e158bf7bb42d1aa6",
+    "src/benchmark_runner/runner.py": "de824b8b3e0e3b3a9355353e67feb4446db6233adc55b04e214b969b40502b53",
+    "src/benchmark_runner/schema.py": "500e5685231ce71553768e61ac78851a85709eea6335ae05be5da6f7186eadc7",
+    "src/benchmark_runner/store.py": "acdcf67efc40aae5f82454d6040f1709a3aef21dd034696bde7583e43e9a66ea",
+    "src/benchmark_runner/triage.py": "d77be11a22cf44170ca9d3cd4c4fbb5346d3283190928b1d2c0f3cd06bf77360",
+    "src/benchmark_runner/workflow.py": "bd290013fc372fd786e15a1295fca16c34b95938bd772c927725d34e971bf582",
+    "uv.lock": "80553e492798b5b0441e61f386c19c5eec0e6f4bd1b3c8bb4361db361581acfe"
+  },
+  "freeze_id": "f7040ac517a6980888197fc923407a3a0b51caffc63535be75f4129985d32b69",
+  "schedule": [
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "psf__requests-6028--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "psf__requests-6028"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "sympy__sympy-15349--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "sympy__sympy-15349"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "mwaskom__seaborn-3187--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "mwaskom__seaborn-3187"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "astropy__astropy-13453--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "astropy__astropy-13453"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "psf__requests-1142--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "psf__requests-1142"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pallets__flask-5014--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "pallets__flask-5014"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pytest-dev__pytest-7490--baseline--r2",
+      "repeat": 2,
+      "task_id": "pytest-dev__pytest-7490"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "sphinx-doc__sphinx-8475--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "sphinx-doc__sphinx-8475"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pytest-dev__pytest-7490--baseline--r1",
+      "repeat": 1,
+      "task_id": "pytest-dev__pytest-7490"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "mwaskom__seaborn-3187--baseline--r3",
+      "repeat": 3,
+      "task_id": "mwaskom__seaborn-3187"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pallets__flask-5014--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "pallets__flask-5014"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "psf__requests-1142--baseline--r2",
+      "repeat": 2,
+      "task_id": "psf__requests-1142"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "sympy__sympy-15349--baseline--r1",
+      "repeat": 1,
+      "task_id": "sympy__sympy-15349"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pytest-dev__pytest-7490--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "pytest-dev__pytest-7490"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pylint-dev__pylint-4661--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "pylint-dev__pylint-4661"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "mwaskom__seaborn-3187--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "mwaskom__seaborn-3187"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "astropy__astropy-13453--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "astropy__astropy-13453"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "django__django-15957--baseline--r2",
+      "repeat": 2,
+      "task_id": "django__django-15957"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "sphinx-doc__sphinx-8475--baseline--r2",
+      "repeat": 2,
+      "task_id": "sphinx-doc__sphinx-8475"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "astropy__astropy-13453--baseline--r2",
+      "repeat": 2,
+      "task_id": "astropy__astropy-13453"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "scikit-learn__scikit-learn-25931--baseline--r3",
+      "repeat": 3,
+      "task_id": "scikit-learn__scikit-learn-25931"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "sympy__sympy-15349--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "sympy__sympy-15349"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "matplotlib__matplotlib-25311--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "matplotlib__matplotlib-25311"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "psf__requests-6028--baseline--r2",
+      "repeat": 2,
+      "task_id": "psf__requests-6028"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "sphinx-doc__sphinx-8475--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "sphinx-doc__sphinx-8475"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "matplotlib__matplotlib-23314--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "matplotlib__matplotlib-23314"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "sphinx-doc__sphinx-8475--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "sphinx-doc__sphinx-8475"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "scikit-learn__scikit-learn-25931--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "scikit-learn__scikit-learn-25931"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "sympy__sympy-23262--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "sympy__sympy-23262"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "mwaskom__seaborn-3187--baseline--r2",
+      "repeat": 2,
+      "task_id": "mwaskom__seaborn-3187"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pylint-dev__pylint-4661--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "pylint-dev__pylint-4661"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "django__django-15863--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "django__django-15863"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pytest-dev__pytest-7490--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "pytest-dev__pytest-7490"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "mwaskom__seaborn-3187--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "mwaskom__seaborn-3187"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "sphinx-doc__sphinx-7748--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "sphinx-doc__sphinx-7748"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pallets__flask-5014--baseline--r2",
+      "repeat": 2,
+      "task_id": "pallets__flask-5014"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pytest-dev__pytest-7490--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "pytest-dev__pytest-7490"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "sympy__sympy-15349--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "sympy__sympy-15349"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "scikit-learn__scikit-learn-25931--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "scikit-learn__scikit-learn-25931"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pallets__flask-5014--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "pallets__flask-5014"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "sphinx-doc__sphinx-8475--baseline--r3",
+      "repeat": 3,
+      "task_id": "sphinx-doc__sphinx-8475"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "sphinx-doc__sphinx-7748--baseline--r3",
+      "repeat": 3,
+      "task_id": "sphinx-doc__sphinx-7748"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pydata__xarray-4075--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "pydata__xarray-4075"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "psf__requests-6028--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "psf__requests-6028"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "psf__requests-6028--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "psf__requests-6028"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "sympy__sympy-15349--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "sympy__sympy-15349"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pylint-dev__pylint-4661--baseline--r3",
+      "repeat": 3,
+      "task_id": "pylint-dev__pylint-4661"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "matplotlib__matplotlib-25311--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "matplotlib__matplotlib-25311"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pylint-dev__pylint-4661--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "pylint-dev__pylint-4661"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "scikit-learn__scikit-learn-25931--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "scikit-learn__scikit-learn-25931"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pytest-dev__pytest-5262--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "pytest-dev__pytest-5262"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "astropy__astropy-7671--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "astropy__astropy-7671"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "matplotlib__matplotlib-23314--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "matplotlib__matplotlib-23314"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "astropy__astropy-13453--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "astropy__astropy-13453"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "scikit-learn__scikit-learn-25931--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "scikit-learn__scikit-learn-25931"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "mwaskom__seaborn-3187--baseline--r1",
+      "repeat": 1,
+      "task_id": "mwaskom__seaborn-3187"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "scikit-learn__scikit-learn-9288--baseline--r1",
+      "repeat": 1,
+      "task_id": "scikit-learn__scikit-learn-9288"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "astropy__astropy-7671--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "astropy__astropy-7671"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "scikit-learn__scikit-learn-9288--baseline--r3",
+      "repeat": 3,
+      "task_id": "scikit-learn__scikit-learn-9288"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pylint-dev__pylint-4661--baseline--r1",
+      "repeat": 1,
+      "task_id": "pylint-dev__pylint-4661"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pallets__flask-5014--baseline--r3",
+      "repeat": 3,
+      "task_id": "pallets__flask-5014"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pytest-dev__pytest-7490--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "pytest-dev__pytest-7490"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "matplotlib__matplotlib-23314--baseline--r1",
+      "repeat": 1,
+      "task_id": "matplotlib__matplotlib-23314"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "astropy__astropy-13453--baseline--r3",
+      "repeat": 3,
+      "task_id": "astropy__astropy-13453"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "django__django-15957--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "django__django-15957"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pytest-dev__pytest-5262--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "pytest-dev__pytest-5262"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "sympy__sympy-15349--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "sympy__sympy-15349"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pydata__xarray-4075--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "pydata__xarray-4075"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "psf__requests-6028--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "psf__requests-6028"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "django__django-15957--baseline--r1",
+      "repeat": 1,
+      "task_id": "django__django-15957"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "matplotlib__matplotlib-25311--baseline--r2",
+      "repeat": 2,
+      "task_id": "matplotlib__matplotlib-25311"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "scikit-learn__scikit-learn-25931--baseline--r2",
+      "repeat": 2,
+      "task_id": "scikit-learn__scikit-learn-25931"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "astropy__astropy-13453--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "astropy__astropy-13453"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "sympy__sympy-23262--baseline--r2",
+      "repeat": 2,
+      "task_id": "sympy__sympy-23262"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "scikit-learn__scikit-learn-9288--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "scikit-learn__scikit-learn-9288"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "matplotlib__matplotlib-23314--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "matplotlib__matplotlib-23314"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pytest-dev__pytest-7490--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "pytest-dev__pytest-7490"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "psf__requests-1142--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "psf__requests-1142"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "astropy__astropy-13453--baseline--r1",
+      "repeat": 1,
+      "task_id": "astropy__astropy-13453"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "django__django-15957--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "django__django-15957"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pylint-dev__pylint-4661--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "pylint-dev__pylint-4661"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pylint-dev__pylint-4661--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "pylint-dev__pylint-4661"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "django__django-15863--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "django__django-15863"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pytest-dev__pytest-5262--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "pytest-dev__pytest-5262"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "psf__requests-1142--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "psf__requests-1142"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "matplotlib__matplotlib-23314--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "matplotlib__matplotlib-23314"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "sphinx-doc__sphinx-8475--baseline--r1",
+      "repeat": 1,
+      "task_id": "sphinx-doc__sphinx-8475"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "django__django-15957--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "django__django-15957"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "matplotlib__matplotlib-23314--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "matplotlib__matplotlib-23314"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "astropy__astropy-7671--baseline--r1",
+      "repeat": 1,
+      "task_id": "astropy__astropy-7671"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "matplotlib__matplotlib-25311--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "matplotlib__matplotlib-25311"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pydata__xarray-4075--baseline--r1",
+      "repeat": 1,
+      "task_id": "pydata__xarray-4075"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pallets__flask-5014--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "pallets__flask-5014"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "sympy__sympy-23262--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "sympy__sympy-23262"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "astropy__astropy-13453--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "astropy__astropy-13453"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pydata__xarray-4075--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "pydata__xarray-4075"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "django__django-15863--baseline--r2",
+      "repeat": 2,
+      "task_id": "django__django-15863"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "astropy__astropy-7671--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "astropy__astropy-7671"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "sympy__sympy-15349--baseline--r2",
+      "repeat": 2,
+      "task_id": "sympy__sympy-15349"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pydata__xarray-4075--baseline--r2",
+      "repeat": 2,
+      "task_id": "pydata__xarray-4075"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "django__django-15957--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "django__django-15957"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "django__django-15957--baseline--r3",
+      "repeat": 3,
+      "task_id": "django__django-15957"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "sphinx-doc__sphinx-7748--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "sphinx-doc__sphinx-7748"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "sphinx-doc__sphinx-8475--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "sphinx-doc__sphinx-8475"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "sympy__sympy-23262--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "sympy__sympy-23262"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pallets__flask-5014--baseline--r1",
+      "repeat": 1,
+      "task_id": "pallets__flask-5014"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "astropy__astropy-7671--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "astropy__astropy-7671"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "sphinx-doc__sphinx-7748--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "sphinx-doc__sphinx-7748"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "matplotlib__matplotlib-25311--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "matplotlib__matplotlib-25311"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "sympy__sympy-15349--baseline--r3",
+      "repeat": 3,
+      "task_id": "sympy__sympy-15349"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "sympy__sympy-15349--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "sympy__sympy-15349"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "matplotlib__matplotlib-23314--baseline--r2",
+      "repeat": 2,
+      "task_id": "matplotlib__matplotlib-23314"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "sphinx-doc__sphinx-8475--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "sphinx-doc__sphinx-8475"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "psf__requests-1142--baseline--r3",
+      "repeat": 3,
+      "task_id": "psf__requests-1142"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "mwaskom__seaborn-3187--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "mwaskom__seaborn-3187"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pytest-dev__pytest-5262--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "pytest-dev__pytest-5262"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "django__django-15863--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "django__django-15863"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "matplotlib__matplotlib-25311--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "matplotlib__matplotlib-25311"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "scikit-learn__scikit-learn-9288--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "scikit-learn__scikit-learn-9288"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "psf__requests-6028--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "psf__requests-6028"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "scikit-learn__scikit-learn-9288--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "scikit-learn__scikit-learn-9288"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pytest-dev__pytest-5262--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "pytest-dev__pytest-5262"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "astropy__astropy-13453--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "astropy__astropy-13453"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "scikit-learn__scikit-learn-9288--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "scikit-learn__scikit-learn-9288"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "sphinx-doc__sphinx-7748--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "sphinx-doc__sphinx-7748"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "sphinx-doc__sphinx-7748--baseline--r2",
+      "repeat": 2,
+      "task_id": "sphinx-doc__sphinx-7748"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pytest-dev__pytest-5262--baseline--r2",
+      "repeat": 2,
+      "task_id": "pytest-dev__pytest-5262"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "astropy__astropy-7671--baseline--r3",
+      "repeat": 3,
+      "task_id": "astropy__astropy-7671"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "sympy__sympy-23262--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "sympy__sympy-23262"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "astropy__astropy-7671--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "astropy__astropy-7671"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pytest-dev__pytest-5262--baseline--r3",
+      "repeat": 3,
+      "task_id": "pytest-dev__pytest-5262"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "sphinx-doc__sphinx-8475--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "sphinx-doc__sphinx-8475"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pytest-dev__pytest-5262--baseline--r1",
+      "repeat": 1,
+      "task_id": "pytest-dev__pytest-5262"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "scikit-learn__scikit-learn-9288--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "scikit-learn__scikit-learn-9288"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "psf__requests-6028--baseline--r1",
+      "repeat": 1,
+      "task_id": "psf__requests-6028"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pydata__xarray-4075--baseline--r3",
+      "repeat": 3,
+      "task_id": "pydata__xarray-4075"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pydata__xarray-4075--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "pydata__xarray-4075"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "django__django-15863--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "django__django-15863"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "django__django-15863--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "django__django-15863"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "sphinx-doc__sphinx-7748--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "sphinx-doc__sphinx-7748"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pallets__flask-5014--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "pallets__flask-5014"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "matplotlib__matplotlib-25311--baseline--r3",
+      "repeat": 3,
+      "task_id": "matplotlib__matplotlib-25311"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "scikit-learn__scikit-learn-9288--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "scikit-learn__scikit-learn-9288"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pytest-dev__pytest-7490--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "pytest-dev__pytest-7490"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "mwaskom__seaborn-3187--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "mwaskom__seaborn-3187"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "matplotlib__matplotlib-23314--baseline--r3",
+      "repeat": 3,
+      "task_id": "matplotlib__matplotlib-23314"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "django__django-15863--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "django__django-15863"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "astropy__astropy-7671--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "astropy__astropy-7671"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pylint-dev__pylint-4661--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "pylint-dev__pylint-4661"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "scikit-learn__scikit-learn-25931--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "scikit-learn__scikit-learn-25931"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "psf__requests-1142--baseline--r1",
+      "repeat": 1,
+      "task_id": "psf__requests-1142"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "matplotlib__matplotlib-25311--baseline--r1",
+      "repeat": 1,
+      "task_id": "matplotlib__matplotlib-25311"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "sympy__sympy-23262--baseline--r1",
+      "repeat": 1,
+      "task_id": "sympy__sympy-23262"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "sphinx-doc__sphinx-7748--baseline--r1",
+      "repeat": 1,
+      "task_id": "sphinx-doc__sphinx-7748"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "sympy__sympy-23262--baseline--r3",
+      "repeat": 3,
+      "task_id": "sympy__sympy-23262"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pydata__xarray-4075--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "pydata__xarray-4075"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "psf__requests-6028--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "psf__requests-6028"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "scikit-learn__scikit-learn-9288--baseline--r2",
+      "repeat": 2,
+      "task_id": "scikit-learn__scikit-learn-9288"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "scikit-learn__scikit-learn-25931--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "scikit-learn__scikit-learn-25931"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pytest-dev__pytest-5262--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "pytest-dev__pytest-5262"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "django__django-15957--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "django__django-15957"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "sympy__sympy-23262--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "sympy__sympy-23262"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "mwaskom__seaborn-3187--spec_kit_aee--r1",
+      "repeat": 1,
+      "task_id": "mwaskom__seaborn-3187"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pytest-dev__pytest-7490--baseline--r3",
+      "repeat": 3,
+      "task_id": "pytest-dev__pytest-7490"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "django__django-15863--baseline--r1",
+      "repeat": 1,
+      "task_id": "django__django-15863"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "matplotlib__matplotlib-23314--spec_kit_aee--r3",
+      "repeat": 3,
+      "task_id": "matplotlib__matplotlib-23314"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "sphinx-doc__sphinx-7748--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "sphinx-doc__sphinx-7748"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "psf__requests-1142--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "psf__requests-1142"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "pylint-dev__pylint-4661--baseline--r2",
+      "repeat": 2,
+      "task_id": "pylint-dev__pylint-4661"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "psf__requests-1142--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "psf__requests-1142"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "pallets__flask-5014--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "pallets__flask-5014"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "scikit-learn__scikit-learn-25931--baseline--r1",
+      "repeat": 1,
+      "task_id": "scikit-learn__scikit-learn-25931"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "sympy__sympy-23262--spec_kit--r1",
+      "repeat": 1,
+      "task_id": "sympy__sympy-23262"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "django__django-15863--baseline--r3",
+      "repeat": 3,
+      "task_id": "django__django-15863"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "psf__requests-1142--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "psf__requests-1142"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "astropy__astropy-7671--baseline--r2",
+      "repeat": 2,
+      "task_id": "astropy__astropy-7671"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "pydata__xarray-4075--spec_kit--r3",
+      "repeat": 3,
+      "task_id": "pydata__xarray-4075"
+    },
+    {
+      "arm": "spec_kit_aee",
+      "attempt_id": "django__django-15957--spec_kit_aee--r2",
+      "repeat": 2,
+      "task_id": "django__django-15957"
+    },
+    {
+      "arm": "baseline",
+      "attempt_id": "psf__requests-6028--baseline--r3",
+      "repeat": 3,
+      "task_id": "psf__requests-6028"
+    },
+    {
+      "arm": "spec_kit",
+      "attempt_id": "matplotlib__matplotlib-25311--spec_kit--r2",
+      "repeat": 2,
+      "task_id": "matplotlib__matplotlib-25311"
+    }
+  ],
+  "schema_version": 1,
+  "tasks": {
+    "dataset": "SWE-bench/SWE-bench_Verified",
+    "eligible_count": 500,
+    "exclusions": [
+      "django__django-11099",
+      "sympy__sympy-20590"
+    ],
+    "schema_version": 1,
+    "seed": 20260917,
+    "selection": "seeded repository round-robin",
+    "tasks": [
+      {
+        "base_commit": "fdc707f73a65a429935c01532cd3970d3355eab6",
+        "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-23262:latest",
+        "instance_id": "sympy__sympy-23262",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "c0c0ac5aecba195d382f82e1b5d1519cc8053e29b967bdc2805137079c9fd3b7",
+        "repo": "sympy/sympy"
+      },
+      {
+        "base_commit": "58e6a09db49f34886ff13f3b7520dd0bcd7063cd",
+        "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5262:latest",
+        "instance_id": "pytest-dev__pytest-5262",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "d957354242a7a545699ec4d161c3e4c6ab6df9288000d6e46a051b8b7ff50301",
+        "repo": "pytest-dev/pytest"
+      },
+      {
+        "base_commit": "3ea1ec84cc610f7a9f4f6b354e264565254923ff",
+        "image": "swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-8475:latest",
+        "instance_id": "sphinx-doc__sphinx-8475",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "eb853c25d5bef73ec730b1b49aeda892f80fa01bce481e71b1a35942d6c9ca0f",
+        "repo": "sphinx-doc/sphinx"
+      },
+      {
+        "base_commit": "0192aac24123735b3eaf9b08df46429bb770c283",
+        "image": "swebench/sweb.eval.x86_64.psf_1776_requests-6028:latest",
+        "instance_id": "psf__requests-6028",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "1d82b6998adb429d6d13a59c0c321de5ea24889a19843d4de7ea4dff06739cc0",
+        "repo": "psf/requests"
+      },
+      {
+        "base_commit": "e3d1f9ac39e4bf0f31430e779acc50fb05fe1b64",
+        "image": "swebench/sweb.eval.x86_64.scikit-learn_1776_scikit-learn-25931:latest",
+        "instance_id": "scikit-learn__scikit-learn-25931",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "4412b74c4fee9ba3b565d1aafd5f3f2e77b29f2ac2146b59ea84e7fe15777c36",
+        "repo": "scikit-learn/scikit-learn"
+      },
+      {
+        "base_commit": "97fc1154992f64cfb2f86321155a7404efeb2d8a",
+        "image": "swebench/sweb.eval.x86_64.matplotlib_1776_matplotlib-23314:latest",
+        "instance_id": "matplotlib__matplotlib-23314",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "e724887a3c1acc1c91e3f2fefb8d9e30bafcf58b3d6d1696dc8f57e77fd90cba",
+        "repo": "matplotlib/matplotlib"
+      },
+      {
+        "base_commit": "37c5b8c07be104fd5288cd87f101e48cb7a40298",
+        "image": "swebench/sweb.eval.x86_64.django_1776_django-15863:latest",
+        "instance_id": "django__django-15863",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "eb829349cb7c0e1887b730a7963f5188e26be24ce2c79c54fc2e3301415e63ec",
+        "repo": "django/django"
+      },
+      {
+        "base_commit": "a7141cd90019b62688d507ae056298507678c058",
+        "image": "swebench/sweb.eval.x86_64.astropy_1776_astropy-7671:latest",
+        "instance_id": "astropy__astropy-7671",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "90a901a7b3d510c5fe9317b76fc9f83e883b577de167936d9e76ccbd69677f70",
+        "repo": "astropy/astropy"
+      },
+      {
+        "base_commit": "19b088636eb7d3f65ab7a1046ac672e0689371d8",
+        "image": "swebench/sweb.eval.x86_64.pydata_1776_xarray-4075:latest",
+        "instance_id": "pydata__xarray-4075",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "d1cc08eec285573fc56f2a58a623e0b7adf33e6f75fd16b4214dd1db4b3e46a6",
+        "repo": "pydata/xarray"
+      },
+      {
+        "base_commit": "1d1619ef913b99b06647d2030bddff4800abdf63",
+        "image": "swebench/sweb.eval.x86_64.pylint-dev_1776_pylint-4661:latest",
+        "instance_id": "pylint-dev__pylint-4661",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "9888ff5d07c438e865ef06f4e23337fdf555c438756ab3d74e75abea222cb932",
+        "repo": "pylint-dev/pylint"
+      },
+      {
+        "base_commit": "7ee9ceb71e868944a46e1ff00b506772a53a4f1d",
+        "image": "swebench/sweb.eval.x86_64.pallets_1776_flask-5014:latest",
+        "instance_id": "pallets__flask-5014",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "f77d8eab7dd608172aa78b3b50dfa7e0e9b3a6a1c52d14a1cb02417eb5a0ab00",
+        "repo": "pallets/flask"
+      },
+      {
+        "base_commit": "22cdfb0c93f8ec78492d87edb810f10cb7f57a31",
+        "image": "swebench/sweb.eval.x86_64.mwaskom_1776_seaborn-3187:latest",
+        "instance_id": "mwaskom__seaborn-3187",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "72157e71b5c0ed5d58d66a7eeb30ed7b2fb237374183b9ebee200f5d58abd77b",
+        "repo": "mwaskom/seaborn"
+      },
+      {
+        "base_commit": "768da1c6f6ec907524b8ebbf6bf818c92b56101b",
+        "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-15349:latest",
+        "instance_id": "sympy__sympy-15349",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "9e23e96a13f172fc27e87972f1f4f86c22ebb28407ed8dbdce0a665c3c04c412",
+        "repo": "sympy/sympy"
+      },
+      {
+        "base_commit": "7f7a36478abe7dd1fa993b115d22606aa0e35e88",
+        "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-7490:latest",
+        "instance_id": "pytest-dev__pytest-7490",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "9a5e8c33368dc3bbe9c5f03d3136a574cebede61fea6c575d39ddf108b92d947",
+        "repo": "pytest-dev/pytest"
+      },
+      {
+        "base_commit": "9988d5ce267bf0df4791770b469431b1fb00dcdd",
+        "image": "swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-7748:latest",
+        "instance_id": "sphinx-doc__sphinx-7748",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "f17901373f816b5e685509875b9c757ca2a50c49a9b21cb31ba83efb00765ed9",
+        "repo": "sphinx-doc/sphinx"
+      },
+      {
+        "base_commit": "22623bd8c265b78b161542663ee980738441c307",
+        "image": "swebench/sweb.eval.x86_64.psf_1776_requests-1142:latest",
+        "instance_id": "psf__requests-1142",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "bbce17683bd12b7a20a58d77bccf0987d316414e71c9b98d1eaab0587d27ebe7",
+        "repo": "psf/requests"
+      },
+      {
+        "base_commit": "3eacf948e0f95ef957862568d87ce082f378e186",
+        "image": "swebench/sweb.eval.x86_64.scikit-learn_1776_scikit-learn-9288:latest",
+        "instance_id": "scikit-learn__scikit-learn-9288",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "4c6be4c6f8f699371300fb64162cb969da421307c54fc0743c0f78ae90c09b2b",
+        "repo": "scikit-learn/scikit-learn"
+      },
+      {
+        "base_commit": "430fb1db88843300fb4baae3edc499bbfe073b0c",
+        "image": "swebench/sweb.eval.x86_64.matplotlib_1776_matplotlib-25311:latest",
+        "instance_id": "matplotlib__matplotlib-25311",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "a2583ca80e1609006e02901af35754c41bc9bb0c325da37d2f6fef434d7f2ff7",
+        "repo": "matplotlib/matplotlib"
+      },
+      {
+        "base_commit": "f387d024fc75569d2a4a338bfda76cc2f328f627",
+        "image": "swebench/sweb.eval.x86_64.django_1776_django-15957:latest",
+        "instance_id": "django__django-15957",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "04338b79a1433abd25a54bfabcebd2e313f6a37e5bc38ecdbc11f8e143ad3eb2",
+        "repo": "django/django"
+      },
+      {
+        "base_commit": "19cc80471739bcb67b7e8099246b391c355023ee",
+        "image": "swebench/sweb.eval.x86_64.astropy_1776_astropy-13453:latest",
+        "instance_id": "astropy__astropy-13453",
+        "problem_statement": "REHYDRATE_FROM_PINNED_UPSTREAM_BEFORE_LIVE_FREEZE",
+        "problem_statement_sha256": "be929904c3062b54da2fa3ad7de338bd7f1f41a5aa48e64bec41f244d6e17c5a",
+        "repo": "astropy/astropy"
+      }
+    ],
+    "unselected": [
+      "astropy__astropy-12907",
+      "astropy__astropy-13033",
+      "astropy__astropy-13236",
+      "astropy__astropy-13398",
+      "astropy__astropy-13579",
+      "astropy__astropy-13977",
+      "astropy__astropy-14096",
+      "astropy__astropy-14182",
+      "astropy__astropy-14309",
+      "astropy__astropy-14365",
+      "astropy__astropy-14369",
+      "astropy__astropy-14508",
+      "astropy__astropy-14539",
+      "astropy__astropy-14598",
+      "astropy__astropy-14995",
+      "astropy__astropy-7166",
+      "astropy__astropy-7336",
+      "astropy__astropy-7606",
+      "astropy__astropy-8707",
+      "astropy__astropy-8872",
+      "django__django-10097",
+      "django__django-10554",
+      "django__django-10880",
+      "django__django-10914",
+      "django__django-10973",
+      "django__django-10999",
+      "django__django-11066",
+      "django__django-11087",
+      "django__django-11095",
+      "django__django-11119",
+      "django__django-11133",
+      "django__django-11138",
+      "django__django-11141",
+      "django__django-11149",
+      "django__django-11163",
+      "django__django-11179",
+      "django__django-11206",
+      "django__django-11211",
+      "django__django-11239",
+      "django__django-11265",
+      "django__django-11276",
+      "django__django-11292",
+      "django__django-11299",
+      "django__django-11333",
+      "django__django-11400",
+      "django__django-11433",
+      "django__django-11451",
+      "django__django-11477",
+      "django__django-11490",
+      "django__django-11532",
+      "django__django-11551",
+      "django__django-11555",
+      "django__django-11603",
+      "django__django-11728",
+      "django__django-11734",
+      "django__django-11740",
+      "django__django-11749",
+      "django__django-11790",
+      "django__django-11815",
+      "django__django-11820",
+      "django__django-11848",
+      "django__django-11880",
+      "django__django-11885",
+      "django__django-11951",
+      "django__django-11964",
+      "django__django-11999",
+      "django__django-12039",
+      "django__django-12050",
+      "django__django-12125",
+      "django__django-12143",
+      "django__django-12155",
+      "django__django-12193",
+      "django__django-12209",
+      "django__django-12262",
+      "django__django-12273",
+      "django__django-12276",
+      "django__django-12304",
+      "django__django-12308",
+      "django__django-12325",
+      "django__django-12406",
+      "django__django-12419",
+      "django__django-12663",
+      "django__django-12708",
+      "django__django-12713",
+      "django__django-12741",
+      "django__django-12754",
+      "django__django-12774",
+      "django__django-12858",
+      "django__django-12965",
+      "django__django-13012",
+      "django__django-13023",
+      "django__django-13028",
+      "django__django-13033",
+      "django__django-13089",
+      "django__django-13109",
+      "django__django-13112",
+      "django__django-13121",
+      "django__django-13128",
+      "django__django-13158",
+      "django__django-13195",
+      "django__django-13212",
+      "django__django-13279",
+      "django__django-13297",
+      "django__django-13315",
+      "django__django-13343",
+      "django__django-13344",
+      "django__django-13346",
+      "django__django-13363",
+      "django__django-13401",
+      "django__django-13406",
+      "django__django-13410",
+      "django__django-13417",
+      "django__django-13449",
+      "django__django-13512",
+      "django__django-13513",
+      "django__django-13516",
+      "django__django-13551",
+      "django__django-13568",
+      "django__django-13569",
+      "django__django-13590",
+      "django__django-13658",
+      "django__django-13670",
+      "django__django-13741",
+      "django__django-13786",
+      "django__django-13794",
+      "django__django-13807",
+      "django__django-13809",
+      "django__django-13810",
+      "django__django-13820",
+      "django__django-13821",
+      "django__django-13837",
+      "django__django-13925",
+      "django__django-13933",
+      "django__django-13964",
+      "django__django-14007",
+      "django__django-14011",
+      "django__django-14017",
+      "django__django-14034",
+      "django__django-14053",
+      "django__django-14089",
+      "django__django-14122",
+      "django__django-14140",
+      "django__django-14155",
+      "django__django-14170",
+      "django__django-14238",
+      "django__django-14311",
+      "django__django-14315",
+      "django__django-14349",
+      "django__django-14351",
+      "django__django-14373",
+      "django__django-14376",
+      "django__django-14404",
+      "django__django-14434",
+      "django__django-14493",
+      "django__django-14500",
+      "django__django-14534",
+      "django__django-14539",
+      "django__django-14559",
+      "django__django-14580",
+      "django__django-14608",
+      "django__django-14631",
+      "django__django-14672",
+      "django__django-14725",
+      "django__django-14752",
+      "django__django-14765",
+      "django__django-14771",
+      "django__django-14787",
+      "django__django-14792",
+      "django__django-14855",
+      "django__django-14915",
+      "django__django-14999",
+      "django__django-15022",
+      "django__django-15037",
+      "django__django-15098",
+      "django__django-15103",
+      "django__django-15104",
+      "django__django-15127",
+      "django__django-15128",
+      "django__django-15161",
+      "django__django-15252",
+      "django__django-15268",
+      "django__django-15277",
+      "django__django-15278",
+      "django__django-15280",
+      "django__django-15315",
+      "django__django-15368",
+      "django__django-15375",
+      "django__django-15380",
+      "django__django-15382",
+      "django__django-15467",
+      "django__django-15499",
+      "django__django-15503",
+      "django__django-15525",
+      "django__django-15554",
+      "django__django-15561",
+      "django__django-15563",
+      "django__django-15569",
+      "django__django-15572",
+      "django__django-15629",
+      "django__django-15695",
+      "django__django-15731",
+      "django__django-15732",
+      "django__django-15741",
+      "django__django-15814",
+      "django__django-15851",
+      "django__django-15916",
+      "django__django-15930",
+      "django__django-15973",
+      "django__django-15987",
+      "django__django-16032",
+      "django__django-16082",
+      "django__django-16100",
+      "django__django-16116",
+      "django__django-16136",
+      "django__django-16139",
+      "django__django-16145",
+      "django__django-16255",
+      "django__django-16256",
+      "django__django-16263",
+      "django__django-16315",
+      "django__django-16333",
+      "django__django-16429",
+      "django__django-16454",
+      "django__django-16485",
+      "django__django-16493",
+      "django__django-16502",
+      "django__django-16527",
+      "django__django-16560",
+      "django__django-16569",
+      "django__django-16595",
+      "django__django-16612",
+      "django__django-16631",
+      "django__django-16642",
+      "django__django-16661",
+      "django__django-16662",
+      "django__django-16667",
+      "django__django-16801",
+      "django__django-16819",
+      "django__django-16877",
+      "django__django-16899",
+      "django__django-16901",
+      "django__django-16938",
+      "django__django-16950",
+      "django__django-17029",
+      "django__django-17084",
+      "django__django-17087",
+      "django__django-7530",
+      "django__django-9296",
+      "matplotlib__matplotlib-13989",
+      "matplotlib__matplotlib-14623",
+      "matplotlib__matplotlib-20488",
+      "matplotlib__matplotlib-20676",
+      "matplotlib__matplotlib-20826",
+      "matplotlib__matplotlib-20859",
+      "matplotlib__matplotlib-21568",
+      "matplotlib__matplotlib-22719",
+      "matplotlib__matplotlib-22865",
+      "matplotlib__matplotlib-22871",
+      "matplotlib__matplotlib-23299",
+      "matplotlib__matplotlib-23412",
+      "matplotlib__matplotlib-23476",
+      "matplotlib__matplotlib-24026",
+      "matplotlib__matplotlib-24149",
+      "matplotlib__matplotlib-24177",
+      "matplotlib__matplotlib-24570",
+      "matplotlib__matplotlib-24627",
+      "matplotlib__matplotlib-24637",
+      "matplotlib__matplotlib-24870",
+      "matplotlib__matplotlib-24970",
+      "matplotlib__matplotlib-25122",
+      "matplotlib__matplotlib-25287",
+      "matplotlib__matplotlib-25332",
+      "matplotlib__matplotlib-25479",
+      "matplotlib__matplotlib-25775",
+      "matplotlib__matplotlib-25960",
+      "matplotlib__matplotlib-26113",
+      "matplotlib__matplotlib-26208",
+      "matplotlib__matplotlib-26291",
+      "matplotlib__matplotlib-26342",
+      "matplotlib__matplotlib-26466",
+      "mwaskom__seaborn-3069",
+      "psf__requests-1724",
+      "psf__requests-1766",
+      "psf__requests-1921",
+      "psf__requests-2317",
+      "psf__requests-2931",
+      "psf__requests-5414",
+      "pydata__xarray-2905",
+      "pydata__xarray-3095",
+      "pydata__xarray-3151",
+      "pydata__xarray-3305",
+      "pydata__xarray-3677",
+      "pydata__xarray-3993",
+      "pydata__xarray-4094",
+      "pydata__xarray-4356",
+      "pydata__xarray-4629",
+      "pydata__xarray-4687",
+      "pydata__xarray-4695",
+      "pydata__xarray-4966",
+      "pydata__xarray-6461",
+      "pydata__xarray-6599",
+      "pydata__xarray-6721",
+      "pydata__xarray-6744",
+      "pydata__xarray-6938",
+      "pydata__xarray-6992",
+      "pydata__xarray-7229",
+      "pydata__xarray-7233",
+      "pydata__xarray-7393",
+      "pylint-dev__pylint-4551",
+      "pylint-dev__pylint-4604",
+      "pylint-dev__pylint-4970",
+      "pylint-dev__pylint-6386",
+      "pylint-dev__pylint-6528",
+      "pylint-dev__pylint-6903",
+      "pylint-dev__pylint-7080",
+      "pylint-dev__pylint-7277",
+      "pylint-dev__pylint-8898",
+      "pytest-dev__pytest-10051",
+      "pytest-dev__pytest-10081",
+      "pytest-dev__pytest-10356",
+      "pytest-dev__pytest-5631",
+      "pytest-dev__pytest-5787",
+      "pytest-dev__pytest-5809",
+      "pytest-dev__pytest-5840",
+      "pytest-dev__pytest-6197",
+      "pytest-dev__pytest-6202",
+      "pytest-dev__pytest-7205",
+      "pytest-dev__pytest-7236",
+      "pytest-dev__pytest-7324",
+      "pytest-dev__pytest-7432",
+      "pytest-dev__pytest-7521",
+      "pytest-dev__pytest-7571",
+      "pytest-dev__pytest-7982",
+      "pytest-dev__pytest-8399",
+      "scikit-learn__scikit-learn-10297",
+      "scikit-learn__scikit-learn-10844",
+      "scikit-learn__scikit-learn-10908",
+      "scikit-learn__scikit-learn-11310",
+      "scikit-learn__scikit-learn-11578",
+      "scikit-learn__scikit-learn-12585",
+      "scikit-learn__scikit-learn-12682",
+      "scikit-learn__scikit-learn-12973",
+      "scikit-learn__scikit-learn-13124",
+      "scikit-learn__scikit-learn-13135",
+      "scikit-learn__scikit-learn-13142",
+      "scikit-learn__scikit-learn-13328",
+      "scikit-learn__scikit-learn-13439",
+      "scikit-learn__scikit-learn-13496",
+      "scikit-learn__scikit-learn-13779",
+      "scikit-learn__scikit-learn-14053",
+      "scikit-learn__scikit-learn-14087",
+      "scikit-learn__scikit-learn-14141",
+      "scikit-learn__scikit-learn-14496",
+      "scikit-learn__scikit-learn-14629",
+      "scikit-learn__scikit-learn-14710",
+      "scikit-learn__scikit-learn-14894",
+      "scikit-learn__scikit-learn-14983",
+      "scikit-learn__scikit-learn-15100",
+      "scikit-learn__scikit-learn-25102",
+      "scikit-learn__scikit-learn-25232",
+      "scikit-learn__scikit-learn-25747",
+      "scikit-learn__scikit-learn-25973",
+      "scikit-learn__scikit-learn-26194",
+      "scikit-learn__scikit-learn-26323",
+      "sphinx-doc__sphinx-10323",
+      "sphinx-doc__sphinx-10435",
+      "sphinx-doc__sphinx-10449",
+      "sphinx-doc__sphinx-10466",
+      "sphinx-doc__sphinx-10614",
+      "sphinx-doc__sphinx-10673",
+      "sphinx-doc__sphinx-11445",
+      "sphinx-doc__sphinx-11510",
+      "sphinx-doc__sphinx-7440",
+      "sphinx-doc__sphinx-7454",
+      "sphinx-doc__sphinx-7462",
+      "sphinx-doc__sphinx-7590",
+      "sphinx-doc__sphinx-7757",
+      "sphinx-doc__sphinx-7889",
+      "sphinx-doc__sphinx-7910",
+      "sphinx-doc__sphinx-7985",
+      "sphinx-doc__sphinx-8035",
+      "sphinx-doc__sphinx-8056",
+      "sphinx-doc__sphinx-8120",
+      "sphinx-doc__sphinx-8265",
+      "sphinx-doc__sphinx-8269",
+      "sphinx-doc__sphinx-8459",
+      "sphinx-doc__sphinx-8548",
+      "sphinx-doc__sphinx-8551",
+      "sphinx-doc__sphinx-8593",
+      "sphinx-doc__sphinx-8595",
+      "sphinx-doc__sphinx-8621",
+      "sphinx-doc__sphinx-8638",
+      "sphinx-doc__sphinx-8721",
+      "sphinx-doc__sphinx-9229",
+      "sphinx-doc__sphinx-9230",
+      "sphinx-doc__sphinx-9258",
+      "sphinx-doc__sphinx-9281",
+      "sphinx-doc__sphinx-9320",
+      "sphinx-doc__sphinx-9367",
+      "sphinx-doc__sphinx-9461",
+      "sphinx-doc__sphinx-9591",
+      "sphinx-doc__sphinx-9602",
+      "sphinx-doc__sphinx-9658",
+      "sphinx-doc__sphinx-9673",
+      "sphinx-doc__sphinx-9698",
+      "sphinx-doc__sphinx-9711",
+      "sympy__sympy-11618",
+      "sympy__sympy-12096",
+      "sympy__sympy-12419",
+      "sympy__sympy-12481",
+      "sympy__sympy-12489",
+      "sympy__sympy-13031",
+      "sympy__sympy-13091",
+      "sympy__sympy-13372",
+      "sympy__sympy-13480",
+      "sympy__sympy-13551",
+      "sympy__sympy-13615",
+      "sympy__sympy-13647",
+      "sympy__sympy-13757",
+      "sympy__sympy-13798",
+      "sympy__sympy-13852",
+      "sympy__sympy-13877",
+      "sympy__sympy-13878",
+      "sympy__sympy-13974",
+      "sympy__sympy-14248",
+      "sympy__sympy-14531",
+      "sympy__sympy-14711",
+      "sympy__sympy-14976",
+      "sympy__sympy-15017",
+      "sympy__sympy-15345",
+      "sympy__sympy-15599",
+      "sympy__sympy-15809",
+      "sympy__sympy-15875",
+      "sympy__sympy-15976",
+      "sympy__sympy-16450",
+      "sympy__sympy-16597",
+      "sympy__sympy-16766",
+      "sympy__sympy-16792",
+      "sympy__sympy-16886",
+      "sympy__sympy-17139",
+      "sympy__sympy-17318",
+      "sympy__sympy-17630",
+      "sympy__sympy-17655",
+      "sympy__sympy-18189",
+      "sympy__sympy-18199",
+      "sympy__sympy-18211",
+      "sympy__sympy-18698",
+      "sympy__sympy-18763",
+      "sympy__sympy-19040",
+      "sympy__sympy-19346",
+      "sympy__sympy-19495",
+      "sympy__sympy-19637",
+      "sympy__sympy-19783",
+      "sympy__sympy-19954",
+      "sympy__sympy-20154",
+      "sympy__sympy-20428",
+      "sympy__sympy-20438",
+      "sympy__sympy-20801",
+      "sympy__sympy-20916",
+      "sympy__sympy-21379",
+      "sympy__sympy-21596",
+      "sympy__sympy-21612",
+      "sympy__sympy-21847",
+      "sympy__sympy-21930",
+      "sympy__sympy-22080",
+      "sympy__sympy-22456",
+      "sympy__sympy-22714",
+      "sympy__sympy-22914",
+      "sympy__sympy-23413",
+      "sympy__sympy-23534",
+      "sympy__sympy-23824",
+      "sympy__sympy-23950",
+      "sympy__sympy-24066",
+      "sympy__sympy-24213",
+      "sympy__sympy-24443",
+      "sympy__sympy-24539",
+      "sympy__sympy-24562",
+      "sympy__sympy-24661"
+    ]
+  }
+}

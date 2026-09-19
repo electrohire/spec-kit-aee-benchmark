@@ -1,0 +1,65 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "specify phase"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [],
+      "falsification_tests": [
+        "Calling add(2, 3) returns 4 instead of 5",
+        "Calling add(-1, -1) returns 0 instead of -2"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "FR-001",
+      "status": "unsupported",
+      "text": "The file /testbed/smoke.py MUST define a function add(a, b) that returns the sum of its two arguments",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specify phase"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "smoke.py contains an import of tinydb",
+        "add(1.5, 2.5) returns 3 instead of 4.0"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "FR-002, FR-003, FR-006",
+      "status": "unsupported",
+      "text": "add(a, b) MUST accept integers and floats and return correct results without modifying TinyDB source",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specify phase"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "No test file exists in /testbed/",
+        "Test for add(0, 0) is absent",
+        "Test for add(-3, -7) is absent",
+        "Test for add(1.5, 2.5) is absent"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "FR-007",
+      "status": "unsupported",
+      "text": "Automated tests MUST exist covering integer addition, float addition, negative values, and zero",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

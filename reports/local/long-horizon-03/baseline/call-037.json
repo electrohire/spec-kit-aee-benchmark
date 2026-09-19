@@ -1,0 +1,58 @@
+{
+  "ended_at": "2026-09-17T23:28:59.254328+00:00",
+  "original_sha256": "4e759c890d698ea7dd79e1905c8908a3e9795f8a0036f626050ec659b4be7462",
+  "phase": "solve",
+  "preflight_input_tokens": 64159,
+  "removed_history_messages": 0,
+  "request_omission": "Full request retained locally. Omitted native reasoning prevents exact reconstruction from the public response/tool trace.",
+  "request_sha256": "2d702677c5064703e471054eec697653a0c38f0c82582b3078a627dbb5758391",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\": \"cat > /testbed/tinydb/transactional.py << 'PYEOF'\\n\\\"\\\"\\\"\\nTransactional extension for TinyDB.\\n\\nProvides ``TransactionalTinyDB`` which adds transaction support to TinyDB.\\nTransactions buffer all writes and either commit them (on normal exit) or\\nroll them back (on exception). Nested transactions create independent\\nsavepoints.\\n\\\"\\\"\\\"\\n\\nimport copy\\nfrom typing import Any, Iterator, Optional\\n\\nfrom .database import TinyDB\\nfrom .storages import Storage\\n\\n\\nclass _TransactionalStorage:\\n    \\\"\\\"\\\"Storage wrapper that buffers writes during transactions with savepoint support.\\\"\\\"\\\"\\n\\n    def __init__(self, original_storage: Storage) -> None:\\n        self._original = original_storage\\n        # Stack of savepoints: each entry is (snapshot, buffer) for a transaction level\\n        self._savepoints: list[tuple[Optional[dict], Optional[dict]]] = []\\n\\n    # ---- Storage interface (proxied to original) ----\\n\\n    def read(self) -> Optional[dict[str, dict[str, Any]]]:\\n        if self._savepoints:\\n            # Return the buffer from the innermost transaction\\n            _, buffer = self._savepoints[-1]\\n            if buffer is not None:\\n                return buffer\\n        return self._original.read()\\n\\n    def write(self, data: dict[str, dict[str, Any]]) -> None:\\n        if self._savepoints:\\n            # Buffer the write in the innermost transaction\\n            _, buffer = self._savepoints[-1]\\n            if buffer is not None:\\n                self._savepoints[-1] = (self._savepoints[-1][0], data)\\n        else:\\n            self._original.write(data)\\n\\n    def close(self) -> None:\\n        self._original.close()\\n\\n    # ---- Transaction protocol ----\\n\\n    def __enter__(self) -> \\\"_TransactionalStorage\\\":\\n        \\\"\\\"\\\"Start a transaction: create a savepoint.\\\"\\\"\\\"\\n        if not self._savepoints:\\n            # Outermost transaction: snapshot from original storage\\n            snapshot = copy.deepcopy(self._original.read())\\n            buffer = copy.deepcopy(snapshot)\\n        else:\\n            # Nested transaction: snapshot from current buffer (parent's state)\\n            _, parent_buffer = self._savepoints[-1]\\n            if parent_buffer is not None:\\n                snapshot = copy.deepcopy(parent_buffer)\\n                buffer = copy.deepcopy(parent_buffer)\\n            else:\\n                # Parent has no changes yet\\n                snapshot = None\\n                buffer = None\\n        \\n        self._savepoints.append((snapshot, buffer))\\n        return self\\n\\n    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:\\n        \\\"\\\"\\\"Commit on success, rollback on any exception.\\\"\\\"\\\"\\n        if not self._savepoints:\\n            return\\n        \\n        snapshot, buffer = self._savepoints.pop()\\n        \\n        try:\\n            if exc_type is None:\\n                # Commit: merge buffer into parent's buffer\\n                if buffer is not None:\\n                    if self._savepoints:\\n                        # Merge into parent's buffer\\n                        parent_snapshot, parent_buffer = self._savepoints[-1]\\n                        if parent_buffer is not None:\\n                            # Deep merge: parent keeps its keys, buffer adds/updates\\n                            parent_buffer.update(buffer)\\n                        else:\\n                            # Parent has no buffer, create one\\n                            self._savepoints[-1] = (parent_snapshot, copy.deepcopy(buffer))\\n                    else:\\n                        # Outermost commit: write to original storage\\n                        self._original.write(buffer)\\n            else:\\n                # Rollback: discard buffer, restore snapshot\\n                if self._savepoints:\\n                    # Nested rollback: just discard this savepoint's buffer\\n                    # The parent's buffer still has the state before this savepoint\\n                    parent_snapshot, parent_buffer = self._savepoints[-1]\\n                    if parent_buffer is not None:\\n                        # Restore parent buffer to state before this savepoint\\n                        # We need to remove any changes made in this savepoint\\n                        # Since we didn't track individual changes, we just\\n                        # keep the parent buffer as-is (it was already a snapshot)\\n                        pass\\n                    else:\\n                        # Parent has no buffer, nothing to restore\\n                        pass\\n                else:\\n                    # Outermost rollback: restore original storage to snapshot\\n                    if snapshot is not None:\\n                        self._original.write(snapshot)\\n        finally:\\n            pass\\n\\n\\nclass TransactionalTinyDB(TinyDB):\\n    \\\"\\\"\\\"\\n    TinyDB with transaction support.\\n\\n    A transaction groups multiple operations into an atomic unit.  All writes\\n    inside the transaction are buffered and only persisted when the transaction\\n    completes successfully.  If an exception occurs (including ``BaseException``\\n    subclasses) the transaction is rolled back and the database is restored to\\n    its state before the transaction began.\\n\\n    Nested transactions create independent savepoints.  A successful inner\\n    transaction merges its changes into the outer transaction without writing\\n    to the backend.  Only the outermost successful transaction writes to the\\n    backend exactly once.\\n\\n    Usage::\\n\\n        from tinydb import TransactionalTinyDB\\n\\n        db = TransactionalTinyDB(storage=MemoryStorage)\\n\\n        with db.transaction():\\n            db.insert({'name': 'Alice'})\\n            with db.transaction():\\n                db.insert({'name': 'Bob'})\\n            # Bob is visible within the outer transaction\\n        # Both Alice and Bob are now persisted atomically.\\n\\n    .. versionadded:: 4.9\\n    \\\"\\\"\\\"\\n\\n    def __init__(self, *args: Any, **kwargs: Any) -> None:\\n        super().__init__(*args, **kwargs)\\n        # Wrap the storage so we can intercept writes during transactions\\n        self._transactional_storage: Optional[_TransactionalStorage] = None\\n        self._original_storage = self._storage\\n        self._storage = _TransactionalStorage(self._original_storage)\\n        self._transactional_storage = self._storage\\n\\n    def transaction(self) -> Iterator[\\\"TransactionalTinyDB\\\"]:\\n        \\\"\\\"\\\"\\n        Return a context manager that starts a transaction.\\n\\n        The context manager yields the same ``TransactionalTinyDB`` instance.\\n        On normal exit all buffered writes are committed.  On any exception\\n        (including ``BaseException`` subclasses) the transaction is rolled\\n        back.\\n\\n        Nested transactions create independent savepoints.\\n        \\\"\\\"\\\"\\n        return _TransactionContext(self)\\n\\n    def _clear_all_table_caches(self) -> None:\\n        \\\"\\\"\\\"Clear query caches for all tables, including the default table.\\\"\\\"\\\"\\n        for table in self._tables.values():\\n            table.clear_cache()\\n        # Also clear the default table's cache (it may not be in _tables)\\n        default_table = self.table(self.default_table_name)\\n        default_table.clear_cache()\\n\\n    def close(self) -> None:\\n        \\\"\\\"\\\"Close the database, committing any pending transaction first.\\\"\\\"\\\"\\n        # If we're inside a transaction that hasn't been exited, commit it\\n        # to avoid leaving the storage in a transactional state.\\n        if (self._transactional_storage is not None and\\n                self._transactional_storage._savepoints):\\n            # Commit all pending transactions\\n            while self._transactional_storage._savepoints:\\n                self._transactional_storage._savepoints.pop()\\n        super().close()\\n\\n\\nclass _TransactionContext:\\n    \\\"\\\"\\\"Context manager for a TinyDB transaction.\\\"\\\"\\\"\\n\\n    def __init__(self, db: TransactionalTinyDB) -> None:\\n        self._db = db\\n        self._storage: Optional[_TransactionalStorage] = db._transactional_storage\\n\\n    def __enter__(self) -> TransactionalTinyDB:\\n        self._storage.__enter__()\\n        return self._db\\n\\n    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:\\n        self._storage.__exit__(exc_type, exc_val, exc_tb)\\n        # Clear all query caches to avoid stale data from the transaction\\n        # Only clear on outermost exit or after rollback\\n        if not self._storage._savepoints:\\n            # Outermost transaction exited\\n            self._db._clear_all_table_caches()\\nPYEOF\"}",
+          "reasoning_sha256": "f040a21d5504b91e5d991c569ac0359417c48fa2862d14e24c6c9976fcec541d",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789687739,
+    "id": "chatcmpl-agMynEeDupxGLbaVE8o11xCwMf4FGeq5",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 63147,
+      "predicted_ms": 30401.365,
+      "predicted_n": 2028,
+      "predicted_per_second": 66.67463779998036,
+      "predicted_per_token_ms": 14.998206709422792,
+      "prompt_ms": 766.032,
+      "prompt_n": 1012,
+      "prompt_per_second": 1321.0936357750068,
+      "prompt_per_token_ms": 0.7569486166007906
+    },
+    "usage": {
+      "completion_tokens": 2028,
+      "prompt_tokens": 64159,
+      "prompt_tokens_details": {
+        "cached_tokens": 63147
+      },
+      "total_tokens": 66187
+    }
+  },
+  "seconds": 31.25,
+  "stage": 2,
+  "started_at": "2026-09-17T23:28:27.985619+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2028,
+    "prompt_tokens": 64159,
+    "prompt_tokens_details": {
+      "cached_tokens": 63147
+    },
+    "total_tokens": 66187
+  }
+}

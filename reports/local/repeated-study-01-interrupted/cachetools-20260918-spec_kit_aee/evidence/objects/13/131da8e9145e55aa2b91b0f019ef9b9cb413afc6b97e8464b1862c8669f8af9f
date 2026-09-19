@@ -1,0 +1,338 @@
+{
+  "schema_version": "1.0",
+  "evaluator": {
+    "id": "aee",
+    "version": "1.0.0",
+    "name": "Applied Epistemic Engineering",
+    "url": "https://github.com/electrohire/spec-kit-aee"
+  },
+  "phase": "after_specify",
+  "outcome": "iterate",
+  "summary": "Assessed 3 claim(s); found 5 failure mode(s); 3 claim(s) below the 0.70 confidence threshold.",
+  "findings": [
+    {
+      "id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone requirement R01",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [],
+      "provenance_refs": [
+        "milestone requirement R01"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R01-NEGATION-CONFLICT-CHALLE",
+      "severity": "medium",
+      "kind": "contradiction",
+      "subject": "milestone requirement R01",
+      "description": "R01 may contradict R02",
+      "evidence_refs": [],
+      "provenance_refs": [
+        "milestone requirement R01"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "clarify",
+      "rationale": "Negation conflict challenge"
+    },
+    {
+      "id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone requirement R02",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [],
+      "provenance_refs": [
+        "milestone requirement R02"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R02-NEGATION-CONFLICT-CHALLE",
+      "severity": "medium",
+      "kind": "contradiction",
+      "subject": "milestone requirement R02",
+      "description": "R02 may contradict R03",
+      "evidence_refs": [],
+      "provenance_refs": [
+        "milestone requirement R02"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "clarify",
+      "rationale": "Negation conflict challenge"
+    },
+    {
+      "id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone requirement R03",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [],
+      "provenance_refs": [
+        "milestone requirement R03"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    }
+  ],
+  "next_action": {
+    "kind": "iterate",
+    "target_phase": "specify",
+    "message": "Revise the current phase to address 5 finding(s)."
+  },
+  "metadata": {
+    "timestamp": "2026-09-18T04:39:51.132780Z",
+    "artifacts_evaluated": [
+      "claims.json"
+    ],
+    "model": null,
+    "deterministic": true,
+    "aee_methodology_version": "1.0"
+  },
+  "state": {
+    "aee": {
+      "project": "aee-assessment-z6c87375",
+      "claims": [
+        {
+          "id": "R01",
+          "text": "TaggedCache.put(key, value, tags=()) inserts/replaces an entry; get(key) returns a detached deep copy or raises KeyError; values are deep-copied on input and output; keys are hashable; tags must be a finite iterable of strings with deduplication; bare string and nonstring tag entries raise ValueError before state mutation",
+          "kind": "requirement",
+          "status": "unsupported",
+          "boundary": [
+            "milestone 1"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "put(key, value, tags='x') must raise ValueError without mutating state",
+            "put(key, value, tags=[1]) must raise ValueError without mutating state",
+            "get(key) must return a deep copy such that modifying the returned value does not affect the cached value",
+            "get(missing_key) must raise KeyError"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone requirement R01",
+          "domain": "",
+          "confidence": 0.25,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R01",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false
+            },
+            {
+              "id": "AEE-R01-NEGATION-CONFLICT-CHALLE",
+              "claim_id": "R01",
+              "challenge": "Negation conflict challenge",
+              "breakpoint": "R01 may contradict R02",
+              "severity": "medium",
+              "category": "contradiction",
+              "recovery_hint": "Confirm whether the claims share a boundary and preserve both pending review.",
+              "resolved": false
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "id": "R02",
+          "text": "invalidate(tag) removes exactly currently cached entries carrying that tag and returns the count removed; replacing a key removes its old tag memberships; LRU eviction must not leave stale memberships; get refreshes LRU recency; len(cache) counts live entries",
+          "kind": "requirement",
+          "status": "unsupported",
+          "boundary": [
+            "milestone 1"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "After put(a, v1, ['x']) and put(a, v2, ['y']), invalidate('x') must return 0",
+            "After LRU eviction of key k, invalidate(tag_of_k) must not count k",
+            "len(cache) after put and get must equal number of inserted keys",
+            "After get(k), subsequent LRU eviction must evict the correct least-recently-used key"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone requirement R02",
+          "domain": "",
+          "confidence": 0.25,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R02",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false
+            },
+            {
+              "id": "AEE-R02-NEGATION-CONFLICT-CHALLE",
+              "claim_id": "R02",
+              "challenge": "Negation conflict challenge",
+              "breakpoint": "R02 may contradict R03",
+              "severity": "medium",
+              "category": "contradiction",
+              "recovery_hint": "Confirm whether the claims share a boundary and preserve both pending review.",
+              "resolved": false
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "id": "R03",
+          "text": "maxsize must be a positive integer excluding bool; invalid replacement input must leave old value/tags/recency unchanged; values cost one capacity slot regardless of object size",
+          "kind": "requirement",
+          "status": "unsupported",
+          "boundary": [
+            "milestone 1"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "TaggedCache(maxsize=True) must raise ValueError",
+            "TaggedCache(maxsize=0) must raise ValueError",
+            "TaggedCache(maxsize=-1) must raise ValueError",
+            "After invalid maxsize replacement attempt, existing entries and tags must remain intact",
+            "Each value occupies exactly one slot regardless of size"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone requirement R03",
+          "domain": "",
+          "confidence": 0.25,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R03",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false
+            }
+          ],
+          "metadata": {}
+        }
+      ],
+      "scores": {
+        "R01": {
+          "claim_id": "R01",
+          "direct_score": 0.25,
+          "propagated_score": 0.25,
+          "band": "low",
+          "components": {
+            "evidence": 0.0,
+            "independence": 0.0,
+            "falsifiability": 1.0,
+            "boundary": 1.0,
+            "contradiction_penalty": 0
+          },
+          "notes": [
+            "No supporting evidence",
+            "Fewer than two independent supporting sources"
+          ]
+        },
+        "R02": {
+          "claim_id": "R02",
+          "direct_score": 0.25,
+          "propagated_score": 0.25,
+          "band": "low",
+          "components": {
+            "evidence": 0.0,
+            "independence": 0.0,
+            "falsifiability": 1.0,
+            "boundary": 1.0,
+            "contradiction_penalty": 0
+          },
+          "notes": [
+            "No supporting evidence",
+            "Fewer than two independent supporting sources"
+          ]
+        },
+        "R03": {
+          "claim_id": "R03",
+          "direct_score": 0.25,
+          "propagated_score": 0.25,
+          "band": "low",
+          "components": {
+            "evidence": 0.0,
+            "independence": 0.0,
+            "falsifiability": 1.0,
+            "boundary": 1.0,
+            "contradiction_penalty": 0
+          },
+          "notes": [
+            "No supporting evidence",
+            "Fewer than two independent supporting sources"
+          ]
+        }
+      },
+      "recoveries": [
+        {
+          "failure_id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R01",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R01-NEGATION-CONFLICT-CHALLE",
+          "claim_id": "R01",
+          "strategy": "resolve_contradiction",
+          "action": "Confirm whether the claims share a boundary and preserve both pending review.",
+          "priority": 3,
+          "verification": "Both positions remain recorded; discriminating evidence resolves or scopes them."
+        },
+        {
+          "failure_id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R02",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R02-NEGATION-CONFLICT-CHALLE",
+          "claim_id": "R02",
+          "strategy": "resolve_contradiction",
+          "action": "Confirm whether the claims share a boundary and preserve both pending review.",
+          "priority": 3,
+          "verification": "Both positions remain recorded; discriminating evidence resolves or scopes them."
+        },
+        {
+          "failure_id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R03",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        }
+      ]
+    }
+  }
+}

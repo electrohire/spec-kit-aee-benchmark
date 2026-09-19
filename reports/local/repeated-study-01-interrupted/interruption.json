@@ -1,0 +1,6 @@
+{
+  "decision": "Abort the entire three-arm attempt before hidden grading, preserve all calls and available checkpoints, verify equivalent prompt selection with a more efficient preflight, then use a fresh freeze. No correctness outcome was used to select a treatment for rerun.",
+  "hidden_grading_run": false,
+  "matched_repair": "The separately scheduled matched-repair experiment may proceed with its original frozen provider; short trajectories have a separate scope.",
+  "reason": "Context preflight repeatedly rebuilds and tokenizes progressively shortened copies of complete retained history. Observed 288-290 removed messages implies 145-146 template/tokenizer iterations per request. This consumes the stage wall budget independently of model inference."
+}

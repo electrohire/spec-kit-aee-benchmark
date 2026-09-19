@@ -1,0 +1,236 @@
+"""Thin mini-SWE-agent adapter; one persistent agent and budget per attempt."""
+from __future__ import annotations
+
+import json
+import os
+import shlex
+import subprocess
+import time
+import tempfile
+import shutil
+from pathlib import Path
+
+from .accounting import Budget, BudgetExceeded, TOKEN_FIELDS
+from .experiment import verify_freeze
+from .isolation import DockerSandbox
+from .provider import OpenAIProvider
+from .store import RunLock, Store, canonical, read_json, utc, write_json
+from .workflow import AEE_PHASES, assess, grounded_claims, phase_prompt, phases
+
+
+class LimitHit(RuntimeError):
+    pass
+
+
+def remaining(deadline):
+    seconds = deadline-time.monotonic()
+    if seconds <= 0:
+        raise LimitHit("wall-time limit")
+    return seconds
+
+
+class MiniModel:
+    """mini's Model protocol with observable requests and explicit JSON actions."""
+    def __init__(self, provider, deadline):
+        self.provider, self.deadline = provider, deadline
+        self.phase, self.last = None, None
+
+    def query(self, messages):
+        cleaned = [{"role": m["role"], "content": m["content"]} for m in messages]
+        text = self.provider.query(cleaned, self.phase, min(remaining(self.deadline), 120))
+        try:
+            action = json.loads(text)
+            if not isinstance(action, dict) or action.get("action") not in ("shell", "done"):
+                raise ValueError("expected shell or done")
+            if action["action"] == "shell" and not isinstance(action.get("command"), str):
+                raise ValueError("shell command must be string")
+            self.last = action
+        except (ValueError, TypeError):
+            self.last = {"action": "invalid"}
+            action = self.last
+        return {"role": "assistant", "content": text,
+                "extra": {"actions": [action] if action["action"] == "shell" else []}}
+
+    def format_observation_messages(self, message, outputs, template_vars):
+        if self.last["action"] == "invalid":
+            return [{"role": "user", "content": 'Return one JSON object: {"action":"shell","command":"..."} or {"action":"done","summary":"..."}.'}]
+        return [{"role": "user", "content": json.dumps(o)} for o in outputs]
+
+    def get_template_vars(self):
+        return {}
+
+
+class MiniEnvironment:
+    def __init__(self, sandbox, deadline, store, identity):
+        self.sandbox, self.deadline, self.store, self.identity = sandbox, deadline, store, identity
+        self.tool_calls = 0
+
+    def execute(self, action):
+        self.tool_calls += 1
+        result = self.sandbox.execute(action["command"], timeout=min(60, remaining(self.deadline)))
+        artifact = self.store.artifact(canonical({"command": action["command"], **result}))
+        self.store.append("tools", {**self.identity, "timestamp": utc(), "artifact": artifact,
+                                    "exit_code": result["exit_code"]})
+        # Full output retained as artifact; bounded observation prevents context explosion.
+        return {**result, "stdout": result["stdout"][-24000:], "stderr": result["stderr"][-8000:],
+                "evidence_ref": artifact["path"], "source_id": artifact["sha256"]}
+
+    def get_template_vars(self):
+        return {}
+
+
+def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg):
+    # mini imports a global .env at import time; replace its discovery root first.
+    global_config = Path(tempfile.mkdtemp(prefix="mini-clean-config-"))
+    os.environ["MSWEA_GLOBAL_CONFIG_DIR"] = str(global_config)
+    os.environ["MSWEA_SILENT_STARTUP"] = "1"
+    from minisweagent.agents.default import DefaultAgent
+    shutil.rmtree(global_config)
+    if arm != "baseline":
+        sandbox.stage_workflow(root)
+    deadline = time.monotonic()+cfg["timeout_seconds"]
+    model = MiniModel(provider, deadline)
+    environment = MiniEnvironment(sandbox, deadline, store, identity)
+    agent = DefaultAgent(model, environment, system_template="", instance_template="", cost_limit=0)
+    agent.add_messages({"role": "system", "content": phase_prompt(root, "baseline", "solve")},
+                       {"role": "user", "content": task["problem_statement"]})
+    outcome, repairs = None, 0
+    for phase in phases(arm):
+        model.phase = phase
+        prompt = phase_prompt(root, arm, phase)
+        if arm == "spec_kit_aee" and phase in AEE_PHASES:
+            prompt += "\nAt phase completion include claims using this schema example (replace all example content):\n"
+            prompt += (Path(root)/".specify/extensions/aee/templates/aee-claims.json").read_text()
+        agent.add_messages({"role": "user", "content": f"Current phase: {phase}\n{prompt}"})
+        recovery = 0
+        while True:
+            if (store.root/"CANCEL").exists():
+                raise KeyboardInterrupt
+            remaining(deadline)
+            calls = [c for c in store.events("calls") if c["attempt_id"] == identity["attempt_id"]]
+            if calls and any(c["input_tokens"] is None or c["output_tokens"] is None for c in calls):
+                raise LimitHit("unknown token usage; cannot enforce attempt token ceiling")
+            used = sum(c["input_tokens"]+c["output_tokens"] for c in calls)
+            if used+cfg["max_input_tokens"]+cfg["max_output_tokens"] > cfg["token_cap"]:
+                raise LimitHit("next request token reservation exceeds attempt cap")
+            if agent.n_calls >= cfg["max_calls"]:
+                raise LimitHit("call limit")
+            agent.step()
+            if model.last["action"] != "done":
+                continue
+            # Phase completion artifacts are explicit and retained, not inferred from prose.
+            artifact = store.artifact(canonical(model.last))
+            store.append("phases", {**identity, "phase": phase, "timestamp": utc(), "artifact": artifact})
+            if arm != "spec_kit_aee" or phase not in AEE_PHASES:
+                break
+            claims = grounded_claims(model.last.get("claims") or {}, store, identity["attempt_id"])
+            result = assess(root, claims, phase, store)
+            outcome = result["outcome"]
+            agent.add_messages({"role": "user", "content": "AEE/Evaluator result: "+json.dumps(result)})
+            if outcome in ("pass", "warn"):
+                break
+            if outcome == "block" or recovery >= cfg["max_recovery_rounds"]:
+                # Preserve the patch and assessment for independent post-run disagreement analysis.
+                patch = sandbox.execute("git add -N . && git diff --binary HEAD", min(60, remaining(deadline)))
+                return {"patch": store.artifact(patch["stdout"].encode()), "assessment_outcome": outcome,
+                        "repair_count": repairs, "tool_calls": environment.tool_calls, "blocked": True}
+            recovery += 1
+            repairs += 1
+            agent.add_messages({"role": "user", "content": "Address the result within this phase. Use only task-provided facts; no human assistance. Do not change model. Submit revised claims and evidence, or retain gaps."})
+    patch = sandbox.execute("git add -N . && git diff --binary HEAD", min(60, remaining(deadline)))
+    if patch["exit_code"]:
+        raise RuntimeError("patch extraction failed")
+    return {"patch": store.artifact(patch["stdout"].encode()), "assessment_outcome": outcome,
+            "repair_count": repairs, "tool_calls": environment.tool_calls}
+
+
+def validate_live(manifest, smoke=False):
+    cfg = manifest["config"]
+    for key in ("model", "reasoning_effort", "price_snapshot_id", "price_source", "budget_authorization",
+                "global_cap_usd", "attempt_cap_usd", "max_input_tokens", "max_output_tokens", "token_cap"):
+        if not cfg.get(key):
+            raise ValueError(f"live execution requires frozen {key}")
+    if not cfg.get("reservation_bound_verified"):
+        raise ValueError("verify model context and output reservation bounds before spending")
+    if not cfg.get("grader_smoke_verified"):
+        raise ValueError("successful independent grader smoke required before model spending")
+    if not cfg.get("solver_image_audit_verified"):
+        raise ValueError("audit images for hidden grader material before model spending")
+    if not smoke and not cfg.get("real_smoke_verified"):
+        raise ValueError("successful real adapter/usage smoke required before scored generation")
+    if smoke and cfg.get("purpose") != "development_smoke":
+        raise ValueError("smoke must use a separately frozen development manifest")
+    if "OPENAI_API_KEY" not in os.environ:
+        raise ValueError("configure OPENAI_API_KEY locally; never paste credentials into chat")
+    if os.name == "nt":
+        raise ValueError("live runs require Linux/WSL2 with Docker; offline commands support Windows")
+    subprocess.run(["docker", "info"], check=True, capture_output=True, timeout=30)
+    for task in manifest["tasks"]["tasks"]:
+        if task.get("problem_statement", "").startswith("REHYDRATE_"):
+            raise ValueError("hydrate issue text from pinned upstream before freezing live runs")
+        from .isolation import docker_args
+        docker_args(task.get("image", ""), "preflight")
+        subprocess.run(["docker", "image", "inspect", task["image"]], check=True, capture_output=True, timeout=30)
+
+
+def run(root, manifest, output, arm=None, smoke=False):
+    verify_freeze(root, manifest)
+    validate_live(manifest, smoke)
+    store = Store(output)
+    with RunLock(output):
+        path = Path(output)/"freeze.json"
+        if path.exists():
+            if read_json(path) != manifest:
+                raise ValueError("resume configuration mismatch")
+        else:
+            write_json(path, manifest, exclusive=True)
+        cfg = manifest["config"]
+        budget = Budget(store, cfg["global_cap_usd"], cfg["attempt_cap_usd"])
+        outcomes = {e["attempt_id"]: e for e in store.events("attempts")}
+        tasks = {t["instance_id"]: t for t in manifest["tasks"]["tasks"]}
+        for entry in manifest["schedule"]:
+            if arm and arm != entry["arm"]:
+                continue
+            if (Path(output)/"CANCEL").exists():
+                break
+            identity = {**entry, "experiment_id": manifest["freeze_id"], "run_id": manifest["freeze_id"][:16],
+                        "purpose": cfg["purpose"]}
+            if entry["attempt_id"] in outcomes:
+                if outcomes[entry["attempt_id"]]["status"] == "started":
+                    store.append("attempts", {**identity, "status": "infrastructure_failure",
+                                              "reason": "interrupted; no automatic rerun", "timestamp": utc()})
+                continue
+            store.append("attempts", {**identity, "status": "started", "timestamp": utc()})
+            tick, result = time.monotonic(), {}
+            status, reason = "completed", None
+            try:
+                with DockerSandbox(tasks[entry["task_id"]]["image"]) as sandbox:
+                    # base commit equality prevents a patched image from masquerading as clean.
+                    check = sandbox.execute("git rev-parse HEAD && git status --porcelain")
+                    if check["exit_code"] or check["stdout"].strip() != tasks[entry["task_id"]]["base_commit"]:
+                        raise RuntimeError("solver image does not contain a clean base checkout")
+                    store.append("images", {**identity, **sandbox.details})
+                    provider = OpenAIProvider(cfg, store, budget, identity)
+                    try:
+                        result = execute_attempt(root, tasks[entry["task_id"]], entry["arm"], provider,
+                                                 sandbox, store, identity, cfg)
+                    except BaseException:
+                        # Preserve partial work before the container is destroyed. This host-only
+                        # extraction issues no model request and is separately timed.
+                        partial = sandbox.execute("git add -N . && git diff --binary HEAD", 30)
+                        if partial["exit_code"] == 0:
+                            result["patch"] = store.artifact(partial["stdout"].encode())
+                        raise
+                    if result.get("blocked"):
+                        status, reason = "limit", "AEE recovery bound"
+            except (BudgetExceeded, LimitHit) as e:
+                status, reason = "limit", str(e)
+            except KeyboardInterrupt:
+                status, reason = "cancelled", "operator interrupt"
+            except Exception as e:
+                status, reason = "error", type(e).__name__
+            store.append("attempts", {**identity, **result, "status": status, "reason": reason,
+                                      "timestamp": utc(), "duration_seconds": time.monotonic()-tick})
+            if status in ("cancelled", "error"):
+                break  # Stop on uncertain infrastructure/provider errors; retain all charges.
+    return store.events("attempts")

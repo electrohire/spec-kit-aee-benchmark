@@ -1,0 +1,1030 @@
+{
+  "schema_version": "1.0",
+  "evaluator": {
+    "id": "aee",
+    "version": "1.0.0",
+    "name": "Applied Epistemic Engineering",
+    "url": "https://github.com/electrohire/spec-kit-aee"
+  },
+  "phase": "after_implement",
+  "outcome": "gather_evidence",
+  "summary": "Assessed 8 claim(s); found 15 failure mode(s); 0 claim(s) below the 0.70 confidence threshold.",
+  "findings": [
+    {
+      "id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone 1 R01",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "objects/52/52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+          "kind": "observed",
+          "description": "apply validation and insert/remove logic present in _simulate"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 1 R01"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R01-FALSIFIABILITY-CHALLENGE",
+      "severity": "high",
+      "kind": "missing_evidence",
+      "subject": "milestone 1 R01",
+      "description": "Non-draft claim has no stated falsification test",
+      "evidence_refs": [
+        {
+          "ref": "objects/52/52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+          "kind": "observed",
+          "description": "apply validation and insert/remove logic present in _simulate"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 1 R01"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Falsifiability challenge"
+    },
+    {
+      "id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone 1 R02",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "objects/52/52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+          "kind": "observed",
+          "description": "_simulate writes to storage during simulation, preventing rollback"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 1 R02"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone 1 R03",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "kind": "observed",
+          "description": "deepcopy(op['document']) used in _simulate"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 1 R03"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R03-FALSIFIABILITY-CHALLENGE",
+      "severity": "high",
+      "kind": "missing_evidence",
+      "subject": "milestone 1 R03",
+      "description": "Non-draft claim has no stated falsification test",
+      "evidence_refs": [
+        {
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "kind": "observed",
+          "description": "deepcopy(op['document']) used in _simulate"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 1 R03"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Falsifiability challenge"
+    },
+    {
+      "id": "AEE-R03-NEGATION-CONFLICT-CHALLE",
+      "severity": "medium",
+      "kind": "contradiction",
+      "subject": "milestone 1 R03",
+      "description": "R03 may contradict R05",
+      "evidence_refs": [
+        {
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "kind": "observed",
+          "description": "deepcopy(op['document']) used in _simulate"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 1 R03"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "clarify",
+      "rationale": "Negation conflict challenge"
+    },
+    {
+      "id": "AEE-R04-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone 2 R04",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "kind": "observed",
+          "description": "type(ident) is not int correctly rejects bools"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 2 R04"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R04-FALSIFIABILITY-CHALLENGE",
+      "severity": "high",
+      "kind": "missing_evidence",
+      "subject": "milestone 2 R04",
+      "description": "Non-draft claim has no stated falsification test",
+      "evidence_refs": [
+        {
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "kind": "observed",
+          "description": "type(ident) is not int correctly rejects bools"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 2 R04"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Falsifiability challenge"
+    },
+    {
+      "id": "AEE-R05-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone 2 R05",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "objects/52/52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+          "kind": "observed",
+          "description": "preview result [1] but len(db)==1 after preview \u2014 preview mutates state"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 2 R05"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R06-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone 2 R06",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "kind": "observed",
+          "description": "_simulate reads fresh from self.db.storage.read() each call"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 2 R06"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R06-FALSIFIABILITY-CHALLENGE",
+      "severity": "high",
+      "kind": "missing_evidence",
+      "subject": "milestone 2 R06",
+      "description": "Non-draft claim has no stated falsification test",
+      "evidence_refs": [
+        {
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "kind": "observed",
+          "description": "_simulate reads fresh from self.db.storage.read() each call"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 2 R06"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Falsifiability challenge"
+    },
+    {
+      "id": "AEE-R07-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone 3 R07",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "kind": "observed",
+          "description": "token caching and comparison logic present in apply"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 3 R07"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R07-FALSIFIABILITY-CHALLENGE",
+      "severity": "high",
+      "kind": "missing_evidence",
+      "subject": "milestone 3 R07",
+      "description": "Non-draft claim has no stated falsification test",
+      "evidence_refs": [
+        {
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "kind": "observed",
+          "description": "token caching and comparison logic present in apply"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 3 R07"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Falsifiability challenge"
+    },
+    {
+      "id": "AEE-R08-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone 3 R08",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "kind": "observed",
+          "description": "tokens stored in self.tokens; preview calls _simulate without token handling"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 3 R08"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R08-FALSIFIABILITY-CHALLENGE",
+      "severity": "high",
+      "kind": "missing_evidence",
+      "subject": "milestone 3 R08",
+      "description": "Non-draft claim has no stated falsification test",
+      "evidence_refs": [
+        {
+          "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+          "kind": "observed",
+          "description": "tokens stored in self.tokens; preview calls _simulate without token handling"
+        }
+      ],
+      "provenance_refs": [
+        "milestone 3 R08"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Falsifiability challenge"
+    }
+  ],
+  "next_action": {
+    "kind": "gather_evidence",
+    "target_phase": null,
+    "message": "Pause and collect independently inspectable evidence."
+  },
+  "metadata": {
+    "timestamp": "2026-09-18T05:12:11.557402Z",
+    "artifacts_evaluated": [
+      "claims.json"
+    ],
+    "model": null,
+    "deterministic": true,
+    "aee_methodology_version": "1.0"
+  },
+  "state": {
+    "aee": {
+      "project": "aee-assessment-fd8ucdst",
+      "claims": [
+        {
+          "id": "R01",
+          "text": "apply(operations) accepts list of {'op':'insert','document':dict} or {'op':'remove','doc_id':positive_int} ops, returns list of inserted IDs, raises ValueError on unknown/malformed ops",
+          "kind": "requirement",
+          "status": "supported",
+          "boundary": [
+            "operations must be list of dicts",
+            "doc_id must be positive int, not bool"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "objects/52/52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+              "kind": "observed",
+              "direction": "supports",
+              "source_quality": "test",
+              "description": "apply validation and insert/remove logic present in _simulate",
+              "source_id": "52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone 1 R01",
+          "domain": "",
+          "confidence": 0.75,
+          "confidence_band": "high",
+          "failures": [
+            {
+              "id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R01",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false
+            },
+            {
+              "id": "AEE-R01-FALSIFIABILITY-CHALLENGE",
+              "claim_id": "R01",
+              "challenge": "Falsifiability challenge",
+              "breakpoint": "Non-draft claim has no stated falsification test",
+              "severity": "high",
+              "category": "missing_evidence",
+              "recovery_hint": "Define an observation that would show the claim is wrong.",
+              "resolved": false
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "id": "R02",
+          "text": "Batch application is atomic: validate and apply sequentially, restore complete pre-batch data on any error including missing doc_id",
+          "kind": "requirement",
+          "status": "unsupported",
+          "boundary": [
+            "rollback must restore pre-batch state"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "objects/52/52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+              "kind": "observed",
+              "direction": "supports",
+              "source_quality": "test",
+              "description": "_simulate writes to storage during simulation, preventing rollback",
+              "source_id": "52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "test_public_atomic"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone 1 R02",
+          "domain": "",
+          "confidence": 0.9,
+          "confidence_band": "high",
+          "failures": [
+            {
+              "id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R02",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "id": "R03",
+          "text": "Inserted data must not alias caller input; mutating operation after apply cannot mutate database",
+          "kind": "requirement",
+          "status": "supported",
+          "boundary": [
+            "deepcopy used for documents"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+              "kind": "observed",
+              "direction": "supports",
+              "source_quality": "test",
+              "description": "deepcopy(op['document']) used in _simulate",
+              "source_id": "ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone 1 R03",
+          "domain": "",
+          "confidence": 0.75,
+          "confidence_band": "high",
+          "failures": [
+            {
+              "id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R03",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false
+            },
+            {
+              "id": "AEE-R03-FALSIFIABILITY-CHALLENGE",
+              "claim_id": "R03",
+              "challenge": "Falsifiability challenge",
+              "breakpoint": "Non-draft claim has no stated falsification test",
+              "severity": "high",
+              "category": "missing_evidence",
+              "recovery_hint": "Define an observation that would show the claim is wrong.",
+              "resolved": false
+            },
+            {
+              "id": "AEE-R03-NEGATION-CONFLICT-CHALLE",
+              "claim_id": "R03",
+              "challenge": "Negation conflict challenge",
+              "breakpoint": "R03 may contradict R05",
+              "severity": "medium",
+              "category": "contradiction",
+              "recovery_hint": "Confirm whether the claims share a boundary and preserve both pending review.",
+              "resolved": false
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "id": "R04",
+          "text": "Reject bool as doc_id; validate operations structurally before committing; raise ValueError for unsupported fields, non-list ops, non-dict documents; accept empty dicts",
+          "kind": "requirement",
+          "status": "supported",
+          "boundary": [
+            "bool is int subclass but must be rejected"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+              "kind": "observed",
+              "direction": "supports",
+              "source_quality": "test",
+              "description": "type(ident) is not int correctly rejects bools",
+              "source_id": "ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone 2 R04",
+          "domain": "",
+          "confidence": 0.75,
+          "confidence_band": "high",
+          "failures": [
+            {
+              "id": "AEE-R04-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R04",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false
+            },
+            {
+              "id": "AEE-R04-FALSIFIABILITY-CHALLENGE",
+              "claim_id": "R04",
+              "challenge": "Falsifiability challenge",
+              "breakpoint": "Non-draft claim has no stated falsification test",
+              "severity": "high",
+              "category": "missing_evidence",
+              "recovery_hint": "Define an observation that would show the claim is wrong.",
+              "resolved": false
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "id": "R05",
+          "text": "preview(operations) returns inserted IDs that apply would produce without modifying data or consuming IDs",
+          "kind": "requirement",
+          "status": "unsupported",
+          "boundary": [
+            "preview must leave db unchanged"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "objects/52/52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+              "kind": "observed",
+              "direction": "supports",
+              "source_quality": "test",
+              "description": "preview result [1] but len(db)==1 after preview \u2014 preview mutates state",
+              "source_id": "52f00f2c15435260c7f63188d9f3775c03bb3d17eeb7d0e721946df2c075bc3c",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "test_public_preview"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone 2 R05",
+          "domain": "",
+          "confidence": 0.9,
+          "confidence_band": "high",
+          "failures": [
+            {
+              "id": "AEE-R05-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R05",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "id": "R06",
+          "text": "Direct db.insert operations between wrapper calls must be seen; no stale snapshot caching",
+          "kind": "requirement",
+          "status": "supported",
+          "boundary": [
+            "reads fresh from storage each time"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+              "kind": "observed",
+              "direction": "supports",
+              "source_quality": "test",
+              "description": "_simulate reads fresh from self.db.storage.read() each call",
+              "source_id": "ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone 2 R06",
+          "domain": "",
+          "confidence": 0.75,
+          "confidence_band": "high",
+          "failures": [
+            {
+              "id": "AEE-R06-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R06",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false
+            },
+            {
+              "id": "AEE-R06-FALSIFIABILITY-CHALLENGE",
+              "claim_id": "R06",
+              "challenge": "Falsifiability challenge",
+              "breakpoint": "Non-draft claim has no stated falsification test",
+              "severity": "high",
+              "category": "missing_evidence",
+              "recovery_hint": "Define an observation that would show the claim is wrong.",
+              "resolved": false
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "id": "R07",
+          "text": "apply(operations, token=None) supports idempotency token; repeating identical batch/token returns detached copy; different ops with same token raises ValueError; failed batches don't consume token",
+          "kind": "requirement",
+          "status": "supported",
+          "boundary": [
+            "token must be nonempty string"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+              "kind": "observed",
+              "direction": "supports",
+              "source_quality": "test",
+              "description": "token caching and comparison logic present in apply",
+              "source_id": "ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone 3 R07",
+          "domain": "",
+          "confidence": 0.75,
+          "confidence_band": "high",
+          "failures": [
+            {
+              "id": "AEE-R07-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R07",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false
+            },
+            {
+              "id": "AEE-R07-FALSIFIABILITY-CHALLENGE",
+              "claim_id": "R07",
+              "challenge": "Falsifiability challenge",
+              "breakpoint": "Non-draft claim has no stated falsification test",
+              "severity": "high",
+              "category": "missing_evidence",
+              "recovery_hint": "Define an observation that would show the claim is wrong.",
+              "resolved": false
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "id": "R08",
+          "text": "Token bookkeeping stays in BatchWriter, never in user documents; preview never records/consumes token",
+          "kind": "requirement",
+          "status": "supported",
+          "boundary": [
+            "tokens stored in self.tokens dict only"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "objects/ff/ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+              "kind": "observed",
+              "direction": "supports",
+              "source_quality": "test",
+              "description": "tokens stored in self.tokens; preview calls _simulate without token handling",
+              "source_id": "ffd73a8adda38c8a206e4257d5d728e5c3004c7a69d8f873a7c9e83f429e9f59",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone 3 R08",
+          "domain": "",
+          "confidence": 0.75,
+          "confidence_band": "high",
+          "failures": [
+            {
+              "id": "AEE-R08-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R08",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false
+            },
+            {
+              "id": "AEE-R08-FALSIFIABILITY-CHALLENGE",
+              "claim_id": "R08",
+              "challenge": "Falsifiability challenge",
+              "breakpoint": "Non-draft claim has no stated falsification test",
+              "severity": "high",
+              "category": "missing_evidence",
+              "recovery_hint": "Define an observation that would show the claim is wrong.",
+              "resolved": false
+            }
+          ],
+          "metadata": {}
+        }
+      ],
+      "scores": {
+        "R01": {
+          "claim_id": "R01",
+          "direct_score": 0.75,
+          "propagated_score": 0.75,
+          "band": "high",
+          "components": {
+            "evidence": 1.0,
+            "independence": 0.5,
+            "falsifiability": 0.0,
+            "boundary": 1.0,
+            "contradiction_penalty": 0
+          },
+          "notes": [
+            "Fewer than two independent supporting sources"
+          ]
+        },
+        "R02": {
+          "claim_id": "R02",
+          "direct_score": 0.9,
+          "propagated_score": 0.9,
+          "band": "high",
+          "components": {
+            "evidence": 1.0,
+            "independence": 0.5,
+            "falsifiability": 1.0,
+            "boundary": 1.0,
+            "contradiction_penalty": 0
+          },
+          "notes": [
+            "Fewer than two independent supporting sources"
+          ]
+        },
+        "R03": {
+          "claim_id": "R03",
+          "direct_score": 0.75,
+          "propagated_score": 0.75,
+          "band": "high",
+          "components": {
+            "evidence": 1.0,
+            "independence": 0.5,
+            "falsifiability": 0.0,
+            "boundary": 1.0,
+            "contradiction_penalty": 0
+          },
+          "notes": [
+            "Fewer than two independent supporting sources"
+          ]
+        },
+        "R04": {
+          "claim_id": "R04",
+          "direct_score": 0.75,
+          "propagated_score": 0.75,
+          "band": "high",
+          "components": {
+            "evidence": 1.0,
+            "independence": 0.5,
+            "falsifiability": 0.0,
+            "boundary": 1.0,
+            "contradiction_penalty": 0
+          },
+          "notes": [
+            "Fewer than two independent supporting sources"
+          ]
+        },
+        "R05": {
+          "claim_id": "R05",
+          "direct_score": 0.9,
+          "propagated_score": 0.9,
+          "band": "high",
+          "components": {
+            "evidence": 1.0,
+            "independence": 0.5,
+            "falsifiability": 1.0,
+            "boundary": 1.0,
+            "contradiction_penalty": 0
+          },
+          "notes": [
+            "Fewer than two independent supporting sources"
+          ]
+        },
+        "R06": {
+          "claim_id": "R06",
+          "direct_score": 0.75,
+          "propagated_score": 0.75,
+          "band": "high",
+          "components": {
+            "evidence": 1.0,
+            "independence": 0.5,
+            "falsifiability": 0.0,
+            "boundary": 1.0,
+            "contradiction_penalty": 0
+          },
+          "notes": [
+            "Fewer than two independent supporting sources"
+          ]
+        },
+        "R07": {
+          "claim_id": "R07",
+          "direct_score": 0.75,
+          "propagated_score": 0.75,
+          "band": "high",
+          "components": {
+            "evidence": 1.0,
+            "independence": 0.5,
+            "falsifiability": 0.0,
+            "boundary": 1.0,
+            "contradiction_penalty": 0
+          },
+          "notes": [
+            "Fewer than two independent supporting sources"
+          ]
+        },
+        "R08": {
+          "claim_id": "R08",
+          "direct_score": 0.75,
+          "propagated_score": 0.75,
+          "band": "high",
+          "components": {
+            "evidence": 1.0,
+            "independence": 0.5,
+            "falsifiability": 0.0,
+            "boundary": 1.0,
+            "contradiction_penalty": 0
+          },
+          "notes": [
+            "Fewer than two independent supporting sources"
+          ]
+        }
+      },
+      "recoveries": [
+        {
+          "failure_id": "AEE-R01-FALSIFIABILITY-CHALLENGE",
+          "claim_id": "R01",
+          "strategy": "gather_evidence",
+          "action": "Define an observation that would show the claim is wrong.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-R03-FALSIFIABILITY-CHALLENGE",
+          "claim_id": "R03",
+          "strategy": "gather_evidence",
+          "action": "Define an observation that would show the claim is wrong.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-R04-FALSIFIABILITY-CHALLENGE",
+          "claim_id": "R04",
+          "strategy": "gather_evidence",
+          "action": "Define an observation that would show the claim is wrong.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-R06-FALSIFIABILITY-CHALLENGE",
+          "claim_id": "R06",
+          "strategy": "gather_evidence",
+          "action": "Define an observation that would show the claim is wrong.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-R07-FALSIFIABILITY-CHALLENGE",
+          "claim_id": "R07",
+          "strategy": "gather_evidence",
+          "action": "Define an observation that would show the claim is wrong.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-R08-FALSIFIABILITY-CHALLENGE",
+          "claim_id": "R08",
+          "strategy": "gather_evidence",
+          "action": "Define an observation that would show the claim is wrong.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R01",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R02",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R03",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R03-NEGATION-CONFLICT-CHALLE",
+          "claim_id": "R03",
+          "strategy": "resolve_contradiction",
+          "action": "Confirm whether the claims share a boundary and preserve both pending review.",
+          "priority": 3,
+          "verification": "Both positions remain recorded; discriminating evidence resolves or scopes them."
+        },
+        {
+          "failure_id": "AEE-R04-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R04",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R05-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R05",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R06-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R06",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R07-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R07",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R08-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R08",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0",
+  "methodology_version": "1.0",
+  "project": "aee-assessment-6snxi1m4",
+  "phase": "after_specify",
+  "outcome": "gather_evidence",
+  "summary": "Assessed 1 claim(s); found 2 failure mode(s); 1 claim(s) below the 0.70 confidence threshold.",
+  "created_at": "2026-09-17T20:27:02.938855Z",
+  "claims": [
+    {
+      "id": "REQ-0000",
+      "text": "The GPU exploration runner meets GPU-001 through GPU-006 within its declared scope. Requirement 0.",
+      "kind": "requirement",
+      "status": "supported",
+      "boundary": [
+        "This exercise only"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "model-response",
+          "kind": "asserted",
+          "direction": "supports",
+          "source_quality": "model",
+          "description": "Unverified model proposal",
+          "source_id": "",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "An independent upstream test fails"
+      ],
+      "uncertainty": "high",
+      "severity": "medium",
+      "source_ref": "model-response",
+      "domain": "",
+      "confidence": 0.3775,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-REQ-0000-EVIDENCE-GROUNDING-CHALL",
+          "claim_id": "REQ-0000",
+          "challenge": "Evidence-grounding challenge",
+          "breakpoint": "Claim is labeled supported without observed supporting evidence",
+          "severity": "high",
+          "category": "unsupported_claim",
+          "recovery_hint": "Attach independently inspectable evidence or downgrade the status.",
+          "resolved": false
+        },
+        {
+          "id": "AEE-REQ-0000-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "REQ-0000",
+          "challenge": "Independent-evidence challenge",
+          "breakpoint": "Only model self-attestation supports the claim",
+          "severity": "high",
+          "category": "unverified_assertion",
+          "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "resolved": false
+        }
+      ],
+      "metadata": {}
+    }
+  ],
+  "scores": {
+    "REQ-0000": {
+      "claim_id": "REQ-0000",
+      "direct_score": 0.3775,
+      "propagated_score": 0.3775,
+      "band": "low",
+      "components": {
+        "evidence": 0.05,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "notes": [
+        "No observed supporting evidence",
+        "Fewer than two independent supporting sources"
+      ]
+    }
+  },
+  "recoveries": [
+    {
+      "failure_id": "AEE-REQ-0000-EVIDENCE-GROUNDING-CHALL",
+      "claim_id": "REQ-0000",
+      "strategy": "gather_evidence",
+      "action": "Attach independently inspectable evidence or downgrade the status.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-REQ-0000-INDEPENDENT-EVIDENCE-CHA",
+      "claim_id": "REQ-0000",
+      "strategy": "gather_evidence",
+      "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    }
+  ],
+  "metadata": {
+    "threshold": 0.7,
+    "input": "C:/Users/trist/Development/AXIOVEX/spec-kit-aee-benchmark/artifacts/tmp-gpu/aee-assessment-6snxi1m4/claims.json"
+  }
+}

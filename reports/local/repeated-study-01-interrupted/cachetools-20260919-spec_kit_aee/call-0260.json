@@ -1,0 +1,60 @@
+{
+  "budget_debit": 28574,
+  "ended_at": "2026-09-18T04:11:40.066937+00:00",
+  "max_output": 4096,
+  "original_sha256": "c4a35113a8841d41f273af60942ce2b915b4dcd153ad18bfcf7510b4b77bfe82",
+  "phase": "tasks",
+  "preflight_input_tokens": 28140,
+  "removed_history_messages": 92,
+  "request_seconds": 5.952999999979511,
+  "request_sha256": "e054dbc6b8d1e70e1e3feff5976fca9f9f6bbb7ae941a833d68b45526e87b7d7",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\n  \"action\": \"shell\",\n  \"command\": \"PYTHONPATH=src:. python3 -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# Test R01: tags validation\\ntry:\\n    TaggedCache(2).put('a', 1, 'bare_string')\\n    assert False\\nexcept ValueError:\\n    print('bare string rejected')\\n\\ntry:\\n    TaggedCache(2).put('a', 1, [1, 2])\\n    assert False\\nexcept ValueError:\\n    print('non-string entries rejected')\\n\\n# Test deduplication\\nc = TaggedCache(5)\\nc.put('a', 1, ['x', 'x', 'y'])\\nassert 'a' in c._tags.get('x', set())\\nassert 'a' in c._tags.get('y', set())\\nassert len(c._tags.get('x', set())) == 1\\nprint('Deduplication works')\\n\\n# Test R02: replacing a key removes old tag memberships\\nc2 = TaggedCache(5)\\nc2.put('a', 1, ['old'])\\nassert 'a' in c2._tags.get('old', set())\\nc2.put('a', 2, ['new'])\\nassert 'a' not in c2._tags.get('old', set())\\nassert 'a' in c2._tags.get('new', set())\\nprint('Old tags removed on replacement')\\n\\n# Test R02: invalidate returns count\\nc3 = TaggedCache(5)\\nc3.put('a', 1, ['x'])\\nc3.put('b', 2, ['x'])\\nc3.put('c', 3, ['y'])\\nassert c3.invalidate('x') == 2\\nassert c3.invalidate('x') == 0\\nprint('invalidate count correct')\\n\\\"\\n\"}",
+          "reasoning_sha256": "408ab6e7dce5d4287e00dfc6991b5bf990266d4028b2e5fdd9c3c8365490e540",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789704700,
+    "id": "chatcmpl-vPqzqNi1isIndXc5Um8ADNCBQcHqviPU",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 27702,
+      "predicted_ms": 5231.529,
+      "predicted_n": 434,
+      "predicted_per_second": 82.76738980133723,
+      "predicted_per_token_ms": 12.08205311778291,
+      "prompt_ms": 689.077,
+      "prompt_n": 438,
+      "prompt_per_second": 635.6328828273183,
+      "prompt_per_token_ms": 1.5732351598173515
+    },
+    "usage": {
+      "completion_tokens": 434,
+      "prompt_tokens": 28140,
+      "prompt_tokens_details": {
+        "cached_tokens": 27702
+      },
+      "total_tokens": 28574
+    }
+  },
+  "seconds": 5.952999999979511,
+  "stage": 3,
+  "started_at": "2026-09-18T04:11:34.106001+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 434,
+    "prompt_tokens": 28140,
+    "prompt_tokens_details": {
+      "cached_tokens": 27702
+    },
+    "total_tokens": 28574
+  }
+}

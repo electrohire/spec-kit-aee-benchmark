@@ -1,0 +1,60 @@
+{
+  "budget_debit": 17294,
+  "ended_at": "2026-09-18T04:56:39.851077+00:00",
+  "max_output": 4096,
+  "original_sha256": "718951c6ae1029de44deff5788b3ae3cb650687088d6ae8442267a3e1214209f",
+  "phase": "repair",
+  "preflight_input_tokens": 16745,
+  "removed_history_messages": 0,
+  "request_seconds": 6.797000000020489,
+  "request_sha256": "e2ccdfa8245ff9b30476d1b5d3a91725d2f4ce5efb065145e16e2960e30d0645",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"done\",\"summary\":\"All 220 tests pass (216 upstream + 4 acceptance_public.py). The implementation in src/cachetools/tagged.py satisfies all requirements R01-R08:\\n\\n- R01: put(key,value,tags=()) with deep copy on input/output, tags validation (rejects bare string and non-string entries with ValueError before mutation), tag deduplication via set\\n- R02: invalidate(tag) returns count of removed entries, replacement removes old tag memberships, LRU eviction preserves no stale memberships, get refreshes LRU recency\\n- R03: maxsize validated as positive non-bool integer, invalid replacement leaves old state unchanged, values cost one capacity slot\\n- R04: invalidate_many(tags, mode='any'|'all') with union/intersection semantics, empty tags removes zero, invalid mode rejected before mutation\\n- R05: resize(maxsize) validates input first, preserves surviving entries and LRU order, shrinking evicts LRU, growing does not evict, failed resize preserves state, maxsize property reports capacity\\n- R06: Tags consumed once (generators supported via list() conversion), values deeply copied on get and put including nested structures\\n- R07: Constructor accepts timer=None (default time.monotonic), put accepts ttl=None (no expiry) or finite nonnegative int/float (not bool), invalid TTL raises ValueError before mutation, TTL=0 immediately expired\\n- R08: Expired entries removed before get/put/len/resize/invalidation without touching recency of surviving entries, overwriting replaces prior expiry, tag invalidation counts only live entries, missing/expired get raises KeyError\"}",
+          "reasoning_sha256": "5ee85715874a227079a20168ee8d3751e9a0ee31f1c917b732fbd7bf71f57b5a",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789707399,
+    "id": "chatcmpl-Pc7Z6HJ4AlR4E0uv4XLB36Em0eqxmdFY",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 16085,
+      "predicted_ms": 6203.566,
+      "predicted_n": 549,
+      "predicted_per_second": 88.3362891601379,
+      "predicted_per_token_ms": 11.320375912408759,
+      "prompt_ms": 571.653,
+      "prompt_n": 660,
+      "prompt_per_second": 1154.546551841764,
+      "prompt_per_token_ms": 0.8661409090909091
+    },
+    "usage": {
+      "completion_tokens": 549,
+      "prompt_tokens": 16745,
+      "prompt_tokens_details": {
+        "cached_tokens": 16085
+      },
+      "total_tokens": 17294
+    }
+  },
+  "seconds": 6.797000000020489,
+  "stage": 3,
+  "started_at": "2026-09-18T04:56:33.039281+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 549,
+    "prompt_tokens": 16745,
+    "prompt_tokens_details": {
+      "cached_tokens": 16085
+    },
+    "total_tokens": 17294
+  }
+}

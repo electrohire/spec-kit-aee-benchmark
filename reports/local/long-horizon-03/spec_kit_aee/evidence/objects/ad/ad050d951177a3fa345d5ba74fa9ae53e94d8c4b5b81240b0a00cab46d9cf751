@@ -1,0 +1,181 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-001, FR-009"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "TinyDB.__init__.py shows constructor accepts storage, args, kwargs forwarded to storage",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/9c/9c0d50f76f96c101e97a797b39109c8839dd414be19d2b7fe4c3ce5d3a01a47a",
+          "source_id": "9c0d50f76f96c101e97a797b39109c8839dd414be19d2b7fe4c3ce5d3a01a47a",
+          "source_quality": "primary"
+        }
+      ],
+      "falsification_tests": [
+        "Passing a constructor argument that TinyDB rejects should raise the same error from TransactionalTinyDB",
+        "Calling db.table() and db.insert() outside a transaction should behave identically to TinyDB"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "task R01",
+      "status": "unsupported",
+      "text": "TransactionalTinyDB accepts the same constructor arguments as TinyDB; existing nontransactional operations and named/default tables work normally.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-002"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "with db.transaction() as current: should set current is db to True",
+        "table.insert() inside transaction should be visible via table.all() inside same transaction"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "task R02",
+      "status": "unsupported",
+      "text": "with db.transaction() as current: yields the same db. Mutations through the db or table handles obtained before entry are visible within the transaction.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-003"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R02"
+      ],
+      "evidence": [
+        {
+          "description": "Storage.write is the single abstraction for persisting the full database dict",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/16/164c5aa31af435cf1f923808452a4fdbcf68e18487ae4842cbbe38bba70f4e67",
+          "source_id": "164c5aa31af435cf1f923808452a4fdbcf68e18487ae4842cbbe38bba70f4e67",
+          "source_quality": "primary"
+        }
+      ],
+      "falsification_tests": [
+        "Instrument storage.write during transaction: count should be 0 before commit, 1 after commit",
+        "Two table.insert() calls in one transaction should produce exactly one storage.write"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "task R03",
+      "status": "unsupported",
+      "text": "No backend storage.write call occurs during a transaction. Successful outer exit writes the complete logical database exactly once, even for multiple tables.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-004"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R03"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "Raising ValueError inside transaction should leave storage.writes at 0",
+        "Raising KeyboardInterrupt inside transaction should not corrupt db state",
+        "A second transaction after a failed one should succeed"
+      ],
+      "id": "R04",
+      "kind": "requirement",
+      "source_ref": "task R04",
+      "status": "unsupported",
+      "text": "Any exception, including BaseException subclasses, propagates out and rolls back the entire scope with zero backend writes. A later transaction still works.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-005"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R04"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "update(lambda doc: doc['nested'].append(2)) inside failed transaction should leave nested value unchanged",
+        "table.all() before transaction should not include documents inserted in failed transaction"
+      ],
+      "id": "R05",
+      "kind": "requirement",
+      "source_ref": "task R05",
+      "status": "unsupported",
+      "text": "Rollback restores nested mutable values changed through supported callable updates, table creation/deletion, and preexisting table-handle query results. Query caches must not return data from discarded work.",
+      "uncertainty": "medium"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-006"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R05"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "Insert after rollback should return an ID not equal to any ID consumed during the rolled-back transaction",
+        "db.all() should not contain duplicate document IDs after rollback+insert"
+      ],
+      "id": "R06",
+      "kind": "requirement",
+      "source_ref": "task R06",
+      "status": "unsupported",
+      "text": "After commit/rollback, existing handles can insert without ID collisions. Exact reuse of IDs consumed by rolled-back work is not required.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-007"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [],
+      "falsification_tests": [
+        "with db.transaction(): inside that, with db.transaction(): should raise RuntimeError",
+        "Insert after catching RuntimeError from nested transaction should succeed"
+      ],
+      "id": "R07",
+      "kind": "requirement",
+      "source_ref": "task R07",
+      "status": "unsupported",
+      "text": "For this initial release, nesting transaction() raises RuntimeError before changing the parent transaction. A caught nesting error leaves the parent usable.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-008, FR-009"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R03"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "Close db, reopen from same file, verify committed documents are present",
+        "Rollback, close, reopen, verify pre-transaction documents are present",
+        "python -m pytest tests/ should pass with no modifications"
+      ],
+      "id": "R08",
+      "kind": "requirement",
+      "source_ref": "task R08",
+      "status": "unsupported",
+      "text": "A committed JSONStorage database survives close/reopen; rollback leaves its persisted state unchanged. The existing upstream test suite continues to pass.",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

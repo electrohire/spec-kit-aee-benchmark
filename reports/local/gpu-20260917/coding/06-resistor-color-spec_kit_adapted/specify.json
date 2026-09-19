@@ -1,0 +1,53 @@
+{
+  "ended_at": "2026-09-17T20:31:24.111446+00:00",
+  "original_record_sha256": "c42e8df8c98a026ab6114042a8b8cffbca9d6883adc3f0c53b651038bc7f0fd0",
+  "request_omission": "Task text omitted; regenerate from frozen upstream inputs and runner.",
+  "request_sha256": "5d2ef2293a7e0c0a9520535e1b6a46c65e1775e2c5cfc3982ab268f4e8435289",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "## Extension Hooks\n\n**Automatic Pre-Hook**: speckit-git.commit\nExecuting: `$speckit-git-commit`\nEXECUTE_COMMAND: speckit-git.commit\n\n## Outline\n\n1. **Run Template Resolver**:\n   - Execute `python3 .specify/scripts/python/resolve_template.py constitution-template --json` from the repository root.\n   - Parse the output as `TEMPLATE_CONTENT`.\n\n2. **Collect Placeholder Values**:\n   - Use user input for values if provided.\n   - Infer values from existing repo context if not provided.\n   - Determine governance dates and version bump type.\n\n3. **Draft Constitution Content**:\n   - Replace placeholders with concrete text.\n   - Ensure proper structure and clarity.\n\n4. **Produce Sync Impact Report**:\n   - Include version change, modified principles, added/removed sections, and TODOs.\n\n5. **Validation**:\n   - Ensure no unexplained bracket tokens.\n   - Verify version line matches report.\n   - Check dates and principles for clarity.\n\n6. **Write Constitution**:\n   - Overwrite `.specify/memory/constitution.md` with the completed document.\n\n7. **Output Summary**:\n   - Provide new version, bump rationale, TODOs, and suggested commit message.\n   - Include `Next Actions` section for deferred intents.\n\n## Post-Execution Checks\n\n**Automatic Hook**: speckit-git.commit\nExecuting: `$speckit-git-commit`\nEXECUTE_COMMAND: speckit-git.commit\nCURRENT PHASE specify\n---\nname: \"speckit-specify\"\ndescription: \"Create or update the feature specification from a natural language feature description.\"\ncompatibility: \"Requires spec-kit project structure with .specify/ directory\"\nmetadata:\n  author: \"github-spec-kit\"\n  source: \"templates/commands/specify.md\"\n---",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789677084,
+    "id": "chatcmpl-r0AMxgzoXRPtZvOZYUZvsM5LYDwXMHJv",
+    "model": "local-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 8965.592,
+      "predicted_n": 370,
+      "predicted_per_second": 41.15734911871966,
+      "predicted_per_token_ms": 24.2969972899729,
+      "prompt_ms": 1660.517,
+      "prompt_n": 4770,
+      "prompt_per_second": 2872.5993169597177,
+      "prompt_per_token_ms": 0.3481167714884696
+    },
+    "usage": {
+      "completion_tokens": 370,
+      "prompt_tokens": 4770,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 5140
+    }
+  },
+  "seconds": 10.937999999994645,
+  "started_at": "2026-09-17T20:31:13.173174+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 370,
+    "prompt_tokens": 4770,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 5140
+  }
+}

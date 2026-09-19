@@ -1,0 +1,60 @@
+{
+  "budget_debit": 28475,
+  "ended_at": "2026-09-18T04:11:08.124627+00:00",
+  "max_output": 4096,
+  "original_sha256": "76579f40c173727fd0489fcfa59f649170b0c55852c14ffc6e74ae37b2b361bd",
+  "phase": "plan",
+  "preflight_input_tokens": 27983,
+  "removed_history_messages": 86,
+  "request_seconds": 6.5939999999827705,
+  "request_sha256": "44dbc20a88cab6a46f2de813db3a7535d63e71c8843a3fc8954ab4d9a39160fa",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\n  \"action\": \"shell\",\n  \"command\": \"PYTHONPATH=src:. python3 -c \\\"\\nfrom cachetools.tagged import TaggedCache\\nimport copy\\n\\n# Test R01: basic put/get with deep copy\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\nassert c.get('a') == 1\\nv = c.get('a')\\nv2 = c.get('a')\\nassert v is not v2  # detached copies\\n\\n# Test deep copy of nested structures\\nnested = {'a': [1, 2, {'b': 3}]}\\nc.put('n', nested)\\nr = c.get('n')\\nr['a'][2]['b'] = 99\\nassert c.get('n')['a'][2]['b'] == 3  # original unchanged\\n\\n# Test R02: invalidate\\nc.put('b', 2, ['x'])\\nc.put('c', 3, ['y'])\\nassert c.invalidate('x') == 2\\nassert c.get('c') == 3\\nassert c.invalidate('x') == 0  # no more x entries\\n\\n# Test R03: maxsize validation\\ntry:\\n    TaggedCache(True)\\n    assert False, 'should raise'\\nexcept ValueError:\\n    pass\\ntry:\\n    TaggedCache(0)\\n    assert False\\nexcept ValueError:\\n    pass\\ntry:\\n    TaggedCache(-1)\\n    assert False\\nexcept ValueError:\\n    pass\\n\\n# Test LRU eviction\\nc2 = TaggedCache(2)\\nc2.put('a', 1, ['x'])\\nc2.put('b', 2, ['y'])\\nc2.put('c', 3, ['z'])  # should evict 'a'\\ntry:\\n    c2.get('a')\\n    assert False, 'should raise KeyError'\\nexcept KeyError:\\n    pass\\nassert c2.get('b') == 2\\nassert c2.get('c') == 3\\n\\nprint('All basic checks passed')\\n\\\"\\n\"}",
+          "reasoning_sha256": "511284fd80c40ca66161c2148ed6a02690f8b2d667e311cbc995651e548aa00d",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789704668,
+    "id": "chatcmpl-IuxsfuepcNZqEntm4DEm7QgbpHxGj7kl",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 27574,
+      "predicted_ms": 5936.255,
+      "predicted_n": 492,
+      "predicted_per_second": 82.71208025935543,
+      "predicted_per_token_ms": 12.090132382892056,
+      "prompt_ms": 621.723,
+      "prompt_n": 409,
+      "prompt_per_second": 657.8492351095264,
+      "prompt_per_token_ms": 1.5201051344743275
+    },
+    "usage": {
+      "completion_tokens": 492,
+      "prompt_tokens": 27983,
+      "prompt_tokens_details": {
+        "cached_tokens": 27574
+      },
+      "total_tokens": 28475
+    }
+  },
+  "seconds": 6.5939999999827705,
+  "stage": 3,
+  "started_at": "2026-09-18T04:11:01.521515+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 492,
+    "prompt_tokens": 27983,
+    "prompt_tokens_details": {
+      "cached_tokens": 27574
+    },
+    "total_tokens": 28475
+  }
+}

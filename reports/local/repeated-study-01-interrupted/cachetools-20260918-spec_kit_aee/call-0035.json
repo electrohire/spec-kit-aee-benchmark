@@ -1,0 +1,60 @@
+{
+  "budget_debit": 29551,
+  "ended_at": "2026-09-18T04:40:48.668653+00:00",
+  "max_output": 4096,
+  "original_sha256": "1036f8a1e49b0453effc2107205b8a544fe0f24f62a1353b7c21ce004d46e621",
+  "phase": "plan",
+  "preflight_input_tokens": 28384,
+  "removed_history_messages": 0,
+  "request_seconds": 15.030999999959022,
+  "request_sha256": "8c5082bed305e3b7d6cc83876956f27f98c130f78cb0b16ad9d6ab1e1b602214",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\", \"command\": \"cd /testbed && cat > specs/001-transactions/research.md << 'RESEARCH_EOF'\\n# Research: TaggedCache Design Decisions\\n\\n## Research Task: TaggedCache Architecture\\n\\n**Decision**: Use composition over inheritance for TaggedCache\\n\\n**Rationale**: \\n- LRUCache has `__getitem__` and `__setitem__` that directly store/retrieve values from `self.__data`\\n- TaggedCache needs deep-copy on both input and output, which would conflict with LRUCache's direct reference semantics\\n- Inheriting would require overriding `__setitem__`, `__getitem__`, `__delitem__`, and `popitem` \u2014 a fragile base class problem\\n- Composition cleanly delegates storage to LRUCache while TaggedCache controls the copy semantics\\n\\n**Alternatives considered**:\\n1. **Inheritance**: Would require extensive method overriding and careful delegation. Risk of breaking when LRUCache internals change.\\n2. **Independent implementation**: Would duplicate LRUCache logic. Violates D4 (prefer simple scoped implementations).\\n3. **Composition (chosen)**: Clean separation of concerns. TaggedCache owns the tag index; LRUCache owns the storage.\\n\\n## Research Task: Tag Index Design\\n\\n**Decision**: Two-index design with `_key_tags` (key \u2192 frozenset) and `_tag_keys` (tag \u2192 set of keys)\\n\\n**Rationale**:\\n- `_key_tags` enables O(1) lookup of a key's tags for replacement (removing old tag memberships)\\n- `_tag_keys` enables O(n) invalidation by tag where n = entries with that tag\\n- Both indexes are updated atomically on put/delete/eviction\\n- Using `frozenset` for tag storage per key ensures immutability and hashability\\n\\n**Alternatives considered**:\\n1. **Single dict of sets**: Would require O(n) scan to find keys by tag. Less efficient for invalidate.\\n2. **Inverted index with counters**: Adds complexity for marginal benefit. Not needed for this scope.\\n\\n## Research Task: Deep Copy Strategy\\n\\n**Decision**: Use `copy.deepcopy()` from Python stdlib for both input (put) and output (get)\\n\\n**Rationale**:\\n- `copy.deepcopy` is the standard Python approach for detached copies\\n- Values are arbitrary Python objects; `copy.deepcopy` handles nested structures, circular references, and custom `__deepcopy__` methods\\n- Performance impact is acceptable for a cache library; users who need speed can store simple types\\n\\n**Alternatives considered**:\\n1. **Shallow copy**: Would not satisfy the \\\"detached\\\" deep copy requirement for nested mutable objects.\\n2. **Serialization (pickle)**: Overkill; doesn't handle all object types (e.g., file handles, sockets).\\n3. **Custom copy protocol**: Adds complexity for minimal benefit over stdlib.\\n\\n## Research Task: maxsize Validation\\n\\n**Decision**: Validate `maxsize` at construction time: must be `int`, not `bool`, and > 0. No setter.\\n\\n**Rationale**:\\n- `isinstance(maxsize, bool)` check catches `True`/`False` since `bool` is a subclass of `int`\\n- No setter means \\\"invalid replacement\\\" is trivially handled \u2014 user creates new instance\\n- Simple validation: `if not isinstance(maxsize, int) or isinstance(maxsize, bool) or maxsize <= 0: raise ValueError`\\n\\n**Alternatives considered**:\\n1. **Setter with validation**: Adds complexity; spec doesn't require a setter.\\n2. **Type coercion**: Would silently convert `float(2.0)` to `int(2)` \u2014 unexpected behavior.\\n\\n## Research Task: Eviction and Stale Tag Cleanup\\n\\n**Decision**: Override the composition's interaction with LRUCache's eviction via a wrapper that intercepts `popitem()` calls\\n\\n**Rationale**:\\n- LRUCache's `popitem()` is called internally when cache is full\\n- TaggedCache wraps LRUCache and intercepts eviction by overriding `popitem()` to clean tag indexes before delegating to LRUCache\\n- When a key is evicted, remove it from `_tag_keys` for all its tags\\n\\n**Alternatives considered**:\\n1. **Monkey-patch LRUCache internals**: Fragile and breaks encapsulation.\\n2. **Check on every operation**: Would add O(n) overhead to every put/get.\\n3. **Lazy cleanup on invalidate**: Could leave stale references that inflate invalidation counts.\\n\\n## Research Task: Tags as Finite Iterable\\n\\n**Decision**: Accept any iterable, consume it to a list, validate all elements are strings, deduplicate, then proceed\\n\\n**Rationale**:\\n- \\\"Finite iterable\\\" includes lists, tuples, sets, generators, iterators\\n- Must fully consume the iterable to validate all elements before any state mutation\\n- If any element is not a string, raise ValueError immediately without mutating state\\n- Deduplication via `set()` then convert to `frozenset` for storage\\n\\n**Handling bare strings**: A bare string is technically a finite iterable of characters. Must explicitly reject `str` type as tags.\\nRESEARCH_EOF\"}",
+          "reasoning_sha256": "d43214e46b5e68800a45eda8d3f431b3c90b697090abcc91b0bb87f07e5de012",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789706448,
+    "id": "chatcmpl-67T8yIER0ZYxtlpmY7C1b3jPwaPilohK",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 26892,
+      "predicted_ms": 14113.26,
+      "predicted_n": 1167,
+      "predicted_per_second": 82.61734000507325,
+      "predicted_per_token_ms": 12.103996569468269,
+      "prompt_ms": 850.227,
+      "prompt_n": 1492,
+      "prompt_per_second": 1754.8254760199336,
+      "prompt_per_token_ms": 0.5698572386058981
+    },
+    "usage": {
+      "completion_tokens": 1167,
+      "prompt_tokens": 28384,
+      "prompt_tokens_details": {
+        "cached_tokens": 26892
+      },
+      "total_tokens": 29551
+    }
+  },
+  "seconds": 15.030999999959022,
+  "stage": 1,
+  "started_at": "2026-09-18T04:40:33.638173+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1167,
+    "prompt_tokens": 28384,
+    "prompt_tokens_details": {
+      "cached_tokens": 26892
+    },
+    "total_tokens": 29551
+  }
+}

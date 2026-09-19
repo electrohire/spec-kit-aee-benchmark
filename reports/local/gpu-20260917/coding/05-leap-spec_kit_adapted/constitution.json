@@ -1,0 +1,53 @@
+{
+  "ended_at": "2026-09-17T20:30:43.928279+00:00",
+  "original_record_sha256": "2d735514e9bc5b471411ebb02e366e640bf04fffa495680fecac0ba3c6caaef5",
+  "request_omission": "Task text omitted; regenerate from frozen upstream inputs and runner.",
+  "request_sha256": "80525e58375d5bad1b35ca444f9eb22e3e115d3939754207564ef1b6affbd039",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "## Extension Hooks\n\n**Automatic Pre-Hook**: speckit.git.commit\nExecuting: `$speckit-git-commit`\nEXECUTE_COMMAND: speckit.git.commit\n\n## Outline\n\n1. **Run Template Resolver**: Execute `python3 .specify/scripts/python/resolve_template.py constitution-template --json` to resolve the active template.\n2. **Collect Placeholder Values**: Gather values for placeholders from user input, existing repo context, or infer from prior constitution versions.\n3. **Draft Constitution Content**: Replace placeholders with concrete text, preserving the template structure.\n4. **Produce Sync Impact Report**: Prepend an HTML comment with version change, modified principles, added sections, removed sections, and deferred TODOs.\n5. **Validate Constitution**: Ensure no unexplained bracket tokens, correct version line, ISO format dates, and declarative principles.\n6. **Write Constitution**: Save the updated constitution to `.specify/memory/constitution.md`.\n7. **Output Summary**: Provide new version, bump rationale, TODO placeholders, suggested commit message, and `Next Actions` section.\n\n## Post-Execution Checks\n\n**Automatic Hook**: speckit.git.commit\nExecuting: `$speckit-git-commit`\nEXECUTE_COMMAND: speckit.git.commit",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789677043,
+    "id": "chatcmpl-rrDHHoY2LbgNaiwioJOo7XNAFFuOF0eL",
+    "model": "local-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 5811.296,
+      "predicted_n": 252,
+      "predicted_per_second": 43.191742427162545,
+      "predicted_per_token_ms": 23.152573705179282,
+      "prompt_ms": 858.058,
+      "prompt_n": 2414,
+      "prompt_per_second": 2813.3296350596343,
+      "prompt_per_token_ms": 0.35545070422535213
+    },
+    "usage": {
+      "completion_tokens": 252,
+      "prompt_tokens": 2414,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 2666
+    }
+  },
+  "seconds": 6.984000000025844,
+  "started_at": "2026-09-17T20:30:36.938698+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 252,
+    "prompt_tokens": 2414,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2666
+  }
+}

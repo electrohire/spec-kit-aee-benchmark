@@ -1,0 +1,60 @@
+{
+  "budget_debit": 29074,
+  "ended_at": "2026-09-18T02:55:01.858335+00:00",
+  "max_output": 4096,
+  "original_sha256": "dd5e69e941d8d9c1df9e1a59b52b19c5206b91b845b3913205a6819e4b050f91",
+  "phase": "plan",
+  "preflight_input_tokens": 28035,
+  "removed_history_messages": 0,
+  "request_seconds": 13.452999999979511,
+  "request_sha256": "57d5084fe55cb70d3b93716ed540a07c87348d40978aa61e9016953e5d9abdc0",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\": \"cat > /testbed/specs/001-transactions/data-model.md << 'DM_EOF'\\n# Data Model: TaggedCache\\n\\n**Date**: 2026-09-18\\n\\n## Entity: TaggedCache\\n\\nA tag-aware bounded cache that extends `cachetools.LRUCache`.\\n\\n### Attributes\\n\\n| Attribute | Type | Description |\\n|---|---|---|\\n| `maxsize` | `int` (positive, not bool) | Maximum number of entries the cache can hold. Stored in base `Cache.__maxsize`. |\\n| `__data` | `dict[Any, Any]` | Key-value storage inherited from `Cache.__data`. Values are deep-copied. |\\n| `__order` | `OrderedDict[Any, None]` | LRU order tracking inherited from `LRUCache.__order`. |\\n| `__tags` | `dict[Any, frozenset[str]]` | Internal mapping from key to its deduplicated tag set. |\\n| `__tag_index` | `dict[str, set[Any]]` | Internal mapping from tag string to set of keys carrying that tag. |\\n| `__size` | `dict[Any, int]` or `_DefaultSize` | Per-key size tracking inherited from `Cache.__size`. |\\n| `__currsize` | `int` | Current total size inherited from `Cache.__currsize`. |\\n| `getsizeof` | `Callable[[Any], int]` | Size function; defaults to returning 1 per entry. |\\n\\n### Relationships\\n\\n- **Inherits from**: `LRUCache` \u2192 `Cache` \u2192 `collections.abc.MutableMapping`\\n- **__tags[key] \u2192 frozenset[str]**: Each cached key maps to its tag set. When a key is replaced, this mapping is updated atomically (old tags removed from `__tag_index` before new tags added).\\n- **__tag_index[tag] \u2192 set[Any]**: Each tag maps to the set of keys carrying it. Updated on put (add), invalidate (remove), and eviction (remove).\\n\\n### State Transitions\\n\\n| Operation | State Change |\\n|---|---|\\n| `put(key, value, tags=())` | Validate tags \u2192 if key exists, remove old tags from `__tag_index` \u2192 call parent `__setitem__` \u2192 add new tags to `__tags` and `__tag_index` |\\n| `get(key)` | Call parent `__getitem__` (which calls `__update` for LRU refresh) \u2192 deep copy value \u2192 return copy |\\n| `invalidate(tag)` | Look up keys in `__tag_index[tag]` \u2192 for each key: remove from `__tag_index`, delete from `__tags`, call parent `__delitem__` \u2192 return count |\\n| `popitem()` (inherited) | Call parent `popitem()` \u2192 remove evicted key from `__tags` and `__tag_index` |\\n| `__delitem__(key)` (override) | Remove key from `__tags` and `__tag_index` \u2192 call parent `__delitem__` |\\n| `maxsize = new_value` (setter) | Validate new_value is positive int and not bool \u2192 if valid, update `__maxsize` |\\n\\n### Validation Rules\\n\\n| Rule | Source | Enforcement |\\n|---|---|---|\\n| Tags must be iterable, not a bare string | R01 | Check `isinstance(tags, str)` before iteration |\\n| All tag elements must be strings | R01 | Check `isinstance(t, str)` for each element |\\n| Tags are deduplicated | R01 | Convert to `frozenset` |\\n| maxsize must be positive int, not bool | R03 | Check `isinstance(maxsize, int) and not isinstance(maxsize, bool) and maxsize > 0` |\\n| Values are deep-copied | R01 | `copy.deepcopy(value)` on put and get |\\n\\n### Invariants\\n\\n1. `len(__tags) == len(__data)` at all times (every cached key has a tag entry).\\n2. Every key in `__tag_index[tag]` exists in `__data` and has `tag` in `__tags[key]`.\\n3. Every key in `__tags` has a corresponding entry in `__tag_index` for each of its tags.\\n4. `len(__data) <= maxsize` at all times.\\n5. `__order` reflects LRU recency: most recently accessed key is at the end.\\nDM_EOF\"}",
+          "reasoning_sha256": "ce0c2a66c4ab1e99e3ab8e7798995a220db181cea6162cd37f5b4e11ad07a301",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789700101,
+    "id": "chatcmpl-y6i96jRRGBFTl4rxww2vV7n5JPTzomtr",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 26825,
+      "predicted_ms": 12617.919,
+      "predicted_n": 1039,
+      "predicted_per_second": 82.26396127602341,
+      "predicted_per_token_ms": 12.155991329479768,
+      "prompt_ms": 784.406,
+      "prompt_n": 1210,
+      "prompt_per_second": 1542.568516813997,
+      "prompt_per_token_ms": 0.6482694214876032
+    },
+    "usage": {
+      "completion_tokens": 1039,
+      "prompt_tokens": 28035,
+      "prompt_tokens_details": {
+        "cached_tokens": 26825
+      },
+      "total_tokens": 29074
+    }
+  },
+  "seconds": 13.452999999979511,
+  "stage": 1,
+  "started_at": "2026-09-18T02:54:48.406043+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1039,
+    "prompt_tokens": 28035,
+    "prompt_tokens_details": {
+      "cached_tokens": 26825
+    },
+    "total_tokens": 29074
+  }
+}

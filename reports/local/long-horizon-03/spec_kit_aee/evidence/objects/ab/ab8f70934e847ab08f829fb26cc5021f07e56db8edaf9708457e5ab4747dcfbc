@@ -1,0 +1,359 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-001"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "TinyDB.__init__ accepts *args, **kwargs and passes them to storage class",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/06/064bfd7f6d6018df780fe98a5d6603050520d9614dc9018555d63576db73dc01",
+          "source_id": "064bfd7f6d6018df780fe98a5d6603050520d9614dc9018555d63576db73dc01",
+          "source_quality": "primary"
+        }
+      ],
+      "falsification_tests": [
+        "Passing storage=MemoryStorage, path='file.json', or kwargs should work identically to TinyDB"
+      ],
+      "id": "R01a",
+      "kind": "requirement",
+      "source_ref": "task R01",
+      "status": "unsupported",
+      "text": "TransactionalTinyDB accepts the same constructor arguments as TinyDB (storage class, path, kwargs).",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-002"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01a"
+      ],
+      "evidence": [
+        {
+          "description": "TinyDB.table() method exists and returns table instances from _tables dict",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/f6/f60fc56bac8b1b947ffd0a2e9e2284ed06ca6147a66b78da5864362c7d39736c",
+          "source_id": "f60fc56bac8b1b947ffd0a2e9e2284ed06ca6147a66b78da5864362c7d39736c",
+          "source_quality": "primary"
+        }
+      ],
+      "falsification_tests": [
+        "db.insert(), db.search(), db.table() should behave identically to TinyDB outside transactions"
+      ],
+      "id": "R01b",
+      "kind": "requirement",
+      "source_ref": "task R01",
+      "status": "unsupported",
+      "text": "Existing nontransactional TinyDB operations work normally with TransactionalTinyDB.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-003"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01a"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "with db.transaction() as current: assert current is db should pass"
+      ],
+      "id": "R02a",
+      "kind": "requirement",
+      "source_ref": "task R02",
+      "status": "unsupported",
+      "text": "with db.transaction() as current: yields the same db instance (current is db).",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-004"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R02a"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "table.insert() before transaction entry should be visible via table.all() inside transaction"
+      ],
+      "id": "R02b",
+      "kind": "requirement",
+      "source_ref": "task R02",
+      "status": "unsupported",
+      "text": "Mutations through the db or table handles obtained before entering the transaction are visible within the transaction scope.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-005"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R02a"
+      ],
+      "evidence": [
+        {
+          "description": "Storage.write is the single abstraction for persisting the full database dict",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/16/164c5aa31af435cf1f923808452a4fdbcf68e18487ae4842cbbe38bba70f4e67",
+          "source_id": "164c5aa31af435cf1f923808452a4fdbcf68e18487ae4842cbbe38bba70f4e67",
+          "source_quality": "primary"
+        }
+      ],
+      "falsification_tests": [
+        "Instrument storage.write during transaction body: count should be 0"
+      ],
+      "id": "R03a",
+      "kind": "requirement",
+      "source_ref": "task R03",
+      "status": "unsupported",
+      "text": "No backend storage write call occurs during a transaction execution.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-006"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R03a"
+      ],
+      "evidence": [
+        {
+          "description": "MemoryStorage.write stores the entire data dict in self.memory",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/ce/ce3fc67bf52e495135a4b5a6a32dc44feb234266266016e7ed98bd02f3eb164b",
+          "source_id": "ce3fc67bf52e495135a4b5a6a32dc44feb234266266016e7ed98bd02f3eb164b",
+          "source_quality": "primary"
+        }
+      ],
+      "falsification_tests": [
+        "Two table.insert() calls in one transaction should produce exactly one storage.write"
+      ],
+      "id": "R03b",
+      "kind": "requirement",
+      "source_ref": "task R03",
+      "status": "unsupported",
+      "text": "A successful transaction commit writes the complete logical database exactly once via a single storage.write call.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-007"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R03a"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "Raising ValueError inside transaction should leave storage.writes at 0"
+      ],
+      "id": "R04a",
+      "kind": "requirement",
+      "source_ref": "task R04",
+      "status": "unsupported",
+      "text": "Any exception (including BaseException subclasses) propagating out of a transaction triggers a full rollback with zero backend writes.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-008"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R04a"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "A second transaction after a failed one should succeed without errors"
+      ],
+      "id": "R04b",
+      "kind": "requirement",
+      "source_ref": "task R04",
+      "status": "unsupported",
+      "text": "After a rolled-back transaction, a later transaction continues to work normally.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-009"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R04a"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "update(lambda doc: doc['nested'].append(2)) inside failed transaction should leave nested value unchanged"
+      ],
+      "id": "R05a",
+      "kind": "requirement",
+      "source_ref": "task R05",
+      "status": "unsupported",
+      "text": "Rollback restores nested mutable values changed through callable updates (e.g., list.append inside lambda).",
+      "uncertainty": "medium"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-010"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R04a"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "table creation inside failed transaction should not persist after rollback"
+      ],
+      "id": "R05b",
+      "kind": "requirement",
+      "source_ref": "task R05",
+      "status": "unsupported",
+      "text": "Rollback restores table creation and deletion operations.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-011"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R04a"
+      ],
+      "evidence": [
+        {
+          "description": "Table uses LRUCache for query results; cache is discarded on write operations",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/49/495bdff9bb6757d6b431233a86c8b6d2a9d6376d035702dc64a9920840c91ca2",
+          "source_id": "495bdff9bb6757d6b431233a86c8b6d2a9d6376d035702dc64a9920840c91ca2",
+          "source_quality": "primary"
+        }
+      ],
+      "falsification_tests": [
+        "table.all() before transaction should not include documents inserted in failed transaction"
+      ],
+      "id": "R05c",
+      "kind": "requirement",
+      "source_ref": "task R05",
+      "status": "unsupported",
+      "text": "Query caches do not return data from discarded work after rollback.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-012"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R05a"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "Insert after rollback should return an ID not equal to any ID consumed during the rolled-back transaction"
+      ],
+      "id": "R06a",
+      "kind": "requirement",
+      "source_ref": "task R06",
+      "status": "unsupported",
+      "text": "After commit or rollback, existing table handles can insert new documents without ID collisions with IDs consumed by rolled-back work.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-013"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [],
+      "falsification_tests": [
+        "with db.transaction(): inside that, with db.transaction(): should raise RuntimeError"
+      ],
+      "id": "R07a",
+      "kind": "requirement",
+      "source_ref": "task R07",
+      "status": "unsupported",
+      "text": "Nesting transaction() calls raises RuntimeError before altering the parent transaction state.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-014"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R07a"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "Insert after catching RuntimeError from nested transaction should succeed"
+      ],
+      "id": "R07b",
+      "kind": "requirement",
+      "source_ref": "task R07",
+      "status": "unsupported",
+      "text": "A caught RuntimeError from nested transaction leaves the parent transaction usable.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-015"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R03b"
+      ],
+      "evidence": [
+        {
+          "description": "JSONStorage.write persists the full database dict to a JSON file",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/16/164c5aa31af435cf1f923808452a4fdbcf68e18487ae4842cbbe38bba70f4e67",
+          "source_id": "164c5aa31af435cf1f923808452a4fdbcf68e18487ae4842cbbe38bba70f4e67",
+          "source_quality": "primary"
+        }
+      ],
+      "falsification_tests": [
+        "Close db, reopen from same file, verify committed documents are present"
+      ],
+      "id": "R08a",
+      "kind": "requirement",
+      "source_ref": "task R08",
+      "status": "unsupported",
+      "text": "A committed JSONStorage database survives close/reopen with all committed data intact.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "specs/001-transactions/spec.md FR-016"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R04a"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "Rollback, close, reopen, verify pre-transaction documents are present"
+      ],
+      "id": "R08b",
+      "kind": "requirement",
+      "source_ref": "task R08",
+      "status": "unsupported",
+      "text": "A rolled-back transaction leaves the persisted state of JSONStorage unchanged.",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

@@ -1,0 +1,16 @@
+name: Reproducibility issue
+description: Report a reproducibility failure without sensitive logs
+title: "[repro] "
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Commit, frozen manifest ID and environment
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Commands, expected and observed output (redacted)
+    validations:
+      required: true

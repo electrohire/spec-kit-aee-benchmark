@@ -1,0 +1,1 @@
+{"command": "PYTHONPATH=src:. python3 -c \"\nfrom cachetools import Cache\nprint('Cache.__iter__:', Cache.__iter__)\nimport inspect\nprint(inspect.getsource(Cache.__iter__))\n\"", "exit_code": 0, "stderr": "", "stdout": "Cache.__iter__: <function Cache.__iter__ at 0x7f4c3c194860>\n    def __iter__(self):\n        return iter(self.__data)\n\n"}

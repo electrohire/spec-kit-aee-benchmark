@@ -1,0 +1,60 @@
+{
+  "budget_debit": 10544,
+  "ended_at": "2026-09-18T05:28:48.428877+00:00",
+  "max_output": 4096,
+  "original_sha256": "239c703d7bff123a597ccdc266076b58c144f67659069fe5edf0f162c219a7e6",
+  "phase": "repair",
+  "preflight_input_tokens": 9990,
+  "removed_history_messages": 0,
+  "request_seconds": 6.452999999979511,
+  "request_sha256": "665e2259d1a44ce45a3ea0a3aa5fc22eb29dc912e7488f30e9828e41f7da8943",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n\\n# Test: generator tags consumed only once\\ndef tag_gen():\\n    yield 'x'\\n    yield 'y'\\n\\nc = TaggedCache(3)\\nc.put('a', 1, tag_gen())\\nprint(f'gen tags: {c.get(\\\\\\\"a\\\\\\\")}')  # should be 1\\n\\n# Test: deep copy on get (detached)\\nc2 = TaggedCache(2)\\nc2.put('a', [1, 2, 3])\\nv1 = c2.get('a')\\nv1.append(4)\\nv2 = c2.get('a')\\nprint(f'deep copy test: {v2}')  # should be [1, 2, 3]\\n\\n# Test: deep copy on put\\nc3 = TaggedCache(2)\\nval = [1, 2, 3]\\nc3.put('a', val)\\nval.append(4)\\nprint(f'put deep copy: {c3.get(\\\\\\\"a\\\\\\\")}')  # should be [1, 2, 3]\\n\\n# Test: nested lists/dicts deep copy\\nc4 = TaggedCache(2)\\nc4.put('a', {'nested': [1, 2, {'deep': 3}]})\\nv = c4.get('a')\\nv['nested'][2]['deep'] = 999\\nv2 = c4.get('a')\\nprint(f'nested deep copy: {v2}')  # should be original\\n\\n# Test: invalid maxsize (bool)\\ntry:\\n    TaggedCache(True)\\n    print('ERROR: should have raised ValueError for bool maxsize')\\nexcept ValueError as e:\\n    print(f'bool maxsize raised ValueError: {e}')\\n\\n# Test: invalid maxsize (negative)\\ntry:\\n    TaggedCache(-1)\\n    print('ERROR: should have raised ValueError for negative maxsize')\\nexcept ValueError as e:\\n    print(f'negative maxsize raised ValueError: {e}')\\n\\n# Test: invalid maxsize (float)\\ntry:\\n    TaggedCache(1.5)\\n    print('ERROR: should have raised ValueError for float maxsize')\\nexcept ValueError as e:\\n    print(f'float maxsize raised ValueError: {e}')\\n\\\"\\n\"}",
+          "reasoning_sha256": "408ab6e7dce5d4287e00dfc6991b5bf990266d4028b2e5fdd9c3c8365490e540",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789709328,
+    "id": "chatcmpl-3xuDPLVDgjR8EC0YrXpsDTWIvyOUHLFe",
+    "model": "long-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 9432,
+      "predicted_ms": 5947.409,
+      "predicted_n": 554,
+      "predicted_per_second": 92.98166647022258,
+      "predicted_per_token_ms": 10.754808318264013,
+      "prompt_ms": 484.686,
+      "prompt_n": 558,
+      "prompt_per_second": 1151.2608162810561,
+      "prompt_per_token_ms": 0.8686129032258064
+    },
+    "usage": {
+      "completion_tokens": 554,
+      "prompt_tokens": 9990,
+      "prompt_tokens_details": {
+        "cached_tokens": 9432
+      },
+      "total_tokens": 10544
+    }
+  },
+  "seconds": 6.452999999979511,
+  "stage": 3,
+  "started_at": "2026-09-18T05:28:41.967159+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 554,
+    "prompt_tokens": 9990,
+    "prompt_tokens_details": {
+      "cached_tokens": 9432
+    },
+    "total_tokens": 10544
+  }
+}

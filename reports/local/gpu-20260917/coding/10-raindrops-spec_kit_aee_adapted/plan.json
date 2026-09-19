@@ -1,0 +1,53 @@
+{
+  "ended_at": "2026-09-17T20:34:06.975562+00:00",
+  "original_record_sha256": "6ee987618ee4a8c21f00855b254fc11556d56e7c643256945e9d61ce25c04e9f",
+  "request_omission": "Task text omitted; regenerate from frozen upstream inputs and runner.",
+  "request_sha256": "a22e5e478a0ae42d70c39c7d324d8d58fb26341af21321dff2f53e66026d925d",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "length",
+        "index": 0,
+        "message": {
+          "content": "## Extension Hooks\n\n**Automatic Pre-Hook**: speckit.git.commit\nExecuting: `speckit-git-commit`\nEXECUTE_COMMAND: speckit-git-commit\n\n## Outline\n\n1. **Setup**: Run `python3 .specify/scripts/python/setup_plan.py --json` from repo root and parse JSON for FEATURE_SPEC, IMPL_PLAN, SPECS_DIR, BRANCH.\n2. **Load context**: Read FEATURE_SPEC and `.specify/memory/constitution.md`. Load IMPL_PLAN template (already copied).\n3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:\n   - Fill Technical Context (mark unknowns as \"NEEDS CLARIFICATION\")\n   - Fill Constitution Check section from constitution\n   - Evaluate gates (ERROR if violations unjustified)\n   - Phase 0: Generate research.md (resolve all NEEDS CLARIFICATION)\n   - Phase 1: Generate data-model.md, contracts/, quickstart.md\n   - Re-evaluate Constitution Check post-design\n\n## Mandatory Post-Execution Hooks\n\nCheck if `.specify/extensions.yml` exists in the project root.\n- If it does not exist, or no hooks are registered under `hooks.after_plan`, skip to the Completion Report.\n- If it exists, read it and look for entries under the `hooks.after_plan` key.\n- If the YAML cannot be parsed or is invalid, skip hook checking silently and continue to the Completion Report.\n- Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.\n- For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:\n  - If the hook has no `condition` field, or it is null/empty, treat the hook as executable\n  - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation\n- When constructing command invocations from hook command names, replace dots (`.`) with hyphens (`-`). For example, `speckit.git.commit` \u2192 `$speckit-git-commit`.\n- For each executable hook, output the following based on its `optional` flag:\n  - **Mandatory hook** (`optional: false`) \u2014 **You MUST emit `EXECUTE_COMMAND:` for each mandatory hook**:\n    ```\n    ## Extension Hooks\n\n    **Automatic Hook**: {extension}\n    Executing: `/{command}`\n    EXECUTE_COMMAND: {command}\n    ```\n    After emitting",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789677246,
+    "id": "chatcmpl-TahvoDgIDmzWvZBMnMNd7ON3FvXnOEMJ",
+    "model": "local-coder",
+    "object": "chat.completion",
+    "system_fingerprint": "b11026-b49650adb",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 12243.283,
+      "predicted_n": 512,
+      "predicted_per_second": 41.73717131262914,
+      "predicted_per_token_ms": 23.959457925636006,
+      "prompt_ms": 1294.637,
+      "prompt_n": 3767,
+      "prompt_per_second": 2909.6959224863804,
+      "prompt_per_token_ms": 0.3436785240244226
+    },
+    "usage": {
+      "completion_tokens": 512,
+      "prompt_tokens": 3767,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 4279
+    }
+  },
+  "seconds": 13.828000000008615,
+  "started_at": "2026-09-17T20:33:53.141999+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 512,
+    "prompt_tokens": 3767,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 4279
+  }
+}
