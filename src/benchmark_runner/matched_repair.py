@@ -568,6 +568,10 @@ def grade_snapshot(pinned_image, snapshot_bytes, project, expected_test_count=No
         hidden_path.write_bytes(hidden)
         try:
             subprocess.run(docker_args(pinned_image, name), check=True, capture_output=True, timeout=120)
+            # Fixture images do not ship /grade; this Docker's `cp` will not
+            # create missing parent dirs, so create it before copying in.
+            subprocess.run(["docker", "exec", name, "mkdir", "-p", "/grade"],
+                           check=True, capture_output=True, timeout=60)
             subprocess.run(["docker", "cp", str(snap_path), name + ":/tmp/snapshot.tar"],
                            check=True, capture_output=True, timeout=60)
             subprocess.run(["docker", "cp", str(hidden_path), name + ":/grade/test_acceptance.py"],
