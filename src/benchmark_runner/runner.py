@@ -149,6 +149,30 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             "repair_count": repairs, "tool_calls": environment.tool_calls}
 
 
+def check_connector_credential():
+    """Fail-closed check that the Secure Vault OpenAI connector is available.
+
+    Performs a free /models API call (no generation, no spend) to verify
+    the credential authenticates. Raises ValueError if unavailable.
+    """
+    import sys
+    sys.path.insert(0, "/opt/hatch/skills/skill-creator/bin")
+    import dynamic_credentials as dc
+    import urllib.request
+    url = "https://api.openai.com/v1/models"
+    try:
+        dc.ensure_allowed_url(url, ["api.openai.com"])
+        req = urllib.request.Request(url, method="GET")
+        dc.add_surrogate_to_request(req, "custom.openai", allowed_hosts=["api.openai.com"])
+        with urllib.request.urlopen(req, timeout=30) as handle:
+            response = dc.read_json_response(handle)
+        # Verify we got a valid models list (proves auth worked)
+        if not isinstance(response.get("data"), list):
+            raise ValueError("connector credential check failed: unexpected /models response")
+    except Exception as e:
+        raise ValueError(f"OpenAI connector credential unavailable: {type(e).__name__}") from e
+
+
 def validate_live(manifest, smoke=False):
     cfg = manifest["config"]
     for key in ("model", "reasoning_effort", "price_snapshot_id", "price_source", "budget_authorization",
@@ -165,8 +189,9 @@ def validate_live(manifest, smoke=False):
         raise ValueError("successful real adapter/usage smoke required before scored generation")
     if smoke and cfg.get("purpose") != "development_smoke":
         raise ValueError("smoke must use a separately frozen development manifest")
-    if "OPENAI_API_KEY" not in os.environ:
-        raise ValueError("configure OPENAI_API_KEY locally; never paste credentials into chat")
+    if "OPENAI_API_KEY" in os.environ:
+        raise ValueError("remove OPENAI_API_KEY from environment; use the Secure Vault connector")
+    check_connector_credential()
     if os.name == "nt":
         raise ValueError("live runs require Linux/WSL2 with Docker; offline commands support Windows")
     subprocess.run(["docker", "info"], check=True, capture_output=True, timeout=30)

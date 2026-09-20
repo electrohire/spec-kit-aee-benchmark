@@ -1,15 +1,27 @@
-"""One HTTP request per call; explicit usage, no opaque SDK retries."""
-import json
-import os
+"""One HTTP request per call; explicit usage, no opaque SDK retries.
+
+Authentication uses the Secure Vault connector (custom.openai) via the
+authd surrogate exchange. No raw credential is ever read from the
+environment, printed, logged, or persisted.
+"""
+import sys
 import time
 import urllib.error
 import urllib.request
 import uuid
 from decimal import Decimal
 
+sys.path.insert(0, "/opt/hatch/skills/skill-creator/bin")
+import dynamic_credentials as dc
+
 from .accounting import TOKEN_FIELDS, cost, native_usage, request_prices
 from .store import canonical, utc
 from .schema import validate_call
+
+
+CREDENTIAL = "custom.openai"
+ALLOWED_HOSTS = ["api.openai.com"]
+CHAT_URL = "https://api.openai.com/v1/chat/completions"
 
 
 class ProviderError(RuntimeError):
@@ -37,12 +49,13 @@ class OpenAIProvider:
         request_artifact = self.store.artifact(canonical(payload))
         response, request_id, error, response_artifact = {}, None, None, None
         try:
-            key = os.environ["OPENAI_API_KEY"]
-            req = urllib.request.Request("https://api.openai.com/v1/chat/completions", canonical(payload),
-                    {"Authorization": "Bearer "+key, "Content-Type": "application/json"})
+            dc.ensure_allowed_url(CHAT_URL, ALLOWED_HOSTS)
+            req = urllib.request.Request(CHAT_URL, canonical(payload),
+                    {"Content-Type": "application/json"})
+            dc.add_surrogate_to_request(req, CREDENTIAL, allowed_hosts=ALLOWED_HOSTS)
             with urllib.request.urlopen(req, timeout=timeout) as handle:
                 request_id = handle.headers.get("x-request-id")
-                response = json.load(handle)
+                response = dc.read_json_response(handle)
             response_artifact = self.store.artifact(canonical(response))
             usage = native_usage(response)
         except (urllib.error.URLError, TimeoutError, KeyError, ValueError) as e:

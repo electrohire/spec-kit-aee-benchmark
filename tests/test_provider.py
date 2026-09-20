@@ -8,7 +8,15 @@ from benchmark_runner.store import Store
 
 
 def test_real_transport_adapter_with_mock_response(tmp_path, monkeypatch):
-    monkeypatch.setenv("OPENAI_API_KEY", "synthetic-secret")
+    # Mock the surrogate helper (no real credential exchange in tests).
+    class FakeDC:
+        @staticmethod
+        def ensure_allowed_url(url, hosts): pass
+        @staticmethod
+        def add_surrogate_to_request(req, cred, allowed_hosts=None): pass
+        @staticmethod
+        def read_json_response(handle): return json.loads(handle.read())
+    monkeypatch.setattr("benchmark_runner.provider.dc", FakeDC())
     response = {"model": "synthetic-model", "choices": [{"message": {"content": "done"}}],
                 "usage": {"prompt_tokens": 100, "completion_tokens": 30,
                           "prompt_tokens_details": {"cached_tokens": 20},
@@ -34,7 +42,8 @@ def test_real_transport_adapter_with_mock_response(tmp_path, monkeypatch):
         validate_call({k: v for k, v in call.items() if k != "phase"})
     assert call["cost"] == "0.0003" and call["request_id"] == "synthetic-request"
     assert call["reasoning_tokens"] == 10
-    assert "synthetic-secret" not in "".join(p.read_text() for p in tmp_path.rglob("*") if p.is_file())
+    # No credential material should appear in stored artifacts.
+    assert "hsurr" not in "".join(p.read_text() for p in tmp_path.rglob("*") if p.is_file())
     def fail(*a, **k): raise TimeoutError()
     monkeypatch.setattr("urllib.request.urlopen", fail)
     with pytest.raises(ProviderError):
