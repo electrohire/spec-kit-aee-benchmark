@@ -79,7 +79,12 @@ class MiniEnvironment:
         return {}
 
 
-def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg):
+def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, manifest=None):
+    # Matched-repair arms run the ported paired protocol, not the mini-SWE-agent
+    # phase workflow. The import is deferred to avoid a module cycle.
+    from .matched_repair import MATCHED_ARMS, execute_matched_attempt
+    if arm in MATCHED_ARMS:
+        return execute_matched_attempt(root, task, arm, provider, sandbox, store, identity, cfg, manifest)
     # mini imports a global .env at import time; replace its discovery root first.
     global_config = Path(tempfile.mkdtemp(prefix="mini-clean-config-"))
     os.environ["MSWEA_GLOBAL_CONFIG_DIR"] = str(global_config)
@@ -213,7 +218,7 @@ def run(root, manifest, output, arm=None, smoke=False):
                     provider = OpenAIProvider(cfg, store, budget, identity)
                     try:
                         result = execute_attempt(root, tasks[entry["task_id"]], entry["arm"], provider,
-                                                 sandbox, store, identity, cfg)
+                                                 sandbox, store, identity, cfg, manifest)
                     except BaseException:
                         # Preserve partial work before the container is destroyed. This host-only
                         # extraction issues no model request and is separately timed.
