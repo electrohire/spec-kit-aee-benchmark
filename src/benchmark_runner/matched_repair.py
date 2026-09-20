@@ -31,7 +31,7 @@ import xml.etree.ElementTree as ET
 from decimal import Decimal
 from pathlib import Path
 
-from .accounting import TOKEN_FIELDS
+from .accounting import TOKEN_FIELDS, request_prices
 from .experiment import frozen_paths, source_hash
 from .isolation import docker_args
 from .store import Store, canonical, read_json, sha, utc, write_json
@@ -658,12 +658,14 @@ ASTRA_MAX_OUTPUT_TOKENS = 128000
 def verify_reservation_bounds(cfg):
     """Verify the model-specific reservation bound the provider enforces.
     Returns the verified numbers; raises on any inconsistency.
-    
-    The long-context tier (272K+ input tokens) is provably unreachable because
-    max_input_tokens (32,768) is a hard ceiling well below the threshold.
-    Therefore the reservation uses ONLY the verified short-context prices
-    ($10/1M input, $50/1M output); the long_context_prices in the config are
-    documented for reference but cannot apply and are not used here."""
+
+    The reservation uses the conservative maximum of the short and long
+    price tiers, exactly as provider.query() reserves via request_prices().
+    The long-context tier (272K+ input tokens) is provably unreachable
+    because max_input_tokens (32,768) is a hard ceiling well below the
+    threshold, so the short-tier prices would suffice — but the bound is
+    checked against the same conservative reservation the budget enforces,
+    never a weaker one."""
     if cfg["model"] != "gpt-6-astra":
         raise ValueError("reservation bounds verified only for gpt-6-astra")
     if cfg["max_input_tokens"] > ASTRA_MAX_INPUT_TOKENS:
@@ -673,8 +675,9 @@ def verify_reservation_bounds(cfg):
     if cfg["max_input_tokens"] >= cfg["long_context_threshold"]:
         raise ValueError("max_input_tokens reaches long-context tier; "
                          "long-tier prices would require official verification")
-    # Long tier provably unreachable; use verified short-context prices only.
-    tier = cfg["prices"]
+    # Conservative maximum rates, exactly as the provider reserves
+    # (request_prices with no usage returns the max of short/long tiers).
+    tier = request_prices(cfg)
     per_call = ((Decimal(cfg["max_input_tokens"]) * Decimal(str(tier["input"]))
                  + Decimal(cfg["max_output_tokens"]) * Decimal(str(tier["output"]))) / Decimal(1_000_000))
     worst = {
@@ -703,7 +706,11 @@ PRICE_SOURCE = (
     "https://openai.com/fr-CA/api/pricing/ and https://developers.openai.com/api/docs/models "
     "(checked 2026-09-20): GPT-6 Astra list $10/1M input, $1/1M cached input, $50/1M output; "
     "requests above 272,000 input tokens bill $20/1M input, $2/1M cached input, $75/1M output "
-    "for the full request. Model id gpt-6-astra is the only published snapshot/alias."
+    "for the full request. Model id gpt-6-astra is the only published snapshot/alias. "
+    "Cross-checked 2026-09-20 against multiple outlets citing OpenAI's pricing page "
+    "(cloudzero.com, laozhang.ai, devtoollab.com, kingy.ai): $10/$1/$50 standard; "
+    "$20/$2/$75 above 272K input tokens for the entire request; API model string gpt-6-astra; "
+    "~1.1M token context window."
 )
 
 
@@ -740,10 +747,42 @@ def smoke_config():
     }
 
 
+def run_grade_smoke(calibration):
+    """Independent grader smoke (gate): a seeded-bug snapshot must fail hidden
+    grading and a clean snapshot must pass — exercises the full
+    snapshot -> grade path on both outcomes. Raises on failure."""
+    results = {}
+    for project in ("tinydb", "cachetools"):
+        bad = next(f for f in calibration["fixtures"] if f["project"] == project and f["variant"] != "clean")
+        good = next(f for f in calibration["fixtures"] if f["project"] == project and f["variant"] == "clean")
+        project_results = {}
+        for fixture, key in ((bad, "bad"), (good, "good")):
+            name = f"mr-gsmoke-{project}-{key}"
+            try:
+                subprocess.run(docker_args(fixture["image"], name), check=True,
+                               capture_output=True, timeout=120)
+                snap = snapshot_package(_NamedSandbox(name), PROJECTS[project]["package"])
+            finally:
+                subprocess.run(["docker", "rm", "-f", name], capture_output=True, timeout=30)
+            project_results[key] = grade_snapshot(fixture["image"], snap, project)
+        print(f"GRADER SMOKE {project}: bad_passed={project_results['bad']['passed']} "
+              f"good_passed={project_results['good']['passed']} "
+              f"tests={project_results['good']['test_count']}", flush=True)
+        if project_results["bad"]["passed"] or not project_results["good"]["passed"]:
+            raise ValueError(f"grader smoke failed for {project}")
+        results[project] = {k: {"passed": v["passed"], "test_count": v["test_count"],
+                                "failed_cases": v["failed_cases"]}
+                            for k, v in project_results.items()}
+    print("GRADER SMOKE PASS", flush=True)
+    return results
+
+
 def build_smoke_freeze(output, calibration):
     """Build freeze v4 for the 3-attempt development smoke. `calibration` is the
-    fixture calibration record (image refs + base commits). Fails closed unless
-    every offline gate has genuinely passed."""
+    fixture calibration record (image refs + base commits). Runs every offline
+    gate itself — reservation bounds, solver image audit, grader smoke — and
+    sets the verification flags True only when each gate genuinely passes.
+    Fails closed otherwise."""
     project, variant, seed = SMOKE_PAIR
     pair_id = f"mr-{project}-{variant}-{seed}"
     fixture = next(f for f in calibration["fixtures"]
@@ -753,6 +792,10 @@ def build_smoke_freeze(output, calibration):
     audit = audit_solver_image(fixture["image"], project)
     if not audit["audit_pass"]:
         raise ValueError("solver image audit failed: " + json.dumps(audit["hidden_markers"]))
+    grade_smoke = run_grade_smoke(calibration)
+    cfg["reservation_bound_verified"] = True
+    cfg["grader_smoke_verified"] = True
+    cfg["solver_image_audit_verified"] = True
     problem_statement = (
         f"Matched-repair pair {pair_id}: the /testbed repository may contain a seeded defect "
         f"in {PROJECTS[project]['module']} (or may be a clean negative control). "
@@ -786,6 +829,7 @@ def build_smoke_freeze(output, calibration):
                     "is excluded from any future scored freeze."),
         "reservation_verification": reservation,
         "solver_image_audit": audit,
+        "grade_smoke": grade_smoke,
         "fixture": {"project": project, "variant": variant, "seed": seed,
                     "image": fixture["image"], "base_commit": fixture["base_commit"],
                     "hidden_test_count": fixture["grade"]["test_count"]},
@@ -832,25 +876,7 @@ def main(argv=None):
         # Independent grader smoke (gate): a seeded-bug snapshot must fail hidden
         # grading and a clean snapshot must pass — exercises the full
         # snapshot -> grade path on both outcomes.
-        calibration = read_json(args.calibration)
-        for project in ("tinydb", "cachetools"):
-            bad = next(f for f in calibration["fixtures"] if f["project"] == project and f["variant"] != "clean")
-            good = next(f for f in calibration["fixtures"] if f["project"] == project and f["variant"] == "clean")
-            results = {}
-            for fixture, key in ((bad, "bad"), (good, "good")):
-                name = f"mr-gsmoke-{project}-{key}"
-                try:
-                    subprocess.run(docker_args(fixture["image"], name), check=True,
-                                   capture_output=True, timeout=120)
-                    snap = snapshot_package(_NamedSandbox(name), PROJECTS[project]["package"])
-                finally:
-                    subprocess.run(["docker", "rm", "-f", name], capture_output=True, timeout=30)
-                results[key] = grade_snapshot(fixture["image"], snap, project)
-            print(f"GRADER SMOKE {project}: bad_passed={results['bad']['passed']} "
-                  f"good_passed={results['good']['passed']} tests={results['good']['test_count']}", flush=True)
-            assert not results["bad"]["passed"] and results["good"]["passed"], \
-                f"grader smoke failed for {project}"
-        print("GRADER SMOKE PASS", flush=True)
+        run_grade_smoke(read_json(args.calibration))
 
 
 if __name__ == "__main__":

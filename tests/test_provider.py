@@ -17,6 +17,9 @@ def test_real_transport_adapter_with_mock_response(tmp_path, monkeypatch):
         @staticmethod
         def read_json_response(handle): return json.loads(handle.read())
     monkeypatch.setattr("benchmark_runner.provider.dc", FakeDC())
+    # Auth resolution is a separate unit; pin it so the transport test
+    # exercises query() without a live /models probe.
+    monkeypatch.setattr("benchmark_runner.provider.resolve_auth", lambda: ("connector", None))
     response = {"model": "synthetic-model", "choices": [{"message": {"content": "done"}}],
                 "usage": {"prompt_tokens": 100, "completion_tokens": 30,
                           "prompt_tokens_details": {"cached_tokens": 20},

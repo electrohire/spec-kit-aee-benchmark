@@ -20,13 +20,11 @@ def preflight(root):
     except (OSError, subprocess.TimeoutExpired, ValueError):
         docker = None
     free = shutil.disk_usage(root).free
-    # Check connector credential availability (informational for preflight;
+    # Check API credential availability (informational for preflight;
     # validate_live() does the fail-closed check before paid runs).
     try:
-        import sys
-        sys.path.insert(0, "/opt/hatch/skills/skill-creator/bin")
-        import dynamic_credentials as dc
-        dc.ensure_allowed_url("https://api.openai.com/v1/models", ["api.openai.com"])
+        from .provider import resolve_auth
+        resolve_auth()
         api_credential_present = True
     except Exception:
         api_credential_present = False

@@ -149,28 +149,14 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             "repair_count": repairs, "tool_calls": environment.tool_calls}
 
 
-def check_connector_credential():
-    """Fail-closed check that the Secure Vault OpenAI connector is available.
+def check_credential():
+    """Fail-closed credential check: Secure Vault connector or OPENAI_API_KEY.
 
-    Performs a free /models API call (no generation, no spend) to verify
-    the credential authenticates. Raises ValueError if unavailable.
+    resolve_auth() performs a free /models probe and raises ValueError when
+    neither credential authenticates.
     """
-    import sys
-    sys.path.insert(0, "/opt/hatch/skills/skill-creator/bin")
-    import dynamic_credentials as dc
-    import urllib.request
-    url = "https://api.openai.com/v1/models"
-    try:
-        dc.ensure_allowed_url(url, ["api.openai.com"])
-        req = urllib.request.Request(url, method="GET")
-        dc.add_surrogate_to_request(req, "custom.openai", allowed_hosts=["api.openai.com"])
-        with urllib.request.urlopen(req, timeout=30) as handle:
-            response = dc.read_json_response(handle)
-        # Verify we got a valid models list (proves auth worked)
-        if not isinstance(response.get("data"), list):
-            raise ValueError("connector credential check failed: unexpected /models response")
-    except Exception as e:
-        raise ValueError(f"OpenAI connector credential unavailable: {type(e).__name__}") from e
+    from .provider import resolve_auth
+    resolve_auth()
 
 
 def validate_live(manifest, smoke=False):
@@ -189,9 +175,11 @@ def validate_live(manifest, smoke=False):
         raise ValueError("successful real adapter/usage smoke required before scored generation")
     if smoke and cfg.get("purpose") != "development_smoke":
         raise ValueError("smoke must use a separately frozen development manifest")
-    if "OPENAI_API_KEY" in os.environ:
-        raise ValueError("remove OPENAI_API_KEY from environment; use the Secure Vault connector")
-    check_connector_credential()
+    from .provider import resolve_auth
+    mode, _ = resolve_auth()
+    if mode == "connector" and "OPENAI_API_KEY" in os.environ:
+        raise ValueError("remove OPENAI_API_KEY from environment; connector credential is active")
+    check_credential()
     if os.name == "nt":
         raise ValueError("live runs require Linux/WSL2 with Docker; offline commands support Windows")
     subprocess.run(["docker", "info"], check=True, capture_output=True, timeout=30)
