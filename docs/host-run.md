@@ -24,7 +24,8 @@ bash scripts/host-setup.sh
 The script does everything in order and stops before spending money:
 
 1. Host checks: Linux, Docker daemon, Python 3.12+, git.
-2. Checks out the branch, installs the package, runs the 96-test suite.
+2. Checks out the branch, installs the package into an isolated venv
+   at `~/mr-smoke/venv`, runs the 96-test suite.
 3. Asks for your OpenAI API key (typed hidden, kept in the shell session
    only, never written to disk). The key needs access to `gpt-6-astra`.
 4. Verifies the key with a free `/v1/models` probe.
@@ -58,3 +59,5 @@ directory or the spend summary and I will write up the results.
   future scored freeze, so running the smoke does not contaminate the pilot.
 - Historical freezes v2/v3 and all prior evidence are untouched.
 - To run again later, re-run the script; it rebuilds from the branch.
+  Previous calibration/freeze outputs are archived with timestamps, never
+  overwritten. Expect up to ~30 minutes per attempt.

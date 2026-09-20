@@ -93,10 +93,18 @@ step "Fixture images (offline)"
 "$VPY" -m benchmark_runner.matched_repair build-images
 
 step "Calibration (offline)"
+# Archive any previous calibration so the exclusive write below stays fail-closed
+# while the script remains re-runnable after an interrupted run.
+if [ -d "$WORK/calibration" ]; then
+  mv "$WORK/calibration" "$WORK/calibration-prev-$(date +%Y%m%d-%H%M%S)"
+fi
 "$VPY" -m benchmark_runner.matched_repair calibrate "$WORK/calibration"
 test -f "$WORK/calibration/calibration.json" || die "calibration.json missing"
 
 step "Freeze v4 (runs reservation, audit, and grader-smoke gates)"
+if [ -d "$WORK/freeze-v4" ]; then
+  mv "$WORK/freeze-v4" "$WORK/freeze-v4-prev-$(date +%Y%m%d-%H%M%S)"
+fi
 mkdir -p "$WORK/freeze-v4"
 "$VPY" -m benchmark_runner.matched_repair freeze "$WORK/freeze-v4" \
   --calibration "$WORK/calibration/calibration.json"
@@ -124,6 +132,7 @@ echo "All offline gates passed. The next step spends real money:"
 echo "  3 attempts on gpt-6-astra, attempt_cap_usd=25, global_cap_usd=100."
 echo "  Worst-case reservation per repair attempt is under the attempt cap."
 echo "  Spend settles to measured usage; unknown usage is never released."
+echo "  Expect up to ~30 minutes per attempt (timeouts are enforced per attempt)."
 printf 'Type RUN to execute the 3-attempt development smoke: '
 IFS= read -r CONFIRM || true
 [ "$CONFIRM" = "RUN" ] || { echo "Aborted before any paid call. Zero spend."; exit 0; }

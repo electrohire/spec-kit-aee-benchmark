@@ -532,11 +532,18 @@ def build_fixture_image(project, variant, push=True):
 
 
 def ensure_registry():
-    running = subprocess.run(["docker", "inspect", "mr-registry"], capture_output=True)
-    if running.returncode == 0:
-        return
-    subprocess.run(["docker", "run", "-d", "--restart=always", "--name", "mr-registry",
-                    "-p", "5000:5000", "registry:2"], check=True, capture_output=True, timeout=300)
+    probe = subprocess.run(["docker", "inspect", "-f", "{{.State.Running}}", "mr-registry"],
+                           capture_output=True, text=True)
+    if probe.returncode == 0:
+        if probe.stdout.strip() == "true":
+            return
+        # Container exists but is stopped (e.g. after a host reboot): start it
+        # rather than failing on the name conflict a fresh `docker run` would hit.
+        subprocess.run(["docker", "start", "mr-registry"],
+                       check=True, capture_output=True, timeout=60)
+    else:
+        subprocess.run(["docker", "run", "-d", "--restart=always", "--name", "mr-registry",
+                        "-p", "5000:5000", "registry:2"], check=True, capture_output=True, timeout=300)
     for _ in range(30):
         time.sleep(2)
         probe = subprocess.run(["docker", "exec", "mr-registry", "true"], capture_output=True)
