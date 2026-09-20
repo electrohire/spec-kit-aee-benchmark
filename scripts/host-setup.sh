@@ -38,16 +38,21 @@ if [ ! -d "$WORK/repo/.git" ]; then
 fi
 cd "$WORK/repo"
 git fetch -q origin || die "git fetch failed"
-git checkout -q "$BRANCH" || die "checkout $BRANCH failed"
-git reset -q --hard "origin/$BRANCH"
-echo "checked out $(git rev-parse --short HEAD) on $BRANCH"
+git checkout -q -B "$BRANCH" "origin/$BRANCH" || die "checkout $BRANCH failed"
+echo "checked out $(git rev-parse --short HEAD) on $BRANCH (tracking origin/$BRANCH)"
 
-step "Python dependencies"
-if ! python3 -c "import benchmark_runner, aee, minisweagent" 2>/dev/null; then
-  python3 -m pip install -q -e . || die "pip install failed"
-  python3 -m pip install -q pytest || die "pip install pytest failed"
+step "Python dependencies (isolated venv)"
+if [ ! -d "$WORK/venv" ]; then
+  python3 -m venv "$WORK/venv" \
+    || die "could not create a venv; on Ubuntu run: sudo apt install python3-venv python3-pip"
 fi
-python3 -m pytest -q tests 2>&1 | tail -2 || die "test suite failed"
+VPY="$WORK/venv/bin/python"
+VBIN="$WORK/venv/bin"
+if ! "$VPY" -c "import benchmark_runner, aee, minisweagent" 2>/dev/null; then
+  "$VPY" -m pip install -q -e "$WORK/repo" || die "pip install failed"
+  "$VPY" -m pip install -q pytest || die "pip install pytest failed"
+fi
+"$VPY" -m pytest -q tests 2>&1 | tail -2 || die "test suite failed"
 
 step "API key (session only, never written to disk)"
 if [ -z "${OPENAI_API_KEY:-}" ]; then
@@ -59,7 +64,7 @@ fi
 [ -n "${OPENAI_API_KEY:-}" ] || die "no API key provided"
 
 step "Preflight"
-PREFLIGHT="$(aee-bench preflight)"
+PREFLIGHT="$("$VBIN/aee-bench" preflight)"
 echo "$PREFLIGHT" | python3 -c "
 import json, sys
 p = json.load(sys.stdin)
@@ -85,21 +90,21 @@ clone_at "$TINYDB_URL" tinydb "$TINYDB_REV"
 clone_at "$CACHETOOLS_URL" cachetools "$CACHETOOLS_REV"
 
 step "Fixture images (offline)"
-python3 -m benchmark_runner.matched_repair build-images
+"$VPY" -m benchmark_runner.matched_repair build-images
 
 step "Calibration (offline)"
-python3 -m benchmark_runner.matched_repair calibrate "$WORK/calibration"
+"$VPY" -m benchmark_runner.matched_repair calibrate "$WORK/calibration"
 test -f "$WORK/calibration/calibration.json" || die "calibration.json missing"
 
 step "Freeze v4 (runs reservation, audit, and grader-smoke gates)"
 mkdir -p "$WORK/freeze-v4"
-python3 -m benchmark_runner.matched_repair freeze "$WORK/freeze-v4" \
+"$VPY" -m benchmark_runner.matched_repair freeze "$WORK/freeze-v4" \
   --calibration "$WORK/calibration/calibration.json"
 MANIFEST="$WORK/freeze-v4/freeze-v4-smoke.json"
 test -f "$MANIFEST" || die "freeze manifest missing"
 
 step "Verify freeze integrity (offline)"
-aee-bench dry-run "$MANIFEST" >/dev/null || die "freeze verification failed"
+"$VBIN/aee-bench" dry-run "$MANIFEST" >/dev/null || die "freeze verification failed"
 python3 - "$MANIFEST" <<'EOF'
 import json, sys
 m = json.load(open(sys.argv[1]))
@@ -124,7 +129,7 @@ IFS= read -r CONFIRM || true
 [ "$CONFIRM" = "RUN" ] || { echo "Aborted before any paid call. Zero spend."; exit 0; }
 
 step "Running 3-attempt development smoke"
-aee-bench run "$MANIFEST" "$WORK/runs/smoke-v4" --smoke
+"$VBIN/aee-bench" run "$MANIFEST" "$WORK/runs/smoke-v4" --smoke
 
 step "Spend and outcome summary"
 python3 - "$WORK/runs/smoke-v4" <<'EOF'
@@ -137,12 +142,22 @@ def events(name):
     return [json.loads(l) for l in p.read_text().splitlines()] if p.exists() else []
 attempts = events("attempts")
 calls = events("calls")
-spend = sum((Decimal(c["cost"]) for c in calls if c.get("cost")), Decimal(0))
-print(f"attempts: {len(attempts)}")
+# Keep the final event per attempt (each attempt logs "started" then its outcome).
+final = {}
 for a in attempts:
-    print(f"  {a['attempt_id']}: {a['status']}" + (f" ({a.get('reason')})" if a.get("reason") else ""))
+    final[a["attempt_id"]] = a
+spend = sum((Decimal(c["cost"]) for c in calls if c.get("cost")), Decimal(0))
+per_attempt = {}
+for c in calls:
+    if c.get("cost"):
+        per_attempt[c["attempt_id"]] = per_attempt.get(c["attempt_id"], Decimal(0)) + Decimal(c["cost"])
+print(f"attempts: {len(final)}")
+for aid, a in final.items():
+    spent = per_attempt.get(aid, Decimal(0))
+    print(f"  {aid}: {a['status']}" + (f" ({a.get('reason')})" if a.get("reason") else "")
+          + f"  measured spend ${spent:.4f}")
 print(f"model calls: {len(calls)}")
-print(f"measured spend: ${spend:.4f} USD (caps: $25/attempt, $100 global)")
+print(f"total measured spend: ${spend:.4f} USD (caps: $25/attempt, $100 global)")
 EOF
 
 echo
