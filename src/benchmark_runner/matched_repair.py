@@ -722,6 +722,86 @@ def verify_reservation_bounds(cfg):
 
 
 # ---------------------------------------------------------------------------
+# Post-run hidden acceptance grading (offline; Docker only, no model calls)
+# ---------------------------------------------------------------------------
+
+def grade_run(run_dir, grade_fn=None):
+    """Grade a completed scored run's repair snapshots with the hidden
+    acceptance tests. Runs after ALL attempts are done: hidden outcomes are
+    recorded in the `hidden_grades` event stream and never fed back to any
+    attempt. Offline (Docker only, no model calls) and idempotent: attempts
+    already graded are skipped. Fails closed on missing snapshots or hash
+    mismatches."""
+    grade_fn = grade_fn or grade_snapshot
+    run_dir = Path(run_dir)
+    manifest = read_json(run_dir / "freeze.json")
+    tasks = {t["instance_id"]: t for t in manifest["tasks"]["tasks"]}
+    store = Store(run_dir)
+    graded = {e["attempt_id"] for e in store.events("hidden_grades")}
+    latest = {}
+    for e in store.events("attempts"):
+        latest[e["attempt_id"]] = e
+    results = []
+    for attempt_id in sorted(latest):
+        attempt = latest[attempt_id]
+        if attempt_id in graded:
+            continue
+        if attempt.get("arm") not in ("repair_ordinary", "repair_guided"):
+            continue
+        identity = {"attempt_id": attempt_id, "task_id": attempt["task_id"], "arm": attempt["arm"],
+                    "experiment_id": manifest["freeze_id"], "run_id": manifest["freeze_id"][:16],
+                    "purpose": manifest["config"]["purpose"]}
+        if attempt.get("status") != "completed":
+            store.append("hidden_grades", {**identity, "graded": False,
+                                           "reason": "attempt status %s; no final snapshot to grade"
+                                                     % attempt.get("status"),
+                                           "timestamp": utc()})
+            results.append((attempt_id, "skipped"))
+            print(f"GRADE {attempt_id}: skipped ({attempt.get('status')})", flush=True)
+            continue
+        snap_ref = attempt.get("package_snapshot")
+        if not snap_ref:
+            raise ValueError(f"completed repair attempt {attempt_id} has no package_snapshot")
+        snap_path = store.root / snap_ref["path"]
+        data = snap_path.read_bytes()
+        if sha(data) != snap_ref["sha256"]:
+            raise ValueError(f"package snapshot changed for {attempt_id}")
+        project, _, _ = pair_of(attempt["task_id"])
+        task = tasks[attempt["task_id"]]
+        grade = grade_fn(task["image"], data, project, task.get("hidden_test_count"))
+        store.append("hidden_grades", {**identity, "graded": True,
+                                       "hidden_passed": grade["passed"],
+                                       "test_count": grade["test_count"],
+                                       "expected_test_count": grade["expected"],
+                                       "failed_cases": grade["failed_cases"],
+                                       "grade_artifact": store.artifact(canonical(grade)),
+                                       "timestamp": utc()})
+        results.append((attempt_id, grade["passed"]))
+        print(f"GRADE {attempt_id}: hidden_passed={grade['passed']} "
+              f"tests={grade['test_count']} failed={grade['failed_cases']}", flush=True)
+    return results
+
+
+def graded_comparison(run_dir):
+    """Per-pair ordinary-vs-guided hidden outcomes from the hidden_grades
+    stream. Only graded attempts appear; pairs with a missing arm are honest
+    about it (no imputation)."""
+    grades = {}
+    for e in Store(Path(run_dir)).events("hidden_grades"):
+        grades[e["attempt_id"]] = e
+    pairs = {}
+    for g in grades.values():
+        row = pairs.setdefault(g["task_id"], {})
+        if g.get("graded"):
+            row[g["arm"]] = {"hidden_passed": g["hidden_passed"],
+                             "test_count": g["test_count"],
+                             "failed_cases": g["failed_cases"]}
+        else:
+            row[g["arm"]] = {"hidden_passed": None, "reason": g.get("reason")}
+    return pairs
+
+
+# ---------------------------------------------------------------------------
 # Smoke freeze builder (freeze v4)
 # ---------------------------------------------------------------------------
 
@@ -981,6 +1061,154 @@ def build_scored_freeze(output, calibration):
 
 
 # ---------------------------------------------------------------------------
+# Scored freeze builder (freeze v6): full scored set with hidden grading
+# ---------------------------------------------------------------------------
+
+# Every variant at the scored seed except the smoke pair
+# (tinydb/bool_id/20260918), which is excluded from every scored freeze.
+# Clean variants are negative controls: the agent must not change correct
+# code without a concrete reason; hidden grading expects them to pass.
+SCORED_SEED_V6 = 20260918
+SCORED_PAIRS_V6 = tuple(
+    (p, v, SCORED_SEED_V6)
+    for p in VARIANTS for v in VARIANTS[p]
+    if not (p == "tinydb" and v == "bool_id")
+)
+
+SCORED_V6_BUDGET_AUTHORIZATION = (
+    "On 2026-09-21 Tristen authorized a scored matched-repair campaign with attempt_cap_usd=25 and "
+    "global_cap_usd=100 (freeze v5: 3 attempts on tinydb/token_alias, seed 20260918, model gpt-6-astra), "
+    "and on 2026-09-21 further authorized rerunning the full scored set with hidden acceptance grading "
+    "in the mix (freeze v6: all 7 scored pairs at seed 20260918, 21 attempts) under the same $25/attempt "
+    "and $100 global caps. Prior measured spend: $1.4831 (smoke v4) + $1.5029 (scored v5) = $2.9860; "
+    "$97.0140 of the global cap remains. Expected v6 spend ~$10.50 at v5's $1.50/pair rate. "
+    "The 2026-09-20 failed run's unmeasured charge was discounted by Tristen on 2026-09-21 as unverifiable. "
+    "Spend settles to measured usage; unknown usage is never released."
+)
+
+REAL_SMOKE_EVIDENCE_V6 = (
+    "Freeze v4 development smoke completed 2026-09-21 ~01:03 UTC (3/3 attempts, $1.4831 measured) and "
+    "freeze v5 scored comparison completed 2026-09-21 ~12:23 UTC (3/3 attempts on tinydb/token_alias, "
+    "$1.5029 measured, diagnostic_valid=true, guided_with_assessment=true). "
+    "real_smoke_verified=True is grounded on both completed runs."
+)
+
+
+def scored_config_v6():
+    """Frozen config for the full scored campaign (freeze v6).
+
+    Same model, caps, and token bounds as v5. real_smoke_verified=True is
+    grounded on the completed v4 smoke AND the completed v5 scored run
+    (see REAL_SMOKE_EVIDENCE_V6)."""
+    cfg = smoke_config()
+    cfg.update({
+        "purpose": "scored_comparison",
+        "seed": SCORED_SEED_V6,
+        "budget_authorization": SCORED_V6_BUDGET_AUTHORIZATION,
+        "real_smoke_verified": True,
+        "real_smoke_evidence": REAL_SMOKE_EVIDENCE_V6,
+    })
+    return cfg
+
+
+def scored_v6_schedule():
+    """Deterministic 21-attempt schedule for freeze v6: per pair, diagnose
+    first, then the two repair arms in seeded-shuffled order. Pure function of
+    SCORED_PAIRS_V6 (no Docker, no model calls)."""
+    schedule = []
+    for i, (project, variant, seed) in enumerate(SCORED_PAIRS_V6):
+        pair_id = f"mr-{project}-{variant}-{seed}"
+        arms = ["repair_ordinary", "repair_guided"]
+        random.Random(seed + len(variant) + i).shuffle(arms)
+        for arm in ["diagnose"] + arms:
+            schedule.append(dict(task_id=pair_id, arm=arm, repeat=1,
+                                 attempt_id=f"{pair_id}--{arm}"))
+    return schedule
+
+
+def build_scored_freeze_v6(output, calibration):
+    """Build freeze v6: the full scored campaign with hidden acceptance
+    grading in the mix. Seven pairs at the scored seed (smoke pair excluded),
+    three arms each, 21 attempts. Same offline gates as v5 — reservation
+    bounds, per-fixture solver image audit, grader smoke — plus
+    real_smoke_verified grounded on the completed v4 and v5 runs. Fails
+    closed otherwise."""
+    fixtures = {}
+    for project, variant, seed in SCORED_PAIRS_V6:
+        fixtures[(project, variant)] = next(
+            f for f in calibration["fixtures"]
+            if (f["project"], f["variant"]) == (project, variant))
+    cfg = scored_config_v6()
+    reservation = verify_reservation_bounds(cfg)
+    audits = {}
+    for (project, variant), fixture in fixtures.items():
+        audit = audit_solver_image(fixture["image"], project)
+        if not audit["audit_pass"]:
+            raise ValueError(f"solver image audit failed for {project}/{variant}: "
+                             + json.dumps(audit["hidden_markers"]))
+        audits[f"{project}/{variant}"] = audit
+    grade_smoke = run_grade_smoke(calibration)
+    cfg["reservation_bound_verified"] = True
+    cfg["grader_smoke_verified"] = True
+    cfg["solver_image_audit_verified"] = True
+
+    def problem_statement(pair_id, project):
+        return (
+            f"Matched-repair pair {pair_id}: the /testbed repository may contain a seeded defect "
+            f"in {PROJECTS[project]['module']} (or may be a clean negative control). "
+            "Protocol: (1) a shared read-only diagnostic attempt reviews the implementation and public test "
+            "feedback and returns grounded requirement claims with explicit uncertainty; (2) two repair attempts "
+            "(ordinary and AEE-guided) start from the same pristine snapshot and each get two repair rounds. "
+            "The guided arm additionally receives the actual AEE/Evaluator findings from the shared diagnostic. "
+            "After all runs, the final package snapshots are graded with hidden acceptance tests; "
+            "hidden outcomes are never fed back to any attempt.")
+
+    tasks = []
+    for project, variant, seed in SCORED_PAIRS_V6:
+        pair_id = f"mr-{project}-{variant}-{seed}"
+        fixture = fixtures[(project, variant)]
+        tasks.append({"instance_id": pair_id, "repo": "matched-repair-fixture",
+                      "base_commit": fixture["base_commit"],
+                      "problem_statement": problem_statement(pair_id, project),
+                      "image": fixture["image"], "language": "python",
+                      "hidden_test_count": fixture["grade"]["test_count"]})
+    smoke_pair_id = "mr-%s-%s-%s" % SMOKE_PAIR
+    manifest = {
+        "schema_version": 1,
+        "files": {name: source_hash(ROOT / name) for name in frozen_paths(ROOT)},
+        "config": cfg,
+        "tasks": {"schema_version": 1, "seed": cfg["seed"],
+                  "selection": "matched-repair scored campaign: all pairs at the scored seed (smoke pair excluded)",
+                  "exclusions": sorted(f"mr-{p}-{v}-{s}" for p in VARIANTS for v in VARIANTS[p] for s in SEEDS
+                                       if (p, v, s) not in set(SCORED_PAIRS_V6)),
+                  "tasks": tasks},
+        "schedule": scored_v6_schedule(),
+        "pairing": ("Shared read-only diagnostic and raw claims, identical start/feedback/tools; only the guided "
+                    "repair arm receives actual AEE findings. Repair instructions embed the recorded diagnostic "
+                    "summary (frozen template + stored evidence); hidden grading of final snapshots happens after "
+                    "all runs and is never fed back. The smoke pair "
+                    f"({smoke_pair_id}) is excluded from every scored freeze."),
+        "reservation_verification": reservation,
+        "solver_image_audits": audits,
+        "grade_smoke": grade_smoke,
+        "pairs": [{"project": p, "variant": v, "seed": s,
+                   "image": fixtures[(p, v)]["image"],
+                   "base_commit": fixtures[(p, v)]["base_commit"],
+                   "hidden_test_count": fixtures[(p, v)]["grade"]["test_count"]}
+                  for p, v, s in SCORED_PAIRS_V6],
+        "notes": ("Freeze v6: full scored campaign (7 pairs x 3 arms = 21 attempts) with post-run hidden "
+                  "acceptance grading of every completed repair snapshot. Reruns the v5 pair (tinydb/token_alias) "
+                  "so grading is in the mix for the whole set. Freezes v4/v5 and all prior evidence untouched; "
+                  "negative and partial outcomes are preserved in the append-only event streams."),
+    }
+    manifest["freeze_id"] = sha(canonical({k: v for k, v in manifest.items() if k != "freeze_id"}))
+    out = Path(output)
+    out.mkdir(parents=True, exist_ok=True)
+    write_json(out / "freeze-v6-scored.json", manifest, exclusive=True)
+    return manifest
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -992,6 +1220,9 @@ def main(argv=None):
     p = sub.add_parser("audit"); p.add_argument("image"); p.add_argument("project")
     p = sub.add_parser("freeze"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
     p = sub.add_parser("freeze-scored"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
+    p = sub.add_parser("freeze-scored-v6"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
+    p = sub.add_parser("grade-run"); p.add_argument("--run", type=Path, required=True,
+        help="completed run directory (reads freeze.json + attempts, appends hidden_grades)")
     p = sub.add_parser("grade-smoke"); p.add_argument("--calibration", type=Path, required=True)
     args = parser.parse_args(argv)
     if args.command == "build-images":
@@ -1014,6 +1245,16 @@ def main(argv=None):
         manifest = build_scored_freeze(args.out, read_json(args.calibration))
         print("FREEZE", manifest["freeze_id"])
         print("reservation:", json.dumps(manifest["reservation_verification"]))
+    elif args.command == "freeze-scored-v6":
+        manifest = build_scored_freeze_v6(args.out, read_json(args.calibration))
+        print("FREEZE", manifest["freeze_id"])
+        print("reservation:", json.dumps(manifest["reservation_verification"]))
+        print("pairs:", len(manifest["pairs"]), "attempts:", len(manifest["schedule"]))
+    elif args.command == "grade-run":
+        results = grade_run(args.run)
+        print("GRADED", len(results))
+        for attempt_id, outcome in results:
+            print(f"  {attempt_id}: {outcome}")
     elif args.command == "grade-smoke":
         # Independent grader smoke (gate): a seeded-bug snapshot must fail hidden
         # grading and a clean snapshot must pass — exercises the full

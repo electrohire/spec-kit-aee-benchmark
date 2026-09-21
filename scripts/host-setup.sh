@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# Host setup for the matched-repair scored comparison (freeze v5).
+# Host setup for the matched-repair scored campaign (freeze v6).
 #
 # Runs on Linux or WSL2 with Docker. Everything before the final confirmation
-# is offline (fixture builds, calibration, grader smoke, audit, freeze);
-# paid inference is exactly 3 attempts within the frozen caps
-# ($25/attempt, $100 global) and only starts after you type RUN.
+# is offline (fixture builds, calibration, grader smoke, audits, freeze);
+# paid inference is 21 attempts (7 pairs x 3 arms) within the frozen caps
+# ($25/attempt, $100 global) and only starts after you type RUN. After the
+# run, hidden acceptance grading runs offline (Docker only, no model calls)
+# over every completed repair snapshot; hidden outcomes are never fed back.
 #
 # The OpenAI key is read once, kept in the shell session only, and never
 # written to disk, logs, or the repo.
@@ -125,14 +127,14 @@ fi
 "$VPY" -m benchmark_runner.matched_repair calibrate "$WORK/calibration"
 test -f "$WORK/calibration/calibration.json" || die "calibration.json missing"
 
-step "Freeze v5 (scored comparison: runs reservation, audit, and grader-smoke gates)"
-if [ -d "$WORK/freeze-v5" ]; then
-  mv "$WORK/freeze-v5" "$WORK/freeze-v5-prev-$(date +%Y%m%d-%H%M%S)"
+step "Freeze v6 (scored campaign: runs reservation, audits, and grader-smoke gates)"
+if [ -d "$WORK/freeze-v6" ]; then
+  mv "$WORK/freeze-v6" "$WORK/freeze-v6-prev-$(date +%Y%m%d-%H%M%S)"
 fi
-mkdir -p "$WORK/freeze-v5"
-"$VPY" -m benchmark_runner.matched_repair freeze-scored "$WORK/freeze-v5" \
+mkdir -p "$WORK/freeze-v6"
+"$VPY" -m benchmark_runner.matched_repair freeze-scored-v6 "$WORK/freeze-v6" \
   --calibration "$WORK/calibration/calibration.json"
-MANIFEST="$WORK/freeze-v5/freeze-v5-scored.json"
+MANIFEST="$WORK/freeze-v6/freeze-v6-scored.json"
 test -f "$MANIFEST" || die "freeze manifest missing"
 
 step "Verify freeze integrity (offline)"
@@ -146,27 +148,30 @@ print("model:", c["model"], "| reasoning_effort:", c["reasoning_effort"])
 print("attempt_cap_usd:", c["attempt_cap_usd"], "| global_cap_usd:", c["global_cap_usd"])
 print("gates:", c["reservation_bound_verified"], c["grader_smoke_verified"], c["solver_image_audit_verified"])
 print("worst-case reservation:", json.dumps(m["reservation_verification"]))
-print("schedule:", [s["attempt_id"] for s in m["schedule"]])
-assert len(m["schedule"]) == 3, "smoke must schedule exactly 3 attempts"
+print("pairs:", len(m["pairs"]), "| schedule:", len(m["schedule"]), "attempts")
+assert len(m["schedule"]) == 21, "v6 must schedule exactly 21 attempts (7 pairs x 3 arms)"
 assert all(c[k] for k in ("reservation_bound_verified", "grader_smoke_verified", "solver_image_audit_verified"))
 EOF
 
 echo
 echo "All offline gates passed. The next step spends real money:"
-echo "  3 attempts on gpt-6-astra (scored comparison, freeze v5, tinydb/token_alias, seed 20260918),"
+echo "  21 attempts on gpt-6-astra (scored campaign, freeze v6: 7 pairs x diagnose/ordinary/guided, seed 20260918),"
 echo "  attempt_cap_usd=25, global_cap_usd=100."
-echo "  Worst-case reservation per repair attempt is under the attempt cap."
+echo "  Expected spend ~\$10.50 at the v5 rate of \$1.50/pair; worst-case reservation per attempt is under the attempt cap."
 echo "  Spend settles to measured usage; unknown usage is never released."
-echo "  Expect up to ~30 minutes per attempt (timeouts are enforced per attempt)."
-printf 'Type RUN to execute the 3-attempt scored comparison: '
+echo "  Expect up to ~30 minutes per attempt (timeouts are enforced per attempt); the full campaign may take several hours."
+printf 'Type RUN to execute the 21-attempt scored campaign: '
 IFS= read -r CONFIRM || true
 [ "$CONFIRM" = "RUN" ] || { echo "Aborted before any paid call. Zero spend."; exit 0; }
 
-step "Running 3-attempt scored comparison"
-"$VBIN/aee-bench" run "$MANIFEST" "$WORK/runs/scored-v5"
+step "Running 21-attempt scored campaign"
+"$VBIN/aee-bench" run "$MANIFEST" "$WORK/runs/scored-v6"
 
-step "Spend and outcome summary"
-python3 - "$WORK/runs/scored-v5" <<'EOF'
+step "Hidden acceptance grading (offline: Docker only, no model calls)"
+"$VPY" -m benchmark_runner.matched_repair grade-run --run "$WORK/runs/scored-v6"
+
+step "Spend and graded outcome summary"
+python3 - "$WORK/runs/scored-v6" <<'EOF'
 import json, sys
 from pathlib import Path
 from decimal import Decimal
@@ -176,6 +181,7 @@ def events(name):
     return [json.loads(l) for l in p.read_text().splitlines()] if p.exists() else []
 attempts = events("attempts")
 calls = events("calls")
+grades = {g["attempt_id"]: g for g in events("hidden_grades")}
 # Keep the final event per attempt (each attempt logs "started" then its outcome).
 final = {}
 for a in attempts:
@@ -188,12 +194,35 @@ for c in calls:
 print(f"attempts: {len(final)}")
 for aid, a in final.items():
     spent = per_attempt.get(aid, Decimal(0))
+    g = grades.get(aid)
+    if g and g.get("graded"):
+        grade_txt = f"  hidden={'PASS' if g['hidden_passed'] else 'FAIL'} ({g['test_count']} tests" + \
+                    (f", failed: {', '.join(g['failed_cases'])}" if g["failed_cases"] else "") + ")"
+    elif g:
+        grade_txt = f"  hidden=ungraded ({g.get('reason')})"
+    else:
+        grade_txt = ""
     print(f"  {aid}: {a['status']}" + (f" ({a.get('reason')})" if a.get("reason") else "")
-          + f"  measured spend ${spent:.4f}")
+          + f"  measured spend ${spent:.4f}" + grade_txt)
 print(f"model calls: {len(calls)}")
 print(f"total measured spend: ${spend:.4f} USD (caps: $25/attempt, $100 global)")
+print()
+print("Graded comparison (ordinary vs guided, hidden acceptance):")
+print(f"{'pair':45} {'ordinary':22} {'guided':22}")
+pairs = {}
+for aid, g in grades.items():
+    if g.get("graded"):
+        pairs.setdefault(g["task_id"], {})[g["arm"]] = g
+for pair in sorted(pairs):
+    def cell(g):
+        return f"{'PASS' if g['hidden_passed'] else 'FAIL'} ({g['test_count']} tests)" if g else "n/a"
+    o, gd = pairs[pair].get("repair_ordinary"), pairs[pair].get("repair_guided")
+    mark = ""
+    if o and gd and o["hidden_passed"] != gd["hidden_passed"]:
+        mark = "  <-- arms differ"
+    print(f"{pair:45} {cell(o):22} {cell(gd):22}{mark}")
 EOF
 
 echo
-echo "Done. Full evidence is in $WORK/runs/scored-v5 (append-only event streams)."
+echo "Done. Full evidence is in $WORK/runs/scored-v6 (append-only event streams)."
 echo "The API key was never written to disk; unset it with: unset OPENAI_API_KEY"
