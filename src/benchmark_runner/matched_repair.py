@@ -45,7 +45,9 @@ MATCHED_ARMS = ("diagnose", "repair_ordinary", "repair_guided")
 #
 # Hard-pair track (freeze v7): `before` may also be a list of
 # (before, after) edit pairs (with `after=None`) for multi-edit variants
-# such as coupled defects; variant_source applies them in order.
+# such as coupled defects; variant_files applies them in order.
+# Phase-2 track (freeze v8): edits may be (path, before, after) triples for
+# cross-file multi-edit variants; see VARIANT_FILES.
 VARIANTS = {
     "tinydb": {
         "bool_id": ("type(ident) is not int", "not isinstance(ident, int)", ["R04"]),
@@ -99,15 +101,51 @@ VARIANTS = {
                     ["R07", "R08", "R04"]),
         "clean": (None, None, []),
     },
+    "minisched": {
+        # Phase-2 cross-file pairs (freeze v8): the symptom surfaces in
+        # scheduler.py but the defect lives in another module, and a
+        # plausible wrong-layer fix in scheduler.py passes every public test
+        # while failing hidden tests that pin the contract at the true layer.
+        # P1: wrong default in config.py; trap is `or 3` coercion in the
+        # scheduler, which breaks the explicit max_retries=0 requirement.
+        "config_default": ("DEFAULT_MAX_RETRIES = 3", "DEFAULT_MAX_RETRIES = 0",
+                            ["R04", "R07"]),
+        # P2: store.add aliases the caller's payload; trap is a defensive
+        # copy in scheduler.enqueue, which leaves the store contract broken.
+        "store_add_alias": ('"payload": deepcopy(payload)', '"payload": payload',
+                             ["R05"]),
+        # P3: coupled cross-file defects; diagnosis must be complete (fixing
+        # only one still fails hidden acceptance). Edits carry explicit
+        # paths; see variant_files.
+        "coupled_xfile": ([("minisched/config.py", "DEFAULT_MAX_RETRIES = 3",
+                              "DEFAULT_MAX_RETRIES = 0"),
+                             ("minisched/store.py", '"payload": deepcopy(payload)',
+                              '"payload": payload')],
+                            None,
+                            ["R04", "R05", "R07"]),
+        "clean": (None, None, []),
+    },
 }
 
 # Synthetic benchmark module placed into the real upstream package, mirroring
 # scripts/repeated_local.py PROJECTS (module = synthetic file under test).
+# Phase-2 project "minisched" is fully synthetic (no upstream checkout): the
+# package ships in benchmarks/repeated_local/minisched/reference/ and
+# variants may seed defects in any of its files (see VARIANT_FILES).
 PROJECTS = {
     "tinydb": {"upstream": "/tmp/upstreams/tinydb", "package": "tinydb",
                "module": "tinydb/journal.py", "revision": "19066e03139e904c24410e23901e4b069d715a2e"},
     "cachetools": {"upstream": "/tmp/upstreams/cachetools", "package": "src/cachetools",
                    "module": "src/cachetools/tagged.py", "revision": "c403f9f4185e58090b904c1915345b9ba46d5a08"},
+    "minisched": {"synthetic": True, "package": "minisched",
+                  "module": "minisched/config.py"},
+}
+
+# For variants whose seeded defect lives in a file other than the project's
+# default module (phase-2 cross-file pairs). (project, variant) -> relpath.
+# Multi-edit variants may instead carry an explicit path per edit.
+VARIANT_FILES = {
+    ("minisched", "store_add_alias"): "minisched/store.py",
 }
 
 SEEDS = [20260918, 20260919]
@@ -150,17 +188,43 @@ def pair_of(instance_id):
     return project, variant, seed
 
 
-def variant_source(project, variant):
-    text = (ROOT / "benchmarks/repeated_local" / project / "reference.py").read_text()
+def variant_files(project, variant):
+    """{relative_path: bytes} for the fixture: reference files with the
+    variant's seeded edits applied. Single-file projects return one entry
+    (the module); synthetic multi-file projects return one entry per package
+    file. Edits are (before, after) pairs applied to the variant's file, or
+    (path, before, after) triples carrying an explicit path for cross-file
+    multi-edit variants; each anchor must be unique in its file."""
+    meta = PROJECTS[project]
+    if meta.get("synthetic"):
+        refdir = ROOT / "benchmarks/repeated_local" / project / "reference"
+        prefix = meta["package"] + "/"
+        files = {prefix + p.relative_to(refdir).as_posix(): p.read_bytes()
+                 for p in sorted(refdir.rglob("*.py"))}
+    else:
+        ref = ROOT / "benchmarks/repeated_local" / project / "reference.py"
+        files = {meta["module"]: ref.read_bytes()}
     before, after, _ = VARIANTS[project][variant]
-    # Multi-edit variants pass a list of (before, after) pairs as `before`
-    # with `after=None`; edits apply in order, each anchor asserted unique.
+    default_path = VARIANT_FILES.get((project, variant), meta["module"])
     edits = before if isinstance(before, list) else [(before, after)]
-    for b, a in edits:
+    for edit in edits:
+        if len(edit) == 3:
+            path, b, a = edit
+        else:
+            b, a = edit
+            path = default_path
         if b:
-            assert text.count(b) == 1, f"variant anchor not unique: {project}/{variant}"
-            text = text.replace(b, a)
-    return text.encode()
+            text = files[path].decode()
+            assert text.count(b) == 1, f"variant anchor not unique: {project}/{variant} {path}"
+            files[path] = text.replace(b, a).encode()
+    return files
+
+
+def variant_source(project, variant):
+    files = variant_files(project, variant)
+    if len(files) != 1:
+        raise ValueError(f"variant_source is single-file only: {project}/{variant}")
+    return next(iter(files.values()))
 
 
 def spec_text(project):
@@ -527,6 +591,16 @@ def image_name(project, variant):
 
 def _copy_package_into(context, project):
     meta = PROJECTS[project]
+    import shutil
+    if meta.get("synthetic"):
+        # Phase-2 synthetic project: the package ships in the repo; there is
+        # no upstream checkout to pin. variant_files applies the seeded edits
+        # on top of the reference tree after this copy.
+        src = ROOT / "benchmarks/repeated_local" / project / "reference"
+        package_dst = context / meta["package"]
+        shutil.copytree(src, package_dst,
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        return meta
     upstream = Path(meta["upstream"])
     actual = subprocess.check_output(["git", "-C", str(upstream), "rev-parse", "HEAD"], text=True).strip()
     if actual != meta["revision"]:
@@ -536,7 +610,6 @@ def _copy_package_into(context, project):
     package_src = upstream / meta["package"]
     package_dst = context / meta["package"]
     package_dst.parent.mkdir(parents=True, exist_ok=True)
-    import shutil
     shutil.copytree(package_src, package_dst, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "tests"))
     return meta
 
@@ -549,7 +622,8 @@ def build_fixture_image(project, variant, push=True):
     with tempfile.TemporaryDirectory(prefix="mr-fixture-") as tmp:
         context = Path(tmp)
         _copy_package_into(context, project)
-        (context / meta["module"]).write_bytes(variant_source(project, variant))
+        for relpath, data in variant_files(project, variant).items():
+            (context / relpath).write_bytes(data)
         (context / "acceptance_public.py").write_bytes(tests_for(project, 3, True))
         (context / "Dockerfile").write_text(
             "FROM python:3.12-slim\n"
@@ -942,11 +1016,12 @@ def scored_config():
 
 
 def run_grade_smoke(calibration):
-    """Independent grader smoke (gate): a seeded-bug snapshot must fail hidden
-    grading and a clean snapshot must pass — exercises the full
-    snapshot -> grade path on both outcomes. Raises on failure."""
+    """Independent grader smoke (gate): per project, a seeded-bug snapshot
+    must fail hidden grading and a clean snapshot must pass — exercises the
+    full snapshot -> grade path on both outcomes. Raises on failure."""
     results = {}
-    for project in ("tinydb", "cachetools"):
+    projects = sorted({f["project"] for f in calibration["fixtures"]})
+    for project in projects:
         bad = next(f for f in calibration["fixtures"] if f["project"] == project and f["variant"] != "clean")
         good = next(f for f in calibration["fixtures"] if f["project"] == project and f["variant"] == "clean")
         project_results = {}
@@ -1427,6 +1502,169 @@ def build_scored_freeze_v7(output, calibration):
 
 
 # ---------------------------------------------------------------------------
+# Scored freeze builder (freeze v8): phase-2 cross-file defect task class
+# ---------------------------------------------------------------------------
+
+# After the v7 null (second consecutive graded null on guided-vs-ordinary
+# quality; ceiling effect at gpt-6-astra on single-module repair), v8 pilots
+# the harder task class from the design doc: a synthetic three-module package
+# (minisched) with defects whose symptom surfaces in scheduler.py while the
+# cause lives in config.py or store.py, each with a plausible wrong-layer fix
+# in scheduler.py that passes every public test but fails hidden tests pinned
+# at the true layer. Every pair was verified offline 2026-09-21: all 4 public
+# tests pass on each seeded defect, hidden tests fail exactly the expected
+# requirement tests, the reference passes the full hidden set, and both
+# wrong-layer trap repairs pass public while failing hidden.
+SCORED_SEED_V8 = 20260918
+SCORED_PAIRS_V8 = (
+    ("minisched", "config_default", SCORED_SEED_V8),
+    ("minisched", "store_add_alias", SCORED_SEED_V8),
+    ("minisched", "coupled_xfile", SCORED_SEED_V8),
+    ("minisched", "clean", SCORED_SEED_V8),
+)
+
+SCORED_V8_BUDGET_AUTHORIZATION = (
+    "On 2026-09-21 Tristen authorized the freeze-v8 phase-2 cross-file scored campaign "
+    "(\"design and execute phase-2 harder task class\"): 12 attempts (4 pairs x "
+    "diagnose/ordinary/guided) on gpt-6-astra with attempt_cap_usd=25 and global_cap_usd=100. "
+    "Expected spend ~$6-9. Prior measured spend: $22.8863 against the $100 global cap "
+    "($77.1137 remaining). Spend settles to measured usage; unknown usage is never released."
+)
+
+REAL_SMOKE_EVIDENCE_V8 = (
+    "Freeze v4 development smoke completed 2026-09-21 ~01:03 UTC (3/3 attempts, $1.4831 measured), "
+    "freeze v5 scored comparison completed 2026-09-21 ~12:23 UTC (3/3 attempts on tinydb/token_alias, "
+    "$1.5029 measured, diagnostic_valid=true, guided_with_assessment=true), freeze v6 full scored "
+    "campaign completed 2026-09-21 ~13:25 UTC (21/21 attempts, $8.8870 measured, hidden acceptance "
+    "grading 14/14 PASS), and freeze v7 hard-pair campaign completed 2026-09-21 (24/24 attempts, "
+    "$11.0133 measured, hidden acceptance grading 16/16 PASS, second consecutive null on "
+    "guided-vs-ordinary quality). real_smoke_verified=True is grounded on these completed runs: "
+    "the paid model path is proven end to end."
+)
+
+
+def scored_config_v8():
+    """Frozen config for the phase-2 cross-file scored campaign (freeze v8).
+
+    Same model, caps, and token bounds as v6/v7. real_smoke_verified=True is
+    grounded on the completed v4/v5/v6/v7 runs (see REAL_SMOKE_EVIDENCE_V8).
+    Tristen authorized this campaign on 2026-09-21 (see
+    SCORED_V8_BUDGET_AUTHORIZATION); the host RUN gate still takes his typed
+    RUN as the fresh confirmation before any paid call."""
+    cfg = smoke_config()
+    cfg.update({
+        "purpose": "scored_comparison",
+        "seed": SCORED_SEED_V8,
+        "budget_authorization": SCORED_V8_BUDGET_AUTHORIZATION,
+        "real_smoke_verified": True,
+        "real_smoke_evidence": REAL_SMOKE_EVIDENCE_V8,
+    })
+    return cfg
+
+
+def scored_v8_schedule():
+    """Deterministic 12-attempt schedule for freeze v8: per pair, diagnose
+    first, then the two repair arms in seeded-shuffled order. Pure function of
+    SCORED_PAIRS_V8 (no Docker, no model calls)."""
+    schedule = []
+    for i, (project, variant, seed) in enumerate(SCORED_PAIRS_V8):
+        pair_id = f"mr-{project}-{variant}-{seed}"
+        arms = ["repair_ordinary", "repair_guided"]
+        random.Random(seed + len(variant) + i).shuffle(arms)
+        for arm in ["diagnose"] + arms:
+            schedule.append(dict(task_id=pair_id, arm=arm, repeat=1,
+                                 attempt_id=f"{pair_id}--{arm}"))
+    return schedule
+
+
+def build_scored_freeze_v8(output, calibration):
+    """Build freeze v8: the phase-2 cross-file scored campaign. Four minisched
+    pairs at the scored seed, three arms each, 12 attempts. Same offline gates
+    as v6/v7 — reservation bounds, per-fixture solver image audit, grader
+    smoke. Fails closed otherwise. Offline only: no model calls, no spend."""
+    fixtures = {}
+    for project, variant, seed in SCORED_PAIRS_V8:
+        fixtures[(project, variant)] = next(
+            f for f in calibration["fixtures"]
+            if (f["project"], f["variant"]) == (project, variant))
+    cfg = scored_config_v8()
+    reservation = verify_reservation_bounds(cfg)
+    audits = {}
+    for (project, variant), fixture in fixtures.items():
+        audit = audit_solver_image(fixture["image"], project)
+        if not audit["audit_pass"]:
+            raise ValueError(f"solver image audit failed for {project}/{variant}: "
+                             + json.dumps(audit["hidden_markers"]))
+        audits[f"{project}/{variant}"] = audit
+    grade_smoke = run_grade_smoke(calibration)
+    cfg["reservation_bound_verified"] = True
+    cfg["grader_smoke_verified"] = True
+    cfg["solver_image_audit_verified"] = True
+
+    def problem_statement(pair_id, project):
+        return (
+            f"Matched-repair pair {pair_id}: the /testbed repository may contain a seeded defect "
+            f"in the {PROJECTS[project]['package']} package — possibly spanning modules, with the "
+            f"symptom surfacing in a different file than the cause (or it may be a clean negative "
+            f"control). Protocol: (1) a shared read-only diagnostic attempt reviews the implementation "
+            f"and public test feedback and returns grounded requirement claims with explicit "
+            f"uncertainty; (2) two repair attempts (ordinary and AEE-guided) start from the same "
+            f"pristine snapshot and each get two repair rounds. The guided arm additionally receives "
+            f"the actual AEE/Evaluator findings from the shared diagnostic. After all runs, the final "
+            f"package snapshots are graded with hidden acceptance tests; hidden outcomes are never "
+            f"fed back to any attempt.")
+
+    tasks = []
+    for project, variant, seed in SCORED_PAIRS_V8:
+        pair_id = f"mr-{project}-{variant}-{seed}"
+        fixture = fixtures[(project, variant)]
+        tasks.append({"instance_id": pair_id, "repo": "matched-repair-fixture",
+                      "base_commit": fixture["base_commit"],
+                      "problem_statement": problem_statement(pair_id, project),
+                      "image": fixture["image"], "language": "python",
+                      "hidden_test_count": fixture["grade"]["test_count"]})
+    smoke_pair_id = "mr-%s-%s-%s" % SMOKE_PAIR
+    manifest = {
+        "schema_version": 1,
+        "files": {name: source_hash(ROOT / name) for name in frozen_paths(ROOT)},
+        "config": cfg,
+        "tasks": {"schema_version": 1, "seed": cfg["seed"],
+                  "selection": ("matched-repair scored campaign: phase-2 cross-file pairs at the scored seed "
+                                "(config_default, store_add_alias, coupled_xfile, clean control)"),
+                  "exclusions": sorted(f"mr-{p}-{v}-{s}" for p in VARIANTS for v in VARIANTS[p] for s in SEEDS
+                                       if (p, v, s) not in set(SCORED_PAIRS_V8)),
+                  "tasks": tasks},
+        "schedule": scored_v8_schedule(),
+        "pairing": ("Shared read-only diagnostic and raw claims, identical start/feedback/tools; only the guided "
+                    "repair arm receives actual AEE findings. Repair instructions embed the recorded diagnostic "
+                    "summary (frozen template + stored evidence); hidden grading of final snapshots happens after "
+                    "all runs and is never fed back. The smoke pair "
+                    f"({smoke_pair_id}) is excluded from every scored freeze."),
+        "reservation_verification": reservation,
+        "solver_image_audits": audits,
+        "grade_smoke": grade_smoke,
+        "pairs": [{"project": p, "variant": v, "seed": s,
+                   "image": fixtures[(p, v)]["image"],
+                   "base_commit": fixtures[(p, v)]["base_commit"],
+                   "hidden_test_count": fixtures[(p, v)]["grade"]["test_count"]}
+                  for p, v, s in SCORED_PAIRS_V8],
+        "notes": ("Freeze v8: phase-2 cross-file scored campaign (4 pairs x 3 arms = 12 attempts) piloting the "
+                  "harder task class after the v7 null (second consecutive graded null on guided-vs-ordinary "
+                  "quality). The synthetic minisched package (config/store/scheduler) seeds defects whose "
+                  "symptom surfaces in scheduler.py while the cause lives in config.py or store.py; each "
+                  "carries a plausible wrong-layer fix in scheduler.py that passes every public test but fails "
+                  "hidden tests pinned at the true layer. Per-arm hidden pass-rate is the primary comparison "
+                  "metric. Freezes v4/v5/v6/v7 and all prior evidence untouched; negative and partial outcomes "
+                  "are preserved in the append-only event streams."),
+    }
+    manifest["freeze_id"] = sha(canonical({k: v for k, v in manifest.items() if k != "freeze_id"}))
+    out = Path(output)
+    out.mkdir(parents=True, exist_ok=True)
+    write_json(out / "freeze-v8-scored.json", manifest, exclusive=True)
+    return manifest
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -1440,6 +1678,7 @@ def main(argv=None):
     p = sub.add_parser("freeze-scored"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
     p = sub.add_parser("freeze-scored-v6"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
     p = sub.add_parser("freeze-scored-v7"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
+    p = sub.add_parser("freeze-scored-v8"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
     p = sub.add_parser("grade-run"); p.add_argument("--run", type=Path, required=True,
         help="completed run directory (reads freeze.json + attempts, appends hidden_grades)")
     p = sub.add_parser("grade-smoke"); p.add_argument("--calibration", type=Path, required=True)
@@ -1471,6 +1710,11 @@ def main(argv=None):
         print("pairs:", len(manifest["pairs"]), "attempts:", len(manifest["schedule"]))
     elif args.command == "freeze-scored-v7":
         manifest = build_scored_freeze_v7(args.out, read_json(args.calibration))
+        print("FREEZE", manifest["freeze_id"])
+        print("reservation:", json.dumps(manifest["reservation_verification"]))
+        print("pairs:", len(manifest["pairs"]), "attempts:", len(manifest["schedule"]))
+    elif args.command == "freeze-scored-v8":
+        manifest = build_scored_freeze_v8(args.out, read_json(args.calibration))
         print("FREEZE", manifest["freeze_id"])
         print("reservation:", json.dumps(manifest["reservation_verification"]))
         print("pairs:", len(manifest["pairs"]), "attempts:", len(manifest["schedule"]))

@@ -6,14 +6,17 @@ import pytest
 
 from benchmark_runner.matched_repair import (
     MATCHED_ARMS,
+    PROJECTS,
     PYTEST_CMD,
     VARIANTS,
+    VARIANT_FILES,
     _terminal_done,
     git_clean,
     pair_of,
     run_public_tests,
     smoke_config,
     tests_for as mr_tests_for,
+    variant_files,
     variant_source,
     verify_reservation_bounds,
 )
@@ -33,26 +36,50 @@ def test_pair_of_rejects_unknown():
 def test_variant_anchors_unique():
     for project, variants in VARIANTS.items():
         for variant, (before, after, reqs) in variants.items():
-            src = variant_source(project, variant).decode()
+            files = variant_files(project, variant)
             # Multi-edit variants pass a list of (before, after) pairs as
-            # `before` with `after=None`; edits apply in order.
+            # `before` with `after=None`; edits apply in order. Phase-2
+            # cross-file edits may be (path, before, after) triples.
             edits = before if isinstance(before, list) else [(before, after)]
-            if any(b for b, _ in edits):
-                for b, a in edits:
+            default_path = VARIANT_FILES.get((project, variant),
+                                             PROJECTS[project]["module"])
+            applied = []
+            for edit in edits:
+                if len(edit) == 3:
+                    path, b, a = edit
+                else:
+                    b, a = edit
+                    path = default_path
+                applied.append((path, b, a))
+            if any(b for _, b, _ in applied):
+                for path, b, a in applied:
                     if not b:
                         continue
+                    src = files[path].decode()
                     if a:
                         # seeded edit applied exactly once (some `after`
                         # strings contain `before` as a substring, so only
                         # assert the applied form)
-                        assert src.count(a) == 1, (project, variant, b)
+                        assert src.count(a) == 1, (project, variant, path, b)
                     else:
                         # removal edit: the anchor must be gone
-                        assert b not in src, (project, variant, b)
+                        assert b not in src, (project, variant, path, b)
                 assert reqs
             else:
-                clean = variant_source(project, variant).decode()
-                assert "deepcopy" in clean
+                # clean control: no edits applied, files equal the reference
+                from pathlib import Path as _Path
+                from benchmark_runner import matched_repair as _mr
+                meta = PROJECTS[project]
+                if meta.get("synthetic"):
+                    refdir = (_Path(_mr.__file__).resolve().parents[2] / "benchmarks"
+                              / "repeated_local" / project / "reference")
+                    prefix = meta["package"] + "/"
+                    for path, data in files.items():
+                        rel = path[len(prefix):]
+                        assert data == (refdir / rel).read_bytes(), (project, variant, path)
+                else:
+                    clean = variant_source(project, variant).decode()
+                    assert "deepcopy" in clean
 
 
 def test_multi_edit_variant_applies_edits_in_order():
@@ -316,6 +343,87 @@ def test_scored_v7_config_unauthorized_build_only():
     assert 'freeze-v7-scored.json' in src
     assert 'hidden_test_count' in src
     assert 'not in set(SCORED_PAIRS_V7)' in src
+
+
+def test_variant_files_multi_file_and_cross_file_edits():
+    """Phase-2 machinery: minisched variants return one entry per package
+    file; single-edit variants seed the right file; the cross-file coupled
+    variant applies edits in two files; variant_source still works for
+    single-file projects and refuses multi-file ones."""
+    from benchmark_runner import matched_repair as mr
+    files = mr.variant_files("minisched", "clean")
+    assert set(files) == {"minisched/__init__.py", "minisched/config.py",
+                          "minisched/store.py", "minisched/scheduler.py"}
+    assert b"DEFAULT_MAX_RETRIES = 3" in files["minisched/config.py"]
+    cfg = mr.variant_files("minisched", "config_default")
+    assert b"DEFAULT_MAX_RETRIES = 0" in cfg["minisched/config.py"]
+    assert b'"payload": deepcopy(payload)' in cfg["minisched/store.py"]
+    store = mr.variant_files("minisched", "store_add_alias")
+    assert b'"payload": payload' in store["minisched/store.py"]
+    assert b"DEFAULT_MAX_RETRIES = 3" in store["minisched/config.py"]
+    coupled = mr.variant_files("minisched", "coupled_xfile")
+    assert b"DEFAULT_MAX_RETRIES = 0" in coupled["minisched/config.py"]
+    assert b'"payload": payload' in coupled["minisched/store.py"]
+    # single-file projects still go through variant_source unchanged
+    src = mr.variant_source("tinydb", "token_alias").decode()
+    assert "self.tokens[token] = (deepcopy(operations), inserted)" in src
+    with pytest.raises(ValueError):
+        mr.variant_source("minisched", "clean")
+
+
+def test_scored_v8_pairs_cross_file_set():
+    """Freeze v8: four minisched cross-file pairs at the scored seed."""
+    from benchmark_runner import matched_repair as mr
+    pairs = mr.SCORED_PAIRS_V8
+    assert len(pairs) == 4, pairs
+    assert all(p == "minisched" for p, _, _ in pairs)
+    assert all(s == 20260918 for _, _, s in pairs)
+    for v in ("config_default", "store_add_alias", "coupled_xfile", "clean"):
+        assert (("minisched", v, 20260918) in pairs), v
+    assert len(set(pairs)) == 4
+
+
+def test_scored_v8_schedule_is_deterministic_and_complete():
+    """12 attempts: diagnose first per pair, both repair arms, unique ids,
+    deterministic across calls (pure function, no Docker)."""
+    from benchmark_runner import matched_repair as mr
+    sched = mr.scored_v8_schedule()
+    assert sched == mr.scored_v8_schedule()
+    assert len(sched) == 12
+    ids = [s["attempt_id"] for s in sched]
+    assert len(set(ids)) == 12
+    by_pair = {}
+    for s in sched:
+        by_pair.setdefault(s["task_id"], []).append(s["arm"])
+    assert len(by_pair) == 4
+    for pair_id, arms in by_pair.items():
+        assert arms[0] == "diagnose", pair_id
+        assert sorted(arms[1:]) == ["repair_guided", "repair_ordinary"], pair_id
+        for s in sched:
+            if s["task_id"] == pair_id:
+                assert s["attempt_id"] == f"{pair_id}--{s['arm']}"
+
+
+def test_scored_v8_config_authorized():
+    """v8 config keeps the scored caps, grounds real_smoke_verified on the
+    completed v4/v5/v6/v7 runs, and records Tristen's 2026-09-21 phase-2
+    campaign authorization."""
+    import inspect
+    from benchmark_runner import matched_repair as mr
+    cfg = mr.scored_config_v8()
+    assert cfg["purpose"] == "scored_comparison"
+    assert cfg["seed"] == 20260918
+    assert cfg["model"] == "gpt-6-astra"
+    assert cfg["global_cap_usd"] == 100 and cfg["attempt_cap_usd"] == 25
+    assert cfg["real_smoke_verified"] is True
+    assert "2026-09-21" in cfg["budget_authorization"]
+    assert "authorized" in cfg["budget_authorization"]
+    assert "phase-2" in cfg["budget_authorization"]
+    assert "v7" in cfg["real_smoke_evidence"]
+    src = inspect.getsource(mr.build_scored_freeze_v8)
+    assert 'freeze-v8-scored.json' in src
+    assert 'hidden_test_count' in src
+    assert 'not in set(SCORED_PAIRS_V8)' in src
 
 
 def test_graded_comparison_reports_hidden_pass_rate():
