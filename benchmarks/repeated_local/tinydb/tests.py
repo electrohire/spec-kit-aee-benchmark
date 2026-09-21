@@ -105,3 +105,13 @@ def test_R07_bad_tokens(pair):
     for token in ['',False,1,[]]:
         with pytest.raises(ValueError): w.apply([{'op':'insert','document':{}}],token=token)
     assert len(db)==0
+
+def test_R08_replay_detached(pair):
+    # Freeze v7 trap test: the replay path must return a detached copy, not
+    # the stored list itself. A repair that fixes the token store but
+    # "simplifies" the replay detach passes every public test yet corrupts
+    # bookkeeping as soon as a caller mutates a replayed result.
+    db,w=pair; ops=[{'op':'insert','document':{}}]
+    r1=w.apply(ops,token='a'); r1.append(1)
+    r2=w.apply(ops,token='a'); r2.append(2)
+    assert w.apply(ops,token='a')==[1] and len(db)==1
