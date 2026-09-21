@@ -7,6 +7,7 @@
 # ($25/attempt, $100 global) and only starts after you type RUN. After the
 # run, hidden acceptance grading runs offline (Docker only, no model calls)
 # over every completed repair snapshot; hidden outcomes are never fed back.
+# The evidence is then packaged into a single zip ready to attach in chat.
 #
 # The OpenAI key is read once, kept in the shell session only, and never
 # written to disk, logs, or the repo.
@@ -258,4 +259,13 @@ EOF
 
 echo
 echo "Done. Full evidence is in $WORK/runs/scored-v8-1 (append-only event streams)."
+
+step "Evidence packaging"
+command -v zip >/dev/null || die "zip not found; install it (e.g. sudo apt install zip) or package the evidence manually"
+# Package the completed run plus any timestamped archives from earlier events
+# (interrupted/failed attempts are evidence too), so nothing needs zipping by hand.
+rm -f "$WORK/scored-v8-1.zip"
+(cd "$WORK" && zip -qr scored-v8-1.zip runs/scored-v8-1 runs/scored-v8-1-prev-* 2>/dev/null) || \
+  (cd "$WORK" && zip -qr scored-v8-1.zip runs/scored-v8-1)
+echo "Evidence packaged: $WORK/scored-v8-1.zip — attach it in chat for the independent audit."
 echo "The API key was never written to disk; unset it with: unset OPENAI_API_KEY"
