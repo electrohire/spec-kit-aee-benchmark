@@ -22,7 +22,7 @@ except ImportError:
 
 from .accounting import TOKEN_FIELDS, cost, native_usage, request_prices
 from .store import canonical, utc
-from .schema import validate_call
+from .schema import validate_call, validate_identity
 
 
 CREDENTIAL = "custom.openai"
@@ -82,52 +82,63 @@ class OpenAIProvider:
 
     def query(self, messages, phase, timeout, retry=0):
         cfg = self.config
+        # Fail fast before spending: every telemetry field known up front is
+        # validated now, so a schema/arm mismatch raises before the HTTP
+        # request instead of after it (when the spend is invisible).
+        validate_identity({**self.identity, "phase": phase})
         # Reserve the model's FULL documented input ceiling, not transcript estimates.
         # No call is permitted until the operator has verified this model-specific bound.
         ceiling_prices = request_prices(cfg)
         reserve = (Decimal(cfg["max_input_tokens"])*Decimal(str(ceiling_prices["input"]))
                    + Decimal(cfg["max_output_tokens"])*Decimal(str(ceiling_prices["output"]))) / 1_000_000
         call_id = uuid.uuid4().hex
+        charge = None
         self.budget.reserve(call_id, self.identity["attempt_id"], reserve)
-        started, tick = utc(), time.monotonic()
-        payload = dict(model=cfg["model"], messages=messages, max_completion_tokens=cfg["max_output_tokens"],
-                       reasoning_effort=cfg["reasoning_effort"], service_tier="default")
-        if cfg.get("temperature") is not None:
-            payload["temperature"] = cfg["temperature"]
-        request_artifact = self.store.artifact(canonical(payload))
-        response, request_id, error, response_artifact = {}, None, None, None
         try:
-            mode, key = resolve_auth()
-            if mode == "connector":
-                dc.ensure_allowed_url(CHAT_URL, ALLOWED_HOSTS)
-                req = urllib.request.Request(CHAT_URL, canonical(payload),
-                        {"Content-Type": "application/json"})
-                dc.add_surrogate_to_request(req, CREDENTIAL, allowed_hosts=ALLOWED_HOSTS)
-            else:
-                req = urllib.request.Request(CHAT_URL, canonical(payload),
-                        {"Content-Type": "application/json",
-                         "Authorization": "Bearer " + key})
-            with urllib.request.urlopen(req, timeout=timeout) as handle:
-                request_id = handle.headers.get("x-request-id")
-                response = (dc.read_json_response(handle) if mode == "connector"
-                            else json.loads(handle.read().decode()))
-            response_artifact = self.store.artifact(canonical(response))
-            usage = native_usage(response)
-        except (urllib.error.URLError, TimeoutError, KeyError, ValueError) as e:
-            error = type(e).__name__  # Avoid logging headers, keys or raw provider error bodies.
-            usage = {**{k: None for k in TOKEN_FIELDS}, "unknown_reason": error}
-        charge = cost(usage, request_prices(cfg, usage))
-        event = {**self.identity, "call_id": call_id, "request_id": request_id,
-                 "phase": phase, "provider": "openai", "model": cfg["model"],
-                 "response_model": response.get("model"), "started_at": started, "ended_at": utc(),
-                 "duration_seconds": time.monotonic()-tick, **usage,
-                 "price_snapshot_id": cfg["price_snapshot_id"], "cost_basis": "list_price_estimate",
-                 "currency": "USD", "cost": str(charge) if charge is not None else None,
-                 "retry": retry, "error": error,
-                 "artifacts": {"request": request_artifact, "response": response_artifact}}
-        validate_call(event)
-        self.store.append("calls", event)
-        self.budget.settle(call_id, charge)
+            started, tick = utc(), time.monotonic()
+            payload = dict(model=cfg["model"], messages=messages, max_completion_tokens=cfg["max_output_tokens"],
+                           reasoning_effort=cfg["reasoning_effort"], service_tier="default")
+            if cfg.get("temperature") is not None:
+                payload["temperature"] = cfg["temperature"]
+            request_artifact = self.store.artifact(canonical(payload))
+            response, request_id, error, response_artifact = {}, None, None, None
+            try:
+                mode, key = resolve_auth()
+                if mode == "connector":
+                    dc.ensure_allowed_url(CHAT_URL, ALLOWED_HOSTS)
+                    req = urllib.request.Request(CHAT_URL, canonical(payload),
+                            {"Content-Type": "application/json"})
+                    dc.add_surrogate_to_request(req, CREDENTIAL, allowed_hosts=ALLOWED_HOSTS)
+                else:
+                    req = urllib.request.Request(CHAT_URL, canonical(payload),
+                            {"Content-Type": "application/json",
+                             "Authorization": "Bearer " + key})
+                with urllib.request.urlopen(req, timeout=timeout) as handle:
+                    request_id = handle.headers.get("x-request-id")
+                    response = (dc.read_json_response(handle) if mode == "connector"
+                                else json.loads(handle.read().decode()))
+                response_artifact = self.store.artifact(canonical(response))
+                usage = native_usage(response)
+            except (urllib.error.URLError, TimeoutError, KeyError, ValueError) as e:
+                error = type(e).__name__  # Avoid logging headers, keys or raw provider error bodies.
+                usage = {**{k: None for k in TOKEN_FIELDS}, "unknown_reason": error}
+            charge = cost(usage, request_prices(cfg, usage))
+            event = {**self.identity, "call_id": call_id, "request_id": request_id,
+                     "phase": phase, "provider": "openai", "model": cfg["model"],
+                     "response_model": response.get("model"), "started_at": started, "ended_at": utc(),
+                     "duration_seconds": time.monotonic()-tick, **usage,
+                     "price_snapshot_id": cfg["price_snapshot_id"], "cost_basis": "list_price_estimate",
+                     "currency": "USD", "cost": str(charge) if charge is not None else None,
+                     "retry": retry, "error": error,
+                     "artifacts": {"request": request_artifact, "response": response_artifact}}
+            validate_call(event)
+            self.store.append("calls", event)
+        finally:
+            # The reservation must never leak: settle even when post-request
+            # telemetry validation rejects the event (the spend still happened).
+            # settle(call_id, None) keeps the reservation open for unknown
+            # requests, preserving the existing fail-closed behavior.
+            self.budget.settle(call_id, charge)
         if error:
             raise ProviderError(error)
         if response.get("model") != cfg["model"]:
