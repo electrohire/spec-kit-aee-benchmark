@@ -1665,6 +1665,173 @@ def build_scored_freeze_v8(output, calibration):
 
 
 # ---------------------------------------------------------------------------
+# Scored freeze builder (freeze v8.1): phase-2 cross-file pairs, R03 spec fix
+# ---------------------------------------------------------------------------
+
+# v8 completed 2026-09-21: 12/12 attempts, 94 model calls, $3.8762 measured,
+# third consecutive guided-vs-ordinary quality null — but the graded metric was
+# contaminated by a task-design validity defect: stage1.md said "A payload
+# without a callable 'fn' raises ValueError when executed" while the hidden
+# test pins the reference behavior (run_next treats a bad payload as a job
+# failure under the retry rule, never raising to the caller). The diagnostic
+# itself generated the phantom defect and all 8 repair arms, including both
+# clean negative-control arms, hoisted validation out of the retry path. True-
+# layer localization held (all seeded defects fixed at the true layer, no
+# wrong-layer trap taken). v8.1 fixes the spec wording to match the hidden
+# test exactly and reruns the same 4 pairs x 3 arms for a clean graded
+# comparison on the cross-file question.
+SCORED_SEED_V8_1 = 20260918
+SCORED_PAIRS_V8_1 = (
+    ("minisched", "config_default", SCORED_SEED_V8_1),
+    ("minisched", "store_add_alias", SCORED_SEED_V8_1),
+    ("minisched", "coupled_xfile", SCORED_SEED_V8_1),
+    ("minisched", "clean", SCORED_SEED_V8_1),
+)
+
+SCORED_V8_1_BUDGET_AUTHORIZATION = (
+    "On 2026-09-21 Tristen authorized the freeze-v8.1 rerun (\"make that fix so we can rerun it\"): "
+    "the v8 R03 spec/grader contradiction is fixed in stage1.md and the same 12 attempts "
+    "(4 minisched pairs x diagnose/ordinary/guided) rerun on gpt-6-astra with attempt_cap_usd=25 "
+    "and global_cap_usd=100. Expected spend ~$4. Prior measured spend: $26.7625 against the $100 "
+    "global cap ($73.2375 remaining). Spend settles to measured usage; unknown usage is never released."
+)
+
+REAL_SMOKE_EVIDENCE_V8_1 = (
+    "Freeze v4 development smoke completed 2026-09-21 ~01:03 UTC (3/3 attempts, $1.4831 measured), "
+    "freeze v5 scored comparison completed 2026-09-21 ~12:23 UTC (3/3 attempts on tinydb/token_alias, "
+    "$1.5029 measured, diagnostic_valid=true, guided_with_assessment=true), freeze v6 full scored "
+    "campaign completed 2026-09-21 ~13:25 UTC (21/21 attempts, $8.8870 measured, hidden acceptance "
+    "grading 14/14 PASS), freeze v7 hard-pair campaign completed 2026-09-21 (24/24 attempts, "
+    "$11.0133 measured, hidden acceptance grading 16/16 PASS, second consecutive null on "
+    "guided-vs-ordinary quality), and freeze v8 phase-2 cross-file campaign completed 2026-09-21 "
+    "(12/12 attempts, $3.8762 measured, all 8 repair snapshots 17/18 hidden with the same single "
+    "R03_bad_payload failure caused by a spec/grader contradiction, fixed for v8.1): "
+    "real_smoke_verified=True is grounded on these completed runs: "
+    "the paid model path is proven end to end."
+)
+
+
+def scored_config_v8_1():
+    """Frozen config for the v8.1 rerun: same pairs, seed, model, caps as v8.
+
+    The only material change is the stage1.md R03 spec fix, which the host
+    picks up from main when it checks out origin/main before building the
+    freeze. Tristen authorized this rerun on 2026-09-21 (see
+    SCORED_V8_1_BUDGET_AUTHORIZATION); the host RUN gate still takes his typed
+    RUN as the fresh confirmation before any paid call."""
+    cfg = smoke_config()
+    cfg.update({
+        "purpose": "scored_comparison",
+        "seed": SCORED_SEED_V8_1,
+        "budget_authorization": SCORED_V8_1_BUDGET_AUTHORIZATION,
+        "real_smoke_verified": True,
+        "real_smoke_evidence": REAL_SMOKE_EVIDENCE_V8_1,
+    })
+    return cfg
+
+
+def scored_v8_1_schedule():
+    """Deterministic 12-attempt schedule for freeze v8.1. Pure function of
+    SCORED_PAIRS_V8_1 (no Docker, no model calls)."""
+    schedule = []
+    for i, (project, variant, seed) in enumerate(SCORED_PAIRS_V8_1):
+        pair_id = f"mr-{project}-{variant}-{seed}"
+        arms = ["repair_ordinary", "repair_guided"]
+        random.Random(seed + len(variant) + i).shuffle(arms)
+        for arm in ["diagnose"] + arms:
+            schedule.append(dict(task_id=pair_id, arm=arm, repeat=1,
+                                 attempt_id=f"{pair_id}--{arm}"))
+    return schedule
+
+
+def build_scored_freeze_v8_1(output, calibration):
+    """Build freeze v8.1: rerun of the v8 phase-2 cross-file scored campaign
+    with the R03 spec/grader contradiction fixed. Four minisched pairs at the
+    scored seed, three arms each, 12 attempts. Same offline gates as v8 —
+    reservation bounds, per-fixture solver image audit, grader smoke. Fails
+    closed otherwise. Offline only: no model calls, no spend."""
+    fixtures = {}
+    for project, variant, seed in SCORED_PAIRS_V8_1:
+        fixtures[(project, variant)] = next(
+            f for f in calibration["fixtures"]
+            if (f["project"], f["variant"]) == (project, variant))
+    cfg = scored_config_v8_1()
+    reservation = verify_reservation_bounds(cfg)
+    audits = {}
+    for (project, variant), fixture in fixtures.items():
+        audit = audit_solver_image(fixture["image"], project)
+        if not audit["audit_pass"]:
+            raise ValueError(f"solver image audit failed for {project}/{variant}: "
+                             + json.dumps(audit["hidden_markers"]))
+        audits[f"{project}/{variant}"] = audit
+    grade_smoke = run_grade_smoke(calibration)
+    cfg["reservation_bound_verified"] = True
+    cfg["grader_smoke_verified"] = True
+    cfg["solver_image_audit_verified"] = True
+
+    def problem_statement(pair_id, project):
+        return (
+            f"Matched-repair pair {pair_id}: the /testbed repository may contain a seeded defect "
+            f"in the {PROJECTS[project]['package']} package — possibly spanning modules, with the "
+            f"symptom surfacing in a different file than the cause (or it may be a clean negative "
+            f"control). Protocol: (1) a shared read-only diagnostic attempt reviews the implementation "
+            f"and public test feedback and returns grounded requirement claims with explicit "
+            f"uncertainty; (2) two repair attempts (ordinary and AEE-guided) start from the same "
+            f"pristine snapshot and each get two repair rounds. The guided arm additionally receives "
+            f"the actual AEE/Evaluator findings from the shared diagnostic. After all runs, the final "
+            f"package snapshots are graded with hidden acceptance tests; hidden outcomes are never "
+            f"fed back to any attempt.")
+
+    tasks = []
+    for project, variant, seed in SCORED_PAIRS_V8_1:
+        pair_id = f"mr-{project}-{variant}-{seed}"
+        fixture = fixtures[(project, variant)]
+        tasks.append({"instance_id": pair_id, "repo": "matched-repair-fixture",
+                      "base_commit": fixture["base_commit"],
+                      "problem_statement": problem_statement(pair_id, project),
+                      "image": fixture["image"], "language": "python",
+                      "hidden_test_count": fixture["grade"]["test_count"]})
+    smoke_pair_id = "mr-%s-%s-%s" % SMOKE_PAIR
+    manifest = {
+        "schema_version": 1,
+        "files": {name: source_hash(ROOT / name) for name in frozen_paths(ROOT)},
+        "config": cfg,
+        "tasks": {"schema_version": 1, "seed": cfg["seed"],
+                  "selection": ("matched-repair scored campaign rerun: phase-2 cross-file pairs at the scored seed "
+                                "(config_default, store_add_alias, coupled_xfile, clean control), "
+                                "R03 spec wording fixed to match the hidden test"),
+                  "exclusions": sorted(f"mr-{p}-{v}-{s}" for p in VARIANTS for v in VARIANTS[p] for s in SEEDS
+                                       if (p, v, s) not in set(SCORED_PAIRS_V8_1)),
+                  "tasks": tasks},
+        "schedule": scored_v8_1_schedule(),
+        "pairing": ("Shared read-only diagnostic and raw claims, identical start/feedback/tools; only the guided "
+                    "repair arm receives actual AEE findings. Repair instructions embed the recorded diagnostic "
+                    "summary (frozen template + stored evidence); hidden grading of final snapshots happens after "
+                    "all runs and is never fed back. The smoke pair "
+                    f"({smoke_pair_id}) is excluded from every scored freeze."),
+        "reservation_verification": reservation,
+        "solver_image_audits": audits,
+        "grade_smoke": grade_smoke,
+        "pairs": [{"project": p, "variant": v, "seed": s,
+                   "image": fixtures[(p, v)]["image"],
+                   "base_commit": fixtures[(p, v)]["base_commit"],
+                   "hidden_test_count": fixtures[(p, v)]["grade"]["test_count"]}
+                  for p, v, s in SCORED_PAIRS_V8_1],
+        "notes": ("Freeze v8.1: rerun of the v8 phase-2 cross-file scored campaign (4 pairs x 3 arms = 12 attempts) "
+                  "with the v8 validity defect fixed: stage1.md R01 now states that a payload without a callable "
+                  "'fn' is a job failure handled under the retry rule, never raised to the caller — matching the "
+                  "hidden test_R03_bad_payload exactly. Same pairs, seed, model, and caps as v8; per-arm hidden "
+                  "pass-rate remains the primary comparison metric. Freezes v4/v5/v6/v7/v8 and all prior evidence "
+                  "untouched; negative and partial outcomes are preserved in the append-only event streams."),
+    }
+    manifest["freeze_id"] = sha(canonical({k: v for k, v in manifest.items() if k != "freeze_id"}))
+    out = Path(output)
+    out.mkdir(parents=True, exist_ok=True)
+    write_json(out / "freeze-v8-1-scored.json", manifest, exclusive=True)
+    return manifest
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -1679,6 +1846,7 @@ def main(argv=None):
     p = sub.add_parser("freeze-scored-v6"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
     p = sub.add_parser("freeze-scored-v7"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
     p = sub.add_parser("freeze-scored-v8"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
+    p = sub.add_parser("freeze-scored-v8-1"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
     p = sub.add_parser("grade-run"); p.add_argument("--run", type=Path, required=True,
         help="completed run directory (reads freeze.json + attempts, appends hidden_grades)")
     p = sub.add_parser("grade-smoke"); p.add_argument("--calibration", type=Path, required=True)
@@ -1715,6 +1883,11 @@ def main(argv=None):
         print("pairs:", len(manifest["pairs"]), "attempts:", len(manifest["schedule"]))
     elif args.command == "freeze-scored-v8":
         manifest = build_scored_freeze_v8(args.out, read_json(args.calibration))
+        print("FREEZE", manifest["freeze_id"])
+        print("reservation:", json.dumps(manifest["reservation_verification"]))
+        print("pairs:", len(manifest["pairs"]), "attempts:", len(manifest["schedule"]))
+    elif args.command == "freeze-scored-v8-1":
+        manifest = build_scored_freeze_v8_1(args.out, read_json(args.calibration))
         print("FREEZE", manifest["freeze_id"])
         print("reservation:", json.dumps(manifest["reservation_verification"]))
         print("pairs:", len(manifest["pairs"]), "attempts:", len(manifest["schedule"]))
