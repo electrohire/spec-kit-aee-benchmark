@@ -544,11 +544,18 @@ def ensure_registry():
     else:
         subprocess.run(["docker", "run", "-d", "--restart=always", "--name", "mr-registry",
                         "-p", "5000:5000", "registry:2"], check=True, capture_output=True, timeout=300)
-    for _ in range(30):
+    # Wait for the registry HTTP API itself, not just the container: the
+    # registry server takes a few seconds to listen after the container
+    # reports running, and pushing before that fails with connection refused.
+    import urllib.request
+    for _ in range(60):
         time.sleep(2)
-        probe = subprocess.run(["docker", "exec", "mr-registry", "true"], capture_output=True)
-        if probe.returncode == 0:
-            return
+        try:
+            with urllib.request.urlopen("http://localhost:5000/v2/", timeout=5) as r:
+                if r.status == 200:
+                    return
+        except Exception:
+            pass
     raise RuntimeError("local registry did not start")
 
 
