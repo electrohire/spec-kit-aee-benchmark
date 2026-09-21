@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Host setup for the matched-repair development smoke (freeze v4).
+# Host setup for the matched-repair scored comparison (freeze v5).
 #
 # Runs on Linux or WSL2 with Docker. Everything before the final confirmation
 # is offline (fixture builds, calibration, grader smoke, audit, freeze);
@@ -12,7 +12,7 @@ set -euo pipefail
 
 WORK="${1:-$HOME/mr-smoke}"
 REPO_URL="https://github.com/electrohire/spec-kit-aee-benchmark.git"
-BRANCH="feat/cloud-matched-repair"
+BRANCH="main"
 UPSTREAMS="/tmp/upstreams"
 TINYDB_URL="https://github.com/msiemens/tinydb.git"
 TINYDB_REV="19066e03139e904c24410e23901e4b069d715a2e"
@@ -125,14 +125,14 @@ fi
 "$VPY" -m benchmark_runner.matched_repair calibrate "$WORK/calibration"
 test -f "$WORK/calibration/calibration.json" || die "calibration.json missing"
 
-step "Freeze v4 (runs reservation, audit, and grader-smoke gates)"
-if [ -d "$WORK/freeze-v4" ]; then
-  mv "$WORK/freeze-v4" "$WORK/freeze-v4-prev-$(date +%Y%m%d-%H%M%S)"
+step "Freeze v5 (scored comparison: runs reservation, audit, and grader-smoke gates)"
+if [ -d "$WORK/freeze-v5" ]; then
+  mv "$WORK/freeze-v5" "$WORK/freeze-v5-prev-$(date +%Y%m%d-%H%M%S)"
 fi
-mkdir -p "$WORK/freeze-v4"
-"$VPY" -m benchmark_runner.matched_repair freeze "$WORK/freeze-v4" \
+mkdir -p "$WORK/freeze-v5"
+"$VPY" -m benchmark_runner.matched_repair freeze-scored "$WORK/freeze-v5" \
   --calibration "$WORK/calibration/calibration.json"
-MANIFEST="$WORK/freeze-v4/freeze-v4-smoke.json"
+MANIFEST="$WORK/freeze-v5/freeze-v5-scored.json"
 test -f "$MANIFEST" || die "freeze manifest missing"
 
 step "Verify freeze integrity (offline)"
@@ -153,19 +153,20 @@ EOF
 
 echo
 echo "All offline gates passed. The next step spends real money:"
-echo "  3 attempts on gpt-6-astra, attempt_cap_usd=25, global_cap_usd=100."
+echo "  3 attempts on gpt-6-astra (scored comparison, freeze v5, tinydb/token_alias, seed 20260918),"
+echo "  attempt_cap_usd=25, global_cap_usd=100."
 echo "  Worst-case reservation per repair attempt is under the attempt cap."
 echo "  Spend settles to measured usage; unknown usage is never released."
 echo "  Expect up to ~30 minutes per attempt (timeouts are enforced per attempt)."
-printf 'Type RUN to execute the 3-attempt development smoke: '
+printf 'Type RUN to execute the 3-attempt scored comparison: '
 IFS= read -r CONFIRM || true
 [ "$CONFIRM" = "RUN" ] || { echo "Aborted before any paid call. Zero spend."; exit 0; }
 
-step "Running 3-attempt development smoke"
-"$VBIN/aee-bench" run "$MANIFEST" "$WORK/runs/smoke-v4" --smoke
+step "Running 3-attempt scored comparison"
+"$VBIN/aee-bench" run "$MANIFEST" "$WORK/runs/scored-v5"
 
 step "Spend and outcome summary"
-python3 - "$WORK/runs/smoke-v4" <<'EOF'
+python3 - "$WORK/runs/scored-v5" <<'EOF'
 import json, sys
 from pathlib import Path
 from decimal import Decimal
@@ -194,5 +195,5 @@ print(f"total measured spend: ${spend:.4f} USD (caps: $25/attempt, $100 global)"
 EOF
 
 echo
-echo "Done. Full evidence is in $WORK/runs/smoke-v4 (append-only event streams)."
+echo "Done. Full evidence is in $WORK/runs/scored-v5 (append-only event streams)."
 echo "The API key was never written to disk; unset it with: unset OPENAI_API_KEY"
