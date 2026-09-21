@@ -22,6 +22,26 @@ CACHETOOLS_REV="c403f9f4185e58090b904c1915345b9ba46d5a08"
 step() { echo; echo "=== $1 ==="; }
 die() { echo "ERROR: $1" >&2; exit 1; }
 
+# Docker credential-helper workaround (WSL2): docker-credential-desktop.exe
+# cannot execute here ("exec format error"), and the failed helper lookup
+# aborts even credential-free pushes to the local registry. Run every docker
+# operation in this script under a copy of the user's docker config with the
+# credential store stripped; ~/.docker/config.json itself is left untouched.
+# (Public base-image pulls still work anonymously; localhost:5000 needs no auth.)
+export DOCKER_CONFIG="$WORK/docker-config"
+mkdir -p "$DOCKER_CONFIG" "$WORK"
+python3 - "$HOME/.docker/config.json" "$DOCKER_CONFIG/config.json" <<'EOF'
+import json, sys
+try:
+    cfg = json.load(open(sys.argv[1]))
+except Exception:
+    cfg = {}
+cfg.pop("credsStore", None)
+cfg.pop("credHelpers", None)
+json.dump(cfg, open(sys.argv[2], "w"), indent=2)
+EOF
+echo "docker operations will use DOCKER_CONFIG=$DOCKER_CONFIG (credential store stripped)"
+
 step "Host checks"
 [ "$(uname -s)" = "Linux" ] || die "live runs require Linux/WSL2 (this is $(uname -s))"
 grep -qi microsoft /proc/version 2>/dev/null && echo "WSL2 detected" || echo "native Linux detected"
