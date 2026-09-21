@@ -56,6 +56,10 @@ fi
 
 step "API key (session only, never written to disk)"
 if [ -z "${OPENAI_API_KEY:-}" ]; then
+  # With piped stdin (e.g. `echo RUN | ...`) there is no one to paste the key,
+  # and the hidden read below would silently swallow the piped line as the key.
+  # Fail fast instead of probing with garbage.
+  [ -t 0 ] || die "OPENAI_API_KEY is not set and stdin is not a terminal, so the key cannot be pasted. Export it first (session only): export OPENAI_API_KEY='sk-...' — then re-run."
   printf 'Paste your OpenAI API key (input hidden): '
   IFS= read -rs OPENAI_API_KEY || true
   echo
