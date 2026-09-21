@@ -153,6 +153,34 @@ assert len(m["schedule"]) == 12, "v8.1 must schedule exactly 12 attempts (4 pair
 assert all(c[k] for k in ("reservation_bound_verified", "grader_smoke_verified", "solver_image_audit_verified"))
 EOF
 
+step "Stale run directory check"
+# The runner fails closed ("resume configuration mismatch") when runs/scored-v8-1/freeze.json
+# differs from the freshly built manifest. Fixture images are rebuilt on every invocation and
+# their registry digests embed the build timestamp, so a manifest from any earlier invocation
+# can never match a fresh one. Archive the stale directory (timestamped, never deleted) so a
+# rerun starts clean while its evidence stays inspectable. A directory whose freeze.json
+# matches this manifest is left alone and the campaign resumes where it left off.
+RUNS_DIR="$WORK/runs/scored-v8-1"
+if [ -f "$RUNS_DIR/freeze.json" ]; then
+  if python3 - "$RUNS_DIR/freeze.json" "$MANIFEST" <<'EOF'
+import json, sys
+try:
+    a = json.load(open(sys.argv[1]))
+    b = json.load(open(sys.argv[2]))
+except Exception:
+    sys.exit(1)
+sys.exit(0 if a == b else 1)
+EOF
+  then
+    echo "Existing run directory matches this freeze; the campaign will resume where it left off."
+  else
+    ARCHIVE="$WORK/runs/scored-v8-1-prev-$(date +%Y%m%d-%H%M%S)"
+    echo "Previous run directory holds a different frozen manifest; archiving (not deleting) to"
+    echo "  $ARCHIVE"
+    mv "$RUNS_DIR" "$ARCHIVE"
+  fi
+fi
+
 echo
 echo "All offline gates passed. The next step spends real money:"
 echo "  12 attempts on gpt-6-astra (phase-2 cross-file scored campaign, freeze v8.1: 4 pairs x diagnose/ordinary/guided, seed 20260918),"
