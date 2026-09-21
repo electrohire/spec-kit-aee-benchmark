@@ -18,7 +18,16 @@ set -euo pipefail
 PORT="${PORT:-8080}"
 CTX="${CTX:-32768}"
 MODEL_DIR="${MODEL_DIR:-$HOME/models}"
-MODEL_URL="${MODEL_URL:-https://huggingface.co/unsloth/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf}"
+# bartowski's repo is gated (HTTP 401 without a token); unsloth's build of the
+# same Qwen3-8B-Q4_K_M quant is public. Prefer bartowski when HF_TOKEN is set.
+# HF_TOKEN is read from the environment only and sent as an Authorization
+# header; it is never written to disk, logs, or git.
+if [ -n "${HF_TOKEN:-}" ]; then
+  DEFAULT_MODEL_URL="https://huggingface.co/bartowski/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf"
+else
+  DEFAULT_MODEL_URL="https://huggingface.co/unsloth/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf"
+fi
+MODEL_URL="${MODEL_URL:-$DEFAULT_MODEL_URL}"
 LOCAL_MODEL_NAME="${LOCAL_MODEL_NAME:-qwen3-8b-local}"
 LLAMA_CPP_DIR="${LLAMA_CPP_DIR:-}"
 
@@ -107,10 +116,25 @@ echo "Using: $SERVER"
 
 echo "== model =="
 mkdir -p "$MODEL_DIR"
-MODEL_FILE="$MODEL_DIR/$(basename "$MODEL_URL")"
+# Prefix the cached filename with the repo owner so the bartowski and unsloth
+# quants (same basename, different bytes) never collide in $MODEL_DIR.
+MODEL_OWNER="$(printf '%s' "$MODEL_URL" | cut -d/ -f4)"
+MODEL_FILE="$MODEL_DIR/${MODEL_OWNER}-$(basename "$MODEL_URL")"
+AUTH_HEADER_FILE=""
+if [ -n "${HF_TOKEN:-}" ]; then
+  # Header via file (not -H on the command line) so the token never appears
+  # in the process list.
+  AUTH_HEADER_FILE="$(mktemp)"
+  trap 'rm -f "$AUTH_HEADER_FILE"' EXIT
+  printf 'Authorization: Bearer %s' "$HF_TOKEN" > "$AUTH_HEADER_FILE"
+fi
 if [ ! -f "$MODEL_FILE" ]; then
   echo "Downloading $(basename "$MODEL_URL") ..."
-  curl -fSL --retry 3 -o "$MODEL_FILE" "$MODEL_URL"
+  if [ -n "$AUTH_HEADER_FILE" ]; then
+    curl -fSL --retry 3 -H "@$AUTH_HEADER_FILE" -o "$MODEL_FILE" "$MODEL_URL"
+  else
+    curl -fSL --retry 3 -o "$MODEL_FILE" "$MODEL_URL"
+  fi
 else
   echo "Already present: $MODEL_FILE"
 fi
