@@ -1,0 +1,12 @@
+name: ttlcache
+module: ttlcache
+title: TTL cache with LRU eviction
+constraints:
+  C01: requirement
+  C02: subtle
+  C03: requirement
+  C04: requirement
+  C05: negative
+  C06: subtle
+  C07: requirement
+trap: treats ttl=0 as "use default" via `ttl or default_ttl`, and expires entries AT (not after) the expiry instant; passes public tests with generous margins

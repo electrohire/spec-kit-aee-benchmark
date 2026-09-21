@@ -1,0 +1,12 @@
+name: pathresolve
+module: pathresolve
+title: Pure path normalizer
+constraints:
+  C01: requirement
+  C02: requirement
+  C03: requirement
+  C04: subtle
+  C05: negative
+  C06: subtle
+  C07: requirement
+trap: uses os.path.normpath semantics via string ops but treats a leading ".." on a relative path as removable and collapses "a/../.." to "" instead of ".."

@@ -1,0 +1,12 @@
+name: eventbus
+module: eventbus
+title: Tiny event emitter
+constraints:
+  C01: requirement
+  C02: requirement
+  C03: requirement
+  C04: subtle
+  C05: negative
+  C06: subtle
+  C07: requirement
+trap: iterates the live handler list during emit (handlers registered mid-emit fire immediately) and lets the first exception propagate (later handlers never run)

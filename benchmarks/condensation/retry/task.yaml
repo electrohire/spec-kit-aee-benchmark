@@ -1,0 +1,13 @@
+name: retry
+module: retry
+title: Retry with backoff
+constraints:
+  C01: requirement
+  C02: requirement
+  C03: requirement
+  C04: subtle
+  C05: negative
+  C06: subtle
+  C07: requirement
+  C08: phantom
+trap: sleeps BEFORE the first attempt and counts the initial call as a retry, so max_attempts=1 still sleeps and attempts are off by one
