@@ -8,7 +8,12 @@ CALL_SCHEMA = {
                  "duration_seconds", "input_tokens", "cached_input_tokens", "output_tokens", "reasoning_tokens",
                  "unknown_reason", "price_snapshot_id", "cost_basis", "currency", "cost", "retry", "error", "artifacts"],
     "properties": {
-        "arm": {"enum": ["baseline", "spec_kit", "spec_kit_aee"]},
+        # Main-experiment arms plus the matched-repair cloud-port arms. The
+        # enum must cover every arm the provider can log, otherwise paid calls
+        # fail telemetry validation AFTER the HTTP request (money spent, call
+        # never logged, budget never settled).
+        "arm": {"enum": ["baseline", "spec_kit", "spec_kit_aee",
+                         "diagnose", "repair_ordinary", "repair_guided"]},
         "repeat": {"type": "integer", "minimum": 1},
         "duration_seconds": {"type": "number", "minimum": 0},
         "retry": {"type": "integer", "minimum": 0},

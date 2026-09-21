@@ -54,3 +54,23 @@ def test_real_transport_adapter_with_mock_response(tmp_path, monkeypatch):
     retry = store.events("calls")[1]
     assert retry["cost"] is None and retry["retry"] == 1
     assert budget.charges()[retry["call_id"]]["status"] == "reserved"
+def test_validate_call_accepts_matched_repair_arms():
+    # Regression: the matched-repair cloud port logs calls with its own arm
+    # vocabulary; the shared CALL_SCHEMA enum must accept them, otherwise paid
+    # calls fail telemetry validation after the HTTP request (spend invisible).
+    from benchmark_runner.schema import validate_call
+    from benchmark_runner.matched_repair import MATCHED_ARMS
+    base = {
+        "experiment_id": "e", "run_id": "r", "task_id": "t", "repeat": 1,
+        "attempt_id": "a", "phase": "p", "call_id": "c", "request_id": None,
+        "provider": "openai", "model": "m", "response_model": "m",
+        "started_at": "2026-01-01T00:00:00+00:00", "ended_at": "2026-01-01T00:00:01+00:00",
+        "duration_seconds": 1.0, "input_tokens": 10, "cached_input_tokens": 0,
+        "output_tokens": 5, "reasoning_tokens": 0, "unknown_reason": None,
+        "price_snapshot_id": "s", "cost_basis": "list_price_estimate",
+        "currency": "USD", "cost": "0.0001", "retry": 0, "error": None,
+        "artifacts": {},
+    }
+    assert set(MATCHED_ARMS) == {"diagnose", "repair_ordinary", "repair_guided"}
+    for arm in MATCHED_ARMS:
+        validate_call({**base, "arm": arm})
