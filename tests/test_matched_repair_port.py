@@ -426,6 +426,50 @@ def test_scored_v8_config_authorized():
     assert 'not in set(SCORED_PAIRS_V8)' in src
 
 
+def test_scored_v8_1_schedule_matches_v8():
+    """v8.1 reruns the exact same 12-attempt schedule as v8: same pairs, seed,
+    arm order. Only the frozen spec text (R01 wording) changed."""
+    from benchmark_runner import matched_repair as mr
+    assert mr.SCORED_PAIRS_V8_1 == mr.SCORED_PAIRS_V8
+    assert mr.SCORED_SEED_V8_1 == mr.SCORED_SEED_V8 == 20260918
+    sched = mr.scored_v8_1_schedule()
+    assert sched == mr.scored_v8_schedule()
+    assert len(sched) == 12
+
+
+def test_scored_v8_1_config_authorized():
+    """v8.1 config keeps the scored caps, grounds real_smoke_verified on the
+    completed v8 run, and records Tristen's 2026-09-21 rerun authorization."""
+    import inspect
+    from benchmark_runner import matched_repair as mr
+    cfg = mr.scored_config_v8_1()
+    assert cfg["purpose"] == "scored_comparison"
+    assert cfg["seed"] == 20260918
+    assert cfg["model"] == "gpt-6-astra"
+    assert cfg["global_cap_usd"] == 100 and cfg["attempt_cap_usd"] == 25
+    assert cfg["real_smoke_verified"] is True
+    assert "2026-09-21" in cfg["budget_authorization"]
+    assert "rerun" in cfg["budget_authorization"]
+    assert "v8" in cfg["real_smoke_evidence"]
+    src = inspect.getsource(mr.build_scored_freeze_v8_1)
+    assert 'freeze-v8-1-scored.json' in src
+    assert 'not in set(SCORED_PAIRS_V8_1)' in src
+
+
+def test_stage1_r01_matches_hidden_r03_contract():
+    """Regression test for the v8 validity defect: stage1.md R01 must state
+    that a non-callable 'fn' is a job failure handled under the retry rule,
+    never raised to the caller -- exactly what hidden test_R03_bad_payload
+    pins. The pre-v8.1 wording ('raises ValueError when executed') generated
+    phantom defects in all 8 v8 repair arms."""
+    from pathlib import Path
+    text = (Path(__file__).resolve().parent.parent
+            / "benchmarks" / "repeated_local" / "minisched" / "stage1.md").read_text()
+    assert "never raising to the caller" in text
+    assert "job failure, not a caller error" in text
+    assert "raises ValueError when executed" not in text
+
+
 def test_graded_comparison_reports_hidden_pass_rate():
     """graded_comparison adds per-arm hidden pass-rate (primary metric for
     hard pairs where partial passes are expected)."""
