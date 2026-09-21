@@ -1,6 +1,6 @@
 # Running the matched-repair phase-2 campaign on your machine
 
-The freeze-v8 phase-2 cross-file scored campaign needs a Docker-capable host. This VM
+The freeze-v8.1 phase-2 cross-file rerun (v8 with the R03 spec/grader contradiction fixed) needs a Docker-capable host. This VM
 cannot run containers, so the run happens on your Windows GPU machine via
 WSL2.
 
@@ -44,7 +44,7 @@ The script does everything in order and stops before spending money:
 6. Builds the fixture images, calibrates them (seeded bugs must fail
    hidden grading, clean controls must pass), runs the grader smoke,
    audits the solver images, and verifies the reservation bound.
-7. Builds freeze v8 (phase-2 cross-file scored campaign: 4 pairs x
+7. Builds freeze v8.1 (phase-2 cross-file rerun: 4 pairs x
    diagnose/ordinary/guided, seed 20260918) with all four verification
    flags set (the freeze command refuses to set them unless each gate
    genuinely passes; the real-smoke flag is grounded on the completed
@@ -75,7 +75,7 @@ plus the `minisched/clean` negative control.
 
 ## What the campaign costs
 
-- Attempt cap $25, global cap $100 (Tristen authorized the freeze-v8
+- Attempt cap $25, global cap $100 (Tristen authorized the freeze-v8.1
   phase-2 campaign 2026-09-21).
 - Expected spend ~$6-9 at ~$0.50-0.75/attempt (v7 measured $0.46/attempt
   over 24 attempts; cross-file pairs use more tool calls).
@@ -89,7 +89,7 @@ plus the `minisched/clean` negative control.
 
 ## After the run
 
-Full evidence lands in `~/mr-smoke/runs/scored-v8` (append-only event
+Full evidence lands in `~/mr-smoke/runs/scored-v8-1` (append-only event
 streams: attempts, calls, budget, diagnostics, repair rounds, hidden
 grades). Send me that directory or the spend summary and I will write up
 the results.
