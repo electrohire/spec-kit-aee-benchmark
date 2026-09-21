@@ -79,7 +79,12 @@ class MiniEnvironment:
         return {}
 
 
-def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg):
+def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, manifest=None):
+    # Matched-repair arms run the ported paired protocol, not the mini-SWE-agent
+    # phase workflow. The import is deferred to avoid a module cycle.
+    from .matched_repair import MATCHED_ARMS, execute_matched_attempt
+    if arm in MATCHED_ARMS:
+        return execute_matched_attempt(root, task, arm, provider, sandbox, store, identity, cfg, manifest)
     # mini imports a global .env at import time; replace its discovery root first.
     global_config = Path(tempfile.mkdtemp(prefix="mini-clean-config-"))
     os.environ["MSWEA_GLOBAL_CONFIG_DIR"] = str(global_config)
@@ -144,6 +149,16 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg):
             "repair_count": repairs, "tool_calls": environment.tool_calls}
 
 
+def check_credential():
+    """Fail-closed credential check: Secure Vault connector or OPENAI_API_KEY.
+
+    resolve_auth() performs a free /models probe and raises ValueError when
+    neither credential authenticates.
+    """
+    from .provider import resolve_auth
+    resolve_auth()
+
+
 def validate_live(manifest, smoke=False):
     cfg = manifest["config"]
     for key in ("model", "reasoning_effort", "price_snapshot_id", "price_source", "budget_authorization",
@@ -160,8 +175,11 @@ def validate_live(manifest, smoke=False):
         raise ValueError("successful real adapter/usage smoke required before scored generation")
     if smoke and cfg.get("purpose") != "development_smoke":
         raise ValueError("smoke must use a separately frozen development manifest")
-    if "OPENAI_API_KEY" not in os.environ:
-        raise ValueError("configure OPENAI_API_KEY locally; never paste credentials into chat")
+    from .provider import resolve_auth
+    mode, _ = resolve_auth()
+    if mode == "connector" and "OPENAI_API_KEY" in os.environ:
+        raise ValueError("remove OPENAI_API_KEY from environment; connector credential is active")
+    check_credential()
     if os.name == "nt":
         raise ValueError("live runs require Linux/WSL2 with Docker; offline commands support Windows")
     subprocess.run(["docker", "info"], check=True, capture_output=True, timeout=30)
@@ -213,7 +231,7 @@ def run(root, manifest, output, arm=None, smoke=False):
                     provider = OpenAIProvider(cfg, store, budget, identity)
                     try:
                         result = execute_attempt(root, tasks[entry["task_id"]], entry["arm"], provider,
-                                                 sandbox, store, identity, cfg)
+                                                 sandbox, store, identity, cfg, manifest)
                     except BaseException:
                         # Preserve partial work before the container is destroyed. This host-only
                         # extraction issues no model request and is separately timed.
