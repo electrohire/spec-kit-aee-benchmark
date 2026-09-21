@@ -38,7 +38,7 @@ set -euo pipefail
 
 WORK="${1:-$HOME/claim-a}"
 REPO_URL="https://github.com/electrohire/spec-kit-aee-benchmark.git"
-BRANCH="feat/local-provider"
+BRANCH="feat/claim-a-candidates"
 UPSTREAMS="/tmp/upstreams"
 TINYDB_URL="https://github.com/msiemens/tinydb.git"
 TINYDB_REV="19066e03139e904c24410e23901e4b069d715a2e"
@@ -104,7 +104,7 @@ fi
 step "Candidate build guard"
 "$VPY" -c "
 from benchmark_runner.claim_a import CLAIM_A_CANDIDATES
-assert CLAIM_A_CANDIDATES, 'CLAIM_A_CANDIDATES is empty: the candidate task build has not been merged into $BRANCH yet'
+assert CLAIM_A_CANDIDATES, 'CLAIM_A_CANDIDATES is empty: the candidate task build is empty on $BRANCH -- the campaign branch may have been force-pushed; aborting'
 print(f'{len(CLAIM_A_CANDIDATES)} candidate variants frozen for calibration')" \
   || die "candidate guard failed"
 
