@@ -172,7 +172,7 @@ RESP="$(curl -fsS "http://localhost:${PORT}/v1/chat/completions" \
   -H "Content-Type: application/json" \
   -d "{\"model\":\"${LOCAL_MODEL_NAME}\",\"messages\":[{\"role\":\"user\",\"content\":\"Reply with exactly: ok\"}],\"max_completion_tokens\":16}")"
 echo "$RESP" | head -c 400; echo
-echo "$RESP" | grep -q '"id":"'"$LOCAL_MODEL_NAME"'"' || echo "WARNING: server reports a different model id than LOCAL_MODEL_NAME"
+echo "$RESP" | grep -q '"model":"'"$LOCAL_MODEL_NAME"'"' || echo "WARNING: server reports a different model id than LOCAL_MODEL_NAME"
 
 echo
 echo "== done. Export these in the campaign shell: =="
