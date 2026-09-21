@@ -34,14 +34,34 @@ def test_variant_anchors_unique():
     for project, variants in VARIANTS.items():
         for variant, (before, after, reqs) in variants.items():
             src = variant_source(project, variant).decode()
-            if before:
-                # seeded bug applied exactly once (some `after` strings contain
-                # `before` as a substring, so only assert the applied form)
-                assert src.count(after) == 1, (project, variant)
+            # Multi-edit variants pass a list of (before, after) pairs as
+            # `before` with `after=None`; edits apply in order.
+            edits = before if isinstance(before, list) else [(before, after)]
+            if any(b for b, _ in edits):
+                for b, a in edits:
+                    if not b:
+                        continue
+                    if a:
+                        # seeded edit applied exactly once (some `after`
+                        # strings contain `before` as a substring, so only
+                        # assert the applied form)
+                        assert src.count(a) == 1, (project, variant, b)
+                    else:
+                        # removal edit: the anchor must be gone
+                        assert b not in src, (project, variant, b)
                 assert reqs
             else:
                 clean = variant_source(project, variant).decode()
                 assert "deepcopy" in clean
+
+
+def test_multi_edit_variant_applies_edits_in_order():
+    from benchmark_runner import matched_repair as mr
+    src = mr.variant_source("cachetools", "coupled").decode()
+    assert "now > entry[2]" in src
+    assert "now >= entry[2]" not in src
+    assert "if not tags:" not in src
+    assert mr.VARIANTS["cachetools"]["coupled"][2] == ["R07", "R08", "R04"]
 
 
 def test_smoke_config_has_all_live_gates():
@@ -235,6 +255,97 @@ def test_scored_v6_config_grounds_real_smoke():
     assert 'freeze-v6-scored.json' in src
     assert 'hidden_test_count' in src
     assert 'not in set(SCORED_PAIRS_V6)' in src
+
+
+def test_scored_v7_pairs_hard_set():
+    """Freeze v7: token_alias anchor, five hard pairs, both clean controls.
+    v6-only single-defect variants are excluded."""
+    from benchmark_runner import matched_repair as mr
+    pairs = mr.SCORED_PAIRS_V7
+    assert len(pairs) == 8, pairs
+    assert all(s == 20260918 for _, _, s in pairs)
+    assert ("tinydb", "token_alias", 20260918) in pairs
+    for hard in ("empty_tags", "token_reserve", "expiry_retain",
+                 "storage_alias", "coupled"):
+        assert any(v == hard for _, v, _ in pairs), hard
+    assert ("tinydb", "clean", 20260918) in pairs
+    assert ("cachetools", "clean", 20260918) in pairs
+    for dropped in ("bool_id", "partial_commit", "value_alias",
+                    "boolean_ttl", "expiry_boundary"):
+        assert not any(v == dropped for _, v, _ in pairs), dropped
+    assert len(set(pairs)) == 8
+
+
+def test_scored_v7_schedule_is_deterministic_and_complete():
+    """24 attempts: diagnose first per pair, both repair arms, unique ids,
+    deterministic across calls (pure function, no Docker)."""
+    from benchmark_runner import matched_repair as mr
+    sched = mr.scored_v7_schedule()
+    assert sched == mr.scored_v7_schedule()
+    assert len(sched) == 24
+    ids = [s["attempt_id"] for s in sched]
+    assert len(set(ids)) == 24
+    by_pair = {}
+    for s in sched:
+        by_pair.setdefault(s["task_id"], []).append(s["arm"])
+    assert len(by_pair) == 8
+    for pair_id, arms in by_pair.items():
+        assert arms[0] == "diagnose", pair_id
+        assert sorted(arms[1:]) == ["repair_guided", "repair_ordinary"], pair_id
+        for s in sched:
+            if s["task_id"] == pair_id:
+                assert s["attempt_id"] == f"{pair_id}--{s['arm']}"
+
+
+def test_scored_v7_config_unauthorized_build_only():
+    """v7 config keeps the scored caps, grounds real_smoke_verified on the
+    completed v4/v5/v6 runs, and records Tristen's 2026-09-21 campaign
+    authorization."""
+    import inspect
+    from benchmark_runner import matched_repair as mr
+    cfg = mr.scored_config_v7()
+    assert cfg["purpose"] == "scored_comparison"
+    assert cfg["seed"] == 20260918
+    assert cfg["model"] == "gpt-6-astra"
+    assert cfg["global_cap_usd"] == 100 and cfg["attempt_cap_usd"] == 25
+    assert cfg["real_smoke_verified"] is True
+    assert "2026-09-21" in cfg["budget_authorization"]
+    assert "authorized" in cfg["budget_authorization"]
+    assert "v4" in cfg["real_smoke_evidence"] and "v6" in cfg["real_smoke_evidence"]
+    src = inspect.getsource(mr.build_scored_freeze_v7)
+    assert 'freeze-v7-scored.json' in src
+    assert 'hidden_test_count' in src
+    assert 'not in set(SCORED_PAIRS_V7)' in src
+
+
+def test_graded_comparison_reports_hidden_pass_rate():
+    """graded_comparison adds per-arm hidden pass-rate (primary metric for
+    hard pairs where partial passes are expected)."""
+    import json
+    from pathlib import Path
+    from benchmark_runner import matched_repair as mr
+    from benchmark_runner.store import Store
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        store = Store(Path(tmp))
+        store.append("hidden_grades", {
+            "attempt_id": "mr-tinydb-empty_tags-20260918--repair_ordinary",
+            "task_id": "mr-tinydb-empty_tags-20260918",
+            "arm": "repair_ordinary", "graded": True,
+            "hidden_passed": False, "test_count": 16,
+            "failed_cases": ["test_R04_intersection_empty"]})
+        store.append("hidden_grades", {
+            "attempt_id": "mr-tinydb-empty_tags-20260918--repair_guided",
+            "task_id": "mr-tinydb-empty_tags-20260918",
+            "arm": "repair_guided", "graded": True,
+            "hidden_passed": True, "test_count": 16,
+            "failed_cases": []})
+        pairs = mr.graded_comparison(tmp)
+    row = pairs["mr-tinydb-empty_tags-20260918"]
+    assert row["repair_ordinary"]["hidden_pass_rate"] == 15 / 16
+    assert row["repair_guided"]["hidden_pass_rate"] == 1.0
+    assert row["repair_ordinary"]["hidden_passed"] is False
+    assert row["repair_guided"]["hidden_passed"] is True
 
 
 def _snapshot_artifact(store, data: bytes):

@@ -42,6 +42,10 @@ ROOT = Path(__file__).resolve().parents[2]
 MATCHED_ARMS = ("diagnose", "repair_ordinary", "repair_guided")
 
 # (before, after, seeded_requirements) — ported from scripts/matched_repair.py.
+#
+# Hard-pair track (freeze v7): `before` may also be a list of
+# (before, after) edit pairs (with `after=None`) for multi-edit variants
+# such as coupled defects; variant_source applies them in order.
 VARIANTS = {
     "tinydb": {
         "bool_id": ("type(ident) is not int", "not isinstance(ident, int)", ["R04"]),
@@ -50,6 +54,18 @@ VARIANTS = {
         "partial_commit": ("docs[next_id] = deepcopy(op['document'])",
                            "docs[next_id] = deepcopy(op['document']); self.db.storage.write({'_default':docs})",
                            ["R02", "R05"]),
+        # H2: eager idempotency-key reservation; failed batches consume the
+        # token, violating R07 ("Failed batches do not consume a token").
+        "token_reserve": ("        storage, next_id, inserted = self._simulate(operations)\n",
+                          "        if token is not None:\n"
+                          "            self.tokens[token] = (deepcopy(operations), [])\n"
+                          "        storage, next_id, inserted = self._simulate(operations)\n",
+                          ["R07"]),
+        # H4: _simulate aliases live storage; preview() (R05 side-effect-free)
+        # poisons the database, symptom surfaces two hops away at db.insert.
+        "storage_alias": ("        storage = deepcopy(self.db.storage.read() or {})\n",
+                          "        storage = self.db.storage.read() or {}\n",
+                          ["R05"]),
         "clean": (None, None, []),
     },
     "cachetools": {
@@ -57,6 +73,30 @@ VARIANTS = {
         "value_alias": ("return deepcopy(self._cache[key][0])", "return self._cache[key][0]", ["R01", "R06"]),
         "boolean_ttl": ("isinstance(ttl, bool) or not isinstance(ttl, (int,float))",
                         "not isinstance(ttl, (int,float))", ["R07"]),
+        # H1: deleting the empty-tags guard makes invalidate_many([], 'all')
+        # remove everything. The stage-2 spec's conflicting evidence packet
+        # (old note: "empty all-tags matches every key", superseded by R04)
+        # asserts exactly this buggy behavior.
+        "empty_tags": ("        if not tags:\n            return 0\n",
+                       "",
+                       ["R04"]),
+        # H3: overwrite without ttl retains the prior expiry, violating R08
+        # ("Overwriting an entry replaces its prior expiry").
+        "expiry_retain": ("        expiry = None if ttl is None else self._timer() + ttl\n",
+                          "        if ttl is None:\n"
+                          "            try:\n"
+                          "                expiry = Cache.__getitem__(self._cache, key)[2]\n"
+                          "            except KeyError:\n"
+                          "                expiry = None\n"
+                          "        else:\n"
+                          "            expiry = self._timer() + ttl\n",
+                          ["R08"]),
+        # H6: coupled defects; diagnosis must be complete (fixing only the
+        # obvious boundary defect still fails hidden acceptance).
+        "coupled": ([("now >= entry[2]", "now > entry[2]"),
+                     ("        if not tags:\n            return 0\n", "")],
+                    None,
+                    ["R07", "R08", "R04"]),
         "clean": (None, None, []),
     },
 }
@@ -113,9 +153,13 @@ def pair_of(instance_id):
 def variant_source(project, variant):
     text = (ROOT / "benchmarks/repeated_local" / project / "reference.py").read_text()
     before, after, _ = VARIANTS[project][variant]
-    if before:
-        assert text.count(before) == 1, f"variant anchor not unique: {project}/{variant}"
-        text = text.replace(before, after)
+    # Multi-edit variants pass a list of (before, after) pairs as `before`
+    # with `after=None`; edits apply in order, each anchor asserted unique.
+    edits = before if isinstance(before, list) else [(before, after)]
+    for b, a in edits:
+        if b:
+            assert text.count(b) == 1, f"variant anchor not unique: {project}/{variant}"
+            text = text.replace(b, a)
     return text.encode()
 
 
@@ -785,7 +829,8 @@ def grade_run(run_dir, grade_fn=None):
 def graded_comparison(run_dir):
     """Per-pair ordinary-vs-guided hidden outcomes from the hidden_grades
     stream. Only graded attempts appear; pairs with a missing arm are honest
-    about it (no imputation)."""
+    about it (no imputation). hidden_pass_rate is the primary comparison
+    metric for hard pairs where partial passes are expected."""
     grades = {}
     for e in Store(Path(run_dir)).events("hidden_grades"):
         grades[e["attempt_id"]] = e
@@ -793,9 +838,13 @@ def graded_comparison(run_dir):
     for g in grades.values():
         row = pairs.setdefault(g["task_id"], {})
         if g.get("graded"):
+            failed = g["failed_cases"] or []
+            total = g["test_count"]
+            rate = (total - len(failed)) / total if total else None
             row[g["arm"]] = {"hidden_passed": g["hidden_passed"],
-                             "test_count": g["test_count"],
-                             "failed_cases": g["failed_cases"]}
+                             "test_count": total,
+                             "failed_cases": failed,
+                             "hidden_pass_rate": rate}
         else:
             row[g["arm"]] = {"hidden_passed": None, "reason": g.get("reason")}
     return pairs
@@ -1068,11 +1117,18 @@ def build_scored_freeze(output, calibration):
 # (tinydb/bool_id/20260918), which is excluded from every scored freeze.
 # Clean variants are negative controls: the agent must not change correct
 # code without a concrete reason; hidden grading expects them to pass.
+#
+# Pinned explicitly (not derived from VARIANTS): the v7 hard-pair variants
+# added to VARIANTS must not leak into the frozen v6 set.
 SCORED_SEED_V6 = 20260918
-SCORED_PAIRS_V6 = tuple(
-    (p, v, SCORED_SEED_V6)
-    for p in VARIANTS for v in VARIANTS[p]
-    if not (p == "tinydb" and v == "bool_id")
+SCORED_PAIRS_V6 = (
+    ("tinydb", "token_alias", SCORED_SEED_V6),
+    ("tinydb", "partial_commit", SCORED_SEED_V6),
+    ("tinydb", "clean", SCORED_SEED_V6),
+    ("cachetools", "expiry_boundary", SCORED_SEED_V6),
+    ("cachetools", "value_alias", SCORED_SEED_V6),
+    ("cachetools", "boolean_ttl", SCORED_SEED_V6),
+    ("cachetools", "clean", SCORED_SEED_V6),
 )
 
 SCORED_V6_BUDGET_AUTHORIZATION = (
@@ -1209,6 +1265,168 @@ def build_scored_freeze_v6(output, calibration):
 
 
 # ---------------------------------------------------------------------------
+# Scored freeze builder (freeze v7): hard pairs designed to separate the arms
+# ---------------------------------------------------------------------------
+
+# After the v6 null result (all 14 repair snapshots 16/16 hidden, ordinary and
+# guided identical), v7 keeps the tinydb/token_alias anchor and both clean
+# negative controls, and adds five hard pairs. Every hard pair was verified
+# offline 2026-09-21: all 4 public tests pass on the seeded defect, at least
+# one hidden test fails, and the reference passes the full hidden set.
+# v6-only single-defect variants (bool_id, partial_commit, value_alias,
+# boolean_ttl, expiry_boundary) are excluded; the expiry_boundary defect
+# returns inside the coupled pair.
+SCORED_SEED_V7 = 20260918
+SCORED_PAIRS_V7 = (
+    ("tinydb", "token_alias", SCORED_SEED_V7),
+    ("cachetools", "empty_tags", SCORED_SEED_V7),
+    ("tinydb", "token_reserve", SCORED_SEED_V7),
+    ("cachetools", "expiry_retain", SCORED_SEED_V7),
+    ("tinydb", "storage_alias", SCORED_SEED_V7),
+    ("cachetools", "coupled", SCORED_SEED_V7),
+    ("tinydb", "clean", SCORED_SEED_V7),
+    ("cachetools", "clean", SCORED_SEED_V7),
+)
+
+SCORED_V7_BUDGET_AUTHORIZATION = (
+    "On 2026-09-21 Tristen authorized the freeze-v7 hard-pair scored campaign: "
+    "24 attempts (8 pairs x diagnose/ordinary/guided) on gpt-6-astra with "
+    "attempt_cap_usd=25 and global_cap_usd=100. Expected spend ~$14-19. "
+    "Prior measured spend: $11.8730 against the $100 global cap ($88.1270 remaining). "
+    "Spend settles to measured usage; unknown usage is never released."
+)
+
+REAL_SMOKE_EVIDENCE_V7 = (
+    "Freeze v4 development smoke completed 2026-09-21 ~01:03 UTC (3/3 attempts, $1.4831 measured), "
+    "freeze v5 scored comparison completed 2026-09-21 ~12:23 UTC (3/3 attempts on tinydb/token_alias, "
+    "$1.5029 measured, diagnostic_valid=true, guided_with_assessment=true), and freeze v6 full scored "
+    "campaign completed 2026-09-21 ~13:25 UTC (21/21 attempts, $8.8870 measured, hidden acceptance "
+    "grading 14/14 PASS). real_smoke_verified=True is grounded on these completed runs: the paid model "
+    "path is proven end to end."
+)
+
+
+def scored_config_v7():
+    """Frozen config for the hard-pair scored campaign (freeze v7).
+
+    Same model, caps, and token bounds as v6. real_smoke_verified=True is
+    grounded on the completed v4/v5/v6 runs (see REAL_SMOKE_EVIDENCE_V7).
+    Tristen authorized this campaign on 2026-09-21 (see
+    SCORED_V7_BUDGET_AUTHORIZATION); the host RUN gate still takes his typed
+    RUN as the fresh confirmation before any paid call."""
+    cfg = smoke_config()
+    cfg.update({
+        "purpose": "scored_comparison",
+        "seed": SCORED_SEED_V7,
+        "budget_authorization": SCORED_V7_BUDGET_AUTHORIZATION,
+        "real_smoke_verified": True,
+        "real_smoke_evidence": REAL_SMOKE_EVIDENCE_V7,
+    })
+    return cfg
+
+
+def scored_v7_schedule():
+    """Deterministic 24-attempt schedule for freeze v7: per pair, diagnose
+    first, then the two repair arms in seeded-shuffled order. Pure function of
+    SCORED_PAIRS_V7 (no Docker, no model calls)."""
+    schedule = []
+    for i, (project, variant, seed) in enumerate(SCORED_PAIRS_V7):
+        pair_id = f"mr-{project}-{variant}-{seed}"
+        arms = ["repair_ordinary", "repair_guided"]
+        random.Random(seed + len(variant) + i).shuffle(arms)
+        for arm in ["diagnose"] + arms:
+            schedule.append(dict(task_id=pair_id, arm=arm, repeat=1,
+                                 attempt_id=f"{pair_id}--{arm}"))
+    return schedule
+
+
+def build_scored_freeze_v7(output, calibration):
+    """Build freeze v7: the hard-pair scored campaign. Eight pairs at the
+    scored seed (token_alias anchor, five hard pairs, both clean controls),
+    three arms each, 24 attempts. Same offline gates as v6 — reservation
+    bounds, per-fixture solver image audit, grader smoke. Fails closed
+    otherwise. Offline only: no model calls, no spend."""
+    fixtures = {}
+    for project, variant, seed in SCORED_PAIRS_V7:
+        fixtures[(project, variant)] = next(
+            f for f in calibration["fixtures"]
+            if (f["project"], f["variant"]) == (project, variant))
+    cfg = scored_config_v7()
+    reservation = verify_reservation_bounds(cfg)
+    audits = {}
+    for (project, variant), fixture in fixtures.items():
+        audit = audit_solver_image(fixture["image"], project)
+        if not audit["audit_pass"]:
+            raise ValueError(f"solver image audit failed for {project}/{variant}: "
+                             + json.dumps(audit["hidden_markers"]))
+        audits[f"{project}/{variant}"] = audit
+    grade_smoke = run_grade_smoke(calibration)
+    cfg["reservation_bound_verified"] = True
+    cfg["grader_smoke_verified"] = True
+    cfg["solver_image_audit_verified"] = True
+
+    def problem_statement(pair_id, project):
+        return (
+            f"Matched-repair pair {pair_id}: the /testbed repository may contain a seeded defect "
+            f"in {PROJECTS[project]['module']} (or may be a clean negative control). "
+            "Protocol: (1) a shared read-only diagnostic attempt reviews the implementation and public test "
+            "feedback and returns grounded requirement claims with explicit uncertainty; (2) two repair attempts "
+            "(ordinary and AEE-guided) start from the same pristine snapshot and each get two repair rounds. "
+            "The guided arm additionally receives the actual AEE/Evaluator findings from the shared diagnostic. "
+            "After all runs, the final package snapshots are graded with hidden acceptance tests; "
+            "hidden outcomes are never fed back to any attempt.")
+
+    tasks = []
+    for project, variant, seed in SCORED_PAIRS_V7:
+        pair_id = f"mr-{project}-{variant}-{seed}"
+        fixture = fixtures[(project, variant)]
+        tasks.append({"instance_id": pair_id, "repo": "matched-repair-fixture",
+                      "base_commit": fixture["base_commit"],
+                      "problem_statement": problem_statement(pair_id, project),
+                      "image": fixture["image"], "language": "python",
+                      "hidden_test_count": fixture["grade"]["test_count"]})
+    smoke_pair_id = "mr-%s-%s-%s" % SMOKE_PAIR
+    manifest = {
+        "schema_version": 1,
+        "files": {name: source_hash(ROOT / name) for name in frozen_paths(ROOT)},
+        "config": cfg,
+        "tasks": {"schema_version": 1, "seed": cfg["seed"],
+                  "selection": ("matched-repair scored campaign: hard pairs at the scored seed "
+                                "(token_alias anchor, five hard pairs, both clean controls)"),
+                  "exclusions": sorted(f"mr-{p}-{v}-{s}" for p in VARIANTS for v in VARIANTS[p] for s in SEEDS
+                                       if (p, v, s) not in set(SCORED_PAIRS_V7)),
+                  "tasks": tasks},
+        "schedule": scored_v7_schedule(),
+        "pairing": ("Shared read-only diagnostic and raw claims, identical start/feedback/tools; only the guided "
+                    "repair arm receives actual AEE findings. Repair instructions embed the recorded diagnostic "
+                    "summary (frozen template + stored evidence); hidden grading of final snapshots happens after "
+                    "all runs and is never fed back. The smoke pair "
+                    f"({smoke_pair_id}) is excluded from every scored freeze."),
+        "reservation_verification": reservation,
+        "solver_image_audits": audits,
+        "grade_smoke": grade_smoke,
+        "pairs": [{"project": p, "variant": v, "seed": s,
+                   "image": fixtures[(p, v)]["image"],
+                   "base_commit": fixtures[(p, v)]["base_commit"],
+                   "hidden_test_count": fixtures[(p, v)]["grade"]["test_count"]}
+                  for p, v, s in SCORED_PAIRS_V7],
+        "notes": ("Freeze v7: hard-pair scored campaign (8 pairs x 3 arms = 24 attempts) designed to separate "
+                  "ordinary vs guided repair after the v6 null result (all 14 repair snapshots 16/16 hidden). "
+                  "Five hard pairs (empty_tags, token_reserve, expiry_retain, storage_alias, coupled) target "
+                  "diagnosis adjudication rather than defect visibility; the tinydb/token_alias anchor is kept "
+                  "for longitudinal comparison and now carries the replay-detach trap test; both clean negative "
+                  "controls are kept. Per-arm hidden pass-rate is the primary comparison metric. Freezes "
+                  "v4/v5/v6 and all prior evidence untouched; negative and partial outcomes are preserved in "
+                  "the append-only event streams."),
+    }
+    manifest["freeze_id"] = sha(canonical({k: v for k, v in manifest.items() if k != "freeze_id"}))
+    out = Path(output)
+    out.mkdir(parents=True, exist_ok=True)
+    write_json(out / "freeze-v7-scored.json", manifest, exclusive=True)
+    return manifest
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -1221,6 +1439,7 @@ def main(argv=None):
     p = sub.add_parser("freeze"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
     p = sub.add_parser("freeze-scored"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
     p = sub.add_parser("freeze-scored-v6"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
+    p = sub.add_parser("freeze-scored-v7"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
     p = sub.add_parser("grade-run"); p.add_argument("--run", type=Path, required=True,
         help="completed run directory (reads freeze.json + attempts, appends hidden_grades)")
     p = sub.add_parser("grade-smoke"); p.add_argument("--calibration", type=Path, required=True)
@@ -1247,6 +1466,11 @@ def main(argv=None):
         print("reservation:", json.dumps(manifest["reservation_verification"]))
     elif args.command == "freeze-scored-v6":
         manifest = build_scored_freeze_v6(args.out, read_json(args.calibration))
+        print("FREEZE", manifest["freeze_id"])
+        print("reservation:", json.dumps(manifest["reservation_verification"]))
+        print("pairs:", len(manifest["pairs"]), "attempts:", len(manifest["schedule"]))
+    elif args.command == "freeze-scored-v7":
+        manifest = build_scored_freeze_v7(args.out, read_json(args.calibration))
         print("FREEZE", manifest["freeze_id"])
         print("reservation:", json.dumps(manifest["reservation_verification"]))
         print("pairs:", len(manifest["pairs"]), "attempts:", len(manifest["schedule"]))
