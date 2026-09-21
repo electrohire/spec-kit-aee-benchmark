@@ -323,8 +323,22 @@ assert len(final) == 2, f"pilot must finish 2 attempts, saw {len(final)}"
 bad = {aid: a["status"] for aid, a in final.items() if a["status"] != "completed"}
 assert not bad, f"pilot attempts not completed: {bad}"
 print("pilot OK: 2/2 attempts completed on the local backend")
+# Treatment-fidelity gate (Option B): the workflow attempt must actually have
+# executed the frozen Spec-Kit/AEE phases with AEE assessments -- not merely
+# returned. Constitution/converge may legitimately be absent if an AEE block
+# terminated the loop early (visible as workflow_blocked on the attempt).
+wf_id = next(aid for aid, a in final.items() if a["arm"] == "repair_workflow")
+phases = {json.loads(l)["phase"] for l in (root / "phases.jsonl").read_text().splitlines()
+          if json.loads(l)["attempt_id"] == wf_id}
+need = {"workflow_specify", "workflow_plan", "workflow_tasks", "workflow_implement"}
+assert need <= phases, f"workflow treatment incomplete on local server: have {sorted(phases)}"
+assess = [json.loads(l) for l in (root / "assessments.jsonl").read_text().splitlines()
+          if json.loads(l)["attempt_id"] == wf_id]
+assert assess, "no AEE assessments recorded for the workflow attempt"
+print(f"pilot OK: full Spec-Kit/AEE workflow executed ({len(phases)} phases, "
+      f"{len(assess)} AEE assessments) on the local backend")
 EOF
-PILOT_EVIDENCE="Local backend real smoke: freeze-claim-a-pilot ($PILOT_RUN), 2/2 attempts (diagnose + guided repair) completed on $LOCAL_MODEL_NAME via $LOCAL_MODEL_BASE_URL."
+PILOT_EVIDENCE="Local backend real smoke: freeze-claim-a-pilot ($PILOT_RUN), 2/2 attempts (diagnose + full Spec-Kit/AEE workflow repair) completed on $LOCAL_MODEL_NAME via $LOCAL_MODEL_BASE_URL; workflow fidelity verified (frozen phases executed, AEE assessments recorded)."
 
 # ---------------------------------------------------------------------------
 # Phase B: local main run (FREE)

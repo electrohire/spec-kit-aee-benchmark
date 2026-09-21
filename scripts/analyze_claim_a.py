@@ -180,7 +180,7 @@ def bootstrap_ci(diffs, b=BOOTSTRAP_B, seed=BOOTSTRAP_SEED, alpha=0.05):
 def cmd_compare(args):
     kept = ["mr-" + "-".join([t[0], t[1], str(t[2])]) for t in json.loads(Path(args.kept).read_text())]
     frontier = per_task_losses(args.frontier, kept, "repair_ordinary")
-    local = per_task_losses(args.local, kept, "repair_guided")
+    local = per_task_losses(args.local, kept, "repair_workflow")
     common = sorted(set(frontier) & set(local))
     missing = sorted(set(kept) - set(common))
     for t in missing:

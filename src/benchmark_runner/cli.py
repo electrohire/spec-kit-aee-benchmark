@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 
 from .experiment import ARMS, freeze, select, verify_freeze
+from .matched_repair import MATCHED_ARMS
 from .store import Store, read_json, write_json
 
 
@@ -49,7 +50,7 @@ def parser():
     for command in ("dry-run", "run"):
         s = sub.add_parser(command); s.add_argument("manifest", type=Path)
         if command == "run":
-            s.add_argument("output", type=Path); s.add_argument("--arm", choices=ARMS)
+            s.add_argument("output", type=Path); s.add_argument("--arm", choices=ARMS + MATCHED_ARMS)
             s.add_argument("--smoke", action="store_true")
     s = sub.add_parser("grade"); s.add_argument("store", type=Path)
     s.add_argument("--task-repo", type=Path, required=True); s.add_argument("--harness-repo", type=Path, required=True)

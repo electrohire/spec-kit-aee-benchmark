@@ -52,6 +52,10 @@ def test_main_local_config_requires_model_env(monkeypatch):
                              real_smoke_evidence="pilot run ok")
     assert cfg2["real_smoke_verified"] is True
     assert cfg2["real_smoke_evidence"] == "pilot run ok"
+    # Workflow treatment budget: six phases x WORKFLOW_CALLS_PER_PHASE actions
+    # plus bounded AEE recovery headroom; local calls are zero marginal dollars.
+    assert cfg["max_calls"] == 64
+    assert cfg["max_calls"] >= 6 * 8
 
 
 def test_calibration_schedule():
@@ -70,13 +74,15 @@ def test_calibration_schedule():
 def test_main_schedule_arms():
     kept = [("tinydb", "a", CLAIM_A_SEED)]
     f = main_schedule(kept, "repair_ordinary")
-    l = main_schedule(kept, "repair_guided")
+    l = main_schedule(kept, "repair_workflow")
     assert [s["arm"] for s in f] == ["diagnose", "repair_ordinary", "repair_ordinary"]
-    assert [s["arm"] for s in l] == ["diagnose", "repair_guided", "repair_guided"]
+    assert [s["arm"] for s in l] == ["diagnose", "repair_workflow", "repair_workflow"]
     # same task ids across backends: the offline analysis pairs them by task
     assert [s["task_id"] for s in f] == [s["task_id"] for s in l]
     with pytest.raises(AssertionError):
         main_schedule(kept, "diagnose")
+    with pytest.raises(AssertionError):
+        main_schedule(kept, "repair_guided")  # superseded by the workflow treatment
 
 
 def test_pilot_schedule_single_task():
@@ -84,7 +90,7 @@ def test_pilot_schedule_single_task():
     sched = pilot_schedule(kept)
     assert len(sched) == 2
     assert all(s["task_id"] == "mr-tinydb-a-20260921" for s in sched)
-    assert [s["arm"] for s in sched] == ["diagnose", "repair_guided"]
+    assert [s["arm"] for s in sched] == ["diagnose", "repair_workflow"]
 
 
 FAKE_CALIBRATION = {
@@ -121,7 +127,7 @@ def test_build_freeze_manifest(tmp_path, patched_gates, monkeypatch):
     pairs = [("tinydb", "a", CLAIM_A_SEED), ("cachetools", "b", CLAIM_A_SEED)]
     cfg = main_config_local(pairs, real_smoke_evidence="pilot ok")
     manifest = claim_a.build_freeze(
-        tmp_path / "out", cal, cfg, main_schedule(pairs, "repair_guided"),
+        tmp_path / "out", cal, cfg, main_schedule(pairs, "repair_workflow"),
         pairs, "freeze-test", "notes", "selection")
     assert manifest["config"]["provider_backend"] == "local"
     assert manifest["config"]["reservation_bound_verified"] is True
@@ -187,3 +193,87 @@ def test_analyze_band_and_compare(tmp_path, monkeypatch):
     assert r.returncode == 0, r.stderr
     assert "kept 1/2 tasks" in r.stdout
     assert json.loads(kept.read_text()) == [["tinydb", "a", 20260921]]
+
+
+def test_repair_workflow_arm_registered():
+    from benchmark_runner.matched_repair import MATCHED_ARMS
+    from benchmark_runner.schema import ARM_ENUM
+    assert "repair_workflow" in MATCHED_ARMS
+    assert "repair_workflow" in ARM_ENUM  # provider telemetry rejects unknown arms
+
+
+def test_workflow_treatment_uses_frozen_phases_and_prompts(tmp_path):
+    # Treatment fidelity: the repair_workflow arm must execute the exact
+    # frozen six-phase Spec-Kit+AEE workflow with the frozen skill prompts,
+    # not a reimplementation.
+    from benchmark_runner.workflow import AEE_PHASES, phase_prompt, phases
+    assert phases("spec_kit_aee") == ("constitution", "specify", "plan",
+                                      "tasks", "implement", "converge")
+    assert AEE_PHASES == {"specify", "plan", "tasks", "implement"}
+    root = Path(__file__).resolve().parents[1]
+    for phase in phases("spec_kit_aee"):
+        prompt = phase_prompt(root, "spec_kit_aee", phase)
+        assert f"speckit-{phase}" in prompt  # the actual frozen skill file
+        assert "Code lives in /testbed" in prompt  # the frozen adapter framing
+
+
+def test_workflow_call_budget_documented(monkeypatch):
+    from benchmark_runner.matched_repair import WORKFLOW_CALLS_PER_PHASE
+    assert WORKFLOW_CALLS_PER_PHASE == 8
+    monkeypatch.setenv("LOCAL_MODEL_NAME", "qwen3-8b-local")
+    local_cfg = main_config_local([("tinydb", "x", CLAIM_A_SEED)])
+    # Six phases x per-phase actions, plus bounded AEE recovery headroom.
+    assert local_cfg["max_calls"] >= 6 * WORKFLOW_CALLS_PER_PHASE
+
+
+def test_execute_matched_attempt_routes_workflow(monkeypatch):
+    import benchmark_runner.matched_repair as mr
+    seen = {}
+    def fake_run_workflow(root, task, provider, sandbox, store, identity, cfg, manifest):
+        seen["called"] = True
+        return {"ok": True}
+    monkeypatch.setattr(mr, "run_workflow_repair", fake_run_workflow)
+    out = mr.execute_matched_attempt(None, None, "repair_workflow", None, None,
+                                     None, None, None, None)
+    assert out == {"ok": True}
+    assert seen.get("called") is True
+
+
+def test_problem_statement_names_workflow_treatment():
+    from benchmark_runner.claim_a import problem_statement
+    text = problem_statement("mr-tinydb-x-20260921", "tinydb")
+    assert "Spec-Kit+AEE workflow" in text
+    assert "guided" not in text.lower()
+
+
+def test_analyze_compare_with_workflow_arm(tmp_path):
+    # The offline comparison must pair frontier ordinary repair against the
+    # local workflow arm (not the superseded guided arm).
+    from benchmark_runner.store import Store
+    import subprocess, sys
+    script = str(Path(__file__).resolve().parents[1] / "scripts" / "analyze_claim_a.py")
+    kept = tmp_path / "kept.json"
+    kept.write_text(json.dumps([["tinydb", "a", 20260921]]))
+    task_id = "mr-tinydb-a-20260921"
+    run_f, run_l = tmp_path / "frontier", tmp_path / "local"
+    run_f.mkdir(); run_l.mkdir()
+    sf, sl = Store(run_f), Store(run_l)
+    sf.append("attempts", {"attempt_id": "f1", "task_id": task_id, "arm": "repair_ordinary",
+                           "status": "completed",
+                           "repair_rounds": [{"public": {"passed": True}, "source_changed": True}]})
+    sf.append("hidden_grades", {"attempt_id": "f1", "graded": True, "hidden_passed": True,
+                               "test_count": 4, "failed_cases": []})
+    sf.append("calls", {"attempt_id": "f1", "cost": "0.50"})
+    sl.append("attempts", {"attempt_id": "l1", "task_id": task_id, "arm": "repair_workflow",
+                           "status": "completed",
+                           "repair_rounds": [{"public": {"passed": True}, "source_changed": True}],
+                           "workflow_completed": True})
+    sl.append("hidden_grades", {"attempt_id": "l1", "graded": True, "hidden_passed": True,
+                               "test_count": 4, "failed_cases": []})
+    sl.append("calls", {"attempt_id": "l1", "cost": "0"})
+    r = subprocess.run([sys.executable, script, "compare", "--frontier", str(run_f),
+                        "--local", str(run_l), "--kept", str(kept)],
+                       capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    assert "NON-INFERIOR" in r.stdout
+    assert "dollars per accepted" in r.stdout

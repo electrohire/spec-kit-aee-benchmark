@@ -8,18 +8,21 @@ only, 2 attempts per task (1 shared diagnostic + 2 repairs). Keep the
 this means exactly one of the two passes).
 
 Phase B (main): the kept tasks, two frozen manifests sharing the task bank
-and seed -- frontier ordinary vs local guided. Non-inferiority margin: 10%
+and seed -- frontier ordinary vs local full-workflow. Non-inferiority margin: 10%
 relative on mean expected loss; headline economic metric: dollars per
 accepted task.
 
-DESIGN GAP (unresolved, must be settled before any paid run): the local arm
-currently uses the existing `repair_guided` treatment (assessment-guided
-repair). The v9 design ratified the *full Spec-Kit+AEE workflow* as the
-local treatment, and `repair_guided` is not automatically equivalent to it.
-Do not present campaign results as "full Spec-Kit+AEE workflow" evidence
-until the workflow is implemented for the local arm or equivalence is
-demonstrated. This module wires the comparison mechanics; the treatment
-definition is still open.
+DESIGN GAP (resolved 2026-09-21, Option B): the local arm runs the full
+Spec-Kit+AEE workflow as the `repair_workflow` treatment
+(matched_repair.run_workflow_repair): the exact frozen six-phase workflow
+from benchmark_runner.workflow (constitution, specify, plan, tasks,
+implement, converge) with the frozen skill prompts, grounded claims, and the
+AEE assess() gate at each AEE phase with bounded recovery rounds. It runs on
+the matched-repair fixture sandbox with the same shared diagnostic and
+public-test feedback as the frontier ordinary-repair arm, so the only
+treatment difference is the repair method. The single-task local pilot is the
+real-smoke gate for this treatment on the operator's server before the main
+local freeze.
 
 Cross-backend matching: the runner selects the provider from the frozen
 manifest config, so a campaign can never mix backends mid-run. Claim A runs
@@ -149,13 +152,22 @@ def main_config_frontier(kept):
 
 
 def main_config_local(kept, real_smoke_evidence=None):
-    """Frozen config for Phase B local arm: guided repair, local backend.
+    """Frozen config for Phase B local arm: full Spec-Kit+AEE workflow, local backend.
 
     Model identity comes from the operator environment (LOCAL_MODEL_NAME /
     LOCAL_MODEL_BASE_URL) and is fail-closed verified by check_local_server()
     before any attempt; cfg["model"] records the value seen at freeze time.
     real_smoke_evidence must cite the completed local pilot run; without it
     the config is not runnable (validate_live fails closed).
+
+    Attempt call budget: the workflow treatment runs six phases at up to
+    WORKFLOW_CALLS_PER_PHASE=8 actions each (48) plus bounded AEE recovery
+    rounds, versus 16 repair actions for the frontier ordinary arm. The
+    attempt-level max_calls is therefore 64 for the local manifest. This is a
+    treatment-inherent difference, not a thumb on the scale: local calls have
+    zero marginal dollars, and the analysis counts measured calls per attempt
+    in c_run, so the extra calls penalize the local arm on the primary
+    expected-loss metric while buying whatever quality the workflow delivers.
     """
     cfg = calibration_config()
     model = os.environ.get("LOCAL_MODEL_NAME")
@@ -166,6 +178,7 @@ def main_config_local(kept, real_smoke_evidence=None):
         "purpose": "claim_a_main",
         "provider_backend": "local",
         "model": model,
+        "max_calls": 64,
         # reasoning_effort is OpenAI-only; LocalProvider must not receive it.
         "price_snapshot_id": "local-inference",
         "prices": {"input": 0.0, "cached_input": 0.0, "output": 0.0},
@@ -199,7 +212,7 @@ def calibration_schedule(candidates):
 def main_schedule(kept, repair_arm):
     """Deterministic schedule for one Phase B arm: per kept task, one shared
     diagnostic followed by REPAIR_REPEATS repairs with repair_arm."""
-    assert repair_arm in ("repair_ordinary", "repair_guided")
+    assert repair_arm in ("repair_ordinary", "repair_workflow")
     schedule = []
     for project, variant, seed in kept:
         pair_id = _pair_id(project, variant, seed)
@@ -212,15 +225,16 @@ def main_schedule(kept, repair_arm):
 
 
 def pilot_schedule(kept):
-    """One-task local pilot: a single diagnostic + guided repair, used as the
-    real-smoke gate for the local backend before the main local freeze."""
+    """One-task local pilot: a single diagnostic + full-workflow repair, used as the
+    real-smoke gate for the local backend and the workflow treatment before the
+    main local freeze."""
     project, variant, seed = kept[0]
     pair_id = _pair_id(project, variant, seed)
     return [
         dict(task_id=pair_id, arm="diagnose", repeat=1,
              attempt_id=f"{pair_id}--diagnose"),
-        dict(task_id=pair_id, arm="repair_guided", repeat=1,
-             attempt_id=f"{pair_id}--repair_guided-1"),
+        dict(task_id=pair_id, arm="repair_workflow", repeat=1,
+             attempt_id=f"{pair_id}--repair_workflow-1"),
     ]
 
 
@@ -231,10 +245,11 @@ def problem_statement(pair_id, project):
         f"symptom surfacing in a different file than the cause (or it may be a clean negative "
         f"control). Protocol: (1) a read-only diagnostic attempt reviews the implementation "
         f"and public test feedback and returns grounded requirement claims with explicit "
-        f"uncertainty; (2) repair attempts start from the same pristine snapshot and each get "
-        f"two repair rounds. The guided arm additionally receives the actual AEE/Evaluator "
-        f"findings from the diagnostic. After all runs, the final package snapshots are graded "
-        f"with hidden acceptance tests; hidden outcomes are never fed back to any attempt.")
+        f"uncertainty; (2) repair attempts start from the same pristine snapshot and run one "
+        f"of two repair treatments: direct repair rounds (frontier arm), or the full six-phase "
+        f"Spec-Kit+AEE workflow with per-phase AEE assessment gates (local arm). After all runs, "
+        f"the final package snapshots are graded with hidden acceptance tests; hidden outcomes "
+        f"are never fed back to any attempt.")
 
 
 def build_freeze(output, calibration_path, cfg, schedule, pairs, freeze_name,
@@ -288,10 +303,13 @@ def build_freeze(output, calibration_path, cfg, schedule, pairs, freeze_name,
                   "tasks": tasks},
         "schedule": schedule,
         "pairing": ("One read-only diagnostic per task, shared by that task's repair attempts; "
-                    "identical start/feedback/tools. The guided arm additionally receives the "
-                    "actual AEE/Evaluator findings from the diagnostic. Repair instructions embed "
-                    "the recorded diagnostic summary (frozen template + stored evidence); hidden "
-                    "grading of final snapshots happens after all runs and is never fed back. "
+                    "identical start/feedback/tools. The frontier arm runs direct repair rounds; the "
+                    "local arm runs the full six-phase Spec-Kit+AEE workflow (constitution, specify, "
+                    "plan, tasks, implement, converge) with AEE assessment gates at each AEE phase. "
+                    "The diagnostic summary is a matched covariate for both repair treatments "
+                    "(assertions, not proof). Repair instructions embed the recorded diagnostic "
+                    "summary (frozen template + stored evidence); hidden grading of final snapshots "
+                    "happens after all runs and is never fed back. "
                     "Frontier and local manifests share the frozen task bank and seed; the "
                     "offline analysis pairs them by task_id."),
         "reservation_verification": reservation,
@@ -358,13 +376,14 @@ def cmd_freeze_main(args):
                  f"the same task bank and seed {CLAIM_A_SEED}.")
     elif args.backend == "local":
         cfg = main_config_local(kept, real_smoke_evidence=args.pilot_evidence)
-        schedule = main_schedule(kept, "repair_guided")
+        schedule = main_schedule(kept, "repair_workflow")
         freeze_name = "freeze-claim-a-local"
         notes = (f"Freeze claim-a-local: Phase B local arm for Claim A (v9 design §1). "
-                 f"{len(kept)} kept tasks x (1 diagnostic + {REPAIR_REPEATS} guided repairs) on "
-                 f"the local backend (model {cfg['model']}). Guided-repair treatment "
-                 f"(see module docstring: equivalence to the full Spec-Kit/AEE workflow "
-                 f"is an unresolved design gap); zero marginal dollar cost. Matched "
+                 f"{len(kept)} kept tasks x (1 diagnostic + {REPAIR_REPEATS} full-workflow repairs) on "
+                 f"the local backend (model {cfg['model']}). repair_workflow treatment: the frozen "
+                 f"six-phase Spec-Kit+AEE workflow (constitution, specify, plan, tasks, implement, "
+                 f"converge) with AEE assessment gates, attempt call budget 64 (6 phases x 8 actions "
+                 f"+ recovery headroom); zero marginal dollar cost. Matched "
                  f"against freeze-claim-a-frontier over the same task bank and seed {CLAIM_A_SEED}.")
     else:
         raise ValueError(f"unknown backend {args.backend}")
@@ -388,8 +407,8 @@ def cmd_freeze_pilot(args):
         args.out, args.calibration, cfg, pilot_schedule(kept), [tuple(kept[0])],
         "freeze-claim-a-pilot",
         ("Freeze claim-a-pilot: single-task local-backend smoke for Claim A. Exercises the "
-         "full diagnose + guided-repair path against the operator's llama.cpp server before "
-         "the main local freeze is built. Free; no spend."),
+         "full diagnose + Spec-Kit/AEE workflow-repair path against the operator's llama.cpp server "
+         "before the main local freeze is built. Free; no spend."),
         "Claim A local pilot: first kept task only, development smoke.",
     )
     print("FREEZE", manifest["freeze_id"])

@@ -5,7 +5,16 @@ OpenAIProvider: one shared read-only diagnostic per fixture pair, then two
 repair arms (ordinary vs AEE-guided) from the same pristine fixture snapshot.
 Hidden grading happens after all runs; hidden outcomes are never fed back.
 
-Arms: ``diagnose``, ``repair_ordinary``, ``repair_guided``.
+Arms: ``diagnose``, ``repair_ordinary``, ``repair_guided``, ``repair_workflow``.
+
+``repair_workflow`` is the full Spec-Kit+AEE workflow treatment for Claim A
+(v9 design section 1, ratified 2026-09-21): the exact frozen six-phase
+workflow from benchmark_runner.workflow (constitution, specify, plan, tasks,
+implement, converge) with the frozen skill prompts, grounded claims, and the
+AEE assess() gate at each AEE phase with bounded recovery rounds. It runs on
+the matched-repair fixture sandbox with the same shared diagnostic and
+public-test feedback as the repair arms, so the only treatment difference is
+the repair method.
 
 The v3 structural diagnostic-termination fix from scripts/repeated_local.py
 (Session.phase) is ported here verbatim in spirit: claim-bearing phases get a
@@ -35,11 +44,11 @@ from .accounting import TOKEN_FIELDS, request_prices
 from .experiment import frozen_paths, source_hash
 from .isolation import docker_args
 from .store import Store, canonical, read_json, sha, utc, write_json
-from .workflow import assess, grounded_claims
+from .workflow import AEE_PHASES, assess, grounded_claims, phase_prompt, phases
 
 ROOT = Path(__file__).resolve().parents[2]
 
-MATCHED_ARMS = ("diagnose", "repair_ordinary", "repair_guided")
+MATCHED_ARMS = ("diagnose", "repair_ordinary", "repair_guided", "repair_workflow")
 
 # (before, after, seeded_requirements) — ported from scripts/matched_repair.py.
 #
@@ -295,6 +304,11 @@ SEEDS = [20260918, 20260919]
 DIAGNOSTIC_CALLS = 8
 REPAIR_ROUNDS = 2
 CALLS_PER_ROUND = 8
+# Per-phase action budget for the repair_workflow arm: six frozen workflow
+# phases x 8 actions = 48, mirroring the 8-action diagnostic and repair
+# rounds. The attempt-level max_calls for the local workflow manifest adds
+# headroom for bounded AEE recovery rounds (see claim_a.main_config_local).
+WORKFLOW_CALLS_PER_PHASE = 8
 
 COMMON = """You are a capable software engineering agent in an isolated real repository.
 Return exactly one JSON action: {"action":"shell","command":"..."} or
@@ -716,7 +730,115 @@ def execute_matched_attempt(root, task, arm, provider, sandbox, store, identity,
         return run_diagnostic(root, task, provider, sandbox, store, identity, cfg)
     if arm in ("repair_ordinary", "repair_guided"):
         return run_repair(root, task, arm, provider, sandbox, store, identity, cfg, manifest)
+    if arm == "repair_workflow":
+        return run_workflow_repair(root, task, provider, sandbox, store, identity, cfg, manifest)
     raise ValueError("unknown matched-repair arm: " + arm)
+
+
+def _workflow_brief(task, project, diag, public):
+    """Shared task brief for the workflow arm: identical start/feedback to the
+    repair arms. The diagnostic summary is a matched covariate, explicitly
+    labeled assertions-not-proof, exactly as in run_repair."""
+    return (
+        f"Matched-repair pair {task['instance_id']}: the /testbed repository may contain a seeded defect "
+        f"in the {project} package -- possibly spanning modules, with the symptom surfacing in a "
+        f"different file than the cause (or it may be a clean negative control: do not change correct "
+        f"code without a concrete reason). Preserve existing APIs and tests.\n\n"
+        f"Requirements under test:\n{spec_text(project)}\n\n"
+        f"Shared diagnostic (assertions are not proof):\n{json.dumps(diag['summary'].get('done'))}\n\n"
+        f"Public test feedback:\n{public['output'][-10000:]}")
+
+
+def run_workflow_repair(root, task, provider, sandbox, store, identity, cfg, manifest):
+    """Full Spec-Kit+AEE workflow repair treatment (Claim A local arm, v9 section 1).
+
+    Treatment fidelity: the exact frozen workflow from benchmark_runner.workflow --
+    the six phases from phases("spec_kit_aee"), the frozen skill prompts from
+    phase_prompt(root, "spec_kit_aee", phase), grounded claims and the AEE assess()
+    gate at each AEE phase with bounded recovery rounds (mirroring the proven
+    spec_kit_aee arm in runner.execute_attempt). It runs on the matched-repair
+    fixture sandbox (/testbed) with the same shared diagnostic and public-test
+    feedback as the repair arms, so the only treatment difference is the repair
+    method: phased workflow with per-phase AEE gating vs direct repair rounds.
+    """
+    project, variant, seed = pair_of(task["instance_id"])
+    deadline = time.monotonic() + cfg["timeout_seconds"]
+    agent = _new_agent(provider, deadline)
+    agent.env = MiniEnvironment(sandbox, deadline, store, identity)
+    model = agent.model
+
+    diag = _diagnostic_for(store, manifest, task)
+    public = run_public_tests(sandbox)
+    store.append("public_feedback", {**identity, "stage": "workflow_repair", "timestamp": utc(),
+                                     "passed": public["passed"], "test_count": public["test_count"],
+                                     "output_tail": public["output"][-4000:]})
+    sandbox.stage_workflow(root)
+    brief = _workflow_brief(task, project, diag, public)
+    claims_schema = (Path(root)/".specify/extensions/aee/templates/aee-claims.json").read_text()
+
+    phase_summaries, assessment_outcome, recoveries, blocked = [], None, 0, False
+    for phase in phases("spec_kit_aee"):
+        in_aee = phase in AEE_PHASES
+        instructions = (
+            f"You are executing phase '{phase}' of the frozen Spec-Kit+AEE workflow on this repair task. "
+            f"Apply the frozen skill phase below. Write workflow artifacts under /workflow/specs; "
+            f"implement the fix in /testbed. Run the public tests yourself to verify; "
+            f"hidden acceptance is unavailable.\n\n" + phase_prompt(root, "spec_kit_aee", phase))
+        if in_aee:
+            instructions += ("\nAt phase completion include claims using this schema example "
+                             "(replace all example content):\n" + claims_schema)
+        summary = run_matched_phase(agent, model, store, identity, cfg, f"workflow_{phase}",
+                                    instructions, brief, WORKFLOW_CALLS_PER_PHASE, deadline,
+                                    claims=in_aee)
+        if in_aee and summary["done"]:
+            claims = grounded_claims(summary["done"].get("claims") or {}, store, identity["attempt_id"])
+            result = assess(root, claims, phase, store)
+            assessment_outcome = result["outcome"]
+            agent.add_messages({"role": "user", "content": "AEE/Evaluator result: " + json.dumps(result)})
+            recovery = 0
+            while result["outcome"] == "block" and recovery < cfg["max_recovery_rounds"]:
+                recovery += 1
+                recoveries += 1
+                agent.add_messages({"role": "user", "content": (
+                    "Address the AEE/Evaluator result within this phase. Use only task-provided facts; "
+                    "no human assistance. Do not change model. Submit revised claims and evidence, "
+                    "or retain gaps.")})
+                summary = run_matched_phase(agent, model, store, identity, cfg,
+                                            f"workflow_{phase}_recovery{recovery}",
+                                            instructions, brief, WORKFLOW_CALLS_PER_PHASE,
+                                            deadline, claims=True)
+                if not summary["done"]:
+                    break
+                claims = grounded_claims(summary["done"].get("claims") or {}, store,
+                                         identity["attempt_id"])
+                result = assess(root, claims, phase, store)
+                assessment_outcome = result["outcome"]
+                agent.add_messages({"role": "user", "content": "AEE/Evaluator result: " + json.dumps(result)})
+            if result["outcome"] == "block":
+                blocked = True
+                phase_summaries.append(summary)
+                break
+        phase_summaries.append(summary)
+
+    # Final harness-measured state, in the same shape the grader and the
+    # outcome classifier expect from the repair arms.
+    final_public = run_public_tests(sandbox)
+    final_snapshot = store.artifact(snapshot_package(sandbox, PROJECTS[project]["package"]))
+    store.append("repair_rounds", {**identity, "round": "workflow", "timestamp": utc(),
+                                   "public_passed": final_public["passed"], "snapshot": final_snapshot})
+    patch = sandbox.execute("git add -N . && git diff --binary HEAD", 60)
+    return {"patch": store.artifact(patch["stdout"].encode()),
+            "package_snapshot": final_snapshot,
+            "diagnostic_valid": diag["summary"].get("done") is not None and not diag["diagnostic_changed_source"],
+            "workflow_phases": [s["phase"] for s in phase_summaries],
+            "workflow_completed": all(s["completed"] for s in phase_summaries),
+            "assessment_outcome": assessment_outcome,
+            "workflow_recoveries": recoveries,
+            "workflow_blocked": blocked,
+            "repair_rounds": [{"round": "workflow", "phase": [s["phase"] for s in phase_summaries],
+                               "public": final_public, "snapshot": final_snapshot,
+                               "source_changed": not git_clean(sandbox)}],
+            "tool_calls": agent.env.tool_calls}
 
 
 # ---------------------------------------------------------------------------
@@ -1011,7 +1133,7 @@ def grade_run(run_dir, grade_fn=None):
         attempt = latest[attempt_id]
         if attempt_id in graded:
             continue
-        if attempt.get("arm") not in ("repair_ordinary", "repair_guided"):
+        if attempt.get("arm") not in ("repair_ordinary", "repair_guided", "repair_workflow"):
             continue
         identity = {"attempt_id": attempt_id, "task_id": attempt["task_id"], "arm": attempt["arm"],
                     "experiment_id": manifest["freeze_id"], "run_id": manifest["freeze_id"][:16],
