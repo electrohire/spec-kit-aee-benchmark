@@ -65,18 +65,24 @@ def test_c05_row_and_column_order():
 
 
 def test_c06_quoted_comma():
-    out = normalize_csv('"a,b",c\n1,2\n')
-    assert out == '"a,b",c\n1,2'
+    # Whitespace adjacent to a quoted comma: naive split(",") strips the
+    # spaces around the comma, observably breaking the round-trip.
+    out = normalize_csv('a\n" x , y "\n')
+    assert out == 'a\n" x , y "'
 
 
 def test_c06_escaped_quotes():
-    out = normalize_csv('a\n"b""c"\n')
-    assert out == 'a\n"b""c"'
+    # Escaped quote inside a quoted field with adjacent whitespace: naive
+    # split(",") breaks the field boundary and strips the spaces.
+    out = normalize_csv('a\n" b "" , c "\n')
+    assert out == 'a\n" b "" , c "'
 
 
 def test_c06_embedded_newline():
-    out = normalize_csv('a,b\n"x\ny",2\n')
-    assert out == 'a,b\n"x\ny",2'
+    # Whitespace adjacent to an embedded newline: naive splitlines() splits
+    # the row and strips the spaces around the newline.
+    out = normalize_csv('a,b\n" x \n y ",2\n')
+    assert out == 'a,b\n" x \n y ",2'
 
 
 def test_c07_no_trailing_newline():

@@ -39,3 +39,10 @@ already-pinned example was copied verbatim into the spec detail where noted
 in the design negative record). The task author re-confirmed items 1-6
 against the rewritten spec; the independent-reviewer requirement remains
 open (see design doc).
+## Addendum 2026-09-21: post-review (independent review closed)
+
+The independent spec-literal review completed 2026-09-21 with verdict
+CONDITIONAL GO (full report: files/claim-b-spec-review.md in the goal
+workspace). For this task: PASS with one minor recommendation, applied: C02 reworded to 'reverse=True reverses the sort order (as in sorted(..., reverse=True)); equal keys keep their original relative order per C03' (meaning unchanged; first-sentence requirement statement untouched). The independent-reviewer requirement is
+now closed.
+

@@ -43,3 +43,10 @@ already-pinned example was copied verbatim into the spec detail where noted
 in the design negative record). The task author re-confirmed items 1-6
 against the rewritten spec; the independent-reviewer requirement remains
 open (see design doc).
+## Addendum 2026-09-21: post-review (independent review closed)
+
+The independent spec-literal review completed 2026-09-21 with verdict
+CONDITIONAL GO (full report: files/claim-b-spec-review.md in the goal
+workspace). For this task: PASS, no findings; the C02/C06 ttl=0 interplay judgment call was recorded. The independent-reviewer requirement is
+now closed.
+

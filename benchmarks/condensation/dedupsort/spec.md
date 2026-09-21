@@ -16,7 +16,8 @@ to work.
 ## C02: sort by key
 Results sort ascending by `key`, or by the elements themselves. When a key
 is given the comparison uses `key(element)`; `reverse=True` reverses the
-final order after sorting.
+sort order (as in `sorted(..., reverse=True)`); equal keys keep their
+original relative order per C03.
 
 ## C03: stable equal keys
 Elements whose keys compare equal keep their original relative order

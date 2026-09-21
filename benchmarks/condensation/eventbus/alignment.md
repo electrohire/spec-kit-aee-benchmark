@@ -9,10 +9,14 @@ reviewer; the automated gate covers items 1-5, this file records item 6).
 3. [x] Every constraint id C01-C07 has >= 1 pinning hidden test.
 4. [x] `trap.py` (live-list iteration; immediate exception propagation)
    PASSES all public tests and FAILS hidden tests
-   (`test_c04_emit_continues_after_raise`,
+   (`test_c02_once_fires_once`, `test_c04_emit_continues_after_raise`,
    `test_c04_emit_error_carries_errors_in_order`,
-   `test_c06_register_during_emit_waits`,
-   `test_c06_removed_during_emit_still_fires`).
+   `test_c05_no_silent_swallow`, `test_c06_register_during_emit_waits`).
+   Measured by direct execution 2026-09-21: the once-wrapper's self-deletion
+   during live-list iteration skips the next handler, so the trap also fails
+   `test_c02_once_fires_once`; `test_c06_removed_during_emit_still_fires`
+   actually PASSES on the trap (`off` replaces the list object while `emit`
+   iterates the old reference).
 5. [x] spec.md parses under the strict constraint format; task.yaml ids match.
 6. [x] Human spec-literal review:
    - Every hidden test follows from the written spec with no extra
@@ -42,3 +46,15 @@ already-pinned example was copied verbatim into the spec detail where noted
 in the design negative record). The task author re-confirmed items 1-6
 against the rewritten spec; the independent-reviewer requirement remains
 open (see design doc).
+
+## Addendum 2026-09-21: post-review fix (independent review closed)
+
+The independent spec-literal review completed 2026-09-21 with verdict
+CONDITIONAL GO (full report: files/claim-b-spec-review.md in the goal
+workspace). It found that item 4 misstated the trap's measured failure set:
+`test_c06_removed_during_emit_still_fires` actually passes on the trap
+(`off` replaces the list object while `emit` iterates the old reference),
+while `test_c02_once_fires_once` and `test_c05_no_silent_swallow` fail and
+were omitted. Item 4 above is now the measured set. The gate criterion
+(fail >= 1 hidden test) is unaffected. The independent-reviewer requirement
+is now closed.

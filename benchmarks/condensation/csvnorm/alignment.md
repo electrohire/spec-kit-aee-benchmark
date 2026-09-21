@@ -8,8 +8,12 @@ reviewer; the automated gate covers items 1-5, this file records item 6).
    constraint id.
 3. [x] Every constraint id C01-C07 has >= 1 pinning hidden test.
 4. [x] `trap.py` (naive `line.split(",")`) PASSES all public tests and FAILS
-   hidden tests (`test_c06_quoted_comma`, `test_c06_escaped_quotes`,
-   `test_c06_embedded_newline`).
+   hidden tests (`test_c04_quote_not_first_char`, `test_c06_quoted_comma`,
+   `test_c06_escaped_quotes`, `test_c06_embedded_newline`). Verified by
+   direct execution 2026-09-21: the three C06 tests were strengthened on
+   that date (see addendum) so that naive split-then-rejoin is observably
+   wrong on their inputs; the trap fails all three plus the C04
+   re-quoting test.
 5. [x] spec.md parses under the strict constraint format; task.yaml ids match.
 6. [x] Human spec-literal review:
    - Every hidden test follows from the written spec with no extra inference.
@@ -41,3 +45,20 @@ already-pinned example was copied verbatim into the spec detail where noted
 in the design negative record). The task author re-confirmed items 1-6
 against the rewritten spec; the independent-reviewer requirement remains
 open (see design doc).
+
+## Addendum 2026-09-21: post-review fixes (independent review closed)
+
+The independent spec-literal review completed 2026-09-21 with verdict
+CONDITIONAL GO (full report: files/claim-b-spec-review.md in the goal
+workspace). It found a genuine grader-validity gap here: the original C06
+hidden tests asserted full-output equality on inputs where naive
+split-then-rejoin is the identity transformation, so the trap passed all
+three — and the spec's C06 claim ("the naive approach of splitting lines on
+commas breaks all three") was false for those inputs. Fixed by
+strengthening the three C06 tests with inputs where naive field-splitting
+is observably wrong (whitespace adjacent to a quoted comma / escaped quote
+/ embedded newline), which also makes the spec's C06 claim literally true
+of the test inputs. Item 4 above was corrected to the measured failure set
+(`test_c04_quote_not_first_char` plus the three C06 tests); reference
+passes all 14 hidden tests and the trap fails exactly those 4. The
+independent-reviewer requirement is now closed.

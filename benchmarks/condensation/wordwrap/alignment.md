@@ -9,7 +9,10 @@ reviewer; the automated gate covers items 1-5, this file records item 6).
 3. [x] Every constraint id C01-C07 has >= 1 pinning hidden test.
 4. [x] `trap.py` (greedy packing without long-word breaking) PASSES all
    public tests and FAILS hidden tests (`test_c03_long_word_broken`,
-   `test_c03_long_word_after_partial_line`, `test_c03_pieces_within_width`).
+   `test_c03_long_word_after_partial_line`, `test_c03_pieces_within_width`,
+   `test_c06_indent_on_broken_pieces`). The trap also fails
+   `test_c06_indent_on_broken_pieces` (measured 2026-09-21); it was
+   omitted from the list in error.
 5. [x] spec.md parses under the strict constraint format; task.yaml ids match.
 6. [x] Human spec-literal review:
    - Every hidden test follows from the written spec with no extra
@@ -40,3 +43,12 @@ already-pinned example was copied verbatim into the spec detail where noted
 in the design negative record). The task author re-confirmed items 1-6
 against the rewritten spec; the independent-reviewer requirement remains
 open (see design doc).
+
+## Addendum 2026-09-21: post-review fix (independent review closed)
+
+The independent spec-literal review completed 2026-09-21 with verdict
+CONDITIONAL GO (full report: files/claim-b-spec-review.md in the goal
+workspace). It found that item 4 omitted `test_c06_indent_on_broken_pieces`
+from the trap's measured failure set; the list above is now the measured
+set of 4. The gate criterion (fail >= 1 hidden test) is unaffected. The
+independent-reviewer requirement is now closed.
