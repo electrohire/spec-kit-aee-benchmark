@@ -18,7 +18,7 @@ set -euo pipefail
 PORT="${PORT:-8080}"
 CTX="${CTX:-32768}"
 MODEL_DIR="${MODEL_DIR:-$HOME/models}"
-MODEL_URL="${MODEL_URL:-https://huggingface.co/bartowski/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf}"
+MODEL_URL="${MODEL_URL:-https://huggingface.co/unsloth/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf}"
 LOCAL_MODEL_NAME="${LOCAL_MODEL_NAME:-qwen3-8b-local}"
 LLAMA_CPP_DIR="${LLAMA_CPP_DIR:-}"
 
