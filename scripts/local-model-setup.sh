@@ -36,17 +36,24 @@ elif command -v llama-server >/dev/null 2>&1; then
   SERVER="$(command -v llama-server)"
 else
   echo "llama-server not found; downloading latest CUDA release..."
-  TAG="$(curl -fsSL https://api.github.com/repos/ggerganov/llama.cpp/releases/latest | grep -m1 '"tag_name"' | cut -d'"' -f4)"
+  # NOTE: never pipe curl directly into grep -m1/head under `set -o pipefail`:
+  # when the reader exits early, curl dies with error 23 (SIGPIPE) and the
+  # script aborts even though the tag was already captured. Download to a
+  # temp file first instead.
+  TAG_JSON="$(mktemp)"
+  curl -fsSL -o "$TAG_JSON" https://api.github.com/repos/ggml-org/llama.cpp/releases/latest
+  TAG="$(grep -m1 '"tag_name"' "$TAG_JSON" | cut -d'"' -f4)"
+  rm -f "$TAG_JSON"
   [ -n "$TAG" ] || { echo "could not resolve latest llama.cpp release"; exit 1; }
   mkdir -p "$HOME/llama.cpp-release"
   cd "$HOME/llama.cpp-release"
-  curl -fSL -o llama.zip "https://github.com/ggerganov/llama.cpp/releases/download/${TAG}/llama-${TAG}-bin-ubuntu-x64.zip"
+  curl -fSL -o llama.zip "https://github.com/ggml-org/llama.cpp/releases/download/${TAG}/llama-${TAG}-bin-ubuntu-x64.zip"
   unzip -o -q llama.zip
   SERVER="$HOME/llama.cpp-release/build/bin/llama-server"
   [ -x "$SERVER" ] || { echo "downloaded release has no build/bin/llama-server"; exit 1; }
 fi
 echo "Using: $SERVER"
-"$SERVER" --version | head -2
+"$SERVER" --version 2>&1 | head -2 || echo "WARNING: could not query server version"
 
 echo "== model =="
 mkdir -p "$MODEL_DIR"
@@ -60,7 +67,11 @@ fi
 ls -lh "$MODEL_FILE"
 
 # If a healthy server is already on the port serving the expected model, reuse it.
-if curl -fsS "http://localhost:${PORT}/v1/models" 2>/dev/null | grep -q "\"id\":\"${LOCAL_MODEL_NAME}\""; then
+# Capture to a variable first: piping curl straight into grep -q can SIGPIPE
+# (curl error 23) when grep exits on first match, which would wrongly report
+# the server as not running and launch a duplicate.
+MODELS_JSON="$(curl -fsS "http://localhost:${PORT}/v1/models" 2>/dev/null || true)"
+if printf '%s' "$MODELS_JSON" | grep -q "\"id\":\"${LOCAL_MODEL_NAME}\""; then
   echo "Server already running on port $PORT serving ${LOCAL_MODEL_NAME}; reusing it."
 else
   echo "== launching server on GPU $GPU_INDEX =="
