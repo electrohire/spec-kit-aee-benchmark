@@ -178,6 +178,173 @@ def test_scored_freeze_excludes_smoke_pair():
     assert 'ordered_arms = ["diagnose"] + arms' in src
 
 
+def test_scored_v6_pairs_excludes_smoke_pair():
+    """Freeze v6 must cover every variant at the scored seed except the smoke
+    pair; clean variants stay in as negative controls."""
+    from benchmark_runner import matched_repair as mr
+    pairs = mr.SCORED_PAIRS_V6
+    assert len(pairs) == 7, pairs
+    assert all(s == 20260918 for _, _, s in pairs)
+    assert ("tinydb", "bool_id", 20260918) not in pairs
+    assert mr.SMOKE_PAIR not in pairs
+    # Reruns the v5 pair so grading is in the mix for the whole set.
+    assert ("tinydb", "token_alias", 20260918) in pairs
+    # Clean negative controls are included, not silently dropped.
+    assert ("tinydb", "clean", 20260918) in pairs
+    assert ("cachetools", "clean", 20260918) in pairs
+    assert len(set(pairs)) == 7
+
+
+def test_scored_v6_schedule_is_deterministic_and_complete():
+    """21 attempts: diagnose first per pair, both repair arms, unique ids,
+    deterministic across calls (pure function, no Docker)."""
+    from benchmark_runner import matched_repair as mr
+    sched = mr.scored_v6_schedule()
+    assert sched == mr.scored_v6_schedule()
+    assert len(sched) == 21
+    ids = [s["attempt_id"] for s in sched]
+    assert len(set(ids)) == 21
+    by_pair = {}
+    for s in sched:
+        by_pair.setdefault(s["task_id"], []).append(s["arm"])
+    assert len(by_pair) == 7
+    for pair_id, arms in by_pair.items():
+        assert arms[0] == "diagnose", pair_id
+        assert sorted(arms[1:]) == ["repair_guided", "repair_ordinary"], pair_id
+        for s in sched:
+            if s["task_id"] == pair_id:
+                assert s["attempt_id"] == f"{pair_id}--{s['arm']}"
+    assert not any("bool_id" in p for p in by_pair)
+
+
+def test_scored_v6_config_grounds_real_smoke():
+    """v6 config keeps the scored caps and grounds real_smoke_verified on the
+    completed v4 smoke AND the completed v5 scored run."""
+    import inspect
+    from benchmark_runner import matched_repair as mr
+    cfg = mr.scored_config_v6()
+    assert cfg["purpose"] == "scored_comparison"
+    assert cfg["seed"] == 20260918
+    assert cfg["model"] == "gpt-6-astra"
+    assert cfg["global_cap_usd"] == 100 and cfg["attempt_cap_usd"] == 25
+    assert cfg["real_smoke_verified"] is True
+    assert "2026-09-21" in cfg["budget_authorization"]
+    assert "freeze v6" in cfg["budget_authorization"].lower()
+    assert "v4" in cfg["real_smoke_evidence"] and "v5" in cfg["real_smoke_evidence"]
+    src = inspect.getsource(mr.build_scored_freeze_v6)
+    assert 'freeze-v6-scored.json' in src
+    assert 'hidden_test_count' in src
+    assert 'not in set(SCORED_PAIRS_V6)' in src
+
+
+def _snapshot_artifact(store, data: bytes):
+    return store.artifact(data)
+
+
+def test_grade_run_records_hidden_grades_and_is_idempotent(tmp_path):
+    """grade_run grades each completed repair snapshot with the hidden tests,
+    records hidden_grades events, and skips already-graded attempts on re-run."""
+    from benchmark_runner import matched_repair as mr
+    from benchmark_runner.store import Store, sha, utc, write_json
+    run = tmp_path / "run"
+    run.mkdir()
+    store = Store(run)
+    write_json(run / "freeze.json", {
+        "freeze_id": "41179513d89ea34de",
+        "config": {"purpose": "scored_comparison"},
+        "tasks": {"tasks": [
+            {"instance_id": "mr-tinydb-token_alias-20260918",
+             "image": "localhost:5000/mr-fixture-tinydb-token_alias@sha256:abc",
+             "hidden_test_count": 16}]},
+    })
+    snap = _snapshot_artifact(store, b"fake-snapshot-bytes")
+    attempt_id = "mr-tinydb-token_alias-20260918--repair_guided"
+    store.append("attempts", {"attempt_id": attempt_id, "task_id": "mr-tinydb-token_alias-20260918",
+                             "arm": "repair_guided", "status": "started", "timestamp": utc()})
+    store.append("attempts", {"attempt_id": attempt_id, "task_id": "mr-tinydb-token_alias-20260918",
+                             "arm": "repair_guided", "status": "completed",
+                             "package_snapshot": snap, "timestamp": utc()})
+    # Diagnose attempts are never graded.
+    store.append("attempts", {"attempt_id": "mr-tinydb-token_alias-20260918--diagnose",
+                             "task_id": "mr-tinydb-token_alias-20260918",
+                             "arm": "diagnose", "status": "completed", "timestamp": utc()})
+    seen = {}
+
+    def fake_grade(image, data, project, expected):
+        seen["args"] = (image, data, project, expected)
+        return {"passed": True, "test_count": 16, "expected": 16,
+                "failed_cases": [], "cases": [], "output": "ok"}
+
+    results = mr.grade_run(run, grade_fn=fake_grade)
+    assert results == [(attempt_id, True)]
+    assert seen["args"][0].endswith("@sha256:abc")
+    assert seen["args"][1] == b"fake-snapshot-bytes"
+    assert seen["args"][2] == "tinydb" and seen["args"][3] == 16
+    grades = store.events("hidden_grades")
+    assert len(grades) == 1
+    g = grades[0]
+    assert g["graded"] is True and g["hidden_passed"] is True
+    assert g["test_count"] == 16 and g["failed_cases"] == []
+    assert (store.root / g["grade_artifact"]["path"]).exists()
+    # Idempotent: second run grades nothing new.
+    assert mr.grade_run(run, grade_fn=fake_grade) == []
+    assert len(store.events("hidden_grades")) == 1
+    # graded_comparison surfaces the pair row honestly.
+    comp = mr.graded_comparison(run)
+    assert comp["mr-tinydb-token_alias-20260918"]["repair_guided"]["hidden_passed"] is True
+
+
+def test_grade_run_fails_closed_on_missing_snapshot(tmp_path):
+    """A completed repair attempt without a package snapshot is a hard error,
+    not a silent skip."""
+    import pytest
+    from benchmark_runner import matched_repair as mr
+    from benchmark_runner.store import Store, utc, write_json
+    run = tmp_path / "run"
+    run.mkdir()
+    store = Store(run)
+    write_json(run / "freeze.json", {
+        "freeze_id": "41179513d89ea34de",
+        "config": {"purpose": "scored_comparison"},
+        "tasks": {"tasks": [
+            {"instance_id": "mr-tinydb-token_alias-20260918",
+             "image": "img", "hidden_test_count": 16}]},
+    })
+    store.append("attempts", {"attempt_id": "mr-tinydb-token_alias-20260918--repair_ordinary",
+                             "task_id": "mr-tinydb-token_alias-20260918",
+                             "arm": "repair_ordinary", "status": "completed", "timestamp": utc()})
+    with pytest.raises(ValueError, match="no package_snapshot"):
+        mr.grade_run(run, grade_fn=lambda *a: {})
+    assert store.events("hidden_grades") == []
+
+
+def test_grade_run_skips_uncompleted_attempts_honestly(tmp_path):
+    """Non-completed repair attempts get an explicit ungraded event with the
+    reason, not a fabricated grade."""
+    from benchmark_runner import matched_repair as mr
+    from benchmark_runner.store import Store, utc, write_json
+    run = tmp_path / "run"
+    run.mkdir()
+    store = Store(run)
+    write_json(run / "freeze.json", {
+        "freeze_id": "41179513d89ea34de",
+        "config": {"purpose": "scored_comparison"},
+        "tasks": {"tasks": [
+            {"instance_id": "mr-tinydb-token_alias-20260918",
+             "image": "img", "hidden_test_count": 16}]},
+    })
+    store.append("attempts", {"attempt_id": "mr-tinydb-token_alias-20260918--repair_ordinary",
+                             "task_id": "mr-tinydb-token_alias-20260918",
+                             "arm": "repair_ordinary", "status": "limit",
+                             "reason": "global cap", "timestamp": utc()})
+    results = mr.grade_run(run, grade_fn=lambda *a: (_ for _ in ()).throw(AssertionError("must not grade")))
+    assert results == [("mr-tinydb-token_alias-20260918--repair_ordinary", "skipped")]
+    grades = store.events("hidden_grades")
+    assert len(grades) == 1
+    assert grades[0]["graded"] is False
+    assert "limit" in grades[0]["reason"]
+
+
 def test_long_tier_formally_unreachable():
     """Reservation must fail closed if max_input_tokens could reach the
     long-context tier; otherwise only verified short-tier prices are used."""
