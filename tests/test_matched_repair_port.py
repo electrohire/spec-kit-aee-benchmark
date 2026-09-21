@@ -108,7 +108,7 @@ def test_matched_arms_distinct_from_workflow_arms():
 # ---------------------------------------------------------------------------
 
 def test_matched_arms_are_three_distinct():
-    from src.benchmark_runner.matched_repair import MATCHED_ARMS
+    from benchmark_runner.matched_repair import MATCHED_ARMS
     assert MATCHED_ARMS == ("diagnose", "repair_ordinary", "repair_guided")
     assert len(set(MATCHED_ARMS)) == 3
 
@@ -116,7 +116,7 @@ def test_matched_arms_are_three_distinct():
 def test_guided_flag_only_for_guided_arm():
     """The AEE assessment injection must be gated on arm == 'repair_guided'."""
     import inspect
-    from src.benchmark_runner import matched_repair as mr
+    from benchmark_runner import matched_repair as mr
     src = inspect.getsource(mr.run_repair)
     # The guided flag is derived solely from the arm name.
     assert 'guided = arm == "repair_guided"' in src
@@ -130,7 +130,7 @@ def test_repair_arms_share_diagnostic_but_not_assessment():
     the AEE assessment. Verified structurally: the diagnostic summary is in
     the base instruction, the assessment is in the guided-only branch."""
     import inspect
-    from src.benchmark_runner import matched_repair as mr
+    from benchmark_runner import matched_repair as mr
     src = inspect.getsource(mr.run_repair)
     # Base instruction includes shared diagnostic for both arms.
     assert 'Shared diagnostic (assertions are not proof)' in src
@@ -143,7 +143,7 @@ def test_schedule_diagnose_first_and_both_repairs():
     """Schedule must run diagnose first, then both repair arms (order of the
     two repairs is shuffled deterministically by seed)."""
     import inspect
-    from src.benchmark_runner import matched_repair as mr
+    from benchmark_runner import matched_repair as mr
     src = inspect.getsource(mr.build_smoke_freeze)
     assert 'ordered_arms = ["diagnose"] + arms' in src
     assert 'arms = ["repair_ordinary", "repair_guided"]' in src
@@ -154,7 +154,7 @@ def test_schedule_diagnose_first_and_both_repairs():
 def test_attempt_ids_unique_per_arm():
     """Each arm gets a distinct attempt_id so results cannot be confused."""
     import inspect
-    from src.benchmark_runner import matched_repair as mr
+    from benchmark_runner import matched_repair as mr
     src = inspect.getsource(mr.build_smoke_freeze)
     assert 'attempt_id=f"{pair_id}--{arm}"' in src
 
@@ -162,7 +162,7 @@ def test_attempt_ids_unique_per_arm():
 def test_long_tier_formally_unreachable():
     """Reservation must fail closed if max_input_tokens could reach the
     long-context tier; otherwise only verified short-tier prices are used."""
-    from src.benchmark_runner.matched_repair import smoke_config, verify_reservation_bounds
+    from benchmark_runner.matched_repair import smoke_config, verify_reservation_bounds
     cfg = smoke_config()
     assert cfg["max_input_tokens"] < cfg["long_context_threshold"]
     # Mutating the config to reach the long tier must raise.
@@ -178,7 +178,7 @@ def test_long_tier_formally_unreachable():
 
 def test_budget_authorization_exact_text():
     """Freeze authorization must be exactly the authorized sentence."""
-    from src.benchmark_runner.matched_repair import smoke_config
+    from benchmark_runner.matched_repair import smoke_config
     cfg = smoke_config()
     assert cfg["budget_authorization"] == (
         "On 2026-09-20 Tristen authorized a 3-attempt development smoke with "
@@ -188,7 +188,7 @@ def test_budget_authorization_exact_text():
 def test_evidence_flags_fail_closed():
     """Evidence flags default to False; they are set True only from preserved,
     successful verification evidence, never by default."""
-    from src.benchmark_runner.matched_repair import smoke_config
+    from benchmark_runner.matched_repair import smoke_config
     cfg = smoke_config()
     assert cfg["reservation_bound_verified"] is False
     assert cfg["grader_smoke_verified"] is False
