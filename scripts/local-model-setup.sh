@@ -49,7 +49,8 @@ elif command -v llama-server >/dev/null 2>&1; then
   SERVER="$(command -v llama-server)"
 elif [ -f "$REL_ENV" ]; then
   # shellcheck disable=SC1090
-  . "$REL_ENV" # sets SERVER and LD_LIBRARY_PATH from a previous download
+  . "$REL_ENV" # sets LLAMA_SERVER and LD_LIBRARY_PATH from a previous download
+  SERVER="$LLAMA_SERVER"
   echo "Reusing: $SERVER"
 else
   echo "llama-server not found; downloading a CUDA prebuilt release..."
