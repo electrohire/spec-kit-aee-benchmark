@@ -519,8 +519,15 @@ def build_fixture_image(project, variant, push=True):
         if push:
             subprocess.run(["docker", "tag", tag, image_name(project, variant) + ":smoke"],
                            check=True, capture_output=True, timeout=60)
-            subprocess.run(["docker", "push", image_name(project, variant) + ":smoke"],
-                           check=True, capture_output=True, timeout=600)
+            # Surface the daemon's stderr on failure: a bare CalledProcessError
+            # hides the real cause (refused/denied/500) behind exit status 1.
+            pr = subprocess.run(["docker", "push", image_name(project, variant) + ":smoke"],
+                                capture_output=True, text=True, timeout=600)
+            if pr.returncode != 0:
+                detail = (pr.stderr or pr.stdout or "").strip()
+                raise RuntimeError(
+                    f"docker push failed for {image_name(project, variant)}:smoke "
+                    f"(exit {pr.returncode}):\n{detail}")
             digests = json.loads(subprocess.check_output(
                 ["docker", "inspect", image_name(project, variant) + ":smoke"], timeout=60))
             repo_digests = digests[0].get("RepoDigests") or []
