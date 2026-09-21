@@ -812,7 +812,12 @@ def verify_reservation_bounds(cfg):
     because max_input_tokens (32,768) is a hard ceiling well below the
     threshold, so the short-tier prices would suffice — but the bound is
     checked against the same conservative reservation the budget enforces,
-    never a weaker one."""
+    never a weaker one.
+
+    Local backend: there is no marginal dollar cost, so every bound is zero
+    by construction and there is nothing provider-specific to verify."""
+    if cfg.get("provider_backend") == "local":
+        return {"per_call_usd": "0", "diagnostic_attempt_usd": "0", "repair_attempt_usd": "0"}
     if cfg["model"] != "gpt-6-astra":
         raise ValueError("reservation bounds verified only for gpt-6-astra")
     if cfg["max_input_tokens"] > ASTRA_MAX_INPUT_TOKENS:

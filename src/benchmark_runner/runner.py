@@ -14,6 +14,7 @@ from .accounting import Budget, BudgetExceeded, TOKEN_FIELDS
 from .experiment import verify_freeze
 from .isolation import DockerSandbox
 from .provider import OpenAIProvider
+from .local_provider import LocalProvider, check_local_server
 from .store import RunLock, Store, canonical, read_json, utc, write_json
 from .workflow import AEE_PHASES, assess, grounded_claims, phase_prompt, phases
 
@@ -149,6 +150,18 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             "repair_count": repairs, "tool_calls": environment.tool_calls}
 
 
+def make_provider(cfg, store, budget, identity):
+    """Select the inference backend from the frozen manifest config.
+
+    provider_backend "local" routes to the operator's llama.cpp server at zero
+    marginal cost; anything else uses the OpenAI provider. The selection is
+    config-driven and frozen, so a campaign can never mix backends mid-run.
+    """
+    if cfg.get("provider_backend") == "local":
+        return LocalProvider(cfg, store, budget, identity)
+    return OpenAIProvider(cfg, store, budget, identity)
+
+
 def check_credential():
     """Fail-closed credential check: Secure Vault connector or OPENAI_API_KEY.
 
@@ -161,8 +174,13 @@ def check_credential():
 
 def validate_live(manifest, smoke=False):
     cfg = manifest["config"]
-    for key in ("model", "reasoning_effort", "price_snapshot_id", "price_source", "budget_authorization",
-                "global_cap_usd", "attempt_cap_usd", "max_input_tokens", "max_output_tokens", "token_cap"):
+    local = cfg.get("provider_backend") == "local"
+    required = ["model", "price_snapshot_id", "price_source", "budget_authorization",
+                "global_cap_usd", "attempt_cap_usd", "max_input_tokens", "max_output_tokens", "token_cap"]
+    if not local:
+        # reasoning_effort is an OpenAI-only parameter; local manifests omit it.
+        required.insert(1, "reasoning_effort")
+    for key in required:
         if not cfg.get(key):
             raise ValueError(f"live execution requires frozen {key}")
     if not cfg.get("reservation_bound_verified"):
@@ -175,11 +193,16 @@ def validate_live(manifest, smoke=False):
         raise ValueError("successful real adapter/usage smoke required before scored generation")
     if smoke and cfg.get("purpose") != "development_smoke":
         raise ValueError("smoke must use a separately frozen development manifest")
-    from .provider import resolve_auth
-    mode, _ = resolve_auth()
-    if mode == "connector" and "OPENAI_API_KEY" in os.environ:
-        raise ValueError("remove OPENAI_API_KEY from environment; connector credential is active")
-    check_credential()
+    if local:
+        # Local backend: no OpenAI credential, no dollar reservation. The
+        # server must be up and serving the expected model before any attempt.
+        check_local_server()
+    else:
+        from .provider import resolve_auth
+        mode, _ = resolve_auth()
+        if mode == "connector" and "OPENAI_API_KEY" in os.environ:
+            raise ValueError("remove OPENAI_API_KEY from environment; connector credential is active")
+        check_credential()
     if os.name == "nt":
         raise ValueError("live runs require Linux/WSL2 with Docker; offline commands support Windows")
     subprocess.run(["docker", "info"], check=True, capture_output=True, timeout=30)
@@ -228,7 +251,7 @@ def run(root, manifest, output, arm=None, smoke=False):
                     if check["exit_code"] or check["stdout"].strip() != tasks[entry["task_id"]]["base_commit"]:
                         raise RuntimeError("solver image does not contain a clean base checkout")
                     store.append("images", {**identity, **sandbox.details})
-                    provider = OpenAIProvider(cfg, store, budget, identity)
+                    provider = make_provider(cfg, store, budget, identity)
                     try:
                         result = execute_attempt(root, tasks[entry["task_id"]], entry["arm"], provider,
                                                  sandbox, store, identity, cfg, manifest)
