@@ -17,3 +17,6 @@ scheduler's. Record and resolve the conflict using the current requirements.
 
 Implementation source: the minisched package. Write your own tests as useful.
 Public acceptance is acceptance_public.py. You may keep HANDOFF.md and other notes.
+
+# Claim-A candidate extension (variant failed_status_mismatch, 2026-09-21)
+R04 (clarification): when a job becomes 'failed', the status string stored on the job record is exactly "failed" -- the same token run_next reports and R08 keys terminality off. A distinct stored token (e.g. "fail") does not satisfy the requirement even if run_next's returned dict says "failed".

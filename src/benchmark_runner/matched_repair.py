@@ -68,6 +68,45 @@ VARIANTS = {
         "storage_alias": ("        storage = deepcopy(self.db.storage.read() or {})\n",
                           "        storage = self.db.storage.read() or {}\n",
                           ["R05"]),
+        # token_ops_alias: R07 requires that repeating an already successful identical batch/token returns a detached copy of t
+        "token_ops_alias": ('            self.tokens[token] = (deepcopy(operations), deepcopy(inserted))',
+                       '            self.tokens[token] = (operations, deepcopy(inserted))',
+                       ["R07", "R03"]),
+        # empty_batch_token: R01 states 'Empty input returns []': an empty batch is a successful batch, not a malformed one. R07 
+        "empty_batch_token": ("        if token is not None and (not isinstance(token, str) or not token):\n            raise ValueError('invalid token')\n",
+                       "        if token is not None and (not isinstance(token, str) or not token):\n            raise ValueError('invalid token')\n        if token is not None and not operations:\n            raise ValueError('empty operations cannot use a token')\n",
+                       ["R01", "R07"]),
+        # token_conflict_shallow: R07: 'Reusing a token with different operations raises ValueError without changing data.' 'Different
+        "token_conflict_shallow": ("            if previous != operations:\n                raise ValueError('token conflict')\n",
+                       "            if len(previous) != len(operations):\n                raise ValueError('token conflict')\n",
+                       ["R07"]),
+        # preview_cache_alias: R05 defines preview as returning 'the inserted IDs that apply would produce' while leaving data and 
+        "preview_cache_alias": ([('    def __init__(self, db):\n        self.db = db\n        self.tokens = {}\n', '    def __init__(self, db):\n        self.db = db\n        self.tokens = {}\n        self._preview_cache = {}\n'),
+                      ('    def preview(self, operations):\n        return self._simulate(operations)[2]\n', '    def preview(self, operations):\n        key = repr(operations)\n        if key not in self._preview_cache:\n            self._preview_cache[key] = self._simulate(operations)[2]\n        return self._preview_cache[key]\n')],
+                       None,
+                       ["R05", "R03"]),
+        # token_conflict_repr: R07's replay rule keys on an 'identical batch'. For operation dicts, identity is value equality (==)
+        "token_conflict_repr": ("            if previous != operations:\n                raise ValueError('token conflict')\n",
+                       "            if repr(previous) != repr(operations):\n                raise ValueError('token conflict')\n",
+                       ["R07"]),
+        # stale_snapshot: R06: 'direct db.insert operations between calls must be seen by the wrapper. Do not cache a stale in
+        "stale_snapshot": ([('        storage = deepcopy(self.db.storage.read() or {})\n', "        if not hasattr(self, '_snap'):\n            self._snap = self.db.storage.read() or {}\n        storage = deepcopy(self._snap)\n"),
+                      ('        self.db.storage.write(storage)\n', '        self.db.storage.write(storage)\n        self._snap = deepcopy(storage)\n')],
+                       None,
+                       ["R06"]),
+        # compact_id_reuse: R05 names 'the next insertion ID' as stable state that preview and failed applies must not disturb, 
+        "compact_id_reuse": ('        next_id = table._next_id if table._next_id is not None else max(docs, default=0) + 1\n',
+                       '        used = set(docs)\n        next_id = 1\n        while next_id in used:\n            next_id += 1\n',
+                       ["R05", "R03"]),
+        # next_id_rewind: Same requirements as compact_id_reuse: R05's stable 'next insertion ID' plus R03's preservation of T
+        "next_id_rewind": ('        next_id = table._next_id if table._next_id is not None else max(docs, default=0) + 1\n',
+                       '        next_id = max(docs, default=0) + 1\n',
+                       ["R05", "R03"]),
+        # token_validate_late: R07: 'invalid tokens raise ValueError.' R02 makes batch application atomic ('on any error restore th
+        "token_validate_late": ([("    def apply(self, operations, token=None):\n        if token is not None and (not isinstance(token, str) or not token):\n            raise ValueError('invalid token')\n        if token is not None and token in self.tokens:\n", '    def apply(self, operations, token=None):\n        if token is not None and token in self.tokens:\n'),
+                      ("        self.db.table('_default')._next_id = next_id\n        if token is not None:\n", "        self.db.table('_default')._next_id = next_id\n        if token is not None and (not isinstance(token, str) or not token):\n            raise ValueError('invalid token')\n        if token is not None:\n")],
+                       None,
+                       ["R07", "R02"]),
         "clean": (None, None, []),
     },
     "cachetools": {
@@ -99,6 +138,50 @@ VARIANTS = {
                      ("        if not tags:\n            return 0\n", "")],
                     None,
                     ["R07", "R08", "R04"]),
+        # resize_order_trap: R05 (stage2.md) requires resize to preserve 'surviving entries and their LRU order' and states 'Shri
+        "resize_order_trap": ('        keys = list(old._LRUCache__order)',
+                       '        keys = list(old)',
+                       ["R05"]),
+        # invalidate_many_no_expire: R08 (stage3.md) requires 'Expired entries must be removed before get, put, len, resize and invalidat
+        "invalidate_many_no_expire": ("        if mode not in ('any','all'):\n            raise ValueError('invalid mode')\n        self._expire()\n        if not tags:",
+                       "        if mode not in ('any','all'):\n            raise ValueError('invalid mode')\n        if not tags:",
+                       ["R08"]),
+        # put_no_recency_refresh: The reference put() refreshes LRU recency on overwrite via LRUCache.__setitem__ (move_to_end); the d
+        "put_no_recency_refresh": ('        self._cache[key] = (value, tags, expiry)',
+                       '        if key in self._cache:\n            Cache.__setitem__(self._cache, key, (value, tags, expiry))\n        else:\n            self._cache[key] = (value, tags, expiry)',
+                       ["R02"]),
+        # ttl_validation_after_mutation: R07 (stage3.md) requires 'Invalid TTL raises ValueError before any mutation'. Moving the TTL validit
+        "ttl_validation_after_mutation": ("        tags = self._tags(tags)\n        if ttl is not None and (isinstance(ttl, bool) or not isinstance(ttl, (int,float)) or not isfinite(ttl) or ttl < 0):\n            raise ValueError('invalid ttl')\n        value = deepcopy(value)\n        hash(key)\n        self._expire()\n        expiry = None if ttl is None else self._timer() + ttl\n        self._cache[key] = (value, tags, expiry)\n        self._expire()",
+                       "        tags = self._tags(tags)\n        value = deepcopy(value)\n        hash(key)\n        self._expire()\n        expiry = None if ttl is None else self._timer() + ttl\n        self._cache[key] = (value, tags, expiry)\n        if ttl is not None and (isinstance(ttl, bool) or not isinstance(ttl, (int,float)) or not isfinite(ttl) or ttl < 0):\n            raise ValueError('invalid ttl')\n        self._expire()",
+                       ["R07"]),
+        # generator_tags_reconsumed: R06 (stage2.md) requires 'Tags may be passed as generators and must be consumed only once'. The defe
+        "generator_tags_reconsumed": ('        return set(items)',
+                       '        return set(list(tags))',
+                       ["R06"]),
+        # maxsize_bool: R03 (stage1.md) and R05 (stage2.md) both require maxsize to be 'a positive integer, excluding bool'.
+        "maxsize_bool": ('        if type(size) is not int or size <= 0:',
+                       '        if not isinstance(size, int) or size <= 0:',
+                       ["R03", "R05"]),
+        # invalid_mode_silent: R04 (stage2.md) requires 'Reject invalid mode or tags before mutation'. Deleting the mode guard make
+        "invalid_mode_silent": ("        if mode not in ('any','all'):\n            raise ValueError('invalid mode')\n",
+                       "",
+                       ["R04"]),
+        # resize_no_expire: R08 (stage3.md) requires 'Expired entries must be removed before ... resize'. Skipping the purge in 
+        "resize_no_expire": ('        self._validate_size(maxsize)\n        self._expire()\n        old = self._cache',
+                       '        self._validate_size(maxsize)\n        old = self._cache',
+                       ["R08", "R05"]),
+        # put_no_pre_expire: R08 (stage3.md) requires 'Expired entries must be removed before ... put'. Without the pre-assignmen
+        "put_no_pre_expire": ('        value = deepcopy(value)\n        hash(key)\n        self._expire()\n        expiry = None if ttl is None else self._timer() + ttl',
+                       '        value = deepcopy(value)\n        hash(key)\n        expiry = None if ttl is None else self._timer() + ttl',
+                       ["R08", "R02"]),
+        # all_subset_flip: R04 (stage2.md): mode='all' 'removes entries containing every supplied tag', i.e. the entry's tag se
+        "all_subset_flip": ("if (bool(current & tags) if mode == 'any' else tags <= current):",
+                       "if (bool(current & tags) if mode == 'any' else current <= tags):",
+                       ["R04"]),
+        # expiry_recency_touch: R08 (stage3.md) requires expired entries to be removed 'without touching the recency of surviving en
+        "expiry_recency_touch": ('            entry = Cache.__getitem__(self._cache, key)',
+                       '            entry = self._cache[key]',
+                       ["R08", "R02"]),
         "clean": (None, None, []),
     },
     "minisched": {
@@ -123,6 +206,55 @@ VARIANTS = {
                               '"payload": payload')],
                             None,
                             ["R04", "R05", "R07"]),
+        # or_default_trap: R07: 'An explicit max_retries=0 is honored: the first failure marks the job failed immediately.' The
+        "or_default_trap": ('self.max_retries = self.DEFAULT_MAX_RETRIES if max_retries is None else max_retries',
+                       'self.max_retries = max_retries or self.DEFAULT_MAX_RETRIES',
+                       ["R06", "R07"]),
+        # retry_off_by_one: R04: 'if attempts > config.max_retries the job becomes failed, otherwise it stays pending' and 'The 
+        "retry_off_by_one": ([("minisched/scheduler.py", 'if attempts > self.config.max_retries:', 'if attempts >= self.config.max_retries:')],
+                       None,
+                       ["R04"]),
+        # failed_stays_listed: R08: 'Terminal jobs are never re-run: run_next skips failed and done jobs and returns None when no j
+        "failed_stays_listed": ([("minisched/store.py", 'if record["status"] == "pending"', 'if record["status"] in ("pending", "failed")')],
+                       None,
+                       ["R04", "R08"]),
+        # lifo_order: R02: 'jobs run in FIFO order.' Reversing list_pending runs the newest job first: test_R02_fifo_order
+        "lifo_order": ([("minisched/store.py", 'for record in self._jobs.values()', 'for record in reversed(list(self._jobs.values()))')],
+                       None,
+                       ["R02", "R08"]),
+        # default_retries_value: R04: 'The default configuration retries up to 3 times (4 total executions)' and R07: 'The default ma
+        "default_retries_value": ('DEFAULT_MAX_RETRIES = 3',
+                       'DEFAULT_MAX_RETRIES = 4',
+                       ["R04", "R07"]),
+        # get_live_record: R05: 'JobStore.add/get must not alias caller data: ... mutating a record returned by get ... must no
+        "get_live_record": ([("minisched/store.py", 'return deepcopy(record) if record is not None else None', 'return record if record is not None else None')],
+                       None,
+                       ["R05"]),
+        # attempts_not_stored: R04: 'on job-function exception, increment the job's attempts; if attempts > config.max_retries the 
+        "attempts_not_stored": ([("minisched/scheduler.py", 'self.store.update(job_id, attempts=attempts)', 'self.store.update(job_id)')],
+                       None,
+                       ["R04", "R08"]),
+        # hardcoded_retries: R04: 'if attempts > config.max_retries the job becomes failed' -- the threshold is the configured va
+        "hardcoded_retries": ([("minisched/scheduler.py", 'if attempts > self.config.max_retries:', 'if attempts > 3:')],
+                       None,
+                       ["R04", "R07"]),
+        # update_reinserts_reorders: R02: 'jobs run in FIFO order' -- FIFO is by enqueue order and must survive updates; R04's retry path
+        "update_reinserts_reorders": ([("minisched/store.py", '        self._jobs[job_id].update(deepcopy(fields))', '        record = self._jobs.pop(job_id)\n        record.update(deepcopy(fields))\n        self._jobs[job_id] = record')],
+                       None,
+                       ["R02", "R04"]),
+        # failed_status_mismatch: R04: 'if attempts > config.max_retries the job becomes failed' and R08: 'run_next skips failed and d
+        "failed_status_mismatch": ([("minisched/scheduler.py", 'self.store.update(job_id, status="failed", attempts=attempts)', 'self.store.update(job_id, status="fail", attempts=attempts)')],
+                       None,
+                       ["R04", "R08"]),
+        # add_shallow_copy: R05: 'JobStore.add/get must not alias caller data: mutating a payload after add ... must not affect 
+        "add_shallow_copy": ([("minisched/store.py", 'from copy import deepcopy', 'from copy import copy, deepcopy'),
+                      ("minisched/store.py", '"payload": deepcopy(payload)', '"payload": copy(payload)')],
+                       None,
+                       ["R05"]),
+        # enqueue_eager_validation: R01: 'A payload without a callable fn is a job failure, not a caller error: ... never raising to the
+        "enqueue_eager_validation": ([("minisched/scheduler.py", '    def enqueue(self, payload):\n        return self.store.add(payload)', '    def enqueue(self, payload):\n        if not isinstance(payload, dict) or not callable(payload.get("fn")):\n            raise ValueError("payload must be a dict carrying a callable \'fn\'")\n        return self.store.add(payload)')],
+                       None,
+                       ["R01", "R04"]),
         "clean": (None, None, []),
     },
 }
@@ -146,6 +278,16 @@ PROJECTS = {
 # Multi-edit variants may instead carry an explicit path per edit.
 VARIANT_FILES = {
     ("minisched", "store_add_alias"): "minisched/store.py",
+    ("minisched", "retry_off_by_one"): "minisched/scheduler.py",
+    ("minisched", "failed_stays_listed"): "minisched/store.py",
+    ("minisched", "lifo_order"): "minisched/store.py",
+    ("minisched", "get_live_record"): "minisched/store.py",
+    ("minisched", "attempts_not_stored"): "minisched/scheduler.py",
+    ("minisched", "hardcoded_retries"): "minisched/scheduler.py",
+    ("minisched", "update_reinserts_reorders"): "minisched/store.py",
+    ("minisched", "failed_status_mismatch"): "minisched/scheduler.py",
+    ("minisched", "add_shallow_copy"): "minisched/store.py",
+    ("minisched", "enqueue_eager_validation"): "minisched/scheduler.py",
 }
 
 SEEDS = [20260918, 20260919]

@@ -115,3 +115,100 @@ def test_R08_replay_detached(pair):
     r1=w.apply(ops,token='a'); r1.append(1)
     r2=w.apply(ops,token='a'); r2.append(2)
     assert w.apply(ops,token='a')==[1] and len(db)==1
+
+
+# CLAIM-A CANDIDATES (feat/claim-a-candidates): hidden tests for new calibration variants.
+import pytest
+
+# New hidden tests for Claim A tinydb calibration candidates.
+# Concatenated after benchmarks/repeated_local/tinydb/tests.py to form tests_all.py;
+# the `pair` fixture is defined there and resolves within the single module.
+
+
+def test_R07_stored_ops_detached(pair):
+    # R07+R03: the writer must not alias the caller's operations list in the
+    # token store. Mutating the caller's list after a tokenized apply must not
+    # cause a spurious token conflict when replaying the identical batch.
+    db, w = pair
+    ops = [{'op': 'insert', 'document': {'x': 1}}]
+    assert w.apply(ops, token='a') == [1]
+    ops[0]['document']['x'] = 2
+    assert w.apply([{'op': 'insert', 'document': {'x': 1}}], token='a') == [1]
+    assert len(db) == 1
+
+
+def test_R07_empty_batch_token(pair):
+    # R01+R07: an empty batch is a successful batch returning []. With a token
+    # it must be recorded and replayed like any other batch, not rejected.
+    db, w = pair
+    assert w.apply([], token='b') == []
+    assert w.apply([], token='b') == []
+    assert len(db) == 0
+
+
+def test_R07_conflict_same_length(pair):
+    # R07: reusing a token with *different* operations raises ValueError, even
+    # when the two operation lists have the same length.
+    db, w = pair
+    assert w.apply([{'op': 'insert', 'document': {'x': 1}}], token='a') == [1]
+    with pytest.raises(ValueError):
+        w.apply([{'op': 'insert', 'document': {'x': 9}}], token='a')
+    assert len(db) == 1
+
+
+def test_R05_preview_result_detached(pair):
+    # R05+R03: every preview call returns a fresh list. Mutating one preview
+    # result must not corrupt later preview calls or internal state.
+    db, w = pair
+    ops = [{'op': 'insert', 'document': {}}]
+    first = w.preview(ops)
+    first.append(999)
+    assert w.preview(ops) == [1]
+
+
+def test_R07_token_identical_means_equal(pair):
+    # R07: "identical batch" means *equal* operations. Dict key order must not
+    # matter for the token-conflict comparison.
+    db, w = pair
+    assert w.apply([{'op': 'insert', 'document': {}}], token='a') == [1]
+    assert w.apply([{'document': {}, 'op': 'insert'}], token='a') == [1]
+    assert len(db) == 1
+
+
+def test_R06_no_stale_snapshot(pair):
+    # R06: a direct db.insert between calls must be seen. The wrapper must not
+    # reuse a stale snapshot of the data across calls.
+    db, w = pair
+    assert w.apply([{'op': 'insert', 'document': {'x': 1}}]) == [1]
+    db.insert({'x': 2})
+    assert w.apply([{'op': 'remove', 'doc_id': 2}]) == []
+    assert [d['x'] for d in db.all()] == [1]
+
+
+def test_R05_compact_no_reuse(pair):
+    # R05+R03: inserted IDs are never reused. The next insertion ID keeps
+    # advancing even when lower IDs were freed by a remove.
+    db, w = pair
+    assert w.apply([{'op': 'insert', 'document': {'a': 1}},
+                    {'op': 'insert', 'document': {'b': 2}}]) == [1, 2]
+    assert w.apply([{'op': 'remove', 'doc_id': 1}]) == []
+    assert w.apply([{'op': 'insert', 'document': {}}]) == [3]
+
+
+def test_R05_next_id_monotonic(pair):
+    # R05: the wrapper threads TinyDB's next-insertion-ID forward across calls.
+    # Removing the only document must not rewind it.
+    db, w = pair
+    assert w.apply([{'op': 'insert', 'document': {}}]) == [1]
+    assert w.apply([{'op': 'remove', 'doc_id': 1}]) == []
+    assert w.apply([{'op': 'insert', 'document': {}}]) == [2]
+
+
+def test_R07_invalid_token_no_side_effects(pair):
+    # R07+R02: an invalid token raises ValueError, and a failed apply changes
+    # nothing: no documents written, no IDs consumed.
+    db, w = pair
+    with pytest.raises(ValueError):
+        w.apply([{'op': 'insert', 'document': {'x': 1}}], token='')
+    assert len(db) == 0
+    assert db.insert({}) == 1
