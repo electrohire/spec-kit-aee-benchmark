@@ -159,6 +159,25 @@ def test_attempt_ids_unique_per_arm():
     assert 'attempt_id=f"{pair_id}--{arm}"' in src
 
 
+def test_scored_freeze_excludes_smoke_pair():
+    """Freeze v5 must run on a fresh pair, never the smoke pair, and must be
+    a scored (not smoke) manifest with the real-smoke gate grounded."""
+    import inspect
+    from benchmark_runner import matched_repair as mr
+    assert mr.SCORED_PAIR == ("tinydb", "token_alias", 20260918)
+    assert mr.SCORED_PAIR != mr.SMOKE_PAIR
+    cfg = mr.scored_config()
+    assert cfg["purpose"] == "scored_comparison"
+    assert cfg["seed"] == 20260918
+    assert cfg["model"] == "gpt-6-astra"
+    assert cfg["real_smoke_verified"] is True
+    assert "2026-09-21" in cfg["budget_authorization"]
+    src = inspect.getsource(mr.build_scored_freeze)
+    assert 'freeze-v5-scored.json' in src
+    assert 'if (p, v, s) != SCORED_PAIR' in src
+    assert 'ordered_arms = ["diagnose"] + arms' in src
+
+
 def test_long_tier_formally_unreachable():
     """Reservation must fail closed if max_input_tokens could reach the
     long-context tier; otherwise only verified short-tier prices are used."""

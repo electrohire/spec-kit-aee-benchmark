@@ -727,8 +727,27 @@ def verify_reservation_bounds(cfg):
 
 SMOKE_PAIR = ("tinydb", "bool_id", 20260918)
 
+# First scored pair: the smoke pair above is excluded from every scored freeze,
+# so the pilot starts on the next tinydb variant with the same scored seed.
+SCORED_PAIR = ("tinydb", "token_alias", 20260918)
+
 BUDGET_AUTHORIZATION = (
     "On 2026-09-20 Tristen authorized a 3-attempt development smoke with attempt_cap_usd=25 and global_cap_usd=100."
+)
+
+SCORED_BUDGET_AUTHORIZATION = (
+    "On 2026-09-21 Tristen authorized a fresh 3-attempt scored matched-repair comparison "
+    "(freeze v5, pair tinydb/token_alias, seed 20260918, model gpt-6-astra) with attempt_cap_usd=25 "
+    "and global_cap_usd=100. Prior measured spend: $1.4831 (smoke v4, 2026-09-21). The 2026-09-20 "
+    "failed run's unmeasured charge was discounted by Tristen on 2026-09-21 as unverifiable."
+)
+
+REAL_SMOKE_EVIDENCE = (
+    "Freeze v4 development smoke completed 2026-09-21 ~01:03 UTC: 3/3 attempts completed "
+    "(diagnose $0.3728, repair_ordinary $0.4815, repair_guided $0.6287), 32 model calls, "
+    "$1.4831 measured spend. Validated in production: provider telemetry-identity check "
+    "before the HTTP request (fail fast before spending) and budget settlement in a finally "
+    "block. real_smoke_verified=True is grounded on this completed smoke run."
 )
 
 PRICE_SOURCE = (
@@ -774,6 +793,23 @@ def smoke_config():
         "real_smoke_verified": False,
         "solver_image_audit_verified": False,
     }
+
+
+def scored_config():
+    """Frozen config for the first scored matched-repair comparison (freeze v5).
+
+    Same model, caps, and token bounds as the smoke. real_smoke_verified=True is
+    grounded on the completed freeze-v4 smoke (see REAL_SMOKE_EVIDENCE); the scored
+    seed is 20260918 per the standing benchmark plan."""
+    cfg = smoke_config()
+    cfg.update({
+        "purpose": "scored_comparison",
+        "seed": 20260918,
+        "budget_authorization": SCORED_BUDGET_AUTHORIZATION,
+        "real_smoke_verified": True,
+        "real_smoke_evidence": REAL_SMOKE_EVIDENCE,
+    })
+    return cfg
 
 
 def run_grade_smoke(calibration):
@@ -873,6 +909,78 @@ def build_smoke_freeze(output, calibration):
 
 
 # ---------------------------------------------------------------------------
+# Scored freeze builder (freeze v5)
+# ---------------------------------------------------------------------------
+
+def build_scored_freeze(output, calibration):
+    """Build freeze v5: the first scored matched-repair comparison. Same three
+    arms and the same offline gates as the smoke; runs scored (hidden grading
+    after the run), so real_smoke_verified must be True — grounded on the
+    completed freeze-v4 smoke (see REAL_SMOKE_EVIDENCE). The smoke pair
+    (tinydb/bool_id) is excluded by construction. Fails closed otherwise."""
+    project, variant, seed = SCORED_PAIR
+    pair_id = f"mr-{project}-{variant}-{seed}"
+    fixture = next(f for f in calibration["fixtures"]
+                   if (f["project"], f["variant"]) == (project, variant))
+    cfg = scored_config()
+    reservation = verify_reservation_bounds(cfg)
+    audit = audit_solver_image(fixture["image"], project)
+    if not audit["audit_pass"]:
+        raise ValueError("solver image audit failed: " + json.dumps(audit["hidden_markers"]))
+    grade_smoke = run_grade_smoke(calibration)
+    cfg["reservation_bound_verified"] = True
+    cfg["grader_smoke_verified"] = True
+    cfg["solver_image_audit_verified"] = True
+    problem_statement = (
+        f"Matched-repair pair {pair_id}: the /testbed repository may contain a seeded defect "
+        f"in {PROJECTS[project]['module']} (or may be a clean negative control). "
+        "Protocol: (1) a shared read-only diagnostic attempt reviews the implementation and public test "
+        "feedback and returns grounded requirement claims with explicit uncertainty; (2) two repair attempts "
+        "(ordinary and AEE-guided) start from the same pristine snapshot and each get two repair rounds. "
+        "The guided arm additionally receives the actual AEE/Evaluator findings from the shared diagnostic. "
+        "Hidden acceptance tests grade the final package snapshots after all runs; hidden outcomes are never "
+        "fed back to any attempt.")
+    smoke_pair_id = "mr-%s-%s-%s" % SMOKE_PAIR
+    tasks = {"schema_version": 1, "seed": cfg["seed"],
+             "selection": "matched-repair scored comparison: single pair (smoke pair excluded)",
+             "exclusions": sorted(f"mr-{p}-{v}-{s}" for p in VARIANTS for v in VARIANTS[p] for s in SEEDS
+                                  if (p, v, s) != SCORED_PAIR),
+             "tasks": [{"instance_id": pair_id, "repo": "matched-repair-fixture",
+                        "base_commit": fixture["base_commit"], "problem_statement": problem_statement,
+                        "image": fixture["image"], "language": "python"}]}
+    arms = ["repair_ordinary", "repair_guided"]
+    random.Random(seed + len(variant)).shuffle(arms)
+    ordered_arms = ["diagnose"] + arms
+    schedule = [dict(task_id=pair_id, arm=arm, repeat=1, attempt_id=f"{pair_id}--{arm}")
+                for arm in ordered_arms]
+    manifest = {
+        "schema_version": 1,
+        "files": {name: source_hash(ROOT / name) for name in frozen_paths(ROOT)},
+        "config": cfg,
+        "tasks": tasks,
+        "schedule": schedule,
+        "pairing": ("Shared read-only diagnostic and raw claims, identical start/feedback/tools; only the guided "
+                    "repair arm receives actual AEE findings. Repair instructions embed the recorded diagnostic "
+                    "summary (frozen template + stored evidence); hidden outcomes never feed back. The smoke pair "
+                    f"({smoke_pair_id}) is excluded from every scored freeze."),
+        "reservation_verification": reservation,
+        "solver_image_audit": audit,
+        "grade_smoke": grade_smoke,
+        "fixture": {"project": project, "variant": variant, "seed": seed,
+                    "image": fixture["image"], "base_commit": fixture["base_commit"],
+                    "hidden_test_count": fixture["grade"]["test_count"]},
+        "notes": ("Freeze v5: first scored matched-repair comparison. Scored seed 20260918, model gpt-6-astra. "
+                  "Freeze v4 (development smoke) and all prior evidence are untouched; negative and partial "
+                  "outcomes are preserved in the append-only event streams."),
+    }
+    manifest["freeze_id"] = sha(canonical({k: v for k, v in manifest.items() if k != "freeze_id"}))
+    out = Path(output)
+    out.mkdir(parents=True, exist_ok=True)
+    write_json(out / "freeze-v5-scored.json", manifest, exclusive=True)
+    return manifest
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -883,6 +991,7 @@ def main(argv=None):
     p = sub.add_parser("calibrate"); p.add_argument("out", type=Path)
     p = sub.add_parser("audit"); p.add_argument("image"); p.add_argument("project")
     p = sub.add_parser("freeze"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
+    p = sub.add_parser("freeze-scored"); p.add_argument("out", type=Path); p.add_argument("--calibration", type=Path, required=True)
     p = sub.add_parser("grade-smoke"); p.add_argument("--calibration", type=Path, required=True)
     args = parser.parse_args(argv)
     if args.command == "build-images":
@@ -899,6 +1008,10 @@ def main(argv=None):
         print(json.dumps(audit_solver_image(args.image, args.project), indent=2))
     elif args.command == "freeze":
         manifest = build_smoke_freeze(args.out, read_json(args.calibration))
+        print("FREEZE", manifest["freeze_id"])
+        print("reservation:", json.dumps(manifest["reservation_verification"]))
+    elif args.command == "freeze-scored":
+        manifest = build_scored_freeze(args.out, read_json(args.calibration))
         print("FREEZE", manifest["freeze_id"])
         print("reservation:", json.dumps(manifest["reservation_verification"]))
     elif args.command == "grade-smoke":
