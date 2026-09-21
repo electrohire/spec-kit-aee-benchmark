@@ -114,6 +114,6 @@ def test_validate_call_accepts_matched_repair_arms():
         "currency": "USD", "cost": "0.0001", "retry": 0, "error": None,
         "artifacts": {},
     }
-    assert set(MATCHED_ARMS) == {"diagnose", "repair_ordinary", "repair_guided"}
+    assert set(MATCHED_ARMS) == {"diagnose", "repair_ordinary", "repair_guided", "repair_workflow"}
     for arm in MATCHED_ARMS:
         validate_call({**base, "arm": arm})

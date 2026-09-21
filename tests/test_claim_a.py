@@ -277,3 +277,115 @@ def test_analyze_compare_with_workflow_arm(tmp_path):
     assert r.returncode == 0, r.stderr
     assert "NON-INFERIOR" in r.stdout
     assert "dollars per accepted" in r.stdout
+
+
+def _load_analyze():
+    import importlib.util
+    path = Path(__file__).resolve().parents[1] / "scripts" / "analyze_claim_a.py"
+    spec = importlib.util.spec_from_file_location("analyze_claim_a", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _attempt(public_passed=True, changed=True):
+    return {"repair_rounds": [{"public": {"passed": public_passed},
+                               "source_changed": changed}]}
+
+
+def test_adjudication_accepted():
+    a = _load_analyze()
+    assert a.attempt_outcome(_attempt(), {"hidden_passed": True}, ["t1"]) == ("accepted", 0)
+
+
+def test_adjudication_public_regression_is_wrong():
+    a = _load_analyze()
+    cls, w = a.attempt_outcome(_attempt(public_passed=False, changed=True),
+                               {"hidden_passed": False, "failed_cases": ["t1"]}, ["t1"])
+    assert (cls, w) == ("wrong", a.W_WRONG)
+
+
+def test_adjudication_changed_but_only_baseline_failures_is_miss():
+    """The refinement: changed source + hidden failure is NOT automatically
+    wrong. Failing exactly the seeded defect's declared tests with public
+    green is a miss (weight 1), not harm (weight 3)."""
+    a = _load_analyze()
+    cls, w = a.attempt_outcome(_attempt(changed=True),
+                               {"hidden_passed": False, "failed_cases": ["t1", "t2"]},
+                               ["t1", "t2"])
+    assert (cls, w) == ("miss", a.W_MISS)
+
+
+def test_adjudication_new_hidden_failures_is_wrong():
+    a = _load_analyze()
+    cls, w = a.attempt_outcome(_attempt(changed=True),
+                               {"hidden_passed": False, "failed_cases": ["t1", "t9"]},
+                               ["t1"])
+    assert (cls, w) == ("wrong", a.W_WRONG)
+
+
+def test_adjudication_partial_fix_is_miss():
+    a = _load_analyze()
+    cls, w = a.attempt_outcome(_attempt(changed=True),
+                               {"hidden_passed": False, "failed_cases": ["t1"]},
+                               ["t1", "t2"])
+    assert (cls, w) == ("miss", a.W_MISS)
+
+
+def test_adjudication_unchanged_is_miss():
+    a = _load_analyze()
+    cls, w = a.attempt_outcome(_attempt(changed=False),
+                               {"hidden_passed": False, "failed_cases": ["t1"]},
+                               ["t1"])
+    assert (cls, w) == ("miss", a.W_MISS)
+
+
+def test_adjudication_missing_baseline_falls_back_coarse(capsys):
+    a = _load_analyze()
+    cls, w = a.attempt_outcome(_attempt(changed=True),
+                               {"hidden_passed": False, "failed_cases": ["t1"]})
+    assert (cls, w) == ("wrong", a.W_WRONG)
+    assert "coarse" in capsys.readouterr().err
+
+
+def test_local_arm_nonzero_cost_fails_closed(tmp_path):
+    """Cost placement: the local arm must never show measured dollars."""
+    from benchmark_runner.store import Store
+    a = _load_analyze()
+    run = tmp_path / "run"
+    store = Store(run)
+    attempt_id = "mr-tinydb-x-20260921--repair_workflow-1"
+    store.append("attempts", {"attempt_id": attempt_id, "task_id": "mr-tinydb-x-20260921",
+                             "arm": "repair_workflow", "status": "completed",
+                             "repair_rounds": [{"public": {"passed": True},
+                                                "source_changed": False}]})
+    store.append("hidden_grades", {"attempt_id": attempt_id, "graded": True,
+                                   "hidden_passed": True, "failed_cases": []})
+    store.append("calls", {"attempt_id": attempt_id, "cost": "0.01"})
+    (run / "freeze.json").write_text(json.dumps(
+        {"tasks": {"tasks": [{"instance_id": "mr-tinydb-x-20260921",
+                              "hidden_baseline_failed_cases": []}]}}))
+    with pytest.raises(ValueError, match="nonzero measured cost"):
+        a.per_task_losses(run, ["mr-tinydb-x-20260921"], "repair_workflow")
+
+
+def test_freeze_persists_hidden_baseline(monkeypatch, tmp_path):
+    """build_freeze writes the seeded defect's hidden failures per task."""
+    from benchmark_runner import claim_a as ca
+    fixture = {"image": "img@sha256:" + "a" * 64, "base_commit": "abc123",
+               "grade": {"test_count": 4, "failed_cases": ["test_r08_a", "test_r08_b"]}}
+    monkeypatch.setattr(ca, "audit_solver_image", lambda image, project: {"audit_pass": True})
+    monkeypatch.setattr(ca, "run_grade_smoke", lambda cal: {"ok": True})
+    monkeypatch.setattr(ca, "verify_reservation_bounds", lambda cfg: {"ok": True})
+    cal = tmp_path / "cal.json"
+    cal.write_text(json.dumps({"fixtures": [
+        {"project": "tinydb", "variant": "token_alias", **fixture}]}))
+    cfg = claim_a.calibration_config()
+    manifest = claim_a.build_freeze(
+        tmp_path / "out", cal, cfg,
+        claim_a.calibration_schedule([("tinydb", "token_alias", CLAIM_A_SEED)]),
+        [("tinydb", "token_alias", CLAIM_A_SEED)],
+        "freeze-test", "notes", "selection")
+    task = manifest["tasks"]["tasks"][0]
+    assert task["hidden_baseline_failed_cases"] == ["test_r08_a", "test_r08_b"]
+    assert manifest["pairs"][0]["hidden_baseline_failed_cases"] == ["test_r08_a", "test_r08_b"]

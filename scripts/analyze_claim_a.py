@@ -17,11 +17,22 @@ campaign runs and the grade-run hidden grades.
 Expected loss (v9 measurement design, ratified 2026-09-21): per attempt
     L = 3*P(wrong/harmful) + 1*P(miss) + measured run cost,
 where a graded attempt is
+    accepted       if it passes hidden acceptance (loss = run cost only),
     wrong/harmful  if it fails hidden acceptance AND (breaks public tests
-                   green on the reference, i.e. regression, OR changed the
-                   source without fixing the defect),
-    miss           if it fails hidden acceptance without changing the source,
-    accepted       if it passes hidden acceptance (loss = run cost only).
+                   that were green on the reference -- a regression -- OR
+                   introduces NEW hidden failures beyond the seeded defect's
+                   declared baseline),
+    miss           if it fails hidden acceptance with public tests still
+                   green and no new hidden failures (the defect simply remains,
+                   whether or not the source was touched).
+
+Cost placement (ratified 2026-09-21): c_run is measured marginal dollars per
+attempt. The local arm's measured cost is $0 by construction (LocalProvider
+settles every call at $0); hardware/electricity amortization is excluded from
+the primary metric and recorded in run metadata for the article. The scale
+asymmetry is intentional: the quality weights dominate the verdict and cost
+acts as a tiebreaker penalizing the paid arm; the economic claim is carried
+primarily by dollars per accepted task, reported separately.
 """
 
 import argparse
@@ -40,6 +51,9 @@ W_MISS = 1
 NI_MARGIN_REL = 0.10
 BOOTSTRAP_B = 10000
 BOOTSTRAP_SEED = 20260921
+
+# Sentinel distinguishing "no baseline persisted" from "baseline is empty".
+_MISSING = object()
 
 
 def load_grades(run_dir):
@@ -68,22 +82,51 @@ def load_costs(run_dir):
     return costs
 
 
-def attempt_outcome(attempt, grade):
+def load_baselines(run_dir):
+    """task_id -> seeded defect's declared hidden failures (the adjudication
+    baseline). Read from the run's own freeze.json; missing file or field
+    yields an empty map and the analysis falls back to the coarse rule."""
+    freeze = Path(run_dir) / "freeze.json"
+    if not freeze.exists():
+        return {}
+    manifest = json.loads(freeze.read_text())
+    tasks = (manifest.get("tasks") or {}).get("tasks") or []
+    return {t["instance_id"]: t.get("hidden_baseline_failed_cases") for t in tasks}
+
+
+def attempt_outcome(attempt, grade, baseline_failed=_MISSING):
     """(class, loss_extra) for one graded repair attempt.
 
     class in {"accepted", "wrong", "miss"}; loss_extra is the loss weight
     before adding the measured run cost.
+
+    The refined rule reserves weight 3 for actual harm: a public regression,
+    or hidden failures beyond the seeded defect's declared baseline. An
+    attempt that changes code, keeps public tests green, and fails only the
+    already-failing hidden tests is a miss (weight 1), not harm -- the old
+    "changed source + hidden failure = wrong" rule was too coarse.
     """
     rounds = attempt.get("repair_rounds") or []
     public_ok = bool(rounds) and bool((rounds[-1].get("public") or {}).get("passed"))
-    changed = bool(rounds) and bool(rounds[-1].get("source_changed"))
     if grade.get("hidden_passed"):
         return "accepted", 0
     if not public_ok:
         return "wrong", W_WRONG  # regression: broke public tests green on the reference
-    if changed:
-        return "wrong", W_WRONG  # changed code but did not fix the defect
-    return "miss", W_MISS  # did not change the source, defect still present
+    failed = {c for c in (grade.get("failed_cases") or []) if c}
+    if baseline_failed is _MISSING or baseline_failed is None:
+        if not attempt_outcome._warned:
+            print("WARN: hidden_baseline_failed_cases missing; using coarse "
+                  "changed-source rule for adjudication", file=sys.stderr)
+            attempt_outcome._warned = True
+        changed = bool(rounds) and bool(rounds[-1].get("source_changed"))
+        return ("wrong", W_WRONG) if changed else ("miss", W_MISS)
+    new_failures = failed - {c for c in baseline_failed if c}
+    if new_failures:
+        return "wrong", W_WRONG  # made hidden acceptance worse than the seeded defect
+    return "miss", W_MISS  # defect remains; nothing else broke
+
+
+attempt_outcome._warned = False
 
 
 def cmd_band(args):
@@ -133,7 +176,9 @@ def per_task_losses(run_dir, kept, repair_arm):
     grades = load_grades(run_dir)
     attempts = load_attempts(run_dir)
     costs = load_costs(run_dir)
+    baselines = load_baselines(run_dir)
     kept_set = set(kept)
+    expect_zero_cost = (repair_arm == "repair_workflow")
     per_task = defaultdict(list)
     for attempt_id, attempt in attempts.items():
         if attempt.get("task_id") not in kept_set:
@@ -146,8 +191,14 @@ def per_task_losses(run_dir, kept, repair_arm):
         if not g or not g.get("graded"):
             print(f"WARN: {attempt_id} completed but not graded; excluded", file=sys.stderr)
             continue
-        cls, extra = attempt_outcome(attempt, g)
+        baseline = baselines.get(attempt["task_id"], _MISSING)
+        cls, extra = attempt_outcome(attempt, g, baseline)
         cost = costs.get(attempt_id, Decimal("0"))
+        if expect_zero_cost and cost != 0:
+            # Fail-closed on the $0-marginal-cost premise: the local arm must
+            # never show measured dollars, or the cost placement is broken.
+            raise ValueError(f"{attempt_id}: local arm shows nonzero measured cost "
+                             f"${cost}; LocalProvider must settle every call at $0")
         per_task[attempt["task_id"]].append((extra + float(cost), cls, float(cost)))
     summary = {}
     for task_id, rows in per_task.items():

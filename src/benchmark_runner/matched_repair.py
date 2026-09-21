@@ -600,8 +600,29 @@ def run_public_tests(sandbox):
 
 
 def git_clean(sandbox):
-    check = sandbox.execute("git status --porcelain", 30)
-    return check["exit_code"] == 0 and check["stdout"].strip() == ""
+    """True when the fixture worktree has no *source* changes.
+
+    Interpreter and test-runner artifacts are not source changes: the agent
+    may run python/pytest inside the sandbox without PYTHONDONTWRITEBYTECODE=1,
+    writing untracked __pycache__/ dirs, .pyc files, or .pytest_cache/. Counting
+    those as "changed source" silently discards valid diagnostics (the v6
+    tinydb/clean recurrence of the diagnostic_changed_source false positive)
+    and inflates source_changed in adjudication. Real edits -- tracked-file
+    modifications, new source files -- are still detected.
+    """
+    check = sandbox.execute("git status --porcelain -uall", 30)
+    if check["exit_code"] != 0 or not check["stdout"].strip():
+        return check["exit_code"] == 0
+    for line in check["stdout"].splitlines():
+        path = line[3:].strip().strip('"')
+        # Renames/copies report "old -> new"; judge by the new path.
+        path = path.split(" -> ")[-1]
+        lowered = path.lower()
+        if ("__pycache__" in lowered or lowered.endswith((".pyc", ".pyo"))
+                or "/.pytest_cache/" in lowered or lowered.startswith(".pytest_cache/")):
+            continue
+        return False
+    return True
 
 
 def snapshot_package(sandbox, package_dir):

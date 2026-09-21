@@ -48,6 +48,27 @@ def _headers():
     return headers
 
 
+def _extract_text(message):
+    """Action text from a chat-completion message, hardened for reasoning models.
+
+    Qwen3 on llama.cpp may return the answer in ``reasoning_content`` with an
+    empty ``content`` (when the server splits reasoning out), or emit
+    ``<think>...</think>`` blocks inside ``content`` (default server behavior).
+    The agent's action parser is a strict ``json.loads``, so both cases would
+    otherwise burn calls on unparseable output. Returns
+    (text, reasoning_fallback, think_stripped).
+    """
+    import re
+    content = (message.get("content") or "").strip()
+    reasoning = (message.get("reasoning_content") or "").strip()
+    fallback = False
+    if not content and reasoning:
+        content, fallback = reasoning, True
+    stripped, n = re.subn(r"(?is)<think>.*?</think>", "", content)
+    text = stripped.strip()
+    return text, fallback, n > 0
+
+
 def check_local_server():
     """Fail-closed server probe: reachable, and serving the expected model.
 
@@ -112,6 +133,8 @@ class LocalProvider:
                 error = type(e).__name__  # Never log headers or raw error bodies.
                 usage = {**{k: None for k in TOKEN_FIELDS}, "unknown_reason": error}
             charge = Decimal(0)
+            message = (response.get("choices") or [{}])[0].get("message") or {}
+            text, reasoning_fallback, think_stripped = _extract_text(message)
             event = {**self.identity, "call_id": call_id, "request_id": request_id,
                      "phase": phase, "provider": "local", "model": model_name(),
                      "response_model": response.get("model"), "started_at": started, "ended_at": utc(),
@@ -119,6 +142,8 @@ class LocalProvider:
                      "price_snapshot_id": "local-inference", "cost_basis": "local_inference",
                      "currency": "USD", "cost": str(charge),
                      "retry": retry, "error": error,
+                     "reasoning_fallback": reasoning_fallback,
+                     "think_stripped": think_stripped,
                      "artifacts": {"request": request_artifact, "response": response_artifact}}
             validate_call(event)
             self.store.append("calls", event)
@@ -127,4 +152,4 @@ class LocalProvider:
             self.budget.settle(call_id, charge)
         if error:
             raise ProviderError(error)
-        return response["choices"][0]["message"].get("content") or ""
+        return text

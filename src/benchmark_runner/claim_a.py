@@ -165,9 +165,13 @@ def main_config_local(kept, real_smoke_evidence=None):
     rounds, versus 16 repair actions for the frontier ordinary arm. The
     attempt-level max_calls is therefore 64 for the local manifest. This is a
     treatment-inherent difference, not a thumb on the scale: local calls have
-    zero marginal dollars, and the analysis counts measured calls per attempt
-    in c_run, so the extra calls penalize the local arm on the primary
-    expected-loss metric while buying whatever quality the workflow delivers.
+    zero marginal dollars, so they do not inflate the local arm's expected
+    loss -- the loss counts measured dollars, and the local arm's measured
+    cost is $0 by construction (LocalProvider settles every call at $0).
+    Per-attempt call counts are recorded in telemetry for transparency, and
+    the workflow must earn non-inferior quality on that free footing; the
+    economic claim is carried by dollars per accepted task, reported
+    separately.
     """
     cfg = calibration_config()
     model = os.environ.get("LOCAL_MODEL_NAME")
@@ -286,11 +290,17 @@ def build_freeze(output, calibration_path, cfg, schedule, pairs, freeze_name,
     for project, variant, seed in pairs:
         pair_id = _pair_id(project, variant, seed)
         fixture = fixtures[(project, variant)]
+        # The seeded defect's hidden failures are the adjudication baseline:
+        # an attempt that fails hidden tests without introducing NEW failures
+        # beyond this set is a miss, not harm. Persisted per task so the
+        # offline analysis never has to guess it.
+        baseline_failed = fixture["grade"].get("failed_cases")
         tasks.append({"instance_id": pair_id, "repo": "matched-repair-fixture",
                       "base_commit": fixture["base_commit"],
                       "problem_statement": problem_statement(pair_id, project),
                       "image": fixture["image"], "language": "python",
-                      "hidden_test_count": fixture["grade"]["test_count"]})
+                      "hidden_test_count": fixture["grade"]["test_count"],
+                      "hidden_baseline_failed_cases": baseline_failed})
     pair_set = set((p, v, s) for p, v, s in pairs)
     manifest = {
         "schema_version": 1,
@@ -318,7 +328,9 @@ def build_freeze(output, calibration_path, cfg, schedule, pairs, freeze_name,
         "pairs": [{"project": p, "variant": v, "seed": s,
                    "image": fixtures[(p, v)]["image"],
                    "base_commit": fixtures[(p, v)]["base_commit"],
-                   "hidden_test_count": fixtures[(p, v)]["grade"]["test_count"]}
+                   "hidden_test_count": fixtures[(p, v)]["grade"]["test_count"],
+                   "hidden_baseline_failed_cases":
+                       fixtures[(p, v)]["grade"].get("failed_cases")}
                   for p, v, s in pairs],
         "notes": notes,
     }
