@@ -304,7 +304,11 @@ def run_matched_phase(agent, model, store, identity, cfg, phase, instructions, s
 # Sandbox helpers: public tests, package snapshots, git state
 # ---------------------------------------------------------------------------
 
-PYTEST_CMD = ("PYTHONPATH=src:. PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest -c /dev/null "
+# PYTHONDONTWRITEBYTECODE=1 keeps run_public_tests from dirtying the clean fixture
+# worktree: without it, pytest writes untracked __pycache__/ dirs under /testbed and
+# git_clean() (git status --porcelain) reports the tree dirty before the agent acts,
+# which silently discards all diagnostic claims. Real agent edits are still detected.
+PYTEST_CMD = ("PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest -c /dev/null "
               "-q /testbed/acceptance_public.py --junitxml=/tmp/grade.xml")
 
 

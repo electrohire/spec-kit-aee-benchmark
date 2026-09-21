@@ -1,13 +1,17 @@
 """Regression tests for the matched-repair cloud port (offline only)."""
 import json
+import subprocess
 
 import pytest
 
 from benchmark_runner.matched_repair import (
     MATCHED_ARMS,
+    PYTEST_CMD,
     VARIANTS,
     _terminal_done,
+    git_clean,
     pair_of,
+    run_public_tests,
     smoke_config,
     tests_for as mr_tests_for,
     variant_source,
@@ -190,3 +194,63 @@ def test_evidence_flags_fail_closed():
     assert cfg["grader_smoke_verified"] is False
     assert cfg["solver_image_audit_verified"] is False
     assert cfg["real_smoke_verified"] is False
+
+
+class _LocalSandbox:
+    """Runs sandbox.execute commands as local subprocesses in a given cwd,
+    emulating the shell env-prefix form used by PYTEST_CMD."""
+
+    def __init__(self, cwd):
+        self.cwd = str(cwd)
+
+    def execute(self, cmd, timeout=30):
+        out = subprocess.run(cmd, shell=True, cwd=self.cwd,
+                             capture_output=True, text=True, timeout=timeout)
+        return {"exit_code": out.returncode, "stdout": out.stdout, "stderr": out.stderr}
+
+
+def _clean_git_repo(path):
+    path.mkdir()
+    (path / "acceptance_public.py").write_text("def test_ok():\n    assert True\n")
+    for args in (["git", "init"], ["git", "config", "user.email", "t@t"],
+                 ["git", "config", "user.name", "t"], ["git", "add", "-A"],
+                 ["git", "commit", "-m", "init"]):
+        subprocess.run(args, cwd=path, check=True, capture_output=True)
+    return _LocalSandbox(path)
+
+
+def test_pytest_cmd_disables_bytecode_writes():
+    """Regression guard: without PYTHONDONTWRITEBYTECODE=1, run_public_tests
+    writes untracked __pycache__/ dirs and git_clean() false-positives."""
+    assert "PYTHONDONTWRITEBYTECODE=1" in PYTEST_CMD
+
+
+def test_public_tests_keep_clean_worktree_clean(tmp_path, monkeypatch):
+    """run_public_tests against a clean fixture repo must leave it clean so
+    diagnostic claims survive instead of being discarded."""
+    sandbox = _clean_git_repo(tmp_path / "testbed")
+    import sys
+    local_cmd = (PYTEST_CMD.replace("/testbed/acceptance_public.py", "acceptance_public.py")
+                 .replace("/tmp/grade.xml", str(tmp_path / "grade.xml"))
+                 .replace("python -m pytest", sys.executable + " -m pytest"))
+    monkeypatch.setattr("benchmark_runner.matched_repair.PYTEST_CMD", local_cmd)
+    # also point the grade.xml read at the local file
+    orig_execute = sandbox.execute
+
+    def execute(cmd, timeout=30):
+        return orig_execute(cmd.replace("/tmp/grade.xml", str(tmp_path / "grade.xml")), timeout)
+    sandbox.execute = execute
+
+    assert git_clean(sandbox), "fixture repo should start clean"
+    public = run_public_tests(sandbox)
+    assert public["passed"] is True, public["output"][-500:]
+    assert git_clean(sandbox), "public tests must not dirty a clean fixture worktree"
+
+
+def test_git_clean_still_detects_real_source_edits(tmp_path):
+    """The bytecode fix must not blind the worktree guard to genuine edits."""
+    sandbox = _clean_git_repo(tmp_path / "testbed")
+    assert git_clean(sandbox)
+    (tmp_path / "testbed" / "acceptance_public.py").write_text(
+        "def test_ok():\n    assert False\n")
+    assert not git_clean(sandbox), "modified source files must still be detected"
