@@ -298,9 +298,9 @@ def test_scored_v7_schedule_is_deterministic_and_complete():
 
 
 def test_scored_v7_config_unauthorized_build_only():
-    """v7 config keeps the scored caps and grounds real_smoke_verified on the
-    completed v4/v5/v6 runs, but no v7 campaign is authorized: the freeze
-    build is offline-only."""
+    """v7 config keeps the scored caps, grounds real_smoke_verified on the
+    completed v4/v5/v6 runs, and records Tristen's 2026-09-21 campaign
+    authorization."""
     import inspect
     from benchmark_runner import matched_repair as mr
     cfg = mr.scored_config_v7()
@@ -309,7 +309,8 @@ def test_scored_v7_config_unauthorized_build_only():
     assert cfg["model"] == "gpt-6-astra"
     assert cfg["global_cap_usd"] == 100 and cfg["attempt_cap_usd"] == 25
     assert cfg["real_smoke_verified"] is True
-    assert "No v7 campaign authorized yet" in cfg["budget_authorization"]
+    assert "2026-09-21" in cfg["budget_authorization"]
+    assert "authorized" in cfg["budget_authorization"]
     assert "v4" in cfg["real_smoke_evidence"] and "v6" in cfg["real_smoke_evidence"]
     src = inspect.getsource(mr.build_scored_freeze_v7)
     assert 'freeze-v7-scored.json' in src

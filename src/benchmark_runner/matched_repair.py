@@ -1289,12 +1289,11 @@ SCORED_PAIRS_V7 = (
 )
 
 SCORED_V7_BUDGET_AUTHORIZATION = (
-    "No v7 campaign authorized yet. Freeze v7 is an offline build artifact only: "
-    "no model calls and no spend happen at build time. A future scored campaign on "
-    "these pairs still requires Tristen's explicit authorization (attempt_cap_usd, "
-    "global_cap_usd) at the host RUN gate, as with prior freezes. Prior measured "
-    "spend: $11.8730 against the $100 global cap ($88.1270 remaining). Expected v7 "
-    "campaign spend ~$14-19 at $0.60-0.80/attempt over 24 attempts."
+    "On 2026-09-21 Tristen authorized the freeze-v7 hard-pair scored campaign: "
+    "24 attempts (8 pairs x diagnose/ordinary/guided) on gpt-6-astra with "
+    "attempt_cap_usd=25 and global_cap_usd=100. Expected spend ~$14-19. "
+    "Prior measured spend: $11.8730 against the $100 global cap ($88.1270 remaining). "
+    "Spend settles to measured usage; unknown usage is never released."
 )
 
 REAL_SMOKE_EVIDENCE_V7 = (
@@ -1312,9 +1311,9 @@ def scored_config_v7():
 
     Same model, caps, and token bounds as v6. real_smoke_verified=True is
     grounded on the completed v4/v5/v6 runs (see REAL_SMOKE_EVIDENCE_V7).
-    Building the freeze is offline and spends nothing; the campaign itself
-    still needs Tristen's explicit RUN authorization (see
-    SCORED_V7_BUDGET_AUTHORIZATION)."""
+    Tristen authorized this campaign on 2026-09-21 (see
+    SCORED_V7_BUDGET_AUTHORIZATION); the host RUN gate still takes his typed
+    RUN as the fresh confirmation before any paid call."""
     cfg = smoke_config()
     cfg.update({
         "purpose": "scored_comparison",
