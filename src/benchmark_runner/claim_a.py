@@ -47,7 +47,12 @@ from .matched_repair import (
     run_grade_smoke,
     smoke_config,
     verify_reservation_bounds,
+    OPENROUTER_LONG_CONTEXT_PRICES,
+    OPENROUTER_PRICE_SNAPSHOT_ID,
+    OPENROUTER_PRICE_SOURCE,
+    OPENROUTER_PRICES,
 )
+from .provider import provider_name_from_env
 from .store import canonical, read_json, sha, write_json
 
 CLAIM_A_SEED = 20260921
@@ -140,8 +145,28 @@ def _budget_authorization(phase):
 
 
 def calibration_config():
-    """Frozen config for Phase A: frontier ordinary-repair calibration."""
+    """Frozen config for Phase A: frontier ordinary-repair calibration.
+
+    The frontier provider is selected by the BENCH_PROVIDER environment
+    variable at freeze time ("openai" default, "openrouter" for the
+    OpenRouter-served arm) and recorded in the frozen manifest, so the
+    choice is tamper-evident and can never change mid-campaign.
+    """
     cfg = smoke_config()
+    provider_name = provider_name_from_env()
+    if provider_name == "openrouter":
+        # Identical model, identical list prices (verified 2026-09-22); only
+        # the endpoint, the API model string, and the price snapshot identity
+        # change. The reservation gate accepts the OpenRouter model string
+        # explicitly (matched_repair.ASTRA_MODEL_IDS).
+        cfg.update({
+            "model": "openai/gpt-6-astra",
+            "provider": {"name": "openrouter"},
+            "price_snapshot_id": OPENROUTER_PRICE_SNAPSHOT_ID,
+            "price_source": OPENROUTER_PRICE_SOURCE,
+            "prices": dict(OPENROUTER_PRICES),
+            "long_context_prices": dict(OPENROUTER_LONG_CONTEXT_PRICES),
+        })
     cfg.update({
         "purpose": "claim_a_calibration",
         "seed": CLAIM_A_SEED,
@@ -404,7 +429,8 @@ def cmd_freeze_main(args):
         freeze_name = "freeze-claim-a-frontier"
         notes = (f"Freeze claim-a-frontier: Phase B frontier arm for Claim A (v9 design §1). "
                  f"{len(kept)} kept tasks x (1 diagnostic + {REPAIR_REPEATS} ordinary repairs) on "
-                 f"gpt-6-astra via the OpenAI backend. Matched against freeze-claim-a-local over "
+                 f"{cfg['model']} via the {(cfg.get('provider') or {}).get('name', 'openai')} backend. "
+                 f"Matched against freeze-claim-a-local over "
                  f"the same task bank and seed {CLAIM_A_SEED}.")
     elif args.backend == "local":
         cfg = main_config_local(kept, real_smoke_evidence=args.pilot_evidence)

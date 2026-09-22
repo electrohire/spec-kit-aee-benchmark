@@ -1,16 +1,20 @@
 """Explicit retries with exponential backoff; explicit usage, no opaque SDK retries.
 
 Authentication: the Secure Vault connector (custom.openai) via the authd
-surrogate exchange when available (managed VM); otherwise OPENAI_API_KEY
-from the environment (operator host). No raw credential is ever printed,
+surrogate exchange when available (managed VM, OpenAI only); otherwise the
+provider's key env var (OPENAI_API_KEY / OPENROUTER_API_KEY) from the
+environment (operator host). The provider -- base URL, allowed hosts, key env
+var, telemetry name -- is driven by cfg["provider"]; OpenAI is the default
+when cfg carries no provider section. No raw credential is ever printed,
 logged, or persisted to artifacts.
 
 Rate limiting: HTTP 429 and transient 5xx are retried with exponential
 backoff and jitter; 429 additionally honors Retry-After (numeric seconds or
 HTTP-date) and the verified OpenAI x-ratelimit-reset-requests /
-x-ratelimit-reset-tokens headers (Go durations, e.g. "6m0s"). Ambiguous
-transport failures (URLError) and timeouts are NOT retried: without verified
-idempotency a retried request may double-execute, so they fail closed.
+x-ratelimit-reset-tokens headers (Go durations, e.g. "6m0s"; OpenAI only --
+absent on other providers, harmless). Ambiguous transport failures (URLError)
+and timeouts are NOT retried: without verified idempotency a retried request
+may double-execute, so they fail closed.
 
 Per-physical-request accounting: every physical HTTP request gets its own
 call_id, its own terminal "calls" telemetry event, and its own budget
@@ -56,16 +60,100 @@ from .store import canonical, utc
 from .schema import validate_call, validate_identity
 
 
-CREDENTIAL = "custom.openai"
-ALLOWED_HOSTS = ["api.openai.com"]
-MODELS_URL = "https://api.openai.com/v1/models"
-CHAT_URL = "https://api.openai.com/v1/chat/completions"
+# ---------------------------------------------------------------------------
+# Provider registry: OpenAI-compatible chat-completions endpoints.
+# ---------------------------------------------------------------------------
+# The paid frontier arm is provider-agnostic over OpenAI-compatible HTTP
+# APIs. The campaign manifest pins its provider in cfg["provider"]; the name
+# drives the base URL, allowed hosts, credential env var, and telemetry.
+# OpenAI is the default when cfg carries no provider section, preserving
+# every historical freeze byte-for-byte.
+PROVIDER_DEFAULTS = {
+    "openai": {
+        "name": "openai",
+        "base_url": "https://api.openai.com/v1",
+        "allowed_hosts": ["api.openai.com"],
+        "key_env": "OPENAI_API_KEY",
+        # Secure Vault connector credential; OpenAI only. Other providers
+        # authenticate exclusively via their key_env.
+        "connector_credential": "custom.openai",
+        "referer": None,
+        "title": None,
+    },
+    "openrouter": {
+        "name": "openrouter",
+        "base_url": "https://openrouter.ai/api/v1",
+        "allowed_hosts": ["openrouter.ai"],
+        "key_env": "OPENROUTER_API_KEY",
+        "connector_credential": None,
+        # OpenRouter asks callers to identify the app on every request.
+        "referer": "https://github.com/electrohire/spec-kit-aee-benchmark",
+        "title": "spec-kit-aee-benchmark",
+    },
+}
 
-_AUTH = None  # ("connector", None) or ("env", key); resolved once per process.
+
+def provider_spec(cfg):
+    """Merged provider spec for this campaign.
+
+    cfg["provider"] selects the provider by name and may override individual
+    fields of that provider's defaults. Unknown provider names, unknown keys,
+    and malformed values fail closed: a campaign can never run against a
+    silently misconfigured endpoint.
+    """
+    raw = cfg.get("provider") or {}
+    if not isinstance(raw, dict):
+        raise ValueError("provider config must be a mapping")
+    name = raw.get("name", "openai")
+    defaults = PROVIDER_DEFAULTS.get(name)
+    if defaults is None:
+        raise ValueError("unknown provider %r: expected one of %s"
+                         % (name, sorted(PROVIDER_DEFAULTS)))
+    unknown = set(raw) - set(defaults)
+    if unknown:
+        raise ValueError("unknown provider config keys: %s" % sorted(unknown))
+    spec = dict(defaults)
+    spec.update(raw)
+    if not isinstance(spec["base_url"], str) or not spec["base_url"].startswith("https://"):
+        raise ValueError("provider base_url must be an https URL")
+    hosts = spec["allowed_hosts"]
+    if not isinstance(hosts, list) or not hosts \
+            or not all(isinstance(h, str) and h for h in hosts):
+        raise ValueError("provider allowed_hosts must be a non-empty list of hostnames")
+    if not isinstance(spec["key_env"], str) or not spec["key_env"]:
+        raise ValueError("provider key_env must be a non-empty environment variable name")
+    for field in ("referer", "title"):
+        if spec[field] is not None and not isinstance(spec[field], str):
+            raise ValueError("provider %s must be a string or null" % field)
+    return spec
 
 
-def _models_probe(mutate):
-    """One paced GET /v1/models through the coordinated retry policy.
+def provider_name_from_env():
+    """Provider selected by the operator environment (BENCH_PROVIDER).
+
+    Used where no frozen manifest exists yet (preflight). Live runs always
+    read the provider from the frozen manifest instead, so the environment
+    can never switch endpoints mid-campaign.
+    """
+    name = os.environ.get("BENCH_PROVIDER", "openai")
+    if name not in PROVIDER_DEFAULTS:
+        raise ValueError("unknown BENCH_PROVIDER %r: expected one of %s"
+                         % (name, sorted(PROVIDER_DEFAULTS)))
+    return name
+
+
+_AUTH = {}  # provider name -> ("connector", None) | ("env", key); resolved once per process.
+
+_PROVIDER_DISPLAY = {"openai": "OpenAI", "openrouter": "OpenRouter"}
+
+
+def reset_auth_cache():
+    """Test seam: clear the per-provider auth cache."""
+    _AUTH.clear()
+
+
+def _models_probe(spec, mutate):
+    """One paced GET {base_url}/models through the coordinated retry policy.
 
     This is a free auth probe: no store or budget exists yet, so it gets no
     per-request call_id or budget reservation. It still gets process-wide
@@ -74,7 +162,7 @@ def _models_probe(mutate):
     prevent. Ambiguous transport failures fail closed with no retry.
     """
     policy = transport_policy({})
-    req = urllib.request.Request(MODELS_URL, method="GET")
+    req = urllib.request.Request(spec["base_url"] + "/models", method="GET")
     mutate(req)
     waited, attempt = 0.0, 0
     while True:
@@ -92,40 +180,44 @@ def _models_probe(mutate):
             raise  # Fail closed: no retry on ambiguous transport failures.
 
 
-def _models_ok(mutate):
-    data = _models_probe(mutate)
+def _models_ok(spec, mutate):
+    data = _models_probe(spec, mutate)
     return isinstance(data.get("data"), list)
 
 
-def resolve_auth():
+def resolve_auth(spec=None):
     """Fail-closed credential resolution, verified by a free /models probe.
 
-    Prefers the Secure Vault connector; falls back to OPENAI_API_KEY when the
-    connector is unavailable (operator host). Raises ValueError when neither
-    authenticates. The raw key is held in memory only and never logged.
+    Prefers the Secure Vault connector when the provider defines one (OpenAI
+    only); otherwise uses the provider's key_env. Raises ValueError when
+    neither authenticates. The raw key is held in memory only and never logged.
     """
-    global _AUTH
-    if _AUTH is not None:
-        return _AUTH
-    if dc is not None:
+    spec = spec or provider_spec({})
+    name = spec["name"]
+    if name in _AUTH:
+        return _AUTH[name]
+    credential = spec["connector_credential"]
+    if dc is not None and credential:
         try:
-            dc.ensure_allowed_url(MODELS_URL, ALLOWED_HOSTS)
-            if _models_ok(lambda req: dc.add_surrogate_to_request(
-                    req, CREDENTIAL, allowed_hosts=ALLOWED_HOSTS)):
-                _AUTH = ("connector", None)
-                return _AUTH
+            models_url = spec["base_url"] + "/models"
+            dc.ensure_allowed_url(models_url, spec["allowed_hosts"])
+            if _models_ok(spec, lambda req: dc.add_surrogate_to_request(
+                    req, credential, allowed_hosts=spec["allowed_hosts"])):
+                _AUTH[name] = ("connector", None)
+                return _AUTH[name]
         except Exception:
             pass
-    key = os.environ.get("OPENAI_API_KEY")
+    key = os.environ.get(spec["key_env"])
     if key:
         try:
-            if _models_ok(lambda req: req.add_header("Authorization", "Bearer " + key)):
-                _AUTH = ("env", key)
-                return _AUTH
+            if _models_ok(spec, lambda req: req.add_header("Authorization", "Bearer " + key)):
+                _AUTH[name] = ("env", key)
+                return _AUTH[name]
         except Exception:
             pass
-    raise ValueError("no usable OpenAI credential: Secure Vault connector unavailable "
-                     "and OPENAI_API_KEY unset or rejected by the API")
+    raise ValueError("no usable %s credential: Secure Vault connector unavailable "
+                     "and %s unset or rejected by the API"
+                     % (_PROVIDER_DISPLAY.get(name, name), spec["key_env"]))
 
 
 class ProviderError(RuntimeError):
@@ -324,8 +416,17 @@ def _next_wait(exc, attempt_index, server_wait, waited, policy):
 
 
 class OpenAIProvider:
+    """OpenAI-compatible chat-completions provider.
+
+    The endpoint, auth, and telemetry provider name come from cfg["provider"]
+    (see provider_spec); OpenAI is the default when cfg carries no provider
+    section. One class serves every OpenAI-compatible backend so
+    retry/pacing/accounting behavior is identical across providers.
+    """
+
     def __init__(self, config, store, budget, identity):
         self.config, self.store, self.budget, self.identity = config, store, budget, identity
+        self.spec = provider_spec(config)
         self.policy = transport_policy(config)
 
     def _one_request(self, payload, timeout):
@@ -335,16 +436,22 @@ class OpenAIProvider:
         request_id) on failure. Harness-side parsing failures surface as exc
         and fail fast in the caller; KeyboardInterrupt is never swallowed.
         """
-        mode, key = resolve_auth()
+        spec = self.spec
+        mode, key = resolve_auth(spec)
+        chat_url = spec["base_url"] + "/chat/completions"
+        headers = {"Content-Type": "application/json"}
         if mode == "connector":
-            dc.ensure_allowed_url(CHAT_URL, ALLOWED_HOSTS)
-            req = urllib.request.Request(CHAT_URL, canonical(payload),
-                    {"Content-Type": "application/json"})
-            dc.add_surrogate_to_request(req, CREDENTIAL, allowed_hosts=ALLOWED_HOSTS)
+            dc.ensure_allowed_url(chat_url, spec["allowed_hosts"])
+            req = urllib.request.Request(chat_url, canonical(payload), headers)
+            dc.add_surrogate_to_request(req, spec["connector_credential"],
+                                        allowed_hosts=spec["allowed_hosts"])
         else:
-            req = urllib.request.Request(CHAT_URL, canonical(payload),
-                    {"Content-Type": "application/json",
-                     "Authorization": "Bearer " + key})
+            headers["Authorization"] = "Bearer " + key
+            if spec["referer"]:
+                headers["HTTP-Referer"] = spec["referer"]
+            if spec["title"]:
+                headers["X-Title"] = spec["title"]
+            req = urllib.request.Request(chat_url, canonical(payload), headers)
         paced_wait(self.policy)
         try:
             with urllib.request.urlopen(req, timeout=timeout) as handle:
@@ -404,7 +511,7 @@ class OpenAIProvider:
                     usage = {**{k: None for k in TOKEN_FIELDS}, "unknown_reason": error}
                 charge = cost(usage, request_prices(cfg, usage))
                 event = {**self.identity, "call_id": call_id, "request_id": request_id,
-                         "phase": phase, "provider": "openai", "model": cfg["model"],
+                         "phase": phase, "provider": self.spec["name"], "model": cfg["model"],
                          "response_model": (response or {}).get("model"),
                          "started_at": started, "ended_at": utc(),
                          "duration_seconds": time.monotonic()-tick, **usage,

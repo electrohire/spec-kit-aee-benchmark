@@ -23,7 +23,7 @@ def _mock_transport(monkeypatch, response):
     monkeypatch.setattr("benchmark_runner.provider.dc", FakeDC())
     # Auth resolution is a separate unit; pin it so the transport test
     # exercises query() without a live /models probe.
-    monkeypatch.setattr("benchmark_runner.provider.resolve_auth", lambda: ("connector", None))
+    monkeypatch.setattr("benchmark_runner.provider.resolve_auth", lambda *a: ("connector", None))
     class Handle:
         headers = {"x-request-id": "synthetic-request"}
         def __enter__(self): return self
@@ -84,7 +84,7 @@ def _mock_flaky(monkeypatch, behaviors):
         @staticmethod
         def read_json_response(handle): return json.loads(handle.read())
     monkeypatch.setattr("benchmark_runner.provider.dc", FakeDC())
-    monkeypatch.setattr("benchmark_runner.provider.resolve_auth", lambda: ("connector", None))
+    monkeypatch.setattr("benchmark_runner.provider.resolve_auth", lambda *a: ("connector", None))
     class Handle:
         headers = {"x-request-id": "synthetic-request"}
         def __enter__(self): return self
@@ -270,7 +270,7 @@ def test_models_probe_applies_pacing_and_retry(tmp_path, monkeypatch):
     # /v1/models goes through the same paced, retried path: a first 429 then a
     # success must resolve auth instead of failing closed.
     import benchmark_runner.provider as provider_mod
-    provider_mod._AUTH = None
+    provider_mod.reset_auth_cache()
     provider_mod.reset_pacer()
     monkeypatch.setattr(provider_mod, "dc", None)
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test-not-a-real-key")
@@ -291,7 +291,7 @@ def test_models_probe_applies_pacing_and_retry(tmp_path, monkeypatch):
     monkeypatch.setattr("urllib.request.urlopen", flaky)
     assert provider_mod.resolve_auth() == ("env", "sk-test-not-a-real-key")
     assert state["n"] == 2  # Retried through the 429.
-    provider_mod._AUTH = None
+    provider_mod.reset_auth_cache()
     provider_mod.reset_pacer()
 
 

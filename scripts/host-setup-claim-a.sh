@@ -13,7 +13,13 @@
 #     task bank and seed 20260921 --
 #       local arm:   Qwen-class 8B via the local llama.cpp backend, full
 #                    Spec-Kit/AEE guided workflow (FREE, zero marginal dollars)
-#       frontier arm: gpt-6-astra ordinary repair via the OpenAI backend (PAID)
+#       frontier arm: GPT-6 Astra ordinary repair via the configured provider (PAID)
+#
+# The frontier provider is selected by BENCH_PROVIDER ("openai" default,
+# "openrouter" to run the paid phases against OpenRouter). Both serve the
+# identical GPT-6 Astra model ("gpt-6-astra" vs "openai/gpt-6-astra") at
+# identical list prices ($10/$1/$50 per 1M tokens), so the spend caps and
+# projections are unchanged; the provider choice is frozen into each manifest.
 #
 # Expected paid spend: calibration 129 attempts (43 candidates x 3) + frontier
 # main ~3/kept-task, projected at the v8.1 measured rate (~$0.27/attempt); both phases settle to
@@ -23,8 +29,9 @@
 # Prerequisites on this host:
 #   - the local model server running (scripts/local-model-setup.sh), with
 #     LOCAL_MODEL_BASE_URL and LOCAL_MODEL_NAME exported in this session
-#   - OPENAI_API_KEY exported (session only, never written to disk) for the
-#     two paid phases
+#   - the frontier provider's API key exported (session only, never written to
+#     disk) for the two paid phases: OPENAI_API_KEY (default), or
+#     OPENROUTER_API_KEY when BENCH_PROVIDER=openrouter
 #
 # Log watch: run the whole script under tee and tail the log from another
 # shell:
@@ -46,6 +53,19 @@ CACHETOOLS_URL="https://github.com/tkem/cachetools.git"
 CACHETOOLS_REV="c403f9f4185e58090b904c1915345b9ba46d5a08"
 # v8.1 measured $3.1833 over 12 attempts; used only for the pre-gate estimate.
 MEASURED_PER_ATTEMPT_USD="0.2653"
+
+# Frontier provider for the paid phases: "openai" (default) or "openrouter".
+# Exported so the freeze commands and the preflight probe see the same
+# selection; the choice is frozen into each manifest and can never change
+# mid-campaign.
+BENCH_PROVIDER="${BENCH_PROVIDER:-openai}"
+case "$BENCH_PROVIDER" in
+  openai) FRONTIER_KEY_ENV="OPENAI_API_KEY" ;;
+  openrouter) FRONTIER_KEY_ENV="OPENROUTER_API_KEY" ;;
+  *) die "unknown BENCH_PROVIDER='$BENCH_PROVIDER' (expected openai or openrouter)" ;;
+esac
+export BENCH_PROVIDER
+echo "frontier provider: $BENCH_PROVIDER (credential: $FRONTIER_KEY_ENV)"
 
 step() { echo; echo "=== $1 ==="; }
 die() { echo "ERROR: $1" >&2; exit 1; }
@@ -117,14 +137,14 @@ print('local server OK, serving model:', check_local_server())" \
   || die "local model server probe failed"
 
 step "API key (session only, never written to disk)"
-if [ -z "${OPENAI_API_KEY:-}" ]; then
-  [ -t 0 ] || die "OPENAI_API_KEY is not set and stdin is not a terminal, so the key cannot be pasted. Export it first (session only): export OPENAI_API_KEY='sk-...' — then re-run."
-  printf 'Paste your OpenAI API key (input hidden): '
-  IFS= read -rs OPENAI_API_KEY || true
+if [ -z "${!FRONTIER_KEY_ENV:-}" ]; then
+  [ -t 0 ] || die "$FRONTIER_KEY_ENV is not set and stdin is not a terminal, so the key cannot be pasted. Export it first (session only): export $FRONTIER_KEY_ENV='sk-...' — then re-run."
+  printf 'Paste your %s API key (input hidden): ' "$BENCH_PROVIDER"
+  IFS= read -rs "$FRONTIER_KEY_ENV" || true
   echo
-  export OPENAI_API_KEY
+  export "$FRONTIER_KEY_ENV"
 fi
-[ -n "${OPENAI_API_KEY:-}" ] || die "no API key provided"
+[ -n "${!FRONTIER_KEY_ENV:-}" ] || die "no API key provided"
 
 step "Preflight"
 PREFLIGHT="$("$VBIN/aee-bench" preflight)"
@@ -377,7 +397,7 @@ verify_manifest "$FRONTIER_MANIFEST" "$N_FRONTIER_ATTEMPTS" "claim-a frontier ma
 
 echo
 echo "Local arm finished (free). The next step spends real money:"
-project_spend "$N_FRONTIER_ATTEMPTS" "Phase B frontier main (gpt-6-astra ordinary repair, 1 diagnostic + 2 repairs per kept task)"
+project_spend "$N_FRONTIER_ATTEMPTS" "Phase B frontier main (GPT-6 Astra ordinary repair via $BENCH_PROVIDER, 1 diagnostic + 2 repairs per kept task)"
 echo "  Unknown usage is never released against the caps; spend settles to measured usage."
 printf 'Type RUN to execute the Phase B frontier arm: '
 IFS= read -r CONFIRM || true
@@ -408,4 +428,4 @@ rm -f "$WORK/claim-a-evidence.zip"
   (cd "$WORK" && zip -qr claim-a-evidence.zip \
     runs/calibration runs/local-main runs/frontier-main runs/pilot kept.json logs)
 echo "Evidence packaged: $WORK/claim-a-evidence.zip — attach it in chat for the independent audit."
-echo "The API key was never written to disk; unset it with: unset OPENAI_API_KEY"
+echo "The API key was never written to disk; unset it with: unset $FRONTIER_KEY_ENV"

@@ -1179,6 +1179,13 @@ def audit_solver_image(pinned_image, project):
 # ---------------------------------------------------------------------------
 
 # GPT-6 Astra documented limits (developers.openai.com/api/docs/models, checked 2026-09-20).
+# OpenRouter serves the identical model as "openai/gpt-6-astra" (live catalog
+# 2026-09-22: context 1,050,000, pricing identical to OpenAI list on every
+# tier): same weights, same context window, same documented limits. The gate
+# is therefore keyed on the model family, not the API endpoint -- and the
+# reservation math reads prices from the frozen cfg snapshot, so a different
+# endpoint cannot weaken the bound without failing this check.
+ASTRA_MODEL_IDS = frozenset({"gpt-6-astra", "openai/gpt-6-astra"})
 ASTRA_MAX_INPUT_TOKENS = 922000
 ASTRA_MAX_OUTPUT_TOKENS = 128000
 
@@ -1199,8 +1206,9 @@ def verify_reservation_bounds(cfg):
     by construction and there is nothing provider-specific to verify."""
     if cfg.get("provider_backend") == "local":
         return {"per_call_usd": "0", "diagnostic_attempt_usd": "0", "repair_attempt_usd": "0"}
-    if cfg["model"] != "gpt-6-astra":
-        raise ValueError("reservation bounds verified only for gpt-6-astra")
+    if cfg["model"] not in ASTRA_MODEL_IDS:
+        raise ValueError("reservation bounds verified only for the GPT-6 Astra "
+                         "model family (gpt-6-astra, openai/gpt-6-astra)")
     if cfg["max_input_tokens"] > ASTRA_MAX_INPUT_TOKENS:
         raise ValueError("max_input_tokens exceeds Astra documented max input")
     if cfg["max_output_tokens"] > ASTRA_MAX_OUTPUT_TOKENS:
@@ -1349,6 +1357,31 @@ PRICE_SOURCE = (
     "$20/$2/$75 above 272K input tokens for the entire request; API model string gpt-6-astra; "
     "~1.1M token context window."
 )
+
+# OpenRouter catalog pricing for openai/gpt-6-astra, checked 2026-09-22
+# against the live https://openrouter.ai/api/v1/models catalog
+# (context_length 1,050,000; per-token USD: prompt 0.00001, completion
+# 0.00005, input_cache_read 0.000001; above 272,000 prompt tokens the
+# override tier bills prompt 0.00002, completion 0.000075,
+# input_cache_read 0.000002). Per 1M tokens: $10/$1/$50 standard,
+# $20/$2/$75 long-context -- identical to the OpenAI list prices above.
+# The OpenAI <-> OpenRouter price delta for GPT-6 Astra is $0 on every
+# tier; moving the frontier arm between providers changes no dollar amount
+# in the reservation or the spend accounting.
+OPENROUTER_PRICE_SOURCE = (
+    "https://openrouter.ai/api/v1/models (checked 2026-09-22): openai/gpt-6-astra "
+    "(OpenAI: GPT-6 Astra), context 1,050,000, list $10/1M input, $1/1M cached input, "
+    "$50/1M output; requests above 272,000 input tokens bill $20/1M input, $2/1M cached "
+    "input, $75/1M output for the full request. API model string openai/gpt-6-astra. "
+    "Identical to the OpenAI list prices on every tier: the provider switch changes "
+    "no dollar amount in the reservation or spend accounting."
+)
+
+# Price snapshot for the OpenRouter-served frontier arm, in the same schema
+# as smoke_config(). Historical freezes keep their own snapshots untouched.
+OPENROUTER_PRICE_SNAPSHOT_ID = "openrouter-list-2026-09-22"
+OPENROUTER_PRICES = {"input": 10.0, "cached_input": 1.0, "output": 50.0}
+OPENROUTER_LONG_CONTEXT_PRICES = {"input": 20.0, "cached_input": 2.0, "output": 75.0}
 
 
 def smoke_config():

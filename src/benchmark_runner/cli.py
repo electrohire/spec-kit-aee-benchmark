@@ -22,10 +22,11 @@ def preflight(root):
         docker = None
     free = shutil.disk_usage(root).free
     # Check API credential availability (informational for preflight;
-    # validate_live() does the fail-closed check before paid runs).
+    # validate_live() does the fail-closed check before paid runs). The
+    # provider comes from BENCH_PROVIDER; live runs use the frozen manifest.
     try:
-        from .provider import resolve_auth
-        resolve_auth()
+        from .provider import provider_name_from_env, provider_spec, resolve_auth
+        resolve_auth(provider_spec({"provider": {"name": provider_name_from_env()}}))
         api_credential_present = True
     except Exception:
         api_credential_present = False

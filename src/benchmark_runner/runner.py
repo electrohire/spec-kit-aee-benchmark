@@ -13,7 +13,7 @@ from pathlib import Path
 from .accounting import Budget, BudgetExceeded, TOKEN_FIELDS, attempt_token_usage
 from .experiment import verify_freeze
 from .isolation import DockerSandbox
-from .provider import OpenAIProvider, transport_policy
+from .provider import OpenAIProvider, provider_spec, transport_policy
 from .local_provider import LocalProvider, check_local_server
 from .store import RunLock, Store, canonical, read_json, utc, write_json
 from .workflow import AEE_PHASES, assess, grounded_claims, phase_prompt, phases
@@ -172,22 +172,23 @@ def make_provider(cfg, store, budget, identity):
     """Select the inference backend from the frozen manifest config.
 
     provider_backend "local" routes to the operator's llama.cpp server at zero
-    marginal cost; anything else uses the OpenAI provider. The selection is
-    config-driven and frozen, so a campaign can never mix backends mid-run.
+    marginal cost; anything else uses the OpenAI-compatible provider selected
+    by cfg["provider"] (OpenAI by default). The selection is config-driven
+    and frozen, so a campaign can never mix backends mid-run.
     """
     if cfg.get("provider_backend") == "local":
         return LocalProvider(cfg, store, budget, identity)
     return OpenAIProvider(cfg, store, budget, identity)
 
 
-def check_credential():
-    """Fail-closed credential check: Secure Vault connector or OPENAI_API_KEY.
+def check_credential(spec=None):
+    """Fail-closed credential check: Secure Vault connector or the provider's key env var.
 
     resolve_auth() performs a free /models probe and raises ValueError when
     neither credential authenticates.
     """
     from .provider import resolve_auth
-    resolve_auth()
+    resolve_auth(spec if spec is not None else provider_spec({}))
 
 
 def validate_live(manifest, smoke=False):
@@ -217,15 +218,17 @@ def validate_live(manifest, smoke=False):
     if smoke and cfg.get("purpose") != "development_smoke":
         raise ValueError("smoke must use a separately frozen development manifest")
     if local:
-        # Local backend: no OpenAI credential, no dollar reservation. The
+        # Local backend: no provider credential, no dollar reservation. The
         # server must be up and serving the expected model before any attempt.
         check_local_server()
     else:
         from .provider import resolve_auth
-        mode, _ = resolve_auth()
-        if mode == "connector" and "OPENAI_API_KEY" in os.environ:
-            raise ValueError("remove OPENAI_API_KEY from environment; connector credential is active")
-        check_credential()
+        spec = provider_spec(cfg)
+        mode, _ = resolve_auth(spec)
+        if mode == "connector" and spec["key_env"] in os.environ:
+            raise ValueError("remove %s from environment; connector credential is active"
+                             % spec["key_env"])
+        check_credential(spec)
     if os.name == "nt":
         raise ValueError("live runs require Linux/WSL2 with Docker; offline commands support Windows")
     subprocess.run(["docker", "info"], check=True, capture_output=True, timeout=30)
