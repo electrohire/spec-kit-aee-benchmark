@@ -519,3 +519,134 @@ def test_freeze_persists_hidden_baseline(monkeypatch, tmp_path):
     task = manifest["tasks"]["tasks"][0]
     assert task["hidden_baseline_failed_cases"] == ["test_r08_a", "test_r08_b"]
     assert manifest["pairs"][0]["hidden_baseline_failed_cases"] == ["test_r08_a", "test_r08_b"]
+
+
+# --- Regression tests: dependent-repair scheduling guard (2026-09-22) --------
+# The revised paid calibration failed on its first paid attempt: the diagnose
+# arm stopped at `limit` (unknown token usage after a provider HTTPError), the
+# dependent repair_ordinary attempt started anyway, _diagnostic_for raised, and
+# the run loop's fail-stop killed the whole 129-attempt campaign. The repair
+# arms must now fail closed per task (recorded error, run continues) instead
+# of raising an unexpected exception that aborts the run.
+
+def _diag_manifest(tmp_path, with_diagnose=True):
+    from benchmark_runner.store import Store
+    schedule = []
+    if with_diagnose:
+        schedule.append({"attempt_id": "t1--diagnose", "task_id": "t1",
+                         "arm": "diagnose", "repeat": 1})
+    schedule.append({"attempt_id": "t1--repair", "task_id": "t1",
+                     "arm": "repair_ordinary", "repeat": 1})
+    return {"schedule": schedule}, Store(tmp_path)
+
+
+def test_diagnostic_for_raises_diagnostic_unavailable_on_missing_evidence(tmp_path):
+    # Diagnose was scheduled but produced no diagnostic event (e.g. it stopped
+    # at `limit`): this is a per-task dependency failure, not a harness bug.
+    from benchmark_runner.matched_repair import DiagnosticUnavailable, _diagnostic_for
+    manifest, store = _diag_manifest(tmp_path, with_diagnose=True)
+    with pytest.raises(DiagnosticUnavailable, match="diagnostic evidence not recorded"):
+        _diagnostic_for(store, manifest, {"instance_id": "t1"})
+
+
+def test_diagnostic_for_raises_runtime_error_when_nothing_scheduled(tmp_path):
+    # No diagnose attempt in the schedule at all: a manifest bug, stays loud.
+    from benchmark_runner.matched_repair import _diagnostic_for
+    manifest, store = _diag_manifest(tmp_path, with_diagnose=False)
+    with pytest.raises(RuntimeError, match="no diagnostic attempt scheduled"):
+        _diagnostic_for(store, manifest, {"instance_id": "t1"})
+
+
+def test_diagnostic_for_returns_evidence_when_present(tmp_path):
+    from benchmark_runner.matched_repair import _diagnostic_for
+    manifest, store = _diag_manifest(tmp_path, with_diagnose=True)
+    store.append("diagnostics", {"attempt_id": "t1--diagnose", "summary": {"done": True}})
+    assert _diagnostic_for(store, manifest, {"instance_id": "t1"})["attempt_id"] == "t1--diagnose"
+
+
+class _FakeSandbox:
+    def __init__(self, image):
+        self.details = {"image": image}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def execute(self, cmd, timeout=None):
+        return {"exit_code": 0, "stdout": "abc123"}
+
+
+def _run_manifest():
+    tasks = [{"instance_id": tid, "image": "img", "base_commit": "abc123"}
+             for tid in ("t1", "t2")]
+    schedule = []
+    for tid in ("t1", "t2"):
+        schedule.append({"attempt_id": f"{tid}--diagnose", "task_id": tid,
+                         "arm": "diagnose", "repeat": 1})
+        schedule.append({"attempt_id": f"{tid}--repair", "task_id": tid,
+                         "arm": "repair_ordinary", "repeat": 1})
+    return {"freeze_id": "f" * 16,
+            "config": {"global_cap_usd": 100, "attempt_cap_usd": 25,
+                       "purpose": "synthetic"},
+            "tasks": {"tasks": tasks},
+            "schedule": schedule}
+
+
+def _terminal_statuses(tmp_path):
+    from benchmark_runner.store import Store
+    final = {}
+    for e in Store(tmp_path).events("attempts"):
+        final[e["attempt_id"]] = e.get("status")
+    return final, {e["attempt_id"]: e.get("reason") for e in Store(tmp_path).events("attempts")}
+
+
+def _patch_run_harness(monkeypatch):
+    monkeypatch.setattr("benchmark_runner.runner.verify_freeze", lambda *a: None)
+    monkeypatch.setattr("benchmark_runner.runner.validate_live", lambda *a: None)
+    monkeypatch.setattr("benchmark_runner.runner.DockerSandbox", _FakeSandbox)
+    monkeypatch.setattr("benchmark_runner.runner.make_provider",
+                        lambda *a: object())
+
+
+def test_run_continues_after_diagnostic_unavailable(tmp_path, monkeypatch):
+    # t1's repair cannot run (no diagnostic evidence): it is recorded as an
+    # error and the schedule continues with t2 instead of fail-stopping.
+    from benchmark_runner.matched_repair import DiagnosticUnavailable
+    from benchmark_runner.runner import run
+    _patch_run_harness(monkeypatch)
+
+    def fake_execute(root, task, arm, provider, sandbox, store, identity, cfg, manifest=None):
+        if identity["attempt_id"] == "t1--repair":
+            raise DiagnosticUnavailable("diagnostic evidence not recorded for t1--diagnose")
+        return {}
+
+    monkeypatch.setattr("benchmark_runner.runner.execute_attempt", fake_execute)
+    run(Path.cwd(), _run_manifest(), tmp_path)
+    statuses, reasons = _terminal_statuses(tmp_path)
+    assert statuses["t1--repair"] == "error"
+    assert reasons["t1--repair"].startswith("repair blocked:")
+    assert "diagnostic evidence not recorded" in reasons["t1--repair"]
+    # The run continued: t2's attempts both started and completed.
+    assert statuses["t2--diagnose"] == "completed"
+    assert statuses["t2--repair"] == "completed"
+
+
+def test_run_still_breaks_on_unexpected_error(tmp_path, monkeypatch):
+    # A genuine unexpected exception keeps the existing fail-stop behavior.
+    from benchmark_runner.runner import run
+    _patch_run_harness(monkeypatch)
+
+    def fake_execute(root, task, arm, provider, sandbox, store, identity, cfg, manifest=None):
+        if identity["attempt_id"] == "t1--repair":
+            raise RuntimeError("simulated harness bug")
+        return {}
+
+    monkeypatch.setattr("benchmark_runner.runner.execute_attempt", fake_execute)
+    run(Path.cwd(), _run_manifest(), tmp_path)
+    statuses, reasons = _terminal_statuses(tmp_path)
+    assert statuses["t1--repair"] == "error"
+    assert reasons["t1--repair"] == "RuntimeError: simulated harness bug"
+    # Fail-stop: t2 never started.
+    assert "t2--diagnose" not in statuses

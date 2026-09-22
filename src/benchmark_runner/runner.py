@@ -234,6 +234,8 @@ def validate_live(manifest, smoke=False):
 def run(root, manifest, output, arm=None, smoke=False):
     verify_freeze(root, manifest)
     validate_live(manifest, smoke)
+    # Deferred to avoid a module cycle (see execute_attempt).
+    from .matched_repair import DiagnosticUnavailable
     store = Store(output)
     with RunLock(output):
         path = Path(output)/"freeze.json"
@@ -261,6 +263,7 @@ def run(root, manifest, output, arm=None, smoke=False):
             store.append("attempts", {**identity, "status": "started", "timestamp": utc()})
             tick, result = time.monotonic(), {}
             status, reason = "completed", None
+            dep_blocked = False
             try:
                 with DockerSandbox(tasks[entry["task_id"]]["image"]) as sandbox:
                     # base commit equality prevents a patched image from masquerading as clean.
@@ -285,10 +288,18 @@ def run(root, manifest, output, arm=None, smoke=False):
                 status, reason = "limit", str(e)
             except KeyboardInterrupt:
                 status, reason = "cancelled", "operator interrupt"
+            except DiagnosticUnavailable as e:
+                # The task's diagnose attempt produced no diagnostic evidence, so
+                # this dependent repair arm cannot run. This is a per-task skip,
+                # not an uncertain infrastructure/provider failure: record it and
+                # continue the schedule instead of fail-stopping the run.
+                # Downstream band selection fails closed on the missing attempts.
+                status, reason = "error", f"repair blocked: {e}"
+                dep_blocked = True
             except Exception as e:
                 status, reason = "error", error_reason(e)
             store.append("attempts", {**identity, **result, "status": status, "reason": reason,
                                       "timestamp": utc(), "duration_seconds": time.monotonic()-tick})
-            if status in ("cancelled", "error"):
+            if status in ("cancelled", "error") and not dep_blocked:
                 break  # Stop on uncertain infrastructure/provider errors; retain all charges.
     return store.events("attempts")

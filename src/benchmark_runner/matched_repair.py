@@ -759,6 +759,17 @@ def run_diagnostic(root, task, provider, sandbox, store, identity, cfg):
             "package_snapshot": store.artifact(snapshot_package(sandbox, PROJECTS[project]["package"]))}
 
 
+class DiagnosticUnavailable(Exception):
+    """A dependent repair arm cannot run: the task's diagnose attempt was
+    scheduled but produced no diagnostic evidence (it never completed --
+    e.g. it stopped at `limit` after a provider error with unknown usage).
+
+    This is a per-task dependency failure, not an infrastructure failure: the
+    run loop records the repair attempt as an error and continues the
+    schedule instead of fail-stopping the run. Downstream band selection
+    fails closed on the missing attempts."""
+
+
 def _diagnostic_for(store, manifest, task):
     pair = task["instance_id"]
     diag_id = next((e["attempt_id"] for e in manifest["schedule"]
@@ -768,7 +779,7 @@ def _diagnostic_for(store, manifest, task):
     for event in store.events("diagnostics"):
         if event["attempt_id"] == diag_id:
             return event
-    raise RuntimeError("diagnostic evidence not recorded for " + diag_id)
+    raise DiagnosticUnavailable("diagnostic evidence not recorded for " + diag_id)
 
 
 def run_repair(root, task, arm, provider, sandbox, store, identity, cfg, manifest):
