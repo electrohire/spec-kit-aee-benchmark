@@ -334,3 +334,48 @@ def test_R01_nondict_payload_is_job_failure(sched):
     sched.enqueue("not-a-dict")
     out = sched.run_next()
     assert out["status"] == "retried" and out["attempts"] == 1
+
+
+# CLAIM-A CANDIDATES, round 2 (2026-09-22): hidden tests for harder variants.
+
+def test_R04_config_change_honored():
+    # R04 clarification: the retry decision reads the LIVE config object on
+    # each run_next -- a Scheduler must not snapshot max_retries at
+    # construction. Post-construction config changes are honored.
+    s = Scheduler()
+    s.config.max_retries = 0
+    s.enqueue({"fn": flaky(10**9)})
+    out = s.run_next()
+    assert out["status"] == "failed" and out["attempts"] == 1
+    assert s.store.get(1)["status"] == "failed"
+
+
+def test_R04_config_replaced():
+    # Same via wholesale config replacement (R04 clarification).
+    s = Scheduler()
+    s.config = SchedulerConfig(max_retries=1)
+    s.enqueue({"fn": flaky(10**9)})
+    assert s.run_next()["status"] == "retried"
+    assert s.run_next()["status"] == "failed"
+
+
+def test_R08_done_token_stored_exact(sched):
+    # R08 clarification: the status string stored on the job record when it
+    # completes is exactly "done" -- the same token R08 keys terminality off.
+    sched.enqueue({"fn": lambda: "ok"})
+    sched.run_next()
+    assert sched.store.get(1)["status"] == "done"
+
+
+def test_R05_list_pending_detached():
+    # R05 extension: records returned by list_pending are detached copies;
+    # mutating a listed record (including nested payload) must not corrupt
+    # the store.
+    store = JobStore()
+    jid = store.add({"n": [1]})
+    recs = store.list_pending()
+    recs[0]["status"] = "done"
+    recs[0]["payload"]["n"].append(2)
+    assert len(store.list_pending()) == 1
+    assert store.get(jid)["payload"] == {"n": [1]}
+    assert store.get(jid)["status"] == "pending"

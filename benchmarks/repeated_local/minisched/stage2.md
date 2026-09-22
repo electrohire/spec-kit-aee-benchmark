@@ -20,3 +20,8 @@ Public acceptance is acceptance_public.py. You may keep HANDOFF.md and other not
 
 # Claim-A candidate extension (variant failed_status_mismatch, 2026-09-21)
 R04 (clarification): when a job becomes 'failed', the status string stored on the job record is exactly "failed" -- the same token run_next reports and R08 keys terminality off. A distinct stored token (e.g. "fail") does not satisfy the requirement even if run_next's returned dict says "failed".
+
+# Claim-A candidate extensions, round 2 (2026-09-22)
+R04 (clarification): the retry decision reads the live config object (config.max_retries) on each run_next. A Scheduler must not snapshot max_retries at construction: post-construction changes to config.max_retries (mutation or wholesale config replacement) are honored by subsequent run_next calls.
+R08 (clarification): when a job completes, the status string stored on the job record is exactly "done" -- the same token run_next reports and R08 keys terminality off. A distinct stored token (e.g. "Done") does not satisfy the requirement even if run_next's returned dict says "done".
+R05 (extension): records returned by JobStore.list_pending are detached copies, like get: mutating a listed record -- including its nested payload -- must not affect the stored job.

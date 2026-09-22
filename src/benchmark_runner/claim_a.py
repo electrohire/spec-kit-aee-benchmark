@@ -59,8 +59,14 @@ CLAIM_A_SEED = 20260921
 # Audited 2026-09-21: all 32 verified independently (public tests pass on the
 # seeded defect, hidden failures exactly equal the declared expected set,
 # unmutated reference passes everything) via /tmp/claim-a-audit.py.
+# Audited 2026-09-22: 11 round-2 candidates added (4 minisched, 3 cachetools,
+# 4 tinydb); all 43 verified independently via scripts/verify_new_candidates.py
+# (public pass on seeded defect, declared hidden pins fail, clean reference
+# passes everything, no hidden-test leakage into solver images). Spec-literal
+# review and adversarial trap review completed; notes in
+# benchmarks/repeated_local/claim-a-round2-review.md.
 CLAIM_A_CANDIDATES = (
-    # tinydb (9)
+    # tinydb (13)
     ("tinydb", "token_ops_alias", CLAIM_A_SEED),
     ("tinydb", "empty_batch_token", CLAIM_A_SEED),
     ("tinydb", "token_conflict_shallow", CLAIM_A_SEED),
@@ -70,7 +76,12 @@ CLAIM_A_CANDIDATES = (
     ("tinydb", "compact_id_reuse", CLAIM_A_SEED),
     ("tinydb", "next_id_rewind", CLAIM_A_SEED),
     ("tinydb", "token_validate_late", CLAIM_A_SEED),
-    # cachetools (11)
+    # tinydb round 2 (2026-09-22): harder trap-style / cross-file candidates
+    ("tinydb", "conflict_mutates_before_raise", CLAIM_A_SEED),
+    ("tinydb", "stale_table_cache", CLAIM_A_SEED),
+    ("tinydb", "tokens_shared_across_instances", CLAIM_A_SEED),
+    ("tinydb", "next_id_not_written_back", CLAIM_A_SEED),
+    # cachetools (14)
     ("cachetools", "resize_order_trap", CLAIM_A_SEED),
     ("cachetools", "invalidate_many_no_expire", CLAIM_A_SEED),
     ("cachetools", "put_no_recency_refresh", CLAIM_A_SEED),
@@ -82,7 +93,11 @@ CLAIM_A_CANDIDATES = (
     ("cachetools", "put_no_pre_expire", CLAIM_A_SEED),
     ("cachetools", "all_subset_flip", CLAIM_A_SEED),
     ("cachetools", "expiry_recency_touch", CLAIM_A_SEED),
-    # minisched (12)
+    # cachetools round 2 (2026-09-22): harder trap-style candidates
+    ("cachetools", "resize_drops_expiry", CLAIM_A_SEED),
+    ("cachetools", "len_no_expire", CLAIM_A_SEED),
+    ("cachetools", "get_no_recency_refresh", CLAIM_A_SEED),
+    # minisched (16)
     ("minisched", "or_default_trap", CLAIM_A_SEED),
     ("minisched", "retry_off_by_one", CLAIM_A_SEED),
     ("minisched", "failed_stays_listed", CLAIM_A_SEED),
@@ -95,6 +110,11 @@ CLAIM_A_CANDIDATES = (
     ("minisched", "failed_status_mismatch", CLAIM_A_SEED),
     ("minisched", "add_shallow_copy", CLAIM_A_SEED),
     ("minisched", "enqueue_eager_validation", CLAIM_A_SEED),
+    # minisched round 2 (2026-09-22): harder cross-file / trap-style candidates
+    ("minisched", "config_snapshot_stale", CLAIM_A_SEED),
+    ("minisched", "done_status_mismatch", CLAIM_A_SEED),
+    ("minisched", "list_pending_returns_live", CLAIM_A_SEED),
+    ("minisched", "update_unknown_silent", CLAIM_A_SEED),
 )
 
 # Attempts per repair arm in each phase (v9 design: 2).

@@ -188,3 +188,70 @@ def test_R08_expire_preserves_recency():
     with pytest.raises(KeyError):
         c.get('b')        # 'b' was LRU; 'a' had been refreshed by get
     assert c.get('a') == 1 and c.get('c') == 3
+
+
+# CLAIM-A CANDIDATES, round 2 (2026-09-22): hidden tests for harder variants.
+
+def test_R05_resize_preserves_expiry():
+    # R05 clarification: preserving a surviving entry preserves its absolute
+    # expiry; resize must not drop expiries (immortal entries) or recompute them.
+    now = [0]
+    c = TaggedCache(2, timer=lambda: now[0])
+    c.put('a', 1, ttl=100)
+    c.resize(4)
+    now[0] = 50
+    assert c.get('a') == 1       # still live: expiry survived the resize
+    now[0] = 150
+    with pytest.raises(KeyError):
+        c.get('a')               # expired on its original schedule
+
+
+def test_R05_resize_preserves_expiry_shrink():
+    # Same through a shrink: the MRU survivor keeps its original expiry.
+    now = [0]
+    c = TaggedCache(2, timer=lambda: now[0])
+    c.put('a', 1, ttl=100); c.put('b', 2)
+    c.get('a')                   # 'a' is MRU; survives a shrink to 1
+    c.resize(1)
+    now[0] = 50
+    assert c.get('a') == 1
+    now[0] = 150
+    with pytest.raises(KeyError):
+        c.get('a')
+
+
+def test_R08_len_counts_live():
+    # R08: expired entries are removed before len; len counts live entries.
+    now = [0]
+    c = TaggedCache(2, timer=lambda: now[0])
+    c.put('a', 1, ttl=1); c.put('b', 2)
+    now[0] = 5
+    assert len(c) == 1
+    assert c.get('b') == 2
+
+
+def test_R02_get_refreshes_recency():
+    # R02: get refreshes LRU recency -- it must read through the
+    # recency-touching LRUCache __getitem__, not the passive Cache.__getitem__.
+    c = TaggedCache(2)
+    c.put('a', 1); c.put('b', 2)
+    c.get('a')          # 'a' is now MRU; 'b' is LRU
+    c.put('c', 3)       # evicts LRU
+    with pytest.raises(KeyError):
+        c.get('b')
+    assert c.get('a') == 1 and c.get('c') == 3
+
+
+def test_R08_overwrite_replaces_expiry():
+    # R08: overwriting with a new ttl REPLACES the prior expiry (it does not
+    # extend it, and a naive always-clear repair would fail this direction).
+    now = [0]
+    c = TaggedCache(2, timer=lambda: now[0])
+    c.put('a', 1, ttl=100)
+    now[0] = 50
+    c.put('a', 2, ttl=100)      # new expiry: 150, not 100
+    now[0] = 120
+    assert c.get('a') == 2
+    now[0] = 200
+    with pytest.raises(KeyError):
+        c.get('a')

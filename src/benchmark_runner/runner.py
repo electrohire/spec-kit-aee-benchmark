@@ -23,6 +23,23 @@ class LimitHit(RuntimeError):
     pass
 
 
+def error_reason(e):
+    """One-line sanitized error reason for attempt records.
+
+    Preserves the exception message (single-line, truncated) instead of only
+    the type name, so a halted campaign can be diagnosed from the attempt
+    stream without the host log. Provider adapters already reduce provider
+    failures to bare type names before they reach this handler; never put
+    credentials, headers, or raw provider error bodies into an exception
+    message that flows through here.
+    """
+    msg = " ".join(str(e).split())
+    if len(msg) > 300:
+        msg = msg[:297] + "..."
+    name = type(e).__name__
+    return f"{name}: {msg}" if msg else name
+
+
 def remaining(deadline):
     seconds = deadline-time.monotonic()
     if seconds <= 0:
@@ -269,7 +286,7 @@ def run(root, manifest, output, arm=None, smoke=False):
             except KeyboardInterrupt:
                 status, reason = "cancelled", "operator interrupt"
             except Exception as e:
-                status, reason = "error", type(e).__name__
+                status, reason = "error", error_reason(e)
             store.append("attempts", {**identity, **result, "status": status, "reason": reason,
                                       "timestamp": utc(), "duration_seconds": time.monotonic()-tick})
             if status in ("cancelled", "error"):

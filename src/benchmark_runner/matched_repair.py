@@ -116,6 +116,34 @@ VARIANTS = {
                       ("        self.db.table('_default')._next_id = next_id\n        if token is not None:\n", "        self.db.table('_default')._next_id = next_id\n        if token is not None and (not isinstance(token, str) or not token):\n            raise ValueError('invalid token')\n        if token is not None:\n")],
                        None,
                        ["R07", "R02"]),
+        # conflict_mutates_before_raise: R07: 'Reusing a token with different operations raises ValueError without changing
+        # data.' The conflict check must run BEFORE the batch is written; moving it after the write raises but leaves the
+        # conflicting batch's mutations in the database. Identical replays still short-circuit (public idempotency holds).
+        "conflict_mutates_before_raise": ([("        if token is not None and token in self.tokens:\n            previous, result = self.tokens[token]\n            if previous != operations:\n                raise ValueError('token conflict')\n            return deepcopy(result)\n",
+                       "        previous, result = None, None\n        if token is not None and token in self.tokens:\n            previous, result = self.tokens[token]\n            if previous == operations:\n                return deepcopy(result)\n"),
+                      ("        self.db.table('_default')._next_id = next_id\n        if token is not None:\n",
+                       "        self.db.table('_default')._next_id = next_id\n        if token is not None and token in self.tokens and previous != operations:\n            raise ValueError('token conflict')\n        if token is not None:\n")],
+                       None,
+                       ["R07", "R02"]),
+        # stale_table_cache: R02: 'Previously acquired db.table('_default') handles must reflect both success and rollback.'
+        # Dropping the clear_cache() after a write leaves previously acquired handles serving stale query results.
+        "stale_table_cache": ("        self.db.storage.write(storage)\n        for table in self.db._tables.values():\n            table.clear_cache()\n        self.db.table('_default')._next_id = next_id\n",
+                       "        self.db.storage.write(storage)\n        self.db.table('_default')._next_id = next_id\n",
+                       ["R02"]),
+        # tokens_shared_across_instances: R08: 'Token bookkeeping belongs to this BatchWriter instance'. A class-level
+        # tokens dict is shared across writers, so a fresh writer replays another writer's tokens instead of applying.
+        # NOTE: in the full hidden suite this fails 10 tests, but 9 of the 10 fail only via cross-test pollution
+        # through the shared class dict (same token strings reused across tests); only
+        # test_R08_tokens_belong_to_instance is order-independent. The signature is deterministic in fixed file
+        # order (what calibration and grading use); do not reorder tinydb hidden tests without re-running calibration.
+        "tokens_shared_across_instances": ("class BatchWriter:\n    def __init__(self, db):\n        self.db = db\n        self.tokens = {}\n",
+                       "class BatchWriter:\n    tokens = {}\n\n    def __init__(self, db):\n        self.db = db\n",
+                       ["R08"]),
+        # next_id_not_written_back: R05 names 'the next insertion ID' as stable wrapper state. _simulate computes it, but
+        # without writing it back to table._next_id a later remove+insert sequence rewinds and reuses IDs.
+        "next_id_not_written_back": ("        self.db.table('_default')._next_id = next_id\n",
+                       "",
+                       ["R05", "R03"]),
         "clean": (None, None, []),
     },
     "cachetools": {
@@ -191,6 +219,21 @@ VARIANTS = {
         "expiry_recency_touch": ('            entry = Cache.__getitem__(self._cache, key)',
                        '            entry = self._cache[key]',
                        ["R08", "R02"]),
+        # resize_drops_expiry: R05 (stage2.md) requires resize to preserve 'surviving entries'; an entry's absolute expiry is
+        # part of the entry (R07/R08). Rebuilding entries with expiry None silently makes them immortal.
+        "resize_drops_expiry": ('            new[key] = Cache.__getitem__(old,key)',
+                       '            v, t, e = Cache.__getitem__(old,key)\n            new[key] = (v, t, None)',
+                       ["R05", "R07", "R08"]),
+        # len_no_expire: R08 (stage3.md) requires 'Expired entries must be removed before get, put, len, resize and
+        # invalidation' and R02 counts live entries. len without the purge counts the dead.
+        "len_no_expire": ("    def __len__(self):\n        self._expire()\n        return len(self._cache)",
+                       "    def __len__(self):\n        return len(self._cache)",
+                       ["R08", "R02"]),
+        # get_no_recency_refresh: R02 (stage1.md) requires 'get refreshes LRU recency'. The passive Cache.__getitem__
+        # reads without touching recency, unlike the LRUCache __getitem__ the reference get goes through.
+        "get_no_recency_refresh": ("    def get(self, key):\n        self._expire()\n        return deepcopy(self._cache[key][0])",
+                       "    def get(self, key):\n        self._expire()\n        return deepcopy(Cache.__getitem__(self._cache, key)[0])",
+                       ["R02"]),
         "clean": (None, None, []),
     },
     "minisched": {
@@ -264,6 +307,27 @@ VARIANTS = {
         "enqueue_eager_validation": ([("minisched/scheduler.py", '    def enqueue(self, payload):\n        return self.store.add(payload)', '    def enqueue(self, payload):\n        if not isinstance(payload, dict) or not callable(payload.get("fn")):\n            raise ValueError("payload must be a dict carrying a callable \'fn\'")\n        return self.store.add(payload)')],
                        None,
                        ["R01", "R04"]),
+        # config_snapshot_stale: R04: 'if attempts > config.max_retries the job becomes failed' -- the decision reads the live
+        # config object on each run_next; snapshotting max_retries at construction ignores post-construction config changes.
+        "config_snapshot_stale": ([("minisched/scheduler.py", '        self.config = config if config is not None else SchedulerConfig()',
+                       '        self.config = config if config is not None else SchedulerConfig()\n        self._max_retries = self.config.max_retries'),
+                      ("minisched/scheduler.py", 'if attempts > self.config.max_retries:', 'if attempts > self._max_retries:')],
+                       None,
+                       ["R04"]),
+        # done_status_mismatch: R08 clarification -- the stored status token on completion is exactly 'done'; a distinct
+        # stored token ('Done') breaks terminality keyed off the stored record even though run_next reports 'done'.
+        "done_status_mismatch": ([("minisched/scheduler.py", 'self.store.update(job_id, status="done")', 'self.store.update(job_id, status="Done")')],
+                       None,
+                       ["R08"]),
+        # list_pending_returns_live: R05 extension -- records returned by list_pending are detached copies; returning live
+        # records lets callers corrupt the store through the listing.
+        "list_pending_returns_live": ('        return [deepcopy(record) for record in self._jobs.values()\n                if record["status"] == "pending"]',
+                       '        return [record for record in self._jobs.values()\n                if record["status"] == "pending"]',
+                       ["R05"]),
+        # update_unknown_silent: R02 -- updating an unknown id raises KeyError; silently returning hides caller bugs.
+        "update_unknown_silent": ('    def update(self, job_id, **fields):\n        if job_id not in self._jobs:\n            raise KeyError(job_id)',
+                       '    def update(self, job_id, **fields):\n        if job_id not in self._jobs:\n            return',
+                       ["R02"]),
         "clean": (None, None, []),
     },
 }
@@ -297,6 +361,8 @@ VARIANT_FILES = {
     ("minisched", "failed_status_mismatch"): "minisched/scheduler.py",
     ("minisched", "add_shallow_copy"): "minisched/store.py",
     ("minisched", "enqueue_eager_validation"): "minisched/scheduler.py",
+    ("minisched", "list_pending_returns_live"): "minisched/store.py",
+    ("minisched", "update_unknown_silent"): "minisched/store.py",
 }
 
 SEEDS = [20260918, 20260919]

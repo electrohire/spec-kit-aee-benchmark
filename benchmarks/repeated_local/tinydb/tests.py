@@ -212,3 +212,42 @@ def test_R07_invalid_token_no_side_effects(pair):
         w.apply([{'op': 'insert', 'document': {'x': 1}}], token='')
     assert len(db) == 0
     assert db.insert({}) == 1
+
+
+# CLAIM-A CANDIDATES, round 2 (2026-09-22): hidden tests for harder variants.
+
+def test_R07_conflict_leaves_data_unchanged(pair):
+    # R07: reusing a token with different operations raises ValueError WITHOUT
+    # changing data -- the conflict check must run before the batch is written.
+    db, w = pair
+    assert w.apply([{'op': 'insert', 'document': {'x': 1}}], token='a') == [1]
+    with pytest.raises(ValueError):
+        w.apply([{'op': 'insert', 'document': {'x': 2}}], token='a')
+    assert [d['x'] for d in db.all()] == [1]
+    assert len(db) == 1
+    # The original token still replays its original result afterwards.
+    assert w.apply([{'op': 'insert', 'document': {'x': 1}}], token='a') == [1]
+    assert len(db) == 1
+
+
+def test_R02_retained_handle_sees_apply(pair):
+    # R02: a previously acquired table handle must reflect a successful apply.
+    # Without the post-write clear_cache(), the handle serves stale results.
+    db, w = pair
+    db.insert({'x': 1})
+    table = db.table('_default')
+    query = Query().x == 1
+    assert len(table.search(query)) == 1
+    assert w.apply([{'op': 'remove', 'doc_id': 1}]) == []
+    assert table.search(query) == []
+    assert len(db) == 0
+
+
+def test_R08_tokens_belong_to_instance(pair):
+    # R08: token bookkeeping belongs to the BatchWriter instance -- a fresh
+    # writer must not replay another writer's tokens.
+    db, w = pair
+    assert w.apply([{'op': 'insert', 'document': {'x': 1}}], token='a') == [1]
+    w2 = BatchWriter(db)
+    assert w2.apply([{'op': 'insert', 'document': {'x': 1}}], token='a') == [2]
+    assert len(db) == 2

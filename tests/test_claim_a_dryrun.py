@@ -49,7 +49,7 @@ def test_freeze_calibration_wiring(dryrun):
     out = dryrun / "freeze-cal"
     _freeze_cli("freeze-calibration", str(out), "--calibration", str(dryrun / "calibration.json"))
     manifest = json.loads((out / "freeze-claim-a-calibration.json").read_text())
-    assert len(manifest["tasks"]["tasks"]) == 32
+    assert len(manifest["tasks"]["tasks"]) == len(ca.CLAIM_A_CANDIDATES)
     arms = {e["arm"] for e in manifest["schedule"]}
     assert arms == {"diagnose", "repair_ordinary"}
     # Every task carries its hidden-failure baseline for adjudication.
@@ -123,9 +123,11 @@ def _synthetic_run(path, arm, results, cost):
     """results: task_id -> list of (hidden_passed, failed_cases)."""
     from benchmark_runner.store import Store
     store = Store(path)
+    schedule = []
     for task_id, attempts in results.items():
         for i, (passed, failed) in enumerate(attempts, 1):
             aid = f"{task_id}--{arm}-{i}"
+            schedule.append({"attempt_id": aid, "task_id": task_id, "arm": arm})
             store.append("attempts", {
                 "attempt_id": aid, "task_id": task_id, "arm": arm, "status": "completed",
                 "repair_rounds": [{"public": {"passed": True}, "source_changed": not passed}]})
@@ -134,9 +136,11 @@ def _synthetic_run(path, arm, results, cost):
                 "failed_cases": failed})
             if cost:
                 store.append("calls", {"attempt_id": aid, "cost": cost})
-    (path / "freeze.json").write_text(json.dumps({"tasks": {"tasks": [
-        {"instance_id": t, "hidden_baseline_failed_cases": ["test_hidden"]}
-        for t in results]}}))
+    (path / "freeze.json").write_text(json.dumps({
+        "schedule": schedule,
+        "tasks": {"tasks": [
+            {"instance_id": t, "hidden_baseline_failed_cases": ["test_hidden"]}
+            for t in results]}}))
 
 
 def test_band_and_compare_end_to_end(dryrun, capsys):

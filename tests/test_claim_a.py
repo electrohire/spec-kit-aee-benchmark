@@ -185,6 +185,11 @@ def test_analyze_band_and_compare(tmp_path, monkeypatch):
     for aid, passed in [("t1-r1", True), ("t1-r2", False), ("t2-r1", True), ("t2-r2", True)]:
         store.append("hidden_grades", {"attempt_id": aid, "graded": True, "hidden_passed": passed,
                                       "test_count": 4, "failed_cases": [] if passed else ["x"]})
+    # The band analysis fail-closes on partial runs: the freeze schedule must
+    # cover every recorded repair_ordinary attempt.
+    (run / "freeze.json").write_text(json.dumps({"schedule": [
+        {"attempt_id": a["attempt_id"], "task_id": a["task_id"], "arm": a["arm"]}
+        for a in attempts]}))
     import subprocess, sys
     script = str(Path(__file__).resolve().parents[1] / "scripts" / "analyze_claim_a.py")
     kept = tmp_path / "kept.json"
@@ -193,6 +198,131 @@ def test_analyze_band_and_compare(tmp_path, monkeypatch):
     assert r.returncode == 0, r.stderr
     assert "kept 1/2 tasks" in r.stdout
     assert json.loads(kept.read_text()) == [["tinydb", "a", 20260921]]
+
+
+def _partial_band_run(tmp_path, mutate):
+    """Synthetic calibration run: 2 tasks x 2 ordinary repairs, all graded,
+    with a freeze schedule covering every attempt. `mutate` alters one
+    attempt/grade to simulate a partial or failed run."""
+    from benchmark_runner.store import Store
+    run = tmp_path / "run"
+    run.mkdir()
+    store = Store(run)
+    aids = ["t1-r1", "t1-r2", "t2-r1", "t2-r2"]
+    tids = {"t1-r1": "mr-tinydb-a-20260921", "t1-r2": "mr-tinydb-a-20260921",
+            "t2-r1": "mr-cachetools-b-20260921", "t2-r2": "mr-cachetools-b-20260921"}
+    for aid in aids:
+        store.append("attempts", {"attempt_id": aid, "task_id": tids[aid],
+                                 "arm": "repair_ordinary", "status": "completed",
+                                 "repair_rounds": [{"public": {"passed": True},
+                                                    "source_changed": True}]})
+        store.append("hidden_grades", {"attempt_id": aid, "graded": True,
+                                      "hidden_passed": aid in ("t1-r1", "t2-r1"),
+                                      "test_count": 4, "failed_cases": []})
+    (run / "freeze.json").write_text(json.dumps({"schedule": [
+        {"attempt_id": aid, "task_id": tids[aid], "arm": "repair_ordinary"}
+        for aid in aids]}))
+    mutate(run)
+    return run
+
+
+def _run_band(run, tmp_path):
+    a = _load_analyze()
+    kept = tmp_path / "kept.json"
+    a.cmd_band(type("A", (), {"run": run, "out": kept})())
+    return kept
+
+
+def _drop_attempt(run, aid):
+    from benchmark_runner.store import Store
+    store = Store(run)
+    kept = [e for e in store.events("attempts") if e["attempt_id"] != aid]
+    (run / "attempts.jsonl").write_text("".join(json.dumps(e) + "\n" for e in kept))
+
+
+def test_band_refuses_never_ran_attempt(tmp_path):
+    # The 2026-09-21 calibration halted after 7 of 32 tasks; the band gate ran
+    # on the partial stream. It must now refuse instead.
+    run = _partial_band_run(tmp_path, lambda r: _drop_attempt(r, "t2-r2"))
+    with pytest.raises(ValueError, match="never ran"):
+        _run_band(run, tmp_path)
+    assert not (tmp_path / "kept.json").exists()
+
+
+def test_band_refuses_error_attempt(tmp_path):
+    def mutate(run):
+        from benchmark_runner.store import Store
+        store = Store(run)
+        evts = store.events("attempts")
+        for e in evts:
+            if e["attempt_id"] == "t2-r2":
+                e["status"] = "error"
+                e["reason"] = "RuntimeError: diagnostic evidence not recorded"
+        (run / "attempts.jsonl").write_text("".join(json.dumps(e) + "\n" for e in evts))
+    run = _partial_band_run(tmp_path, mutate)
+    with pytest.raises(ValueError, match="INCOMPLETE"):
+        _run_band(run, tmp_path)
+    assert not (tmp_path / "kept.json").exists()
+
+
+def test_band_refuses_limit_attempt(tmp_path):
+    # A "limit" attempt is terminal but not gradable; the task's pass rate
+    # would be computed on fewer attempts than designed.
+    def mutate(run):
+        from benchmark_runner.store import Store
+        store = Store(run)
+        evts = store.events("attempts")
+        for e in evts:
+            if e["attempt_id"] == "t2-r2":
+                e["status"] = "limit"
+                e["reason"] = "unknown token usage; cannot enforce attempt token ceiling"
+        (run / "attempts.jsonl").write_text("".join(json.dumps(e) + "\n" for e in evts))
+    run = _partial_band_run(tmp_path, mutate)
+    with pytest.raises(ValueError, match="INCOMPLETE"):
+        _run_band(run, tmp_path)
+    assert not (tmp_path / "kept.json").exists()
+
+
+def test_band_refuses_ungraded_completed_attempt(tmp_path):
+    from benchmark_runner.store import Store
+    def mutate(run):
+        grades = [e for e in Store(run).events("hidden_grades")
+                  if e["attempt_id"] != "t2-r2"]
+        (run / "hidden_grades.jsonl").write_text("".join(
+            json.dumps(e) + "\n" for e in grades))
+    run = _partial_band_run(tmp_path, mutate)
+    with pytest.raises(ValueError, match="no hidden grade"):
+        _run_band(run, tmp_path)
+    assert not (tmp_path / "kept.json").exists()
+
+
+def test_band_refuses_missing_freeze_schedule(tmp_path):
+    from benchmark_runner.store import Store
+    run = tmp_path / "run"
+    run.mkdir()
+    Store(run).append("attempts", {"attempt_id": "t1-r1", "arm": "repair_ordinary",
+                                  "status": "completed"})
+    with pytest.raises(ValueError, match="no freeze.json"):
+        _run_band(run, tmp_path)
+
+
+def test_error_reason_preserves_exception_message():
+    # Regression for the 2026-09-21 calibration halt: the attempt record kept
+    # only "RuntimeError" and the diagnostic message was lost.
+    from benchmark_runner.runner import error_reason
+    e = RuntimeError("diagnostic evidence not recorded for mr-tinydb-x--diagnose")
+    assert error_reason(e) == ("RuntimeError: diagnostic evidence not recorded "
+                               "for mr-tinydb-x--diagnose")
+
+
+def test_error_reason_sanitizes_long_multiline_messages():
+    from benchmark_runner.runner import error_reason
+    e = ValueError("line one\nline two " + "x" * 500)
+    reason = error_reason(e)
+    assert reason.startswith("ValueError: line one line two")
+    assert "\n" not in reason
+    assert len(reason) <= len("ValueError: ") + 300
+    assert error_reason(RuntimeError("")) == "RuntimeError"
 
 
 def test_repair_workflow_arm_registered():

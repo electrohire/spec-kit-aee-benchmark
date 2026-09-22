@@ -6,7 +6,7 @@
 # Runs on Linux or WSL2 with Docker. The campaign has two phases, each with
 # its own typed RUN gate; nothing is spent before you type RUN at that gate:
 #
-#   Phase A (calibration, PAID): ~24 candidate variants, frontier ordinary
+#   Phase A (calibration, PAID): 43 candidate variants, frontier ordinary
 #     repair only (1 shared diagnostic + 2 repairs per task). Keeps the
 #     0.2-0.8 ordinary pass band as the shared task bank.
 #   Phase B (main, mixed): the kept tasks, two matched manifests sharing the
@@ -15,8 +15,8 @@
 #                    Spec-Kit/AEE guided workflow (FREE, zero marginal dollars)
 #       frontier arm: gpt-6-astra ordinary repair via the OpenAI backend (PAID)
 #
-# Expected paid spend: calibration ~72 attempts + frontier main ~3/kept-task,
-# projected at the v8.1 measured rate (~$0.27/attempt); both phases settle to
+# Expected paid spend: calibration 129 attempts (43 candidates x 3) + frontier
+# main ~3/kept-task, projected at the v8.1 measured rate (~$0.27/attempt); both phases settle to
 # measured usage under the standing $25/attempt and $100 global caps. The
 # local arm (including its single-task pilot) costs $0 in API spend.
 #

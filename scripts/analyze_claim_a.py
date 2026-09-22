@@ -129,19 +129,62 @@ def attempt_outcome(attempt, grade, baseline_failed=_MISSING):
 attempt_outcome._warned = False
 
 
+def check_calibration_complete(run_dir, arm="repair_ordinary"):
+    """Fail-closed completeness check for band selection.
+
+    Every attempt the freeze scheduled for the band arm must be present in the
+    attempt stream with terminal status "completed". Returns the expected
+    attempt ids. Raises ValueError listing every scheduled attempt that never
+    ran, never reached a terminal state, or ended in limit/error/cancelled --
+    band selection must never silently present a partial run as a completed
+    calibration.
+    """
+    freeze = Path(run_dir) / "freeze.json"
+    if not freeze.exists():
+        raise ValueError(f"{run_dir}: no freeze.json; cannot verify calibration completeness")
+    manifest = json.loads(freeze.read_text())
+    schedule = manifest.get("schedule") or []
+    expected = [e["attempt_id"] for e in schedule if e.get("arm") == arm]
+    if not expected:
+        raise ValueError(f"{run_dir}: freeze schedule has no {arm} attempts; "
+                         "cannot verify calibration completeness")
+    attempts = load_attempts(run_dir)
+    problems = []
+    for aid in expected:
+        status = (attempts.get(aid) or {}).get("status")
+        if status is None:
+            problems.append(f"{aid}: never ran (missing from attempt stream)")
+        elif status != "completed":
+            reason = (attempts[aid].get("reason") or "")[:160]
+            problems.append(f"{aid}: status {status!r} (not gradable)"
+                            + (f": {reason}" if reason else ""))
+    if problems:
+        detail = "\n".join("  - " + p for p in problems)
+        raise ValueError(
+            f"{run_dir}: calibration run is INCOMPLETE for band selection "
+            f"({len(problems)}/{len(expected)} {arm} attempts unusable):\n{detail}\n"
+            "Refusing to select the discriminative band on partial data. Resume the run "
+            "to complete the missing attempts, or document explicit task exclusions "
+            "before re-running the analysis.")
+    return expected
+
+
 def cmd_band(args):
+    expected = check_calibration_complete(args.run)
     grades = load_grades(args.run)
     attempts = load_attempts(args.run)
     per_task = defaultdict(list)
-    for attempt_id, attempt in attempts.items():
-        if attempt.get("arm") != "repair_ordinary":
-            continue
-        if attempt.get("status") != "completed":
-            continue
-        g = grades.get(attempt_id)
-        if not g or not g.get("graded"):
-            print(f"WARN: {attempt_id} completed but not graded; excluded", file=sys.stderr)
-            continue
+    ungraded = [aid for aid in expected
+                if not (grades.get(aid) or {}).get("graded")]
+    if ungraded:
+        detail = "\n".join("  - " + aid for aid in ungraded)
+        raise ValueError(
+            f"{args.run}: {len(ungraded)} completed repair_ordinary attempts have no "
+            f"hidden grade; the band cannot be computed on partial data:\n{detail}\n"
+            "Run the hidden grader over the full run before band selection.")
+    for attempt_id in expected:
+        attempt = attempts[attempt_id]
+        g = grades[attempt_id]
         per_task[attempt["task_id"]].append(bool(g["hidden_passed"]))
     kept = []
     rows = []
