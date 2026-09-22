@@ -74,11 +74,18 @@ def load_attempts(run_dir):
 
 
 def load_costs(run_dir):
-    """attempt_id -> total measured dollars from the calls stream."""
+    """attempt_id -> total measured dollars from the calls stream, or None
+    when any of the attempt's calls has unknown cost (fail-closed: a failed
+    physical request has unknown, never fabricated, spend)."""
     store = Store(Path(run_dir))
-    costs = defaultdict(Decimal)
+    costs, unknown = defaultdict(Decimal), set()
     for e in store.events("calls"):
-        costs[e["attempt_id"]] += Decimal(str(e.get("cost", "0")))
+        if e.get("cost") is None:
+            unknown.add(e["attempt_id"])
+        else:
+            costs[e["attempt_id"]] += Decimal(e["cost"])
+    for aid in unknown:
+        costs[aid] = None
     return costs
 
 
@@ -237,6 +244,11 @@ def per_task_losses(run_dir, kept, repair_arm):
         baseline = baselines.get(attempt["task_id"], _MISSING)
         cls, extra = attempt_outcome(attempt, g, baseline)
         cost = costs.get(attempt_id, Decimal("0"))
+        if cost is None:
+            # Fail-closed: expected loss needs measured cost, and a failed
+            # physical request has unknown (never fabricated) spend.
+            print(f"WARN: {attempt_id} completed but has unknown measured cost; excluded", file=sys.stderr)
+            continue
         if expect_zero_cost and cost != 0:
             # Fail-closed on the $0-marginal-cost premise: the local arm must
             # never show measured dollars, or the cost placement is broken.

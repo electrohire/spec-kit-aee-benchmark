@@ -610,24 +610,28 @@ def _patch_run_harness(monkeypatch):
                         lambda *a: object())
 
 
-def test_run_continues_after_diagnostic_unavailable(tmp_path, monkeypatch):
-    # t1's repair cannot run (no diagnostic evidence): it is recorded as an
-    # error and the schedule continues with t2 instead of fail-stopping.
-    from benchmark_runner.matched_repair import DiagnosticUnavailable
+def test_run_preskips_repair_when_diagnostic_unavailable(tmp_path, monkeypatch):
+    # t1's repair cannot run (no diagnostic evidence): it is pre-skipped
+    # BEFORE any attempt-start event (no inference is ever issued for it) and
+    # the schedule continues with t2 instead of fail-stopping.
     from benchmark_runner.runner import run
     _patch_run_harness(monkeypatch)
 
     def fake_execute(root, task, arm, provider, sandbox, store, identity, cfg, manifest=None):
-        if identity["attempt_id"] == "t1--repair":
-            raise DiagnosticUnavailable("diagnostic evidence not recorded for t1--diagnose")
+        # t1's diagnose attempt records nothing (simulating the 2026-09-22
+        # failure: provider errors, no diagnostic evidence). t2's does.
+        if arm == "diagnose" and identity["attempt_id"] == "t2--diagnose":
+            from benchmark_runner.store import Store
+            store.append("diagnostics", {**identity, "timestamp": "t", "claims": []})
         return {}
 
     monkeypatch.setattr("benchmark_runner.runner.execute_attempt", fake_execute)
     run(Path.cwd(), _run_manifest(), tmp_path)
     statuses, reasons = _terminal_statuses(tmp_path)
-    assert statuses["t1--repair"] == "error"
-    assert reasons["t1--repair"].startswith("repair blocked:")
+    # Pre-skipped: exactly one record for the attempt, status "skipped".
+    assert statuses["t1--repair"] == "skipped"
     assert "diagnostic evidence not recorded" in reasons["t1--repair"]
+    assert "no inference issued" in reasons["t1--repair"]
     # The run continued: t2's attempts both started and completed.
     assert statuses["t2--diagnose"] == "completed"
     assert statuses["t2--repair"] == "completed"
@@ -635,18 +639,21 @@ def test_run_continues_after_diagnostic_unavailable(tmp_path, monkeypatch):
 
 def test_run_still_breaks_on_unexpected_error(tmp_path, monkeypatch):
     # A genuine unexpected exception keeps the existing fail-stop behavior.
+    # (Raised on the diagnose arm, which has no diagnostic dependency, so the
+    # attempt actually executes instead of pre-skipping.)
     from benchmark_runner.runner import run
     _patch_run_harness(monkeypatch)
 
     def fake_execute(root, task, arm, provider, sandbox, store, identity, cfg, manifest=None):
-        if identity["attempt_id"] == "t1--repair":
+        if identity["attempt_id"] == "t1--diagnose":
             raise RuntimeError("simulated harness bug")
         return {}
 
     monkeypatch.setattr("benchmark_runner.runner.execute_attempt", fake_execute)
     run(Path.cwd(), _run_manifest(), tmp_path)
     statuses, reasons = _terminal_statuses(tmp_path)
-    assert statuses["t1--repair"] == "error"
-    assert reasons["t1--repair"] == "RuntimeError: simulated harness bug"
-    # Fail-stop: t2 never started.
+    assert statuses["t1--diagnose"] == "error"
+    assert reasons["t1--diagnose"] == "RuntimeError: simulated harness bug"
+    # Fail-stop: t1--repair and t2 never started.
+    assert "t1--repair" not in statuses
     assert "t2--diagnose" not in statuses

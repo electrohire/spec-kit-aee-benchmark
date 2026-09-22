@@ -20,6 +20,7 @@ class ModelsHandle:
 
 def _reset_auth(monkeypatch):
     monkeypatch.setattr(provider_mod, "_AUTH", None)
+    provider_mod.reset_pacer()  # /v1/models probes are paced process-wide; isolate tests.
 
 
 def test_resolve_auth_env_fallback(monkeypatch):

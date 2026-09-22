@@ -25,7 +25,7 @@ from decimal import Decimal
 from .accounting import TOKEN_FIELDS, native_usage
 from .store import canonical, utc
 from .schema import validate_call, validate_identity
-from .provider import ProviderError
+from .provider import ProviderError, paced_wait, transport_policy
 
 
 def base_url():
@@ -69,16 +69,19 @@ def _extract_text(message):
     return text, fallback, n > 0
 
 
-def check_local_server():
+def check_local_server(policy=None):
     """Fail-closed server probe: reachable, and serving the expected model.
 
     Raises ValueError with an actionable message when the server is down or
     reports a different model. Called once per process before any query and
-    from validate_live() before a campaign starts.
+    from validate_live() before a campaign starts. The probe goes through
+    the process-wide pacer like all other provider traffic.
     """
+    policy = policy or transport_policy({})
     url = base_url() + "/models"
     expected = model_name()
     try:
+        paced_wait(policy)
         req = urllib.request.Request(url, headers=_headers(), method="GET")
         with urllib.request.urlopen(req, timeout=30) as handle:
             data = json.loads(handle.read().decode())
@@ -101,7 +104,8 @@ def check_local_server():
 class LocalProvider:
     def __init__(self, config, store, budget, identity):
         self.config, self.store, self.budget, self.identity = config, store, budget, identity
-        check_local_server()  # Fail before any reservation, never mid-campaign.
+        self.policy = transport_policy(config)
+        check_local_server(self.policy)  # Fail before any reservation, never mid-campaign.
 
     def query(self, messages, phase, timeout, retry=0):
         cfg = self.config
@@ -124,6 +128,7 @@ class LocalProvider:
             try:
                 req = urllib.request.Request(base_url() + "/chat/completions",
                                              canonical(payload), _headers())
+                paced_wait(self.policy)  # The process-wide gap covers local traffic too.
                 with urllib.request.urlopen(req, timeout=timeout) as handle:
                     request_id = handle.headers.get("x-request-id")
                     response = json.loads(handle.read().decode())

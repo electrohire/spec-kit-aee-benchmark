@@ -10,10 +10,10 @@ import tempfile
 import shutil
 from pathlib import Path
 
-from .accounting import Budget, BudgetExceeded, TOKEN_FIELDS
+from .accounting import Budget, BudgetExceeded, TOKEN_FIELDS, attempt_token_usage
 from .experiment import verify_freeze
 from .isolation import DockerSandbox
-from .provider import OpenAIProvider
+from .provider import OpenAIProvider, transport_policy
 from .local_provider import LocalProvider, check_local_server
 from .store import RunLock, Store, canonical, read_json, utc, write_json
 from .workflow import AEE_PHASES, assess, grounded_claims, phase_prompt, phases
@@ -131,9 +131,10 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
                 raise KeyboardInterrupt
             remaining(deadline)
             calls = [c for c in store.events("calls") if c["attempt_id"] == identity["attempt_id"]]
-            if calls and any(c["input_tokens"] is None or c["output_tokens"] is None for c in calls):
-                raise LimitHit("unknown token usage; cannot enforce attempt token ceiling")
-            used = sum(c["input_tokens"]+c["output_tokens"] for c in calls)
+            # Unknown-usage calls (failed physical requests) are charged
+            # their full reservation, so the ceiling stays enforceable; a
+            # transient provider failure never kills the attempt here.
+            used = attempt_token_usage(calls, cfg)
             if used+cfg["max_input_tokens"]+cfg["max_output_tokens"] > cfg["token_cap"]:
                 raise LimitHit("next request token reservation exceeds attempt cap")
             if agent.n_calls >= cfg["max_calls"]:
@@ -200,6 +201,11 @@ def validate_live(manifest, smoke=False):
     for key in required:
         if not cfg.get(key):
             raise ValueError(f"live execution requires frozen {key}")
+    # Pacing/retry bounds are frozen campaign configuration, never ambient
+    # module constants: a live campaign cannot run on implicit defaults.
+    if not cfg.get("transport"):
+        raise ValueError("live execution requires frozen transport policy (pacing/retry bounds)")
+    transport_policy(cfg)  # raises on malformed bounds
     if not cfg.get("reservation_bound_verified"):
         raise ValueError("verify model context and output reservation bounds before spending")
     if not cfg.get("grader_smoke_verified"):
@@ -235,7 +241,7 @@ def run(root, manifest, output, arm=None, smoke=False):
     verify_freeze(root, manifest)
     validate_live(manifest, smoke)
     # Deferred to avoid a module cycle (see execute_attempt).
-    from .matched_repair import DiagnosticUnavailable
+    from .matched_repair import REPAIR_DEPENDENT_ARMS, diagnostic_available
     store = Store(output)
     with RunLock(output):
         path = Path(output)/"freeze.json"
@@ -260,10 +266,22 @@ def run(root, manifest, output, arm=None, smoke=False):
                     store.append("attempts", {**identity, "status": "infrastructure_failure",
                                               "reason": "interrupted; no automatic rerun", "timestamp": utc()})
                 continue
+            if entry["arm"] in REPAIR_DEPENDENT_ARMS and not diagnostic_available(
+                    store, manifest, tasks[entry["task_id"]]):
+                # Pre-skip BEFORE any attempt-start event: the task's
+                # diagnostic evidence is unavailable, so this dependent
+                # repair arm cannot run. No inference is issued; the record
+                # is an honest skip rather than started-then-error.
+                # Downstream band selection fails closed on the missing
+                # attempts.
+                store.append("attempts", {**identity, "status": "skipped",
+                                          "reason": "pre-skipped: diagnostic evidence not recorded; "
+                                                    "no inference issued",
+                                          "timestamp": utc()})
+                continue
             store.append("attempts", {**identity, "status": "started", "timestamp": utc()})
             tick, result = time.monotonic(), {}
             status, reason = "completed", None
-            dep_blocked = False
             try:
                 with DockerSandbox(tasks[entry["task_id"]]["image"]) as sandbox:
                     # base commit equality prevents a patched image from masquerading as clean.
@@ -288,18 +306,10 @@ def run(root, manifest, output, arm=None, smoke=False):
                 status, reason = "limit", str(e)
             except KeyboardInterrupt:
                 status, reason = "cancelled", "operator interrupt"
-            except DiagnosticUnavailable as e:
-                # The task's diagnose attempt produced no diagnostic evidence, so
-                # this dependent repair arm cannot run. This is a per-task skip,
-                # not an uncertain infrastructure/provider failure: record it and
-                # continue the schedule instead of fail-stopping the run.
-                # Downstream band selection fails closed on the missing attempts.
-                status, reason = "error", f"repair blocked: {e}"
-                dep_blocked = True
             except Exception as e:
                 status, reason = "error", error_reason(e)
             store.append("attempts", {**identity, **result, "status": status, "reason": reason,
                                       "timestamp": utc(), "duration_seconds": time.monotonic()-tick})
-            if status in ("cancelled", "error") and not dep_blocked:
+            if status in ("cancelled", "error"):
                 break  # Stop on uncertain infrastructure/provider errors; retain all charges.
     return store.events("attempts")

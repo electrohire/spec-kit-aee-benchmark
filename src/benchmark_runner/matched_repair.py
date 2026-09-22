@@ -40,7 +40,7 @@ import xml.etree.ElementTree as ET
 from decimal import Decimal
 from pathlib import Path
 
-from .accounting import TOKEN_FIELDS, request_prices
+from .accounting import TOKEN_FIELDS, attempt_token_usage, request_prices
 from .experiment import frozen_paths, source_hash
 from .isolation import docker_args
 from .store import Store, canonical, read_json, sha, utc, write_json
@@ -579,9 +579,10 @@ def run_matched_phase(agent, model, store, identity, cfg, phase, instructions, s
                 "Two actions remain in this phase. Finish the requested artifact/check now and use done to report its actual state; "
                 "preserve unresolved issues.")})
         calls = [c for c in store.events("calls") if c["attempt_id"] == identity["attempt_id"]]
-        if calls and any(c["input_tokens"] is None or c["output_tokens"] is None for c in calls):
-            raise LimitHit("unknown token usage; cannot enforce attempt token ceiling")
-        used = sum(c["input_tokens"] + c["output_tokens"] for c in calls)
+        # Unknown-usage calls (failed physical requests) are charged their
+        # full reservation, so the ceiling stays enforceable; a transient
+        # provider failure never kills the attempt here.
+        used = attempt_token_usage(calls, cfg)
         if used + cfg["max_input_tokens"] + cfg["max_output_tokens"] > cfg["token_cap"]:
             raise LimitHit("next request token reservation exceeds attempt cap")
         if agent.n_calls >= cfg["max_calls"]:
@@ -765,9 +766,27 @@ class DiagnosticUnavailable(Exception):
     e.g. it stopped at `limit` after a provider error with unknown usage).
 
     This is a per-task dependency failure, not an infrastructure failure: the
-    run loop records the repair attempt as an error and continues the
-    schedule instead of fail-stopping the run. Downstream band selection
-    fails closed on the missing attempts."""
+    run loop pre-skips the repair attempt before any attempt-start event
+    (status "skipped", no inference issued) and continues the schedule
+    instead of fail-stopping the run. The exception remains as a backstop for
+    direct execute_attempt callers. Downstream band selection fails closed on
+    the missing attempts."""
+
+
+# Repair arms that require the task's diagnostic evidence before they may run.
+REPAIR_DEPENDENT_ARMS = ("repair_ordinary", "repair_guided", "repair_workflow")
+
+
+def diagnostic_available(store, manifest, task):
+    """True when a diagnostic evidence event exists for the task's diagnose
+    attempt. Used to pre-skip dependent repair arms before an attempt-start
+    event instead of recording started-then-error."""
+    pair = task["instance_id"]
+    diag_id = next((e["attempt_id"] for e in manifest["schedule"]
+                    if e["task_id"] == pair and e["arm"] == "diagnose"), None)
+    if diag_id is None:
+        return False
+    return any(e["attempt_id"] == diag_id for e in store.events("diagnostics"))
 
 
 def _diagnostic_for(store, manifest, task):
@@ -1358,6 +1377,19 @@ def smoke_config():
         "currency": "USD",
         "service_tier": "default",
         "budget_authorization": BUDGET_AUTHORIZATION,
+        # Frozen transport policy (pacing/retry bounds): part of the
+        # campaign-frozen config, validated by validate_live before any
+        # spend. 1s process-wide minimum gap between physical provider
+        # requests; retries only on 429/5xx (never on ambiguous transport
+        # failures or timeouts); at most 6 physical attempts per query with
+        # 300s total backoff budget.
+        "transport": {
+            "min_request_gap_seconds": 1.0,
+            "max_http_attempts": 6,
+            "base_backoff_seconds": 2.0,
+            "max_backoff_seconds": 120.0,
+            "max_total_backoff_seconds": 300.0,
+        },
         "reservation_bound_verified": False,
         "grader_smoke_verified": False,
         "real_smoke_verified": False,
