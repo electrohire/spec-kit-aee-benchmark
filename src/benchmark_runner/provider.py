@@ -185,6 +185,28 @@ def _models_ok(spec, mutate):
     return isinstance(data.get("data"), list)
 
 
+
+def _openrouter_credits_remaining(spec, key):
+    """Return remaining OpenRouter credits as float, or None if check fails.
+    Free endpoint; never spends credits. OpenRouter-only."""
+    if spec["name"] != "openrouter":
+        return None
+    try:
+        url = spec["base_url"] + "/credits"
+        req = urllib.request.Request(url, method="GET")
+        req.add_header("Authorization", "Bearer " + key)
+        if spec["referer"]:
+            req.add_header("HTTP-Referer", spec["referer"])
+        if spec["title"]:
+            req.add_header("X-Title", spec["title"])
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read().decode())
+            d = data.get("data", {})
+            return float(d.get("total_credits", 0)) - float(d.get("total_usage", 0))
+    except Exception:
+        return None
+
+
 def resolve_auth(spec=None):
     """Fail-closed credential resolution, verified by a free /models probe.
 
@@ -211,8 +233,20 @@ def resolve_auth(spec=None):
     if key:
         try:
             if _models_ok(spec, lambda req: req.add_header("Authorization", "Bearer " + key)):
+                # OpenRouter: fail fast if credits are too low for a paid run.
+                # The /models probe is free and passes with $0 balance; this
+                # catches the 402-out-of-credits case before any paid call.
+                if name == "openrouter":
+                    remaining = _openrouter_credits_remaining(spec, key)
+                    if remaining is not None and remaining < 1.0:
+                        raise ValueError(
+                            "OpenRouter account has $%.2f remaining credits; "
+                            "top up at https://openrouter.ai/credits before a paid run"
+                            % remaining)
                 _AUTH[name] = ("env", key)
                 return _AUTH[name]
+        except ValueError:
+            raise
         except Exception:
             pass
     raise ValueError("no usable %s credential: Secure Vault connector unavailable "
@@ -507,7 +541,10 @@ class OpenAIProvider:
                     # harness errors all record unknown usage with a real
                     # reason and cost None.
                     response_artifact = None
-                    error = type(exc).__name__  # Never log headers, keys, or raw provider error bodies.
+                    if isinstance(exc, urllib.error.HTTPError):
+                        error = "HTTPError:%d" % exc.code
+                    else:
+                        error = type(exc).__name__
                     usage = {**{k: None for k in TOKEN_FIELDS}, "unknown_reason": error}
                 charge = cost(usage, request_prices(cfg, usage))
                 event = {**self.identity, "call_id": call_id, "request_id": request_id,

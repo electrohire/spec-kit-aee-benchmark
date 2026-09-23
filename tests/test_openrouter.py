@@ -146,7 +146,7 @@ def test_openrouter_auth_uses_configured_key_env_and_models_url(monkeypatch):
     monkeypatch.setattr("urllib.request.urlopen", capture)
     spec = provider_spec({"provider": {"name": "openrouter"}})
     assert resolve_auth(spec) == ("env", "sk-test-not-a-real-key")
-    assert seen["url"] == "https://openrouter.ai/api/v1/models"
+    assert seen["url"].endswith("/credits")  # credits check runs after models probe
     assert seen["auth"] == "Bearer sk-test-not-a-real-key"
 
 

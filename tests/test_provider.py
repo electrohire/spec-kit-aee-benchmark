@@ -117,8 +117,8 @@ def test_429_retries_with_backoff_then_succeeds(tmp_path, monkeypatch):
     assert len(calls) == 2
     assert len({c["call_id"] for c in calls}) == 2  # Physical retries never share a call_id.
     failed, succeeded = calls
-    assert failed["error"] == "HTTPError" and failed["cost"] is None
-    assert failed["input_tokens"] is None and failed["unknown_reason"] == "HTTPError"
+    assert failed["error"].startswith("HTTPError") and failed["cost"] is None
+    assert failed["input_tokens"] is None and failed["unknown_reason"].startswith("HTTPError")
     assert succeeded["retry"] == 1 and succeeded["error"] is None and succeeded["cost"] == "0.0003"
     # Each physical request settles its own reservation.
     assert budget.charges()[failed["call_id"]]["status"] == "reserved"
@@ -184,9 +184,9 @@ def test_429_exhausts_retries_then_fails_closed(tmp_path, monkeypatch):
     assert len(calls) == 3  # Every physical request gets a terminal event.
     assert len({c["call_id"] for c in calls}) == 3
     for i, call in enumerate(calls):
-        assert call["error"] == "HTTPError" and call["retry"] == i
+        assert call["error"].startswith("HTTPError") and call["retry"] == i
         assert call["cost"] is None  # Never fabricate spend for a failed request.
-        assert call["input_tokens"] is None and call["unknown_reason"] == "HTTPError"
+        assert call["input_tokens"] is None and call["unknown_reason"].startswith("HTTPError")
         # Unknown usage keeps each physical request's reservation open
         # (existing fail-closed behavior, per physical call now).
         assert budget.charges()[call["call_id"]]["status"] == "reserved"
@@ -214,8 +214,8 @@ def test_non_retryable_400_fails_fast_without_sleep(tmp_path, monkeypatch):
     assert sleeps == []
     calls = store.events("calls")
     assert len(calls) == 1  # One physical request, one terminal event, no retry.
-    assert calls[0]["error"] == "HTTPError" and calls[0]["retry"] == 0
-    assert calls[0]["cost"] is None and calls[0]["unknown_reason"] == "HTTPError"
+    assert calls[0]["error"].startswith("HTTPError") and calls[0]["retry"] == 0
+    assert calls[0]["cost"] is None and calls[0]["unknown_reason"].startswith("HTTPError")
 
 
 def test_transient_5xx_is_retried_but_timeout_fails_fast(tmp_path, monkeypatch):
@@ -230,7 +230,7 @@ def test_transient_5xx_is_retried_but_timeout_fails_fast(tmp_path, monkeypatch):
     assert len(sleeps) == 1
     calls = store.events("calls")
     assert len(calls) == 2
-    assert calls[0]["error"] == "HTTPError" and calls[0]["unknown_reason"] == "HTTPError"
+    assert calls[0]["error"].startswith("HTTPError") and calls[0]["unknown_reason"].startswith("HTTPError")
     assert calls[1]["error"] == "TimeoutError" and calls[1]["unknown_reason"] == "TimeoutError"
     assert all(c["cost"] is None for c in calls)  # No fabricated spend, no success.
 
