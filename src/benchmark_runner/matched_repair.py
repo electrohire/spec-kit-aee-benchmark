@@ -866,6 +866,36 @@ def _workflow_brief(task, project, diag, public):
         f"Public test feedback:\n{public['output'][-10000:]}")
 
 
+def _condense_workflow_history(agent, phase_summaries):
+    """Inter-phase condensation for the local backend.
+
+    The raw six-phase conversation outgrows the local backend's context
+    window (pilot: ~44.8k prompt tokens vs 40960 usable on llama-server),
+    so phases past the third fail with provider HTTP errors. The workflow's
+    persistent memory is the artifact tree under /workflow/specs plus each
+    phase's recorded honest `done` summary; the turn-by-turn history is
+    working memory. At each phase boundary it is replaced with a compact
+    handoff built only from recorded summaries -- no new claims are
+    invented, and no assessment or recovery message is altered. This mirrors
+    the condensation the v9 campaign design already specifies between
+    phases.
+    """
+    lines = []
+    for s in phase_summaries:
+        done = s.get("done") or {}
+        lines.append("- %s: completed=%s, summary=%s"
+                     % (s["phase"], s["completed"],
+                        done.get("summary", "(no recorded summary)")))
+    handoff = ("Workflow conversation condensed at the phase boundary to fit "
+               "the local backend context window. Completed phases and their "
+               "recorded honest summaries:\n" + "\n".join(lines) +
+               "\nFull phase artifacts remain on disk under /workflow/specs; "
+               "re-read them as needed. Continue with the current phase's "
+               "instructions.")
+    agent.messages = [{"role": "system", "content": COMMON},
+                      {"role": "user", "content": handoff}]
+
+
 def run_workflow_repair(root, task, provider, sandbox, store, identity, cfg, manifest):
     """Full Spec-Kit+AEE workflow repair treatment (Claim A local arm, v9 section 1).
 
@@ -894,7 +924,8 @@ def run_workflow_repair(root, task, provider, sandbox, store, identity, cfg, man
     claims_schema = (Path(root)/".specify/extensions/aee/templates/aee-claims.json").read_text()
 
     phase_summaries, assessment_outcome, recoveries, blocked = [], None, 0, False
-    for phase in phases("spec_kit_aee"):
+    workflow_phases = phases("spec_kit_aee")
+    for phase in workflow_phases:
         in_aee = phase in AEE_PHASES
         instructions = (
             f"You are executing phase '{phase}' of the frozen Spec-Kit+AEE workflow on this repair task. "
@@ -936,6 +967,10 @@ def run_workflow_repair(root, task, provider, sandbox, store, identity, cfg, man
                 phase_summaries.append(summary)
                 break
         phase_summaries.append(summary)
+        # Condense between phases only: the final phase's raw history is left
+        # intact for post-hoc inspection.
+        if phase != workflow_phases[-1]:
+            _condense_workflow_history(agent, phase_summaries)
 
     # Final harness-measured state, in the same shape the grader and the
     # outcome classifier expect from the repair arms.

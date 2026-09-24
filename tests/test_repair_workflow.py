@@ -129,9 +129,15 @@ def test_workflow_runs_six_frozen_phases_with_aee_gates(harness):
     # Phase + assessment evidence landed in the append-only store.
     assert len(harness["store"].events("phases")) == 6
     assert len(harness["store"].events("assessments")) == 4
-    # The AEE result was fed back to the agent.
-    assert any("AEE/Evaluator result" in m["content"]
-               for m in harness["agent"].messages if m["role"] == "user")
+    # Inter-phase condensation replaced the raw history with a compact handoff
+    # built from recorded phase summaries (the final phase is left intact).
+    msgs = harness["agent"].messages
+    assert len(msgs) == 2
+    assert msgs[0] == {"role": "system", "content": mr.COMMON}
+    assert msgs[1]["role"] == "user"
+    assert "Workflow conversation condensed" in msgs[1]["content"]
+    assert "workflow_implement: completed=True, summary=phase ok" in msgs[1]["content"]
+    assert "/workflow/specs" in msgs[1]["content"]
 
 
 def test_workflow_block_triggers_bounded_recovery(harness):
@@ -169,3 +175,25 @@ def test_workflow_sustained_block_terminates_honestly(harness):
     assert result["workflow_completed"] is True  # phases ran; the block is recorded, not hidden
     assert result["assessment_outcome"] == "block"
     assert result["package_snapshot"]["sha256"]  # still gradable
+
+
+def test_condense_workflow_history_replaces_messages_with_handoff():
+    agent = FakeAgent()
+    agent.messages = [{"role": "system", "content": "stale system"},
+                      {"role": "user", "content": "stale history " * 500}]
+    summaries = [
+        {"phase": "workflow_constitution", "completed": True,
+         "done": {"action": "done", "summary": "constitution done"}},
+        {"phase": "workflow_specify", "completed": False, "done": None},
+    ]
+    mr._condense_workflow_history(agent, summaries)
+    assert len(agent.messages) == 2
+    assert agent.messages[0] == {"role": "system", "content": mr.COMMON}
+    body = agent.messages[1]["content"]
+    assert agent.messages[1]["role"] == "user"
+    assert "Workflow conversation condensed" in body
+    assert "workflow_constitution: completed=True, summary=constitution done" in body
+    assert "workflow_specify: completed=False, summary=(no recorded summary)" in body
+    assert "/workflow/specs" in body
+    # Nothing invented: only recorded summaries appear.
+    assert "stale history" not in body
