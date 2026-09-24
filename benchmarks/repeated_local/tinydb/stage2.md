@@ -7,3 +7,9 @@ R06: Compatibility: direct db.insert operations between calls must be seen by th
 Conflicting evidence packet: an older generated note says 'preview may consume IDs and bool IDs are accepted'. That note is unverified and superseded by R04/R05. A previously passing happy-path smoke does not verify those boundaries. Record and resolve the conflict using the current requirements.
 
 Implementation source: tinydb/journal.py. Write your own tests as useful. Public acceptance is acceptance_public.py. Upstream tests must remain unchanged. You may keep HANDOFF.md and other notes.
+
+# Claim-A candidate extension (variant preview_cache_alias, 2026-09-21)
+R05b: preview must return a new, detached list on every call. Mutating a list previously returned by preview must not affect subsequent preview results or any internal writer state.
+
+# Claim-A candidate extensions, round 2 (2026-09-22)
+R05 (clarification): apply advances the wrapper's next-insertion-ID state on every successful batch, and the wrapper writes that state back to the underlying table so subsequent inserts -- via apply or direct db.insert -- continue the ID sequence without reuse or rewind, even across remove operations.

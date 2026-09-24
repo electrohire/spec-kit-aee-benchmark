@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 
 from .experiment import ARMS, freeze, select, verify_freeze
+from .matched_repair import MATCHED_ARMS
 from .store import Store, read_json, write_json
 
 
@@ -21,10 +22,11 @@ def preflight(root):
         docker = None
     free = shutil.disk_usage(root).free
     # Check API credential availability (informational for preflight;
-    # validate_live() does the fail-closed check before paid runs).
+    # validate_live() does the fail-closed check before paid runs). The
+    # provider comes from BENCH_PROVIDER; live runs use the frozen manifest.
     try:
-        from .provider import resolve_auth
-        resolve_auth()
+        from .provider import provider_name_from_env, provider_spec, resolve_auth
+        resolve_auth(provider_spec({"provider": {"name": provider_name_from_env()}}))
         api_credential_present = True
     except Exception:
         api_credential_present = False
@@ -49,7 +51,7 @@ def parser():
     for command in ("dry-run", "run"):
         s = sub.add_parser(command); s.add_argument("manifest", type=Path)
         if command == "run":
-            s.add_argument("output", type=Path); s.add_argument("--arm", choices=ARMS)
+            s.add_argument("output", type=Path); s.add_argument("--arm", choices=ARMS + MATCHED_ARMS)
             s.add_argument("--smoke", action="store_true")
     s = sub.add_parser("grade"); s.add_argument("store", type=Path)
     s.add_argument("--task-repo", type=Path, required=True); s.add_argument("--harness-repo", type=Path, required=True)

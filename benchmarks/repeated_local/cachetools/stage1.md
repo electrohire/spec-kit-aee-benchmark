@@ -6,3 +6,6 @@ R02: invalidate(tag) removes exactly currently cached entries carrying that tag 
 R03: maxsize must be a positive integer, excluding bool. Invalid replacement input must leave the old value/tags/recency unchanged. Values cost one capacity slot regardless of object size.
 
 Implementation source: src/cachetools/tagged.py. Write your own tests as useful. Public acceptance is acceptance_public.py. Upstream tests must remain unchanged. You may keep HANDOFF.md and other notes.
+
+# Claim-A candidate extension (variant put_no_recency_refresh, 2026-09-21)
+R02 extension: overwriting an existing key via put refreshes its LRU recency, making it the most-recently-used entry.

@@ -135,3 +135,38 @@ def test_schema_accepts_local_inference_cost_basis():
              "currency": "USD", "cost": "0", "retry": 0, "error": None,
              "artifacts": {"request": "x", "response": "y"}}
     validate_call(event)
+
+
+def test_extract_text_prefers_content():
+    from benchmark_runner.local_provider import _extract_text
+    text, fallback, stripped = _extract_text(
+        {"role": "assistant", "content": '{"action": "done"}'})
+    assert text == '{"action": "done"}'
+    assert fallback is False and stripped is False
+
+
+def test_extract_text_falls_back_to_reasoning_content():
+    from benchmark_runner.local_provider import _extract_text
+    # llama.cpp with --reasoning-format splits the answer out of content.
+    text, fallback, stripped = _extract_text(
+        {"role": "assistant", "content": "",
+         "reasoning_content": '{"action": "shell", "command": "true"}'})
+    assert text == '{"action": "shell", "command": "true"}'
+    assert fallback is True
+
+
+def test_extract_text_strips_think_blocks():
+    from benchmark_runner.local_provider import _extract_text
+    # Default llama.cpp behavior: Qwen3 <think> blocks land in content.
+    text, fallback, stripped = _extract_text(
+        {"role": "assistant",
+         "content": "<think>Let me check the code.</think>\n{\"action\": \"done\"}"})
+    assert text == '{"action": "done"}'
+    assert stripped is True and fallback is False
+
+
+def test_extract_text_empty_when_nothing():
+    from benchmark_runner.local_provider import _extract_text
+    text, fallback, stripped = _extract_text({"role": "assistant"})
+    assert text == ""
+    assert fallback is False and stripped is False

@@ -1,5 +1,6 @@
 """Only shell commands cross into fresh network-disabled upstream containers."""
 import json
+import os
 import re
 import subprocess
 import uuid
@@ -52,9 +53,23 @@ class DockerSandbox:
             (target/".specify/memory").mkdir()
             shutil.copyfile(target/".specify/templates/constitution-template.md",
                             target/".specify/memory/constitution.md")
+            # The sandbox drops ALL capabilities (including CAP_DAC_OVERRIDE),
+            # so its root cannot write into a tree owned by the host uid unless
+            # the mode permits it. These are throwaway assets in a
+            # network-disabled sandbox: make them world-writable before the
+            # docker cp, otherwise `git init` fails with Permission denied.
+            for dirpath, _dirnames, filenames in os.walk(target):
+                os.chmod(dirpath, 0o777)
+                for filename in filenames:
+                    os.chmod(os.path.join(dirpath, filename), 0o666)
             subprocess.run(["docker", "cp", str(target), self.name+":/workflow"],
                            check=True, capture_output=True, timeout=30)
-            result = self.execute("cd /workflow && git init -q && mkdir -p specs")
+            # /workflow is owned by the host uid while git runs as the
+            # sandbox's root: mark it safe so later git commands (status, add,
+            # commit) do not fail on dubious ownership.
+            result = self.execute("cd /workflow && git init -q && "
+                                  "git config --global --add safe.directory /workflow && "
+                                  "mkdir -p specs")
             if result["exit_code"]:
                 raise RuntimeError("workflow staging failed")
 
