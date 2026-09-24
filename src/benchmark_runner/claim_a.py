@@ -472,6 +472,80 @@ def cmd_freeze_pilot(args):
     print("FREEZE", manifest["freeze_id"])
 
 
+# Exploratory campaign (2026-09-24): developmental, uncalibrated sweep over
+# the full candidate bank on the local backend. This is NOT the calibrated
+# Claim A comparison: the bank is the fixture-checked candidate set, not the
+# 0.2-0.8 frontier pass-band selection, and there is no frontier arm.
+# One workflow repair per task keeps the local-8B runtime feasible.
+EXPLORATORY_REPEATS = 1
+
+
+def exploratory_config_local(kept, real_smoke_evidence=None):
+    """Frozen config for the exploratory local campaign: one diagnostic plus
+    one full Spec-Kit/AEE workflow repair per kept task, local backend.
+
+    Same local-backend mechanics as main_config_local (fail-closed model
+    identity from the operator environment, zero marginal-dollar prices, the
+    64-call workflow attempt budget) but purpose "development_smoke" so it
+    runs under --smoke, and explicitly uncalibrated: the kept list is the
+    exploratory bank, not the calibrated selection.
+    """
+    cfg = calibration_config()
+    model = os.environ.get("LOCAL_MODEL_NAME")
+    if not model:
+        raise ValueError("LOCAL_MODEL_NAME is not set: refusing to freeze a "
+                         "local manifest against an unidentified model")
+    cfg.update({
+        "purpose": "development_smoke",
+        "provider_backend": "local",
+        "model": model,
+        "max_calls": 64,
+        # reasoning_effort is OpenAI-only; LocalProvider must not receive it.
+        "price_snapshot_id": "local-inference",
+        "prices": {"input": 0.0, "cached_input": 0.0, "output": 0.0},
+        "budget_authorization": _budget_authorization(
+            "exploratory local campaign (developmental, uncalibrated; no spend)"),
+        "real_smoke_verified": real_smoke_evidence is not None,
+    })
+    cfg.pop("reasoning_effort", None)
+    if real_smoke_evidence:
+        cfg["real_smoke_evidence"] = real_smoke_evidence
+    return cfg
+
+
+def exploratory_schedule(kept):
+    """Deterministic schedule: per kept task, one shared diagnostic followed
+    by one full-workflow repair (repeat 1). Pure function (no Docker, no calls)."""
+    schedule = []
+    for project, variant, seed in kept:
+        pair_id = _pair_id(project, variant, seed)
+        schedule.append(dict(task_id=pair_id, arm="diagnose", repeat=1,
+                             attempt_id=f"{pair_id}--diagnose"))
+        schedule.append(dict(task_id=pair_id, arm="repair_workflow", repeat=1,
+                             attempt_id=f"{pair_id}--repair_workflow-1"))
+    return schedule
+
+
+def cmd_freeze_exploratory(args):
+    kept = [tuple(t) for t in read_json(Path(args.kept))]
+    if not kept:
+        raise ValueError("kept task list is empty")
+    cfg = exploratory_config_local(kept, real_smoke_evidence=args.pilot_evidence)
+    manifest = build_freeze(
+        args.out, args.calibration, cfg, exploratory_schedule(kept), kept,
+        "freeze-claim-a-exploratory",
+        ("Freeze claim-a-exploratory: EXPLORATORY, DEVELOPMENTAL, UNCALIBRATED sweep over "
+         f"the full {len(kept)}-candidate bank on the local backend (model {cfg['model']}). "
+         "One diagnostic + one full six-phase Spec-Kit/AEE workflow repair per task. "
+         "This is NOT the calibrated Claim A comparison: the bank passed fixture checks "
+         "only (no 0.2-0.8 frontier pass-band selection) and there is no frontier arm. "
+         "Do not treat results as Claim A evidence. Free; no spend."),
+        (f"Exploratory bank: {len(kept)} candidates that passed fixture checks only "
+         f"(uncalibrated, developmental), seed {CLAIM_A_SEED}."),
+    )
+    print("FREEZE", manifest["freeze_id"])
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Claim A campaign (v9 design)")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -486,6 +560,10 @@ def main(argv=None):
     p = sub.add_parser("freeze-pilot"); p.add_argument("out", type=Path)
     p.add_argument("--calibration", type=Path, required=True)
     p.add_argument("--kept", type=Path, required=True)
+    p = sub.add_parser("freeze-exploratory"); p.add_argument("out", type=Path)
+    p.add_argument("--calibration", type=Path, required=True)
+    p.add_argument("--kept", type=Path, required=True)
+    p.add_argument("--pilot-evidence", default=None)
     args = parser.parse_args(argv)
     if args.command == "calibrate":
         cmd_calibrate(args)
@@ -495,6 +573,8 @@ def main(argv=None):
         cmd_freeze_main(args)
     elif args.command == "freeze-pilot":
         cmd_freeze_pilot(args)
+    elif args.command == "freeze-exploratory":
+        cmd_freeze_exploratory(args)
     else:
         raise ValueError(f"unknown command {args.command}")
 
