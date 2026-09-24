@@ -478,7 +478,8 @@ def tests_for(project, stage, public):
 # v3 structural termination port (from scripts/repeated_local.py Session.phase)
 # ---------------------------------------------------------------------------
 
-from .runner import LimitHit, MiniEnvironment, MiniModel, remaining  # noqa: E402
+from .runner import (LimitHit, MiniEnvironment, MiniModel, attempt_wall_seconds,
+                     call_timeout_seconds, remaining)  # noqa: E402
 
 
 class MatchedModel(MiniModel):
@@ -490,7 +491,7 @@ class MatchedModel(MiniModel):
 
     def query(self, messages):
         cleaned = [{"role": m["role"], "content": m["content"]} for m in messages]
-        text = self.provider.query(cleaned, self.phase, min(remaining(self.deadline), 120))
+        text = self.provider.query(cleaned, self.phase, min(remaining(self.deadline), self.call_timeout))
         try:
             action = json.loads(text)
             allowed = ("shell", "done") + (("draft",) if self.claims_phase else ())
@@ -710,7 +711,7 @@ def snapshot_package(sandbox, package_dir):
 # Attempt drivers
 # ---------------------------------------------------------------------------
 
-def _new_agent(provider, deadline):
+def _new_agent(provider, deadline, cfg):
     import os
     import shutil
     import tempfile
@@ -719,7 +720,7 @@ def _new_agent(provider, deadline):
     os.environ["MSWEA_GLOBAL_CONFIG_DIR"] = str(global_config)
     os.environ["MSWEA_SILENT_STARTUP"] = "1"
     try:
-        agent = DefaultAgent(MatchedModel(provider, deadline), None,
+        agent = DefaultAgent(MatchedModel(provider, deadline, call_timeout_seconds(cfg)), None,
                              system_template="", instance_template="", cost_limit=0)
     finally:
         shutil.rmtree(global_config, ignore_errors=True)
@@ -728,8 +729,8 @@ def _new_agent(provider, deadline):
 
 def run_diagnostic(root, task, provider, sandbox, store, identity, cfg):
     project, variant, seed = pair_of(task["instance_id"])
-    deadline = time.monotonic() + cfg["timeout_seconds"]
-    agent = _new_agent(provider, deadline)
+    deadline = time.monotonic() + attempt_wall_seconds(cfg)
+    agent = _new_agent(provider, deadline, cfg)
     agent.env = MiniEnvironment(sandbox, deadline, store, identity)
     model = agent.model
 
@@ -803,8 +804,8 @@ def _diagnostic_for(store, manifest, task):
 
 def run_repair(root, task, arm, provider, sandbox, store, identity, cfg, manifest):
     project, variant, seed = pair_of(task["instance_id"])
-    deadline = time.monotonic() + cfg["timeout_seconds"]
-    agent = _new_agent(provider, deadline)
+    deadline = time.monotonic() + attempt_wall_seconds(cfg)
+    agent = _new_agent(provider, deadline, cfg)
     agent.env = MiniEnvironment(sandbox, deadline, store, identity)
     model = agent.model
 
@@ -909,8 +910,8 @@ def run_workflow_repair(root, task, provider, sandbox, store, identity, cfg, man
     method: phased workflow with per-phase AEE gating vs direct repair rounds.
     """
     project, variant, seed = pair_of(task["instance_id"])
-    deadline = time.monotonic() + cfg["timeout_seconds"]
-    agent = _new_agent(provider, deadline)
+    deadline = time.monotonic() + attempt_wall_seconds(cfg)
+    agent = _new_agent(provider, deadline, cfg)
     agent.env = MiniEnvironment(sandbox, deadline, store, identity)
     model = agent.model
 

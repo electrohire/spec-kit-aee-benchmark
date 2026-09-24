@@ -47,15 +47,38 @@ def remaining(deadline):
     return seconds
 
 
+# Local-backend calibration (2026-09-24): the operator's llama.cpp server is
+# dramatically slower than frontier APIs (pilot measured 41-108s per model
+# call; every call past the 120s client timeout failed). Local runs therefore
+# get a longer per-call timeout and attempt wall-time, gated on the frozen
+# manifest's provider_backend == "local". Paid/frontier defaults (120s per
+# call, cfg timeout_seconds) are untouched.
+LOCAL_CALL_TIMEOUT_SECONDS = 600
+LOCAL_WALL_TIME_SECONDS = 7200
+FRONTIER_CALL_TIMEOUT_SECONDS = 120
+
+
+def local_backend(cfg):
+    return cfg.get("provider_backend") == "local"
+
+
+def call_timeout_seconds(cfg):
+    return LOCAL_CALL_TIMEOUT_SECONDS if local_backend(cfg) else FRONTIER_CALL_TIMEOUT_SECONDS
+
+
+def attempt_wall_seconds(cfg):
+    return LOCAL_WALL_TIME_SECONDS if local_backend(cfg) else cfg["timeout_seconds"]
+
+
 class MiniModel:
     """mini's Model protocol with observable requests and explicit JSON actions."""
-    def __init__(self, provider, deadline):
-        self.provider, self.deadline = provider, deadline
+    def __init__(self, provider, deadline, call_timeout=FRONTIER_CALL_TIMEOUT_SECONDS):
+        self.provider, self.deadline, self.call_timeout = provider, deadline, call_timeout
         self.phase, self.last = None, None
 
     def query(self, messages):
         cleaned = [{"role": m["role"], "content": m["content"]} for m in messages]
-        text = self.provider.query(cleaned, self.phase, min(remaining(self.deadline), 120))
+        text = self.provider.query(cleaned, self.phase, min(remaining(self.deadline), self.call_timeout))
         try:
             action = json.loads(text)
             if not isinstance(action, dict) or action.get("action") not in ("shell", "done"):
@@ -111,8 +134,8 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
     shutil.rmtree(global_config)
     if arm != "baseline":
         sandbox.stage_workflow(root)
-    deadline = time.monotonic()+cfg["timeout_seconds"]
-    model = MiniModel(provider, deadline)
+    deadline = time.monotonic()+attempt_wall_seconds(cfg)
+    model = MiniModel(provider, deadline, call_timeout_seconds(cfg))
     environment = MiniEnvironment(sandbox, deadline, store, identity)
     agent = DefaultAgent(model, environment, system_template="", instance_template="", cost_limit=0)
     agent.add_messages({"role": "system", "content": phase_prompt(root, "baseline", "solve")},

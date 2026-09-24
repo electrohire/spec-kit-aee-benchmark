@@ -73,7 +73,7 @@ def harness(tmp_path, monkeypatch):
                          "claims": {"schema_version": "1.0", "claims": []}},
                 "completed": True, "errors": [], "calls": 3}
 
-    monkeypatch.setattr(mr, "_new_agent", lambda provider, deadline: agent)
+    monkeypatch.setattr(mr, "_new_agent", lambda provider, deadline, cfg: agent)
     monkeypatch.setattr(mr, "run_matched_phase", fake_phase)
     monkeypatch.setattr(mr, "run_public_tests",
                         lambda sb: {"passed": True, "test_count": 5, "output": "ok"})
@@ -197,3 +197,22 @@ def test_condense_workflow_history_replaces_messages_with_handoff():
     assert "/workflow/specs" in body
     # Nothing invented: only recorded summaries appear.
     assert "stale history" not in body
+
+
+def test_local_backend_timeout_calibration_gates_on_provider_backend():
+    # Harness calibration for a slow local backend (2026-09-24): local runs
+    # get a longer per-call timeout and wall-time; paid/frontier defaults
+    # are untouched.
+    local = {"provider_backend": "local", "timeout_seconds": 1800}
+    frontier = {"provider_backend": "openai", "timeout_seconds": 1800}
+    assert mr.call_timeout_seconds(local) == 600
+    assert mr.call_timeout_seconds(frontier) == 120
+    assert mr.attempt_wall_seconds(local) == 7200
+    assert mr.attempt_wall_seconds(frontier) == 1800
+
+
+def test_matched_model_defaults_to_frontier_call_timeout():
+    # Backwards compatibility: models constructed without an explicit
+    # call_timeout keep the paid/frontier default.
+    model = mr.MiniModel(provider=None, deadline=0.0)
+    assert model.call_timeout == 120
