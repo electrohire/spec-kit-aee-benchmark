@@ -11,7 +11,7 @@ def test_invalid_claim_kind_retains_subprocess_failure(tmp_path):
     store=Store(tmp_path/'evidence')
     claims={'schema_version':'1.0','claims':[{'id':'BAD-1','text':'Invalid claim-kind fixture','kind':'observed'}]}
     with pytest.raises(RuntimeError,match='no evaluator result'):
-        assess(Path(__file__).resolve().parents[1],claims,'implement',store)
+        assess(Path(__file__).resolve().parents[1],claims,'implement',store,'test-attempt-1')
     errors=store.events('assessment_errors')
     assert len(errors)==1
     diagnostic=json.loads((store.root/errors[0]['artifact']['path']).read_text())

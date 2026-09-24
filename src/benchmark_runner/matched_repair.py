@@ -748,7 +748,7 @@ def run_diagnostic(root, task, provider, sandbox, store, identity, cfg):
     if summary["done"] and not diagnostic_changed:
         claims = grounded_claims(summary["done"]["claims"], store, identity["attempt_id"])
         begin = time.monotonic()
-        evaluation = assess(root, claims, "implement", store)
+        evaluation = assess(root, claims, "implement", store, identity["attempt_id"])
         assessment_seconds = time.monotonic() - begin
     event = {**identity, "project": project, "variant": variant, "seed": seed,
              "summary": summary, "diagnostic_changed_source": diagnostic_changed,
@@ -909,7 +909,7 @@ def run_workflow_repair(root, task, provider, sandbox, store, identity, cfg, man
                                     claims=in_aee)
         if in_aee and summary["done"]:
             claims = grounded_claims(summary["done"].get("claims") or {}, store, identity["attempt_id"])
-            result = assess(root, claims, phase, store)
+            result = assess(root, claims, phase, store, identity["attempt_id"])
             assessment_outcome = result["outcome"]
             agent.add_messages({"role": "user", "content": "AEE/Evaluator result: " + json.dumps(result)})
             recovery = 0
@@ -928,7 +928,7 @@ def run_workflow_repair(root, task, provider, sandbox, store, identity, cfg, man
                     break
                 claims = grounded_claims(summary["done"].get("claims") or {}, store,
                                          identity["attempt_id"])
-                result = assess(root, claims, phase, store)
+                result = assess(root, claims, phase, store, identity["attempt_id"])
                 assessment_outcome = result["outcome"]
                 agent.add_messages({"role": "user", "content": "AEE/Evaluator result: " + json.dumps(result)})
             if result["outcome"] == "block":

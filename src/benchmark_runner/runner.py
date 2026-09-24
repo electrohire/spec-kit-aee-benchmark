@@ -148,7 +148,7 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             if arm != "spec_kit_aee" or phase not in AEE_PHASES:
                 break
             claims = grounded_claims(model.last.get("claims") or {}, store, identity["attempt_id"])
-            result = assess(root, claims, phase, store)
+            result = assess(root, claims, phase, store, identity["attempt_id"])
             outcome = result["outcome"]
             agent.add_messages({"role": "user", "content": "AEE/Evaluator result: "+json.dumps(result)})
             if outcome in ("pass", "warn"):

@@ -88,7 +88,7 @@ def _run(monkeypatch, harness, outcomes):
     calls = harness["calls"]
     seq = list(outcomes)
 
-    def fake_assess(root, claims, phase, store):
+    def fake_assess(root, claims, phase, store, attempt_id):
         calls["assessments"].append(phase)
         # Mirror the real assess() evidence write.
         store.append("assessments", {**harness["identity"], "phase": phase})
@@ -152,7 +152,7 @@ def test_workflow_sustained_block_terminates_honestly(harness):
     cfg = dict(CFG, max_recovery_rounds=1)
     calls = harness["calls"]
 
-    def fake_assess(root, claims, phase, store):
+    def fake_assess(root, claims, phase, store, attempt_id):
         calls["assessments"].append(phase)
         return {"outcome": "block", "findings": []}
 
