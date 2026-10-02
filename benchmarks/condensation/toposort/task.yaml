@@ -1,0 +1,12 @@
+name: toposort
+module: toposort
+title: Deterministic topological sort
+constraints:
+  C01: requirement
+  C02: requirement
+  C03: requirement
+  C04: subtle
+  C05: negative
+  C06: subtle
+  C07: requirement
+trap: Kahn's algorithm with a LIFO stack worklist instead of smallest-first selection (valid topological order, but violates the C04 sorted tie-break)
