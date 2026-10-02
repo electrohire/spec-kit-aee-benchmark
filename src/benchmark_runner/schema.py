@@ -21,7 +21,7 @@ CALL_SCHEMA = {
         "duration_seconds": {"type": "number", "minimum": 0},
         "retry": {"type": "integer", "minimum": 0},
         "currency": {"const": "USD"},
-        "cost_basis": {"const": "list_price_estimate"},
+        "cost_basis": {"enum": ["list_price_estimate", "local_inference"]},
         "cost": {"type": ["string", "null"]},
         **{k: {"type": ["integer", "null"], "minimum": 0} for k in
            ("input_tokens", "cached_input_tokens", "output_tokens", "reasoning_tokens")},
