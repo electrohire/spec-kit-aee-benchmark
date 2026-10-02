@@ -5,7 +5,16 @@ OpenAIProvider: one shared read-only diagnostic per fixture pair, then two
 repair arms (ordinary vs AEE-guided) from the same pristine fixture snapshot.
 Hidden grading happens after all runs; hidden outcomes are never fed back.
 
-Arms: ``diagnose``, ``repair_ordinary``, ``repair_guided``.
+Arms: ``diagnose``, ``repair_ordinary``, ``repair_guided``, ``repair_workflow``.
+
+``repair_workflow`` is the full Spec-Kit+AEE workflow treatment for Claim A
+(v9 design section 1, ratified 2026-09-21): the exact frozen six-phase
+workflow from benchmark_runner.workflow (constitution, specify, plan, tasks,
+implement, converge) with the frozen skill prompts, grounded claims, and the
+AEE assess() gate at each AEE phase with bounded recovery rounds. It runs on
+the matched-repair fixture sandbox with the same shared diagnostic and
+public-test feedback as the repair arms, so the only treatment difference is
+the repair method.
 
 The v3 structural diagnostic-termination fix from scripts/repeated_local.py
 (Session.phase) is ported here verbatim in spirit: claim-bearing phases get a
@@ -31,15 +40,15 @@ import xml.etree.ElementTree as ET
 from decimal import Decimal
 from pathlib import Path
 
-from .accounting import TOKEN_FIELDS, request_prices
+from .accounting import TOKEN_FIELDS, attempt_token_usage, request_prices
 from .experiment import frozen_paths, source_hash
 from .isolation import docker_args
 from .store import Store, canonical, read_json, sha, utc, write_json
-from .workflow import assess, grounded_claims
+from .workflow import AEE_PHASES, assess, grounded_claims, phase_prompt, phases
 
 ROOT = Path(__file__).resolve().parents[2]
 
-MATCHED_ARMS = ("diagnose", "repair_ordinary", "repair_guided")
+MATCHED_ARMS = ("diagnose", "repair_ordinary", "repair_guided", "repair_workflow")
 
 # (before, after, seeded_requirements) — ported from scripts/matched_repair.py.
 #
@@ -68,6 +77,73 @@ VARIANTS = {
         "storage_alias": ("        storage = deepcopy(self.db.storage.read() or {})\n",
                           "        storage = self.db.storage.read() or {}\n",
                           ["R05"]),
+        # token_ops_alias: R07 requires that repeating an already successful identical batch/token returns a detached copy of t
+        "token_ops_alias": ('            self.tokens[token] = (deepcopy(operations), deepcopy(inserted))',
+                       '            self.tokens[token] = (operations, deepcopy(inserted))',
+                       ["R07", "R03"]),
+        # empty_batch_token: R01 states 'Empty input returns []': an empty batch is a successful batch, not a malformed one. R07 
+        "empty_batch_token": ("        if token is not None and (not isinstance(token, str) or not token):\n            raise ValueError('invalid token')\n",
+                       "        if token is not None and (not isinstance(token, str) or not token):\n            raise ValueError('invalid token')\n        if token is not None and not operations:\n            raise ValueError('empty operations cannot use a token')\n",
+                       ["R01", "R07"]),
+        # token_conflict_shallow: R07: 'Reusing a token with different operations raises ValueError without changing data.' 'Different
+        "token_conflict_shallow": ("            if previous != operations:\n                raise ValueError('token conflict')\n",
+                       "            if len(previous) != len(operations):\n                raise ValueError('token conflict')\n",
+                       ["R07"]),
+        # preview_cache_alias: R05 defines preview as returning 'the inserted IDs that apply would produce' while leaving data and 
+        "preview_cache_alias": ([('    def __init__(self, db):\n        self.db = db\n        self.tokens = {}\n', '    def __init__(self, db):\n        self.db = db\n        self.tokens = {}\n        self._preview_cache = {}\n'),
+                      ('    def preview(self, operations):\n        return self._simulate(operations)[2]\n', '    def preview(self, operations):\n        key = repr(operations)\n        if key not in self._preview_cache:\n            self._preview_cache[key] = self._simulate(operations)[2]\n        return self._preview_cache[key]\n')],
+                       None,
+                       ["R05", "R03"]),
+        # token_conflict_repr: R07's replay rule keys on an 'identical batch'. For operation dicts, identity is value equality (==)
+        "token_conflict_repr": ("            if previous != operations:\n                raise ValueError('token conflict')\n",
+                       "            if repr(previous) != repr(operations):\n                raise ValueError('token conflict')\n",
+                       ["R07"]),
+        # stale_snapshot: R06: 'direct db.insert operations between calls must be seen by the wrapper. Do not cache a stale in
+        "stale_snapshot": ([('        storage = deepcopy(self.db.storage.read() or {})\n', "        if not hasattr(self, '_snap'):\n            self._snap = self.db.storage.read() or {}\n        storage = deepcopy(self._snap)\n"),
+                      ('        self.db.storage.write(storage)\n', '        self.db.storage.write(storage)\n        self._snap = deepcopy(storage)\n')],
+                       None,
+                       ["R06"]),
+        # compact_id_reuse: R05 names 'the next insertion ID' as stable state that preview and failed applies must not disturb, 
+        "compact_id_reuse": ('        next_id = table._next_id if table._next_id is not None else max(docs, default=0) + 1\n',
+                       '        used = set(docs)\n        next_id = 1\n        while next_id in used:\n            next_id += 1\n',
+                       ["R05", "R03"]),
+        # next_id_rewind: Same requirements as compact_id_reuse: R05's stable 'next insertion ID' plus R03's preservation of T
+        "next_id_rewind": ('        next_id = table._next_id if table._next_id is not None else max(docs, default=0) + 1\n',
+                       '        next_id = max(docs, default=0) + 1\n',
+                       ["R05", "R03"]),
+        # token_validate_late: R07: 'invalid tokens raise ValueError.' R02 makes batch application atomic ('on any error restore th
+        "token_validate_late": ([("    def apply(self, operations, token=None):\n        if token is not None and (not isinstance(token, str) or not token):\n            raise ValueError('invalid token')\n        if token is not None and token in self.tokens:\n", '    def apply(self, operations, token=None):\n        if token is not None and token in self.tokens:\n'),
+                      ("        self.db.table('_default')._next_id = next_id\n        if token is not None:\n", "        self.db.table('_default')._next_id = next_id\n        if token is not None and (not isinstance(token, str) or not token):\n            raise ValueError('invalid token')\n        if token is not None:\n")],
+                       None,
+                       ["R07", "R02"]),
+        # conflict_mutates_before_raise: R07: 'Reusing a token with different operations raises ValueError without changing
+        # data.' The conflict check must run BEFORE the batch is written; moving it after the write raises but leaves the
+        # conflicting batch's mutations in the database. Identical replays still short-circuit (public idempotency holds).
+        "conflict_mutates_before_raise": ([("        if token is not None and token in self.tokens:\n            previous, result = self.tokens[token]\n            if previous != operations:\n                raise ValueError('token conflict')\n            return deepcopy(result)\n",
+                       "        previous, result = None, None\n        if token is not None and token in self.tokens:\n            previous, result = self.tokens[token]\n            if previous == operations:\n                return deepcopy(result)\n"),
+                      ("        self.db.table('_default')._next_id = next_id\n        if token is not None:\n",
+                       "        self.db.table('_default')._next_id = next_id\n        if token is not None and token in self.tokens and previous != operations:\n            raise ValueError('token conflict')\n        if token is not None:\n")],
+                       None,
+                       ["R07", "R02"]),
+        # stale_table_cache: R02: 'Previously acquired db.table('_default') handles must reflect both success and rollback.'
+        # Dropping the clear_cache() after a write leaves previously acquired handles serving stale query results.
+        "stale_table_cache": ("        self.db.storage.write(storage)\n        for table in self.db._tables.values():\n            table.clear_cache()\n        self.db.table('_default')._next_id = next_id\n",
+                       "        self.db.storage.write(storage)\n        self.db.table('_default')._next_id = next_id\n",
+                       ["R02"]),
+        # tokens_shared_across_instances: R08: 'Token bookkeeping belongs to this BatchWriter instance'. A class-level
+        # tokens dict is shared across writers, so a fresh writer replays another writer's tokens instead of applying.
+        # NOTE: in the full hidden suite this fails 10 tests, but 9 of the 10 fail only via cross-test pollution
+        # through the shared class dict (same token strings reused across tests); only
+        # test_R08_tokens_belong_to_instance is order-independent. The signature is deterministic in fixed file
+        # order (what calibration and grading use); do not reorder tinydb hidden tests without re-running calibration.
+        "tokens_shared_across_instances": ("class BatchWriter:\n    def __init__(self, db):\n        self.db = db\n        self.tokens = {}\n",
+                       "class BatchWriter:\n    tokens = {}\n\n    def __init__(self, db):\n        self.db = db\n",
+                       ["R08"]),
+        # next_id_not_written_back: R05 names 'the next insertion ID' as stable wrapper state. _simulate computes it, but
+        # without writing it back to table._next_id a later remove+insert sequence rewinds and reuses IDs.
+        "next_id_not_written_back": ("        self.db.table('_default')._next_id = next_id\n",
+                       "",
+                       ["R05", "R03"]),
         "clean": (None, None, []),
     },
     "cachetools": {
@@ -99,6 +175,65 @@ VARIANTS = {
                      ("        if not tags:\n            return 0\n", "")],
                     None,
                     ["R07", "R08", "R04"]),
+        # resize_order_trap: R05 (stage2.md) requires resize to preserve 'surviving entries and their LRU order' and states 'Shri
+        "resize_order_trap": ('        keys = list(old._LRUCache__order)',
+                       '        keys = list(old)',
+                       ["R05"]),
+        # invalidate_many_no_expire: R08 (stage3.md) requires 'Expired entries must be removed before get, put, len, resize and invalidat
+        "invalidate_many_no_expire": ("        if mode not in ('any','all'):\n            raise ValueError('invalid mode')\n        self._expire()\n        if not tags:",
+                       "        if mode not in ('any','all'):\n            raise ValueError('invalid mode')\n        if not tags:",
+                       ["R08"]),
+        # put_no_recency_refresh: The reference put() refreshes LRU recency on overwrite via LRUCache.__setitem__ (move_to_end); the d
+        "put_no_recency_refresh": ('        self._cache[key] = (value, tags, expiry)',
+                       '        if key in self._cache:\n            Cache.__setitem__(self._cache, key, (value, tags, expiry))\n        else:\n            self._cache[key] = (value, tags, expiry)',
+                       ["R02"]),
+        # ttl_validation_after_mutation: R07 (stage3.md) requires 'Invalid TTL raises ValueError before any mutation'. Moving the TTL validit
+        "ttl_validation_after_mutation": ("        tags = self._tags(tags)\n        if ttl is not None and (isinstance(ttl, bool) or not isinstance(ttl, (int,float)) or not isfinite(ttl) or ttl < 0):\n            raise ValueError('invalid ttl')\n        value = deepcopy(value)\n        hash(key)\n        self._expire()\n        expiry = None if ttl is None else self._timer() + ttl\n        self._cache[key] = (value, tags, expiry)\n        self._expire()",
+                       "        tags = self._tags(tags)\n        value = deepcopy(value)\n        hash(key)\n        self._expire()\n        expiry = None if ttl is None else self._timer() + ttl\n        self._cache[key] = (value, tags, expiry)\n        if ttl is not None and (isinstance(ttl, bool) or not isinstance(ttl, (int,float)) or not isfinite(ttl) or ttl < 0):\n            raise ValueError('invalid ttl')\n        self._expire()",
+                       ["R07"]),
+        # generator_tags_reconsumed: R06 (stage2.md) requires 'Tags may be passed as generators and must be consumed only once'. The defe
+        "generator_tags_reconsumed": ('        return set(items)',
+                       '        return set(list(tags))',
+                       ["R06"]),
+        # maxsize_bool: R03 (stage1.md) and R05 (stage2.md) both require maxsize to be 'a positive integer, excluding bool'.
+        "maxsize_bool": ('        if type(size) is not int or size <= 0:',
+                       '        if not isinstance(size, int) or size <= 0:',
+                       ["R03", "R05"]),
+        # invalid_mode_silent: R04 (stage2.md) requires 'Reject invalid mode or tags before mutation'. Deleting the mode guard make
+        "invalid_mode_silent": ("        if mode not in ('any','all'):\n            raise ValueError('invalid mode')\n",
+                       "",
+                       ["R04"]),
+        # resize_no_expire: R08 (stage3.md) requires 'Expired entries must be removed before ... resize'. Skipping the purge in 
+        "resize_no_expire": ('        self._validate_size(maxsize)\n        self._expire()\n        old = self._cache',
+                       '        self._validate_size(maxsize)\n        old = self._cache',
+                       ["R08", "R05"]),
+        # put_no_pre_expire: R08 (stage3.md) requires 'Expired entries must be removed before ... put'. Without the pre-assignmen
+        "put_no_pre_expire": ('        value = deepcopy(value)\n        hash(key)\n        self._expire()\n        expiry = None if ttl is None else self._timer() + ttl',
+                       '        value = deepcopy(value)\n        hash(key)\n        expiry = None if ttl is None else self._timer() + ttl',
+                       ["R08", "R02"]),
+        # all_subset_flip: R04 (stage2.md): mode='all' 'removes entries containing every supplied tag', i.e. the entry's tag se
+        "all_subset_flip": ("if (bool(current & tags) if mode == 'any' else tags <= current):",
+                       "if (bool(current & tags) if mode == 'any' else current <= tags):",
+                       ["R04"]),
+        # expiry_recency_touch: R08 (stage3.md) requires expired entries to be removed 'without touching the recency of surviving en
+        "expiry_recency_touch": ('            entry = Cache.__getitem__(self._cache, key)',
+                       '            entry = self._cache[key]',
+                       ["R08", "R02"]),
+        # resize_drops_expiry: R05 (stage2.md) requires resize to preserve 'surviving entries'; an entry's absolute expiry is
+        # part of the entry (R07/R08). Rebuilding entries with expiry None silently makes them immortal.
+        "resize_drops_expiry": ('            new[key] = Cache.__getitem__(old,key)',
+                       '            v, t, e = Cache.__getitem__(old,key)\n            new[key] = (v, t, None)',
+                       ["R05", "R07", "R08"]),
+        # len_no_expire: R08 (stage3.md) requires 'Expired entries must be removed before get, put, len, resize and
+        # invalidation' and R02 counts live entries. len without the purge counts the dead.
+        "len_no_expire": ("    def __len__(self):\n        self._expire()\n        return len(self._cache)",
+                       "    def __len__(self):\n        return len(self._cache)",
+                       ["R08", "R02"]),
+        # get_no_recency_refresh: R02 (stage1.md) requires 'get refreshes LRU recency'. The passive Cache.__getitem__
+        # reads without touching recency, unlike the LRUCache __getitem__ the reference get goes through.
+        "get_no_recency_refresh": ("    def get(self, key):\n        self._expire()\n        return deepcopy(self._cache[key][0])",
+                       "    def get(self, key):\n        self._expire()\n        return deepcopy(Cache.__getitem__(self._cache, key)[0])",
+                       ["R02"]),
         "clean": (None, None, []),
     },
     "minisched": {
@@ -123,6 +258,76 @@ VARIANTS = {
                               '"payload": payload')],
                             None,
                             ["R04", "R05", "R07"]),
+        # or_default_trap: R07: 'An explicit max_retries=0 is honored: the first failure marks the job failed immediately.' The
+        "or_default_trap": ('self.max_retries = self.DEFAULT_MAX_RETRIES if max_retries is None else max_retries',
+                       'self.max_retries = max_retries or self.DEFAULT_MAX_RETRIES',
+                       ["R06", "R07"]),
+        # retry_off_by_one: R04: 'if attempts > config.max_retries the job becomes failed, otherwise it stays pending' and 'The 
+        "retry_off_by_one": ([("minisched/scheduler.py", 'if attempts > self.config.max_retries:', 'if attempts >= self.config.max_retries:')],
+                       None,
+                       ["R04"]),
+        # failed_stays_listed: R08: 'Terminal jobs are never re-run: run_next skips failed and done jobs and returns None when no j
+        "failed_stays_listed": ([("minisched/store.py", 'if record["status"] == "pending"', 'if record["status"] in ("pending", "failed")')],
+                       None,
+                       ["R04", "R08"]),
+        # lifo_order: R02: 'jobs run in FIFO order.' Reversing list_pending runs the newest job first: test_R02_fifo_order
+        "lifo_order": ([("minisched/store.py", 'for record in self._jobs.values()', 'for record in reversed(list(self._jobs.values()))')],
+                       None,
+                       ["R02", "R08"]),
+        # default_retries_value: R04: 'The default configuration retries up to 3 times (4 total executions)' and R07: 'The default ma
+        "default_retries_value": ('DEFAULT_MAX_RETRIES = 3',
+                       'DEFAULT_MAX_RETRIES = 4',
+                       ["R04", "R07"]),
+        # get_live_record: R05: 'JobStore.add/get must not alias caller data: ... mutating a record returned by get ... must no
+        "get_live_record": ([("minisched/store.py", 'return deepcopy(record) if record is not None else None', 'return record if record is not None else None')],
+                       None,
+                       ["R05"]),
+        # attempts_not_stored: R04: 'on job-function exception, increment the job's attempts; if attempts > config.max_retries the 
+        "attempts_not_stored": ([("minisched/scheduler.py", 'self.store.update(job_id, attempts=attempts)', 'self.store.update(job_id)')],
+                       None,
+                       ["R04", "R08"]),
+        # hardcoded_retries: R04: 'if attempts > config.max_retries the job becomes failed' -- the threshold is the configured va
+        "hardcoded_retries": ([("minisched/scheduler.py", 'if attempts > self.config.max_retries:', 'if attempts > 3:')],
+                       None,
+                       ["R04", "R07"]),
+        # update_reinserts_reorders: R02: 'jobs run in FIFO order' -- FIFO is by enqueue order and must survive updates; R04's retry path
+        "update_reinserts_reorders": ([("minisched/store.py", '        self._jobs[job_id].update(deepcopy(fields))', '        record = self._jobs.pop(job_id)\n        record.update(deepcopy(fields))\n        self._jobs[job_id] = record')],
+                       None,
+                       ["R02", "R04"]),
+        # failed_status_mismatch: R04: 'if attempts > config.max_retries the job becomes failed' and R08: 'run_next skips failed and d
+        "failed_status_mismatch": ([("minisched/scheduler.py", 'self.store.update(job_id, status="failed", attempts=attempts)', 'self.store.update(job_id, status="fail", attempts=attempts)')],
+                       None,
+                       ["R04", "R08"]),
+        # add_shallow_copy: R05: 'JobStore.add/get must not alias caller data: mutating a payload after add ... must not affect 
+        "add_shallow_copy": ([("minisched/store.py", 'from copy import deepcopy', 'from copy import copy, deepcopy'),
+                      ("minisched/store.py", '"payload": deepcopy(payload)', '"payload": copy(payload)')],
+                       None,
+                       ["R05"]),
+        # enqueue_eager_validation: R01: 'A payload without a callable fn is a job failure, not a caller error: ... never raising to the
+        "enqueue_eager_validation": ([("minisched/scheduler.py", '    def enqueue(self, payload):\n        return self.store.add(payload)', '    def enqueue(self, payload):\n        if not isinstance(payload, dict) or not callable(payload.get("fn")):\n            raise ValueError("payload must be a dict carrying a callable \'fn\'")\n        return self.store.add(payload)')],
+                       None,
+                       ["R01", "R04"]),
+        # config_snapshot_stale: R04: 'if attempts > config.max_retries the job becomes failed' -- the decision reads the live
+        # config object on each run_next; snapshotting max_retries at construction ignores post-construction config changes.
+        "config_snapshot_stale": ([("minisched/scheduler.py", '        self.config = config if config is not None else SchedulerConfig()',
+                       '        self.config = config if config is not None else SchedulerConfig()\n        self._max_retries = self.config.max_retries'),
+                      ("minisched/scheduler.py", 'if attempts > self.config.max_retries:', 'if attempts > self._max_retries:')],
+                       None,
+                       ["R04"]),
+        # done_status_mismatch: R08 clarification -- the stored status token on completion is exactly 'done'; a distinct
+        # stored token ('Done') breaks terminality keyed off the stored record even though run_next reports 'done'.
+        "done_status_mismatch": ([("minisched/scheduler.py", 'self.store.update(job_id, status="done")', 'self.store.update(job_id, status="Done")')],
+                       None,
+                       ["R08"]),
+        # list_pending_returns_live: R05 extension -- records returned by list_pending are detached copies; returning live
+        # records lets callers corrupt the store through the listing.
+        "list_pending_returns_live": ('        return [deepcopy(record) for record in self._jobs.values()\n                if record["status"] == "pending"]',
+                       '        return [record for record in self._jobs.values()\n                if record["status"] == "pending"]',
+                       ["R05"]),
+        # update_unknown_silent: R02 -- updating an unknown id raises KeyError; silently returning hides caller bugs.
+        "update_unknown_silent": ('    def update(self, job_id, **fields):\n        if job_id not in self._jobs:\n            raise KeyError(job_id)',
+                       '    def update(self, job_id, **fields):\n        if job_id not in self._jobs:\n            return',
+                       ["R02"]),
         "clean": (None, None, []),
     },
 }
@@ -146,6 +351,18 @@ PROJECTS = {
 # Multi-edit variants may instead carry an explicit path per edit.
 VARIANT_FILES = {
     ("minisched", "store_add_alias"): "minisched/store.py",
+    ("minisched", "retry_off_by_one"): "minisched/scheduler.py",
+    ("minisched", "failed_stays_listed"): "minisched/store.py",
+    ("minisched", "lifo_order"): "minisched/store.py",
+    ("minisched", "get_live_record"): "minisched/store.py",
+    ("minisched", "attempts_not_stored"): "minisched/scheduler.py",
+    ("minisched", "hardcoded_retries"): "minisched/scheduler.py",
+    ("minisched", "update_reinserts_reorders"): "minisched/store.py",
+    ("minisched", "failed_status_mismatch"): "minisched/scheduler.py",
+    ("minisched", "add_shallow_copy"): "minisched/store.py",
+    ("minisched", "enqueue_eager_validation"): "minisched/scheduler.py",
+    ("minisched", "list_pending_returns_live"): "minisched/store.py",
+    ("minisched", "update_unknown_silent"): "minisched/store.py",
 }
 
 SEEDS = [20260918, 20260919]
@@ -153,6 +370,11 @@ SEEDS = [20260918, 20260919]
 DIAGNOSTIC_CALLS = 8
 REPAIR_ROUNDS = 2
 CALLS_PER_ROUND = 8
+# Per-phase action budget for the repair_workflow arm: six frozen workflow
+# phases x 8 actions = 48, mirroring the 8-action diagnostic and repair
+# rounds. The attempt-level max_calls for the local workflow manifest adds
+# headroom for bounded AEE recovery rounds (see claim_a.main_config_local).
+WORKFLOW_CALLS_PER_PHASE = 8
 
 COMMON = """You are a capable software engineering agent in an isolated real repository.
 Return exactly one JSON action: {"action":"shell","command":"..."} or
@@ -256,7 +478,8 @@ def tests_for(project, stage, public):
 # v3 structural termination port (from scripts/repeated_local.py Session.phase)
 # ---------------------------------------------------------------------------
 
-from .runner import LimitHit, MiniEnvironment, MiniModel, remaining  # noqa: E402
+from .runner import (LimitHit, MiniEnvironment, MiniModel, attempt_wall_seconds,
+                     call_timeout_seconds, remaining)  # noqa: E402
 
 
 class MatchedModel(MiniModel):
@@ -268,7 +491,7 @@ class MatchedModel(MiniModel):
 
     def query(self, messages):
         cleaned = [{"role": m["role"], "content": m["content"]} for m in messages]
-        text = self.provider.query(cleaned, self.phase, min(remaining(self.deadline), 120))
+        text = self.provider.query(cleaned, self.phase, min(remaining(self.deadline), self.call_timeout))
         try:
             action = json.loads(text)
             allowed = ("shell", "done") + (("draft",) if self.claims_phase else ())
@@ -357,9 +580,10 @@ def run_matched_phase(agent, model, store, identity, cfg, phase, instructions, s
                 "Two actions remain in this phase. Finish the requested artifact/check now and use done to report its actual state; "
                 "preserve unresolved issues.")})
         calls = [c for c in store.events("calls") if c["attempt_id"] == identity["attempt_id"]]
-        if calls and any(c["input_tokens"] is None or c["output_tokens"] is None for c in calls):
-            raise LimitHit("unknown token usage; cannot enforce attempt token ceiling")
-        used = sum(c["input_tokens"] + c["output_tokens"] for c in calls)
+        # Unknown-usage calls (failed physical requests) are charged their
+        # full reservation, so the ceiling stays enforceable; a transient
+        # provider failure never kills the attempt here.
+        used = attempt_token_usage(calls, cfg)
         if used + cfg["max_input_tokens"] + cfg["max_output_tokens"] > cfg["token_cap"]:
             raise LimitHit("next request token reservation exceeds attempt cap")
         if agent.n_calls >= cfg["max_calls"]:
@@ -444,8 +668,29 @@ def run_public_tests(sandbox):
 
 
 def git_clean(sandbox):
-    check = sandbox.execute("git status --porcelain", 30)
-    return check["exit_code"] == 0 and check["stdout"].strip() == ""
+    """True when the fixture worktree has no *source* changes.
+
+    Interpreter and test-runner artifacts are not source changes: the agent
+    may run python/pytest inside the sandbox without PYTHONDONTWRITEBYTECODE=1,
+    writing untracked __pycache__/ dirs, .pyc files, or .pytest_cache/. Counting
+    those as "changed source" silently discards valid diagnostics (the v6
+    tinydb/clean recurrence of the diagnostic_changed_source false positive)
+    and inflates source_changed in adjudication. Real edits -- tracked-file
+    modifications, new source files -- are still detected.
+    """
+    check = sandbox.execute("git status --porcelain -uall", 30)
+    if check["exit_code"] != 0 or not check["stdout"].strip():
+        return check["exit_code"] == 0
+    for line in check["stdout"].splitlines():
+        path = line[3:].strip().strip('"')
+        # Renames/copies report "old -> new"; judge by the new path.
+        path = path.split(" -> ")[-1]
+        lowered = path.lower()
+        if ("__pycache__" in lowered or lowered.endswith((".pyc", ".pyo"))
+                or "/.pytest_cache/" in lowered or lowered.startswith(".pytest_cache/")):
+            continue
+        return False
+    return True
 
 
 def snapshot_package(sandbox, package_dir):
@@ -466,7 +711,7 @@ def snapshot_package(sandbox, package_dir):
 # Attempt drivers
 # ---------------------------------------------------------------------------
 
-def _new_agent(provider, deadline):
+def _new_agent(provider, deadline, cfg):
     import os
     import shutil
     import tempfile
@@ -475,7 +720,7 @@ def _new_agent(provider, deadline):
     os.environ["MSWEA_GLOBAL_CONFIG_DIR"] = str(global_config)
     os.environ["MSWEA_SILENT_STARTUP"] = "1"
     try:
-        agent = DefaultAgent(MatchedModel(provider, deadline), None,
+        agent = DefaultAgent(MatchedModel(provider, deadline, call_timeout_seconds(cfg)), None,
                              system_template="", instance_template="", cost_limit=0)
     finally:
         shutil.rmtree(global_config, ignore_errors=True)
@@ -484,8 +729,8 @@ def _new_agent(provider, deadline):
 
 def run_diagnostic(root, task, provider, sandbox, store, identity, cfg):
     project, variant, seed = pair_of(task["instance_id"])
-    deadline = time.monotonic() + cfg["timeout_seconds"]
-    agent = _new_agent(provider, deadline)
+    deadline = time.monotonic() + attempt_wall_seconds(cfg)
+    agent = _new_agent(provider, deadline, cfg)
     agent.env = MiniEnvironment(sandbox, deadline, store, identity)
     model = agent.model
 
@@ -504,7 +749,7 @@ def run_diagnostic(root, task, provider, sandbox, store, identity, cfg):
     if summary["done"] and not diagnostic_changed:
         claims = grounded_claims(summary["done"]["claims"], store, identity["attempt_id"])
         begin = time.monotonic()
-        evaluation = assess(root, claims, "implement", store)
+        evaluation = assess(root, claims, "implement", store, identity["attempt_id"])
         assessment_seconds = time.monotonic() - begin
     event = {**identity, "project": project, "variant": variant, "seed": seed,
              "summary": summary, "diagnostic_changed_source": diagnostic_changed,
@@ -516,6 +761,35 @@ def run_diagnostic(root, task, provider, sandbox, store, identity, cfg):
             "package_snapshot": store.artifact(snapshot_package(sandbox, PROJECTS[project]["package"]))}
 
 
+class DiagnosticUnavailable(Exception):
+    """A dependent repair arm cannot run: the task's diagnose attempt was
+    scheduled but produced no diagnostic evidence (it never completed --
+    e.g. it stopped at `limit` after a provider error with unknown usage).
+
+    This is a per-task dependency failure, not an infrastructure failure: the
+    run loop pre-skips the repair attempt before any attempt-start event
+    (status "skipped", no inference issued) and continues the schedule
+    instead of fail-stopping the run. The exception remains as a backstop for
+    direct execute_attempt callers. Downstream band selection fails closed on
+    the missing attempts."""
+
+
+# Repair arms that require the task's diagnostic evidence before they may run.
+REPAIR_DEPENDENT_ARMS = ("repair_ordinary", "repair_guided", "repair_workflow")
+
+
+def diagnostic_available(store, manifest, task):
+    """True when a diagnostic evidence event exists for the task's diagnose
+    attempt. Used to pre-skip dependent repair arms before an attempt-start
+    event instead of recording started-then-error."""
+    pair = task["instance_id"]
+    diag_id = next((e["attempt_id"] for e in manifest["schedule"]
+                    if e["task_id"] == pair and e["arm"] == "diagnose"), None)
+    if diag_id is None:
+        return False
+    return any(e["attempt_id"] == diag_id for e in store.events("diagnostics"))
+
+
 def _diagnostic_for(store, manifest, task):
     pair = task["instance_id"]
     diag_id = next((e["attempt_id"] for e in manifest["schedule"]
@@ -525,13 +799,13 @@ def _diagnostic_for(store, manifest, task):
     for event in store.events("diagnostics"):
         if event["attempt_id"] == diag_id:
             return event
-    raise RuntimeError("diagnostic evidence not recorded for " + diag_id)
+    raise DiagnosticUnavailable("diagnostic evidence not recorded for " + diag_id)
 
 
 def run_repair(root, task, arm, provider, sandbox, store, identity, cfg, manifest):
     project, variant, seed = pair_of(task["instance_id"])
-    deadline = time.monotonic() + cfg["timeout_seconds"]
-    agent = _new_agent(provider, deadline)
+    deadline = time.monotonic() + attempt_wall_seconds(cfg)
+    agent = _new_agent(provider, deadline, cfg)
     agent.env = MiniEnvironment(sandbox, deadline, store, identity)
     model = agent.model
 
@@ -574,7 +848,150 @@ def execute_matched_attempt(root, task, arm, provider, sandbox, store, identity,
         return run_diagnostic(root, task, provider, sandbox, store, identity, cfg)
     if arm in ("repair_ordinary", "repair_guided"):
         return run_repair(root, task, arm, provider, sandbox, store, identity, cfg, manifest)
+    if arm == "repair_workflow":
+        return run_workflow_repair(root, task, provider, sandbox, store, identity, cfg, manifest)
     raise ValueError("unknown matched-repair arm: " + arm)
+
+
+def _workflow_brief(task, project, diag, public):
+    """Shared task brief for the workflow arm: identical start/feedback to the
+    repair arms. The diagnostic summary is a matched covariate, explicitly
+    labeled assertions-not-proof, exactly as in run_repair."""
+    return (
+        f"Matched-repair pair {task['instance_id']}: the /testbed repository may contain a seeded defect "
+        f"in the {project} package -- possibly spanning modules, with the symptom surfacing in a "
+        f"different file than the cause (or it may be a clean negative control: do not change correct "
+        f"code without a concrete reason). Preserve existing APIs and tests.\n\n"
+        f"Requirements under test:\n{spec_text(project)}\n\n"
+        f"Shared diagnostic (assertions are not proof):\n{json.dumps(diag['summary'].get('done'))}\n\n"
+        f"Public test feedback:\n{public['output'][-10000:]}")
+
+
+def _condense_workflow_history(agent, phase_summaries):
+    """Inter-phase condensation for the local backend.
+
+    The raw six-phase conversation outgrows the local backend's context
+    window (pilot: ~44.8k prompt tokens vs 40960 usable on llama-server),
+    so phases past the third fail with provider HTTP errors. The workflow's
+    persistent memory is the artifact tree under /workflow/specs plus each
+    phase's recorded honest `done` summary; the turn-by-turn history is
+    working memory. At each phase boundary it is replaced with a compact
+    handoff built only from recorded summaries -- no new claims are
+    invented, and no assessment or recovery message is altered. This mirrors
+    the condensation the v9 campaign design already specifies between
+    phases.
+    """
+    lines = []
+    for s in phase_summaries:
+        done = s.get("done") or {}
+        lines.append("- %s: completed=%s, summary=%s"
+                     % (s["phase"], s["completed"],
+                        done.get("summary", "(no recorded summary)")))
+    handoff = ("Workflow conversation condensed at the phase boundary to fit "
+               "the local backend context window. Completed phases and their "
+               "recorded honest summaries:\n" + "\n".join(lines) +
+               "\nFull phase artifacts remain on disk under /workflow/specs; "
+               "re-read them as needed. Continue with the current phase's "
+               "instructions.")
+    agent.messages = [{"role": "system", "content": COMMON},
+                      {"role": "user", "content": handoff}]
+
+
+def run_workflow_repair(root, task, provider, sandbox, store, identity, cfg, manifest):
+    """Full Spec-Kit+AEE workflow repair treatment (Claim A local arm, v9 section 1).
+
+    Treatment fidelity: the exact frozen workflow from benchmark_runner.workflow --
+    the six phases from phases("spec_kit_aee"), the frozen skill prompts from
+    phase_prompt(root, "spec_kit_aee", phase), grounded claims and the AEE assess()
+    gate at each AEE phase with bounded recovery rounds (mirroring the proven
+    spec_kit_aee arm in runner.execute_attempt). It runs on the matched-repair
+    fixture sandbox (/testbed) with the same shared diagnostic and public-test
+    feedback as the repair arms, so the only treatment difference is the repair
+    method: phased workflow with per-phase AEE gating vs direct repair rounds.
+    """
+    project, variant, seed = pair_of(task["instance_id"])
+    deadline = time.monotonic() + attempt_wall_seconds(cfg)
+    agent = _new_agent(provider, deadline, cfg)
+    agent.env = MiniEnvironment(sandbox, deadline, store, identity)
+    model = agent.model
+
+    diag = _diagnostic_for(store, manifest, task)
+    public = run_public_tests(sandbox)
+    store.append("public_feedback", {**identity, "stage": "workflow_repair", "timestamp": utc(),
+                                     "passed": public["passed"], "test_count": public["test_count"],
+                                     "output_tail": public["output"][-4000:]})
+    sandbox.stage_workflow(root)
+    brief = _workflow_brief(task, project, diag, public)
+    claims_schema = (Path(root)/".specify/extensions/aee/templates/aee-claims.json").read_text()
+
+    phase_summaries, assessment_outcome, recoveries, blocked = [], None, 0, False
+    workflow_phases = phases("spec_kit_aee")
+    for phase in workflow_phases:
+        in_aee = phase in AEE_PHASES
+        instructions = (
+            f"You are executing phase '{phase}' of the frozen Spec-Kit+AEE workflow on this repair task. "
+            f"Apply the frozen skill phase below. Write workflow artifacts under /workflow/specs; "
+            f"implement the fix in /testbed. Run the public tests yourself to verify; "
+            f"hidden acceptance is unavailable.\n\n" + phase_prompt(root, "spec_kit_aee", phase))
+        if in_aee:
+            instructions += ("\nAt phase completion include claims using this schema example "
+                             "(replace all example content):\n" + claims_schema)
+        summary = run_matched_phase(agent, model, store, identity, cfg, f"workflow_{phase}",
+                                    instructions, brief, WORKFLOW_CALLS_PER_PHASE, deadline,
+                                    claims=in_aee)
+        if in_aee and summary["done"]:
+            claims = grounded_claims(summary["done"].get("claims") or {}, store, identity["attempt_id"])
+            result = assess(root, claims, phase, store, identity["attempt_id"])
+            assessment_outcome = result["outcome"]
+            agent.add_messages({"role": "user", "content": "AEE/Evaluator result: " + json.dumps(result)})
+            recovery = 0
+            while result["outcome"] == "block" and recovery < cfg["max_recovery_rounds"]:
+                recovery += 1
+                recoveries += 1
+                agent.add_messages({"role": "user", "content": (
+                    "Address the AEE/Evaluator result within this phase. Use only task-provided facts; "
+                    "no human assistance. Do not change model. Submit revised claims and evidence, "
+                    "or retain gaps.")})
+                summary = run_matched_phase(agent, model, store, identity, cfg,
+                                            f"workflow_{phase}_recovery{recovery}",
+                                            instructions, brief, WORKFLOW_CALLS_PER_PHASE,
+                                            deadline, claims=True)
+                if not summary["done"]:
+                    break
+                claims = grounded_claims(summary["done"].get("claims") or {}, store,
+                                         identity["attempt_id"])
+                result = assess(root, claims, phase, store, identity["attempt_id"])
+                assessment_outcome = result["outcome"]
+                agent.add_messages({"role": "user", "content": "AEE/Evaluator result: " + json.dumps(result)})
+            if result["outcome"] == "block":
+                blocked = True
+                phase_summaries.append(summary)
+                break
+        phase_summaries.append(summary)
+        # Condense between phases only: the final phase's raw history is left
+        # intact for post-hoc inspection.
+        if phase != workflow_phases[-1]:
+            _condense_workflow_history(agent, phase_summaries)
+
+    # Final harness-measured state, in the same shape the grader and the
+    # outcome classifier expect from the repair arms.
+    final_public = run_public_tests(sandbox)
+    final_snapshot = store.artifact(snapshot_package(sandbox, PROJECTS[project]["package"]))
+    store.append("repair_rounds", {**identity, "round": "workflow", "timestamp": utc(),
+                                   "public_passed": final_public["passed"], "snapshot": final_snapshot})
+    patch = sandbox.execute("git add -N . && git diff --binary HEAD", 60)
+    return {"patch": store.artifact(patch["stdout"].encode()),
+            "package_snapshot": final_snapshot,
+            "diagnostic_valid": diag["summary"].get("done") is not None and not diag["diagnostic_changed_source"],
+            "workflow_phases": [s["phase"] for s in phase_summaries],
+            "workflow_completed": all(s["completed"] for s in phase_summaries),
+            "assessment_outcome": assessment_outcome,
+            "workflow_recoveries": recoveries,
+            "workflow_blocked": blocked,
+            "repair_rounds": [{"round": "workflow", "phase": [s["phase"] for s in phase_summaries],
+                               "public": final_public, "snapshot": final_snapshot,
+                               "source_changed": not git_clean(sandbox)}],
+            "tool_calls": agent.env.tool_calls}
 
 
 # ---------------------------------------------------------------------------
@@ -798,6 +1215,13 @@ def audit_solver_image(pinned_image, project):
 # ---------------------------------------------------------------------------
 
 # GPT-6 Astra documented limits (developers.openai.com/api/docs/models, checked 2026-09-20).
+# OpenRouter serves the identical model as "openai/gpt-6-astra" (live catalog
+# 2026-09-22: context 1,050,000, pricing identical to OpenAI list on every
+# tier): same weights, same context window, same documented limits. The gate
+# is therefore keyed on the model family, not the API endpoint -- and the
+# reservation math reads prices from the frozen cfg snapshot, so a different
+# endpoint cannot weaken the bound without failing this check.
+ASTRA_MODEL_IDS = frozenset({"gpt-6-astra", "openai/gpt-6-astra"})
 ASTRA_MAX_INPUT_TOKENS = 922000
 ASTRA_MAX_OUTPUT_TOKENS = 128000
 
@@ -818,8 +1242,9 @@ def verify_reservation_bounds(cfg):
     by construction and there is nothing provider-specific to verify."""
     if cfg.get("provider_backend") == "local":
         return {"per_call_usd": "0", "diagnostic_attempt_usd": "0", "repair_attempt_usd": "0"}
-    if cfg["model"] != "gpt-6-astra":
-        raise ValueError("reservation bounds verified only for gpt-6-astra")
+    if cfg["model"] not in ASTRA_MODEL_IDS:
+        raise ValueError("reservation bounds verified only for the GPT-6 Astra "
+                         "model family (gpt-6-astra, openai/gpt-6-astra)")
     if cfg["max_input_tokens"] > ASTRA_MAX_INPUT_TOKENS:
         raise ValueError("max_input_tokens exceeds Astra documented max input")
     if cfg["max_output_tokens"] > ASTRA_MAX_OUTPUT_TOKENS:
@@ -869,7 +1294,7 @@ def grade_run(run_dir, grade_fn=None):
         attempt = latest[attempt_id]
         if attempt_id in graded:
             continue
-        if attempt.get("arm") not in ("repair_ordinary", "repair_guided"):
+        if attempt.get("arm") not in ("repair_ordinary", "repair_guided", "repair_workflow"):
             continue
         identity = {"attempt_id": attempt_id, "task_id": attempt["task_id"], "arm": attempt["arm"],
                     "experiment_id": manifest["freeze_id"], "run_id": manifest["freeze_id"][:16],
@@ -969,6 +1394,31 @@ PRICE_SOURCE = (
     "~1.1M token context window."
 )
 
+# OpenRouter catalog pricing for openai/gpt-6-astra, checked 2026-09-22
+# against the live https://openrouter.ai/api/v1/models catalog
+# (context_length 1,050,000; per-token USD: prompt 0.00001, completion
+# 0.00005, input_cache_read 0.000001; above 272,000 prompt tokens the
+# override tier bills prompt 0.00002, completion 0.000075,
+# input_cache_read 0.000002). Per 1M tokens: $10/$1/$50 standard,
+# $20/$2/$75 long-context -- identical to the OpenAI list prices above.
+# The OpenAI <-> OpenRouter price delta for GPT-6 Astra is $0 on every
+# tier; moving the frontier arm between providers changes no dollar amount
+# in the reservation or the spend accounting.
+OPENROUTER_PRICE_SOURCE = (
+    "https://openrouter.ai/api/v1/models (checked 2026-09-22): openai/gpt-6-astra "
+    "(OpenAI: GPT-6 Astra), context 1,050,000, list $10/1M input, $1/1M cached input, "
+    "$50/1M output; requests above 272,000 input tokens bill $20/1M input, $2/1M cached "
+    "input, $75/1M output for the full request. API model string openai/gpt-6-astra. "
+    "Identical to the OpenAI list prices on every tier: the provider switch changes "
+    "no dollar amount in the reservation or spend accounting."
+)
+
+# Price snapshot for the OpenRouter-served frontier arm, in the same schema
+# as smoke_config(). Historical freezes keep their own snapshots untouched.
+OPENROUTER_PRICE_SNAPSHOT_ID = "openrouter-list-2026-09-22"
+OPENROUTER_PRICES = {"input": 10.0, "cached_input": 1.0, "output": 50.0}
+OPENROUTER_LONG_CONTEXT_PRICES = {"input": 20.0, "cached_input": 2.0, "output": 75.0}
+
 
 def smoke_config():
     return {
@@ -996,6 +1446,19 @@ def smoke_config():
         "currency": "USD",
         "service_tier": "default",
         "budget_authorization": BUDGET_AUTHORIZATION,
+        # Frozen transport policy (pacing/retry bounds): part of the
+        # campaign-frozen config, validated by validate_live before any
+        # spend. 1s process-wide minimum gap between physical provider
+        # requests; retries only on 429/5xx (never on ambiguous transport
+        # failures or timeouts); at most 6 physical attempts per query with
+        # 300s total backoff budget.
+        "transport": {
+            "min_request_gap_seconds": 1.0,
+            "max_http_attempts": 6,
+            "base_backoff_seconds": 2.0,
+            "max_backoff_seconds": 120.0,
+            "max_total_backoff_seconds": 300.0,
+        },
         "reservation_bound_verified": False,
         "grader_smoke_verified": False,
         "real_smoke_verified": False,

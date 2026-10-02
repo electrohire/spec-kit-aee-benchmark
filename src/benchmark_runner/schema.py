@@ -6,7 +6,7 @@ import jsonschema
 # never logged, budget never settled). provider.query() additionally validates
 # the identity up front so such a mismatch fails fast before any spend.
 ARM_ENUM = ["baseline", "spec_kit", "spec_kit_aee",
-            "diagnose", "repair_ordinary", "repair_guided"]
+            "diagnose", "repair_ordinary", "repair_guided", "repair_workflow"]
 
 CALL_SCHEMA = {
     "type": "object",

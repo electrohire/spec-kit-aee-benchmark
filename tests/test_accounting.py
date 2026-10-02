@@ -71,3 +71,46 @@ def test_long_context_pricing_and_reservation():
     assert request_prices(cfg, usage())["input"] == 2
     assert request_prices(cfg, usage(101))["input"] == 4
     assert request_prices(cfg)["output"] == 6
+
+
+# ---------------------------------------------------------------------------
+# attempt_token_usage: conservative reservation charging for unknown usage.
+
+
+def _cfg():
+    return {"max_input_tokens": 1000, "max_output_tokens": 100}
+
+
+def _call(attempt_id, in_tok, out_tok):
+    return {"attempt_id": attempt_id, "input_tokens": in_tok, "output_tokens": out_tok}
+
+
+def test_attempt_token_usage_all_known_exact_sum():
+    from benchmark_runner.accounting import attempt_token_usage
+    # Callers pass the attempt's own calls (already filtered by attempt_id).
+    calls = [_call("a", 100, 30), _call("a", 50, 0)]
+    assert attempt_token_usage(calls, _cfg()) == 180
+
+
+def test_attempt_token_usage_unknown_charged_at_full_reservation():
+    from benchmark_runner.accounting import attempt_token_usage
+    # A failed physical request (unknown usage, e.g. 429-exhausted) charges
+    # its full max_input_tokens + max_output_tokens reservation.
+    calls = [_call("a", 100, 30), _call("a", None, None)]
+    assert attempt_token_usage(calls, _cfg()) == 130 + 1100
+
+
+def test_attempt_token_usage_conservative_total_triggers_ceiling():
+    from benchmark_runner.accounting import attempt_token_usage
+    # Five failed requests at full reservation (5500) plus the next request's
+    # reservation (1100) exceeds a 6000 cap -- the unchanged next-request
+    # LimitHit fires exactly as before.
+    calls = [_call("a", None, None)] * 5
+    used = attempt_token_usage(calls, _cfg())
+    assert used == 5500
+    assert used + 1000 + 100 > 6000
+
+
+def test_attempt_token_usage_empty_calls_returns_zero():
+    from benchmark_runner.accounting import attempt_token_usage
+    assert attempt_token_usage([], _cfg()) == 0

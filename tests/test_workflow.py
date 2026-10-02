@@ -36,7 +36,7 @@ class FakeSandbox:
 @pytest.mark.parametrize("arm", ["baseline", "spec_kit", "spec_kit_aee"])
 def test_actual_mini_agent_phase_adapter(tmp_path, monkeypatch, arm):
     evaluations = []
-    def evaluation(root, claims, phase, store):
+    def evaluation(root, claims, phase, store, attempt_id):
         evaluations.append(phase)
         return {"outcome": "pass", "findings": []}
     monkeypatch.setattr("benchmark_runner.runner.assess", evaluation)
@@ -66,11 +66,11 @@ def test_real_deterministic_extensions_on_synthetic_claim(tmp_path):
     claims = read_json(ROOT/".specify/extensions/aee/templates/aee-claims.json")
     claims["claims"][0]["status"] = "unsupported"
     claims["claims"][0]["evidence"] = []
-    result = assess(ROOT, claims, "specify", Store(tmp_path))
+    result = assess(ROOT, claims, "specify", Store(tmp_path), "test-attempt-1")
     assert result["outcome"] != "pass"
     assert result["metadata"]["evaluator_count"] == 1
     assert Store(tmp_path).events("assessments")[0]["artifacts"]
-    controller = assess(ROOT, read_json(ROOT/"specs/001-benchmark/claims.json"), "plan", Store(tmp_path/"controller"))
+    controller = assess(ROOT, read_json(ROOT/"specs/001-benchmark/claims.json"), "plan", Store(tmp_path/"controller"), "test-attempt-2")
     assert controller["metadata"]["evaluator_count"] == 1
 
 

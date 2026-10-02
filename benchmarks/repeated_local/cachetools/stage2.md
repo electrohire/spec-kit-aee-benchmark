@@ -7,3 +7,6 @@ R06: Tags may be passed as generators and must be consumed only once. Return val
 Conflicting evidence packet: an old generated design note says 'empty all-tags matches every key and resizing may flush the cache'. This is asserted prose and superseded by R04/R05. Existing passing happy-path checks do not verify those boundaries.
 
 Implementation source: src/cachetools/tagged.py. Write your own tests as useful. Public acceptance is acceptance_public.py. Upstream tests must remain unchanged. You may keep HANDOFF.md and other notes.
+
+# Claim-A candidate extensions, round 2 (2026-09-22)
+R05 (clarification): preserving a surviving entry across resize preserves its absolute expiry (R07/R08 define the expiry as entry state). A resize that drops expiries (making entries immortal) or recomputes them from the resize time does not satisfy the requirement.

@@ -154,10 +154,10 @@ def test_matched_arms_distinct_from_workflow_arms():
 # Regression tests: arm isolation, schedule, and protocol invariants
 # ---------------------------------------------------------------------------
 
-def test_matched_arms_are_three_distinct():
+def test_matched_arms_are_four_distinct():
     from benchmark_runner.matched_repair import MATCHED_ARMS
-    assert MATCHED_ARMS == ("diagnose", "repair_ordinary", "repair_guided")
-    assert len(set(MATCHED_ARMS)) == 3
+    assert MATCHED_ARMS == ("diagnose", "repair_ordinary", "repair_guided", "repair_workflow")
+    assert len(set(MATCHED_ARMS)) == 4
 
 
 def test_guided_flag_only_for_guided_arm():
@@ -703,3 +703,21 @@ def test_git_clean_still_detects_real_source_edits(tmp_path):
     (tmp_path / "testbed" / "acceptance_public.py").write_text(
         "def test_ok():\n    assert False\n")
     assert not git_clean(sandbox), "modified source files must still be detected"
+
+
+def test_git_clean_ignores_bytecode_artifacts(tmp_path):
+    """Regression: an agent-run pytest that writes __pycache__/ without
+    PYTHONDONTWRITEBYTECODE=1 must not count as a source change (the v6
+    tinydb/clean diagnostic_changed_source recurrence)."""
+    sandbox = _clean_git_repo(tmp_path / "testbed")
+    assert git_clean(sandbox)
+    cache = tmp_path / "testbed" / "src" / "__pycache__"
+    cache.mkdir(parents=True)
+    (cache / "mod.cpython-312.pyc").write_bytes(b"\x00" * 16)
+    pcache = tmp_path / "testbed" / ".pytest_cache" / "v" / "cache"
+    pcache.mkdir(parents=True)
+    (pcache / "lastfailed").write_text("{}\n")
+    assert git_clean(sandbox), "bytecode/test-cache artifacts are not source changes"
+    # ...but a new source file still counts.
+    (tmp_path / "testbed" / "src" / "new_module.py").write_text("x = 1\n")
+    assert not git_clean(sandbox), "new source files must still be detected"

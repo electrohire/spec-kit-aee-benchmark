@@ -90,6 +90,27 @@ class BudgetExceeded(RuntimeError):
     pass
 
 
+def attempt_token_usage(calls, cfg):
+    """Conservative token total for the attempt token-ceiling check.
+
+    A call with unknown usage (a failed physical provider request:
+    429-exhausted, 5xx, transport error, timeout) is charged its full
+    pre-request reservation, cfg["max_input_tokens"] +
+    cfg["max_output_tokens"]. The provider reserves exactly this bound before
+    every physical request, so the ceiling stays enforceable without
+    fabrication; a transient provider failure never kills the attempt. The
+    fail-closed guards (reservation check, call-count check) are unchanged in
+    the run loops.
+    """
+    total = 0
+    for call in calls:
+        if call["input_tokens"] is None or call["output_tokens"] is None:
+            total += cfg["max_input_tokens"] + cfg["max_output_tokens"]
+        else:
+            total += call["input_tokens"] + call["output_tokens"]
+    return total
+
+
 class Budget:
     def __init__(self, store, global_cap, attempt_cap):
         self.store = store

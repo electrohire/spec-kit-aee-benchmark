@@ -20,6 +20,14 @@ prices: {input: null, cached_input: null, output: null}
 currency: USD
 service_tier: default
 budget_authorization: null
+# Frozen transport policy (pacing/retry bounds): part of the frozen
+# campaign config, validated by validate_live before any spend.
+transport:
+  min_request_gap_seconds: 1.0
+  max_http_attempts: 6
+  base_backoff_seconds: 2.0
+  max_backoff_seconds: 120.0
+  max_total_backoff_seconds: 300.0
 reservation_bound_verified: false
 grader_smoke_verified: false
 real_smoke_verified: false

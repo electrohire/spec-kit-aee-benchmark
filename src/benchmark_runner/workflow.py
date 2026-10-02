@@ -45,7 +45,7 @@ def phase_prompt(root, arm, phase):
     return base + "\n" + (Path(root)/"prompts"/"adapter.md").read_text() + "\n" + skill
 
 
-def assess(root, claims, phase, store):
+def assess(root, claims, phase, store, attempt_id):
     if not isinstance(claims, dict) or not claims.get("claims"):
         raise ValueError("AEE phase must submit explicit claim JSON")
     # Fresh project root prevents timestamp collisions and cross-attempt discovery.
@@ -91,6 +91,7 @@ def assess(root, claims, phase, store):
         report += "\n".join(json.dumps(f, sort_keys=True) for f in composed.get("findings", []))
         report += "\n\nNext action: " + json.dumps(composed.get("next_action")) + "\n"
         refs.append(store.artifact(report.encode()))
-        store.append("assessments", dict(phase=phase, timestamp=utc(), outcome=composed["outcome"],
+        store.append("assessments", dict(attempt_id=attempt_id, phase=phase, timestamp=utc(),
+                                          outcome=composed["outcome"],
                                           aee_exit_code=result.returncode, artifacts=refs))
         return composed
