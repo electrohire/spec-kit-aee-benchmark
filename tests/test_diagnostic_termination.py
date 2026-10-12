@@ -21,7 +21,7 @@ from benchmark_runner.workflow import grounded_claims
 def claims_bundle(n=2):
     return {"schema_version": "1.0", "claims": [{
         "id": f"T{i:02d}", "text": f"test hypothesis claim {i}", "kind": "hypothesis",
-        "status": "unsupported", "boundary": ["diagnose"],
+        "status": "unsupported", "stage": "created", "boundary": ["diagnose"],
         "depends_on": [], "conflicts_with": [],
         "falsification_tests": ["re-run and observe"],
         "source_ref": "test", "uncertainty": "high", "evidence": [],

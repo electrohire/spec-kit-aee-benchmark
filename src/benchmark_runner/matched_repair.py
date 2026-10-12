@@ -521,7 +521,8 @@ def _terminal_done(phase, limit, draft_claims):
             "id": "DIAG-NONTERMINATION-01",
             "text": ("The %s phase exhausted its %d allocated actions without the model returning done. "
                      "No grounded defect claims were established; every defect claim remains unsupported." % (phase, limit)),
-            "kind": "hypothesis", "status": "unsupported", "boundary": [phase],
+            "kind": "hypothesis", "status": "unsupported", "stage": "created",
+            "boundary": [phase],
             "depends_on": [], "conflicts_with": [],
             "falsification_tests": ["Re-run the phase and observe whether done is returned within the action budget"],
             "source_ref": "phase transcript", "uncertainty": "high", "evidence": []}]}
