@@ -1,6 +1,7 @@
 """Frozen skill adapter and explicit deterministic AEE/Evaluator execution."""
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -51,6 +52,15 @@ def phase_prompt(root, arm, phase):
     return base + "\n" + (Path(root)/"prompts"/"adapter.md").read_text() + "\n" + skill
 
 
+def _installed_evaluator_file(sandbox, path):
+    """True for files of the evaluator extension installed into the
+    sandbox project — everything under .specify/extensions/evaluator
+    except the results the run itself produced there. Installed bytes
+    are the vendored pin's, not assessment evidence."""
+    rel = path.relative_to(sandbox).parts
+    return rel[:3] == (".specify", "extensions", "evaluator") and rel[3:4] != ("results",)
+
+
 def assess(root, claims, phase, store, attempt_id):
     if not isinstance(claims, dict) or not claims.get("claims"):
         raise ValueError("AEE phase must submit explicit claim JSON")
@@ -58,6 +68,16 @@ def assess(root, claims, phase, store, attempt_id):
     with tempfile.TemporaryDirectory(prefix="aee-assessment-") as folder:
         sandbox = Path(folder)
         write_json(sandbox/"claims.json", claims)
+        # The pair is one system (AEE extension Spec 005 ER-01): the
+        # vendored runner's assess refuses (exit 2) unless the
+        # evaluator extension is installed in the project, so the fresh
+        # project gets the vendored evaluator tree installed, as the
+        # frozen-input projects get both extensions (experiment.py).
+        # The vendored results/ directory is benchmark-local output,
+        # not part of the installed extension, and is not copied.
+        shutil.copytree(Path(root)/".specify/extensions/evaluator",
+                        sandbox/".specify/extensions/evaluator",
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "results"))
         env = {**os.environ, "PATH": str(Path(sys.executable).parent)+os.pathsep+os.environ.get("PATH", ""),
                "PYTHONUTF8": "1"}
         script = Path(root)/".specify/extensions/aee/scripts/python/run_aee.py"
@@ -100,7 +120,8 @@ def assess(root, claims, phase, store, attempt_id):
         jsonschema.validate(composed, read_json(Path(root)/".specify/extensions/evaluator/schemas/evaluator-result.schema.json"))
         if composed["metadata"]["evaluator_count"] != 1:
             raise RuntimeError("composition did not consume the expected AEE result")
-        refs = [store.artifact(p.read_bytes()) for p in sandbox.rglob("*.json")]
+        refs = [store.artifact(p.read_bytes()) for p in sandbox.rglob("*.json")
+                if not _installed_evaluator_file(sandbox, p)]
         refs.append(store.artifact(canonical(composed)))
         report = f"# Evaluator report — after_{phase}\n\nOutcome: {composed['outcome']}\n\n"
         report += "\n".join(json.dumps(f, sort_keys=True) for f in composed.get("findings", []))
