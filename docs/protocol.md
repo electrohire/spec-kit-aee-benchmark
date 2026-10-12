@@ -51,3 +51,38 @@ measured setup plus execution; amortization requires a declared number of reuses
 Unknown setup cost means these totals remain unknown. No transcript-based billing.
 Combined treatment cannot isolate AEE from Evaluator. Pilot and public benchmark
 contamination limit generalization. No leaderboard or article publication.
+
+## Integrity semantics (Spec 003 FR-7, 2026-10-12)
+
+What the integrity mechanisms do and do not prove, stated plainly:
+
+- Event streams (attempts/calls/grades/budget) are append-only hash
+  chains: each record written by the runner carries prev_hash/chain_hash,
+  and any read verifies the chain. Editing or deleting a chained record
+  is detectable at read time. A chain proves internal consistency, not
+  authorship: an actor who can rewrite an entire stream can recompute a
+  self-consistent chain, so streams are tamper-evident against accidents
+  and partial edits, not tamper-proof. Pre-chaining (legacy) records are
+  reported as unverified, never silently upgraded.
+- A grade counts toward resolved rates only when it is bound to grader
+  artifacts: the grade record must reference content-addressed objects
+  (the grader log and per-instance reports) that exist in the store and
+  hash to their recorded digests, and the recorded grader exit code must
+  be zero. Grades without that binding are excluded from the numerator
+  and disclosed in the report's integrity section, not dropped silently.
+- freeze_id is a self-consistent content hash over the manifest. It
+  detects accidental modification of listed files and, since FR-7.5,
+  additions under frozen paths. It is not a signature: anyone who can
+  edit the manifest can recompute a valid freeze_id. Tamper-resistance
+  would require anchoring freeze_id outside the repo (Spec 003 FR-4.1);
+  this benchmark does not currently anchor, and no claim in any report
+  should imply that it does.
+- Archived prior runs (host-setup moves a stale run directory aside,
+  timestamped, never deleted) are disclosed in aggregate reports with
+  their scored-attempt counts. Headline denominators cover the reported
+  run only; the archives are provenance, not hidden attempts.
+- The spec_kit_aee arm's in-run AEE assessments are produced by the
+  pinned AEE engine itself. They are workflow signals (they route
+  recovery rounds) and are never grades: the only grades are the
+  independent SWE-bench grader's, bound as above. Reports that quote
+  assessment outcomes alongside resolutions label which is which.

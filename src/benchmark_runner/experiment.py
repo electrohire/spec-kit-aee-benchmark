@@ -91,4 +91,9 @@ def verify_freeze(root, manifest):
         path = (Path(root)/name).resolve()
         if not path.is_relative_to(Path(root).resolve()) or source_hash(path) != expected:
             raise ValueError(f"frozen file changed: {name}")
+    # Addition-aware (FR-7.5): a new file under a frozen path is drift
+    # exactly like a modified one; the freeze-time file set is the allowlist.
+    added = sorted(set(frozen_paths(root)) - set(manifest["files"]))
+    if added:
+        raise ValueError(f"files added under frozen paths since freeze: {added}")
     return manifest
