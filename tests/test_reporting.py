@@ -8,7 +8,12 @@ def fixture(store, arm, task, repeat, resolved, cost="1", outcome=None):
                                  status="completed", duration_seconds=2, assessment_outcome=outcome))
     store.append("calls", dict(attempt_id=id, call_id=id, request_id=id, cost=cost,
                                input_tokens=100, cached_input_tokens=20, output_tokens=30, reasoning_tokens=10))
-    store.append("grades", dict(attempt_id=id, resolved=resolved))
+    # Grades are shaped as grading.grade writes them: bound to the grader
+    # log artifact, from a run that exited successfully (FR-7.1/FR-7.6).
+    log = store.artifact(f"SYNTHETIC GRADER LOG {id}".encode())
+    store.append("grades", dict(attempt_id=id, task_id=task, run_id=f"bench-{id}",
+                                resolved=resolved, reason=None, grader_exit_code=0,
+                                log=log, reports=[]))
 
 
 def test_all_attempt_cost_zero_success_and_disagreement(tmp_path):
