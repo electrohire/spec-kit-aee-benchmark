@@ -24,26 +24,70 @@ AEE is a decision aid. It does **not** prove truth, certify compliance, replace 
 
 ## Installation
 
-Install the Python engine and the Evaluator Contract first:
+Start with an initialized [Spec Kit](https://github.com/github/spec-kit) project and
+Python 3.11 or later. Run shell commands below in the project root. Agent slash
+commands belong in your coding agent's chat, not in PowerShell or Bash.
+
+| Required component | Install name / version | Repository and purpose |
+| --- | --- | --- |
+| Spec Kit | `specify-cli>=1.0.0` | [github/spec-kit](https://github.com/github/spec-kit): project and command installation |
+| Python | `python>=3.11` | Runs the adapter and engine |
+| AEE engine | `applied-epistemic-engineering>=1.4.0,<2`, exposes `aee` | [electrohire/applied-epistemic-engineering](https://github.com/electrohire/applied-epistemic-engineering): deterministic assessment, graph, ledger, and gaps |
+| Evaluator Contract (optional) | extension ID `evaluator`, version `>=1.0.0,<2` | [electrohire/spec-kit-evaluator](https://github.com/electrohire/spec-kit-evaluator): composition, reporting, and routing over the engine-produced result; not invoked by the runner |
+| This adapter | extension ID `aee` | [electrohire/spec-kit-aee](https://github.com/electrohire/spec-kit-aee): ten agent commands and optional lifecycle hooks |
+
+The engine needs 1.4.0 for the policy-gate, reliability, and review CLI surface (1.0.2 introduced the `gaps` command), and the runner enforces that floor itself: at startup it checks `aee --version` against `>=1.4.0,<2` and refuses with exit 2 — naming the found and required versions — rather than scoring with an out-of-range engine. The Evaluator Contract result is produced by the engine itself; the Evaluator extension is **not** a runtime dependency of this adapter (the runner never invokes it) and is only needed for its own compose/report/route commands. It is a Spec Kit extension, **not** a PyPI package or shell executable. Spec Kit's
+`requires.tools` metadata documents dependencies; it does not install them or
+verify their versions. Install the engine explicitly before this adapter, and the evaluator extension only if you want composition/reporting.
+
+For a new project, install Spec Kit using its [official installation
+instructions](https://github.com/github/spec-kit#-get-started), then run
+`specify init my-project` and `cd my-project`. Choose your agent during setup.
+For an existing project, use its current Python environment or create one:
 
 ```bash
-python -m pip install "applied-epistemic-engineering>=1.0.0,<2"
+python -m venv .venv
+```
+
+Activate with `source .venv/bin/activate` on macOS/Linux, or
+`.\.venv\Scripts\Activate.ps1` in PowerShell. If PowerShell policy prevents
+activation, use `.\.venv\Scripts\python.exe` for pip and put
+`.\.venv\Scripts` on the agent process's PATH. Keep the same environment active
+when launching your coding agent so it can find both `python` and `aee`.
+
+```bash
+python -m pip install "applied-epistemic-engineering>=1.4.0,<2"
+aee --version
+# Optional, only for compose/report/route over the result:
 specify extension add evaluator --from https://github.com/electrohire/spec-kit-evaluator/archive/refs/tags/v1.0.0.zip
+specify extension add aee --from https://github.com/electrohire/spec-kit-aee/archive/refs/tags/v1.0.1.zip
+specify extension list
 ```
 
-Then install this community extension from its pinned release:
+The commands above install the current published releases. This branch prepares
+**1.1.0 (unreleased)**; do not use a nonexistent `v1.1.0.zip` URL. To test these
+changes, clone this repository, check out the PR branch, then run
+`specify extension add --dev /absolute/path/to/spec-kit-aee` from a disposable
+initialized project. Back up generated assessments before replacing an existing
+installation; `--force` can overwrite its extension directory.
 
-```bash
-specify extension add aee --from https://github.com/electrohire/spec-kit-aee/archive/refs/tags/v1.0.0.zip
-```
+The community catalog is discovery-only by default. Explicit `--from` URLs select
+the published archives. Installation downloads code; deterministic AEE operations
+make no model API calls. Your chosen coding agent has its own inference setup.
 
-The Spec Kit community catalog is discovery-only. The explicit `--from` URL above makes the install source unambiguous.
+## First run and configuration
 
-For local development:
+The [step-by-step walkthrough](docs/usage.md) covers all ten commands, expected
+exit codes, output files, gap evidence format, and recovery. Start with the
+unsupported-claim template; replace its example requirement with your own and add
+real evidence only after inspecting it. The published v1.0.1 template ships with
+draft status and empty evidence. Copying the template is not evidence.
 
-```bash
-specify extension add --dev /path/to/spec-kit-aee
-```
+The runner currently reads **CLI flags, not `aee-config.yml` or environment
+configuration overrides**. The installed YAML is a reference for agent/operator
+choices. See the [configuration table](docs/usage.md#configuration) for exact flags
+and defaults. Optional hooks depend on the host workflow emitting their events;
+`after_verify` is not guaranteed in every Spec Kit workflow.
 
 ## Brief example
 
@@ -64,16 +108,34 @@ Then run:
 
 The assessment is stored under `.specify/extensions/aee/assessments/`; the shared result is stored under `.specify/extensions/evaluator/results/`. A claim without inspectable evidence remains unsupported even when generated prose says it passed.
 
+## Runner exit codes
+
+The adapter (`run_aee.py`) uses one code for every error so an exit code alone never mistakes a failure for a scored verdict:
+
+| Code | Meaning |
+| --- | --- |
+| 0 | Engine outcome `pass`/`warn`, or a successful non-scored operation |
+| 1 | Engine scored outcome `iterate`, `clarify`, or `gather_evidence` — a verdict, not an error |
+| 2 | An error: runner refusals (missing/out-of-root/symlinked paths, invalid phase, missing `aee`, or an `aee` version outside `>=1.4.0,<2`) and engine-reported input/usage errors. (`gate` also returns 2 for an engine `block` verdict.) |
+
+Runner refusals print `refused: ...` to stderr and never a traceback. JSON summaries always carry `aee_exit_code` and `ok`, and name an output path only when that file was actually written during the run (otherwise the field is `null`).
+
+Assessments produced through the runner carry `metadata.extension_version` (the engine stamps `metadata.engine_version` itself; bare-CLI assessments omit the extension key). The runner stamps before it ledgers — through the engine's own `aee.ledger` — so the ledger's SHA-256 covers the stamped file, and the assess summary reports the post-append chain verification as `ledger_verification` (`null` with `--no-ledger`, never a fabricated verdict). Drafting (`draft-claims`) requires the engine package importable by the runner's Python and an engine build providing `aee.extract.draft_claims_from_spec` (engine builds after 1.4.0); the assess stamp/ledger step likewise uses the importable `aee.ledger`, and refuses cleanly when the package is not importable.
+
 ## Commands
 
 | Command | Purpose |
 | --- | --- |
+| `speckit.aee.draft-claims` | Draft atomic claims from a spec's requirements for human ratification (born `draft`, never upgraded by the tool) |
 | `speckit.aee.assess` | Run the complete deterministic AEE pipeline |
 | `speckit.aee.challenge` | Focus on breakpoints and recovery work |
 | `speckit.aee.trace` | Render dependencies and review provenance |
 | `speckit.aee.verify` | Verify ledger integrity |
 | `speckit.aee.gate` | Return CI-friendly exit status from an assessment |
+| `speckit.aee.review` | Diff two assessments into a materiality-filtered review queue |
 | `speckit.aee.gaps` | Generate or update the gap register from a verification matrix and test evidence |
+| `speckit.aee.route-evidence` | Route oversized logs and sources into raw evidence slices for AEE gates |
+| `speckit.aee.report-savings` | Report measured RTK and Headroom token savings, never estimated |
 
 Compose AEE with other evaluators using `/speckit.evaluator.compose`, render it with `/speckit.evaluator.report`, or use `/speckit.evaluator.route` for the next-phase model recommendation. Invocation separators vary by integration; Spec Kit renders the installed command files appropriately.
 
@@ -82,23 +144,55 @@ Compose AEE with other evaluators using `/speckit.evaluator.compose`, render it 
 ```text
 .specify/extensions/aee/
 ├── assessments/aee-<phase>-<timestamp>.json
+├── challenges/aee-<phase>-<timestamp>.json
 ├── graphs/aee-claims-<timestamp>.mmd
+├── evidence/route notes with file paths, line ranges, and backend used
+├── reports/measured token-savings reports
+├── telemetry/shell-calls.jsonl
 └── ledger/epistemic-ledger.jsonl
 
 .specify/extensions/evaluator/results/
 └── aee-<phase>-<timestamp>.json
 ```
 
-The command adapter refuses paths outside the project root and refuses symlinked path components. Source artifacts are read-only; only extension-owned output directories are written.
+The command adapter rejects paths outside the project root and symlinked path components supplied to it. Source artifacts are read-only. Assessments, challenges, graphs, and ledgers use extension-owned directories; `gaps --output` can write another explicitly chosen in-project path. Use a trusted evidence directory: the adapter does not recursively validate every file the engine discovers inside it.
+
+## Benchmarks and limitations
+
+The companion [Spec Kit + AEE benchmark repository](https://github.com/electrohire/spec-kit-aee-benchmark)
+contains the protocol, runtime measurements, token accounting, repair loops, and
+preserved failures. Its [versioned results](https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local)
+show a six-task local study and a staged TinyDB build. After small-task repairs,
+all three arms passed 5/6 tasks; none fully accepted a long-study hidden milestone.
+Timeouts interrupted the adapted workflows; only three combined-arm planning
+assessments completed. These results establish **no general correctness or
+cost-saving advantage**. They are a reproducible starting point for a bounded
+trial, not a claim that the complete Spec Kit + AEE workflow was validated.
+
+AEE scores declared structured evidence; it does not independently run a load test,
+fetch every evidence reference, or prove an assertion true. Markdown extraction
+collects explicit IDs, boundaries, dependencies, and falsifiers; use JSON to supply
+structured evidence. Review findings and references before acting on an outcome.
+
+## Troubleshooting
+
+| Symptom | Next step |
+| --- | --- |
+| `aee` is missing or `gaps` is unrecognized | Activate the engine environment, run `aee --version`, and install engine `>=1.0.2,<2`. |
+| Evaluator commands are missing | Install `evaluator` using the explicit archive URL, run `specify extension list`, then restart the coding agent if needed. |
+| No project / unknown slash command | Run `specify init` first and use the command spelling rendered for your selected agent. |
+| Exit 1 from an assessment | Read the result: `iterate`, `clarify`, and `gather_evidence` are expected recovery outcomes, not installation errors. |
+| Editing YAML has no effect | Pass the corresponding CLI flag; the adapter does not load that YAML. |
+| No gap file appears | `gaps` prints to stdout unless `--output` is supplied. |
+| A claim is unsupported | Inspect its ID, boundary, falsification test, and evidence; do not relabel generated assertions as observations. |
+| Path is refused | Use a real file inside the project, with no symlinked path components. |
 
 ## Development
 
-```bash
-python -m pip install pytest pyyaml
-pytest -q
-```
-
-See [SECURITY.md](SECURITY.md) for the trust boundary and [CHANGELOG.md](CHANGELOG.md) for releases.
+Follow [CONTRIBUTING.md](CONTRIBUTING.md) for the hash-locked environment, real-engine
+integration tests, Spec Kit installation smoke, and release/catalog update process.
+See [SECURITY.md](SECURITY.md) for the trust boundary and [CHANGELOG.md](CHANGELOG.md)
+for released versus pending changes.
 
 ## License
 
