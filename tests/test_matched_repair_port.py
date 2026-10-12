@@ -130,7 +130,7 @@ def test_terminal_done_without_draft_records_nontermination():
 def test_terminal_done_adopts_valid_draft():
     draft = {"schema_version": "1.0", "claims": [{
         "id": "D01", "text": "draft claim", "kind": "hypothesis", "status": "unsupported",
-        "boundary": ["diagnose"], "depends_on": [], "conflicts_with": [],
+        "stage": "created", "boundary": ["diagnose"], "depends_on": [], "conflicts_with": [],
         "falsification_tests": ["rerun"], "source_ref": "transcript",
         "uncertainty": "high", "evidence": []}]}
     done = _terminal_done("diagnose", 8, draft)

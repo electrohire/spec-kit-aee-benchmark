@@ -86,3 +86,144 @@ What the integrity mechanisms do and do not prove, stated plainly:
   recovery rounds) and are never grades: the only grades are the
   independent SWE-bench grader's, bound as above. Reports that quote
   assessment outcomes alongside resolutions label which is which.
+
+## Engine 1.5.0 fixture migration (2026-10-12)
+
+Engine 1.5.0 made `stage` a required field on every claim a strict load
+accepts (the engine's Spec 004 R1.1). Bundles written before that rule are
+refused until each claim names its stage. This section records how this
+benchmark's bundles were migrated when the engine pin moved from 1.4.0 to
+1.5.0, and what was deliberately not changed.
+
+Stage choice. Every migrated claim is an authored claim with no
+verification evidence behind it, so every one is `created` — the first
+stage: written down, not yet checked. No fixture claim carries completed
+verification evidence, so none was marked `checked` or higher. The migrated
+bundles:
+
+- `specs/001-benchmark/claims.json` — all 14 requirement claims (status
+  `unsupported`, no evidence).
+- `tests/test_diagnostic_termination.py` — the `claims_bundle()` builder
+  used by the diagnostic-termination tests.
+- `tests/test_matched_repair_port.py` — the D01 draft bundle.
+- The runner's own synthesized non-termination claim
+  (DIAG-NONTERMINATION-01) in `src/benchmark_runner/matched_repair.py` and
+  `scripts/repeated_local.py`. The runner writes this claim itself at the
+  moment a phase runs out of actions; nothing has checked it, so it is
+  `created` too.
+
+No expected score, status, or verdict in any test was changed. The
+migrated claims were never supportable (status `unsupported`, no
+evidence), so the stage cap — which limits how far a claim's status may
+be reported, given its stage — changes nothing they assert. Verified
+against the real 1.5.0 engine (the release commit, c0d8094): the offline
+suite went from 309 passed / 12 failed before the migration to 319 passed
+/ 2 failed after it, in a local run. The 321-test baseline is the CI count
+on engine 1.4.0; the local difference is exactly the two named items
+below plus one timing-sensitive provider test that does not touch the
+engine and passes or fails with machine load (it failed in the
+before-run and passed in the after-run, on identical code).
+
+Not migrated, deliberately:
+
+- The vendored extension template
+  `.specify/extensions/aee/templates/aee-claims.json` still has no
+  `stage`. Its bytes are pinned by digest in `manifests/versions.json`
+  and checked by `scripts/check_pins.py`; editing vendored bytes locally
+  would make the digest record untrue. The template gains its stage when
+  the extension is re-vendored from its next release. Until then,
+  `tests/test_workflow.py::test_real_deterministic_extensions_on_synthetic_claim`
+  fails at its first assessment (the template bundle). Its second
+  assessment, of `specs/001-benchmark/claims.json`, is migrated here and
+  composes (outcome `iterate`, one evaluator).
+- `tests/test_assessment_diagnostics.py::test_invalid_claim_kind_retains_subprocess_failure`
+  still fails, for a different reason: its assertion requires the word
+  `ClaimKind` in the retained engine error text. Engine 1.4.0 produced
+  that word through a Python enum traceback; 1.5.0's strict loader reports
+  the same failure in plainer words ("field 'kind' has invalid value
+  'observed'; valid values: ..."). The failure itself, the non-zero exit,
+  and the retained diagnostic are unchanged. Updating the assertion to the
+  new wording is a decision for the benchmark owner, not part of this
+  migration; the deliberately invalid fixture was left exactly as it was.
+
+Pin record. `pyproject.toml` and `manifests/versions.json` now pin engine
+1.5.0, and `uv.lock` was regenerated against the published release (only
+the engine entry changed, plus the lockfile format revision the current
+uv writes). This note supersedes the 1.4.0 pin note, which read: "PyPI
+release 1.4.0 (git tag v1.4.0; commit in aee_engine_commit). Engine main
+carries unreleased post-1.4.0 merges (HEAD 1b2ea3f at re-pin time); they
+are not measured by this benchmark until a release is cut and this pin is
+bumped." That release is 1.5.0, and this migration is the bump it waited
+for. Extension and evaluator pins are unchanged; their bumps ride their
+own releases.
+
+One runtime consequence, recorded for the next protocol revision: the
+claim text the runner asks models to produce at run time (the prompt text
+and the vendored claims template) does not yet ask for a `stage`. The
+offline suite does not exercise that path, but a real run on engine 1.5.0
+will refuse model-produced bundles that omit it. Prompts are part of the
+frozen treatment and are not edited here; asking for `stage` in run-time
+claim requests belongs in a protocol revision alongside the extension
+re-vendor.
+
+### Completion: extension re-vendor and the diagnostics assertion (2026-10-12)
+
+The two residuals named above are now resolved, and the offline suite is
+fully green on engine 1.5.0: **321 passed, 0 failed** in a local run of
+the full suite (the 321-test CI baseline, reached exactly).
+
+Extension re-vendor. The vendored pair was replaced wholesale with the
+release archives, following the established procedure (vendored tree =
+the source archive's contents exactly; benchmark-local artifacts —
+`aee-config.yml`, `assessments/`, `ledger/`, evaluator `results/` —
+preserved):
+
+- AEE extension 1.2.0 @ 527feae → **1.4.0**, tag archive
+  `https://github.com/electrohire/spec-kit-aee/archive/refs/tags/v1.4.0.zip`
+  (sha256 `14e02e74…`, tag commit `d7d7ce4`), vendored tree digest
+  `b71c5a30…`.
+- Evaluator extension 1.0.0 @ eee9fef → **1.1.0**, tag archive
+  `https://github.com/electrohire/spec-kit-evaluator/archive/refs/tags/v1.1.0.zip`
+  (sha256 `07ac2aa1…`, tag commit `8c7e6bb`), vendored tree digest
+  `cbcff103…`.
+
+Archive digests were computed locally from the downloaded bytes and are
+recorded in `manifests/versions.json` (the earlier `null` entries are
+superseded); `scripts/check_pins.py` is green, and the `.registry`
+records were updated to the new versions and manifest hashes.
+
+Two consequences of the 1.4.0 extension, both verified against the
+vendored bytes. First, its manifest declares the evaluator extension a
+required companion and its runner's `assess` refuses (exit 2) when
+`.specify/extensions/evaluator/` is absent from the project. The
+workflow's `assess()` builds a fresh synthetic project per call, so it
+now installs the vendored evaluator tree into that project (the
+benchmark-local `results/` directory is not copied, and installed
+extension files are excluded from the assessment's artifact record —
+the results the run produces there are not). Second, the template
+bundle itself is unchanged and still carries no `stage` field; it
+loads because the 1.4.0 runner passes the engine's `--lenient` flag,
+which defaults the stage on the record: a probe assessment of the
+template records `loading_mode: "lenient"` and the claim at
+`stage: "created"`, outcome `iterate`. Strict loading still refuses
+stageless bundles; the lenient default is the runner's recorded
+choice, not an edit to vendored bytes.
+
+Diagnostics assertion.
+`test_invalid_claim_kind_retains_subprocess_failure` no longer asserts
+the word `ClaimKind` as a traceback artifact, and its exit assertion
+is strengthened from "non-zero" to exactly 2. What it asserts now is
+the retained diagnostic's load-bearing content on the path the
+benchmark actually runs: the vendored runner loads through the
+engine's `--lenient` path, whose error for this fixture is the single
+line `Error: 'observed' is not a valid ClaimKind` (verified against
+the 1.5.0 CLI directly; the strict loader's longer wording — "field
+'kind' has invalid value 'observed'; valid values: ..." — is not the
+message this path retains). The protective intent is unchanged: an
+invalid claim kind fails loudly, the subprocess exit is the hard-error
+code, and the retained diagnostic names the offending value and the
+field domain that rejected it.
+
+The runtime consequence recorded above is unchanged and stays open:
+live-run prompts still do not ask models for a `stage`. That belongs
+to a protocol revision; no prompt was edited here.

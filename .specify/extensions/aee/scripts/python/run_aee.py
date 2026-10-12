@@ -14,7 +14,8 @@ code can never mistake a failure for a scored outcome:
   this is a verdict, not an error.
 - ``2`` — an error, never a scored assess/challenge verdict: runner
   refusals (missing, out-of-root, or symlinked paths; invalid phase;
-  missing ``aee``; an ``aee`` version outside the required range) and
+  missing ``aee``; an ``aee`` version outside the required range;
+  ``assess`` without the required spec-kit-evaluator extension) and
   engine-reported input/usage errors. (The engine's own ``gate``
   command also uses ``2`` for a ``block`` verdict; that is the
   engine's documented gate semantics, passed through unchanged.)
@@ -29,12 +30,50 @@ Output paths are named only when the file was actually written during
 the invocation; otherwise the field is ``null`` — the runner never
 emits a path to a file that does not exist.
 
+Timeout contract (RT3-11)
+-------------------------
+Every engine subprocess runs under a timeout (``--timeout``, default
+600 seconds; the version/help capability probes are bounded by
+``min(30, --timeout)`` so a hung engine cannot stall them either).
+On expiry the runner kills the child and returns exit 2 —
+never a scored verdict. JSON-summary subcommands print their summary
+with ``aee_exit_code: null``, ``timed_out: true``, ``ok: false`` and
+no output paths (a timed-out run is refused as a whole, even if the
+engine managed a partial write); passthrough subcommands (gate,
+verify, review, gaps without ``--output``) print
+``refused: ... timed out ...`` to stderr.
+
+Latest-assessment pointer (RT3-13)
+----------------------------------
+A successful ``assess`` also maintains
+``.specify/extensions/aee/assessments/latest-<phase>.json``, a plain
+JSON pointer naming the assessment it just wrote. ``gate --latest
+<phase>`` resolves that pointer (refusing when none exists) and notes
+the assessment's age on stderr, so gating a stale assessment is a
+visible act rather than an ambiguous path resolution.
+
 Version contract
 ----------------
 At startup the runner runs ``aee --version`` and refuses (exit 2) when
 the installed engine is outside ``REQUIRED_AEE_VERSION``, naming both
 the found and required versions. The range mirrors ``extension.yml``
 (``requires.tools`` entry ``aee``); keep the two in sync.
+
+Evaluator extension (required companion, Spec 005)
+--------------------------------------------------
+AEE is one evaluator among many by design: the result ``assess``
+produces is written for the common evaluator, and composing it with
+other evaluators' results through the spec-kit-evaluator extension is
+part of the standard flow, so every evaluator's output is handled the
+same way. The pair is one system — ``extension.yml`` declares
+``spec-kit-evaluator`` required, and ``assess`` enforces it: when
+``.specify/extensions/evaluator/`` is absent from the project,
+``assess`` refuses (exit 2, naming the missing extension and the
+install command) before the engine runs or any output is written.
+Presence is still sampled before outputs are created (RT3-04) and is
+reported as ``evaluator_extension_present`` in the assess JSON. The
+other subcommands emit no Evaluator Contract results and are not
+blocked; ``gate`` works on AEE's own assessments.
 
 Extension version stamp (FR-4.2) and ledger verdict (FR-8.2)
 ------------------------------------------------------------
@@ -83,16 +122,20 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import secrets
 import shutil
 import subprocess
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
+DEFAULT_TIMEOUT_SECONDS = 600.0
+
 # Mirrors extension.yml requires.tools[aee]. Keep in sync.
-REQUIRED_AEE_VERSION = ">=1.4.0,<2"
-_AEE_VERSION_MIN = (1, 4, 0)
+REQUIRED_AEE_VERSION = ">=1.5.0,<2"
+_AEE_VERSION_MIN = (1, 5, 0)
 _AEE_VERSION_MAX = (2, 0, 0)  # exclusive
 _VERSION_PATTERN = re.compile(r"(\d+)\.(\d+)\.(\d+)")
 
@@ -100,6 +143,13 @@ _VERSION_PATTERN = re.compile(r"(\d+)\.(\d+)\.(\d+)")
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
     root.add_argument("--project-root", type=Path, default=Path.cwd())
+    root.add_argument(
+        "--timeout",
+        type=float,
+        default=DEFAULT_TIMEOUT_SECONDS,
+        help="seconds before an engine subprocess is killed and the "
+        "run refused with exit 2 (default: %(default)s)",
+    )
     sub = root.add_subparsers(dest="command", required=True)
 
     assess = sub.add_parser("assess")
@@ -129,7 +179,14 @@ def parser() -> argparse.ArgumentParser:
     verify.add_argument("--ledger", type=Path)
 
     gate = sub.add_parser("gate")
-    gate.add_argument("--input", type=Path, required=True)
+    gate_source = gate.add_mutually_exclusive_group(required=True)
+    gate_source.add_argument("--input", type=Path)
+    gate_source.add_argument(
+        "--latest",
+        metavar="PHASE",
+        help="gate the assessment named by the latest-<phase> pointer "
+        "maintained by assess, instead of an explicit --input path",
+    )
 
     gaps = sub.add_parser("gaps")
     gaps.add_argument("--matrix", type=Path, required=True)
@@ -163,7 +220,7 @@ def main(argv: list[str] | None = None) -> int:
                 file=sys.stderr,
             )
             return 2
-        _check_aee_version(executable)
+        _check_aee_version(executable, timeout=min(30.0, args.timeout))
         if args.command == "assess":
             return _assess(executable, root, args)
         if args.command == "challenge":
@@ -199,14 +256,14 @@ def _aee_version_satisfies(version: tuple[int, int, int]) -> bool:
     return _AEE_VERSION_MIN <= version < _AEE_VERSION_MAX
 
 
-def _check_aee_version(executable: str) -> None:
+def _check_aee_version(executable: str, timeout: float = 30.0) -> None:
     """Refuse to run against an engine outside the declared range."""
     try:
         completed = subprocess.run(
             [executable, "--version"],
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=timeout,
             check=False,
         )
     except (OSError, subprocess.SubprocessError) as exc:
@@ -229,6 +286,53 @@ def _check_aee_version(executable: str) -> None:
             f"{REQUIRED_AEE_VERSION} declared in extension.yml; install "
             f"applied-epistemic-engineering{REQUIRED_AEE_VERSION}."
         )
+
+
+class _EngineTimeout(ValueError):
+    """An engine subprocess exceeded its timeout and was killed.
+
+    A ValueError subclass so the passthrough subcommands surface it
+    through main()'s clean-refusal path (exit 2, no traceback); the
+    JSON-summary subcommands catch it themselves to print their
+    timed-out summary shape (RT3-11).
+    """
+
+    def __init__(self, timeout: float) -> None:
+        super().__init__(
+            f"aee subprocess timed out after {timeout:g} seconds and "
+            "was killed; re-run with a larger --timeout if the engine "
+            "was making progress"
+        )
+        self.timeout = timeout
+
+
+def _run_engine(
+    command: list[str], timeout: float, **kwargs: object
+) -> subprocess.CompletedProcess:
+    """Run the engine under a hard timeout (RT3-11).
+
+    subprocess.run kills the child before raising TimeoutExpired, so
+    converting it here is enough — no engine process is left running.
+    """
+    try:
+        return subprocess.run(command, timeout=timeout, check=False, **kwargs)
+    except subprocess.TimeoutExpired as exc:
+        raise _EngineTimeout(timeout) from exc
+    except OSError as exc:
+        raise ValueError(f"could not run the aee engine: {exc}") from exc
+
+
+def _unique_stamp() -> str:
+    """Collision-proof filename stamp (RT3-08).
+
+    Second-resolution stamps let two distinct runs in the same second
+    share one filename — the ledger then attested content the disk no
+    longer held. The stamp keeps the sortable UTC second prefix and
+    adds microseconds plus a random component, so distinct runs never
+    collide even within one microsecond.
+    """
+    now = datetime.now(UTC)
+    return now.strftime("%Y%m%dT%H%M%S") + f"{now.microsecond:06d}-{secrets.token_hex(3)}Z"
 
 
 def _extension_version() -> str | None:
@@ -404,7 +508,7 @@ def _stamp_and_ledger(
 _NO_LEDGER_SUPPORT: dict[str, bool] = {}
 
 
-def _assess_supports_no_ledger(executable: str) -> bool:
+def _assess_supports_no_ledger(executable: str, timeout: float = 30.0) -> bool:
     """True when `aee assess --help` advertises --no-ledger.
 
     Capability-probed (cached per executable) instead of assumed from
@@ -418,13 +522,46 @@ def _assess_supports_no_ledger(executable: str) -> bool:
                 [executable, "assess", "--help"],
                 capture_output=True,
                 text=True,
-                timeout=30,
+                timeout=timeout,
                 check=False,
             )
             _NO_LEDGER_SUPPORT[executable] = "--no-ledger" in completed.stdout
         except (OSError, subprocess.SubprocessError):
             _NO_LEDGER_SUPPORT[executable] = False
     return _NO_LEDGER_SUPPORT[executable]
+
+
+_LENIENT_SUPPORT: dict[tuple[str, str], bool] = {}
+
+
+def _supports_lenient(executable: str, subcommand: str, timeout: float = 30.0) -> bool:
+    """True when `aee <subcommand> --help` advertises --lenient.
+
+    The runner drives the engine's recorded compatibility mode
+    (Spec 002 FR-1.3) for project claim bundles: bundles written
+    before the Spec 004 stage vocabulary lack the `stage` field,
+    and strict loading refuses them outright. Lenient loading
+    defaults the stage to `created` ON THE RECORD (the assessment
+    metadata carries `loading_mode` and `stage_defaults`), so the
+    transition stays honest instead of becoming a hard refusal of
+    every pre-realignment project. Capability-probed per
+    subcommand, like --no-ledger: engines without the flag (the
+    released 1.4.0 `challenge` has none) are invoked without it.
+    """
+    key = (executable, subcommand)
+    if key not in _LENIENT_SUPPORT:
+        try:
+            completed = subprocess.run(
+                [executable, subcommand, "--help"],
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                check=False,
+            )
+            _LENIENT_SUPPORT[key] = "--lenient" in completed.stdout
+        except (OSError, subprocess.SubprocessError):
+            _LENIENT_SUPPORT[key] = False
+    return _LENIENT_SUPPORT[key]
 
 
 def _snapshot(path: Path) -> tuple[int, int] | None:
@@ -455,10 +592,45 @@ def _rel_or_none(root: Path, path: Path, before: tuple[int, int] | None) -> str 
 
 
 def _gate(executable: str, root: Path, args: argparse.Namespace) -> int:
-    value = _safe_existing(root, args.input)
-    return subprocess.run(
-        [executable, "gate", "--input", str(value)], check=False
-    ).returncode
+    if args.latest is not None:
+        value = _resolve_latest(root, args.latest)
+    else:
+        value = _safe_existing(root, args.input)
+    return _run_engine([executable, "gate", "--input", str(value)], args.timeout).returncode
+
+
+def _resolve_latest(root: Path, phase_arg: str) -> Path:
+    """Resolve the latest-<phase> pointer written by assess (RT3-13).
+
+    Refuses (ValueError -> exit 2) when no pointer exists for the
+    phase, when the pointer is malformed, or when the assessment it
+    names is gone; the resolved assessment's age is noted on stderr
+    so a stale gate is visible to the operator.
+    """
+    phase = _safe_segment(phase_arg)
+    pointer = _safe_existing(
+        root, Path(f".specify/extensions/aee/assessments/latest-{phase}.json")
+    )
+    try:
+        record = json.loads(pointer.read_text(encoding="utf-8"))
+        target_rel = record["assessment"]
+        written_at = record.get("written_at", "unknown time")
+    except (ValueError, KeyError, TypeError) as exc:
+        raise ValueError(f"latest pointer {pointer} is malformed: {exc}") from exc
+    target = _safe_existing(root, Path(str(target_rel)))
+    age_note = ""
+    try:
+        written = datetime.fromisoformat(str(written_at).replace("Z", "+00:00"))
+        age = datetime.now(UTC) - written
+        age_note = f", age {int(age.total_seconds())}s"
+    except ValueError:
+        pass
+    print(
+        f"note: --latest {phase} resolved to {target.relative_to(root).as_posix()} "
+        f"(written {written_at}{age_note})",
+        file=sys.stderr,
+    )
+    return target
 
 
 def _review(executable: str, root: Path, args: argparse.Namespace) -> int:
@@ -476,12 +648,42 @@ def _review(executable: str, root: Path, args: argparse.Namespace) -> int:
     ]
     if args.limit is not None:
         command.extend(["--limit", str(args.limit)])
-    return subprocess.run(command, check=False).returncode
+    return _run_engine(command, args.timeout).returncode
+
+
+def _check_evidence_tree(root: Path, evidence: Path) -> None:
+    """Refuse symlinked or out-of-root evidence contents (RT3-05).
+
+    _safe_dir validates the evidence directory chain itself, but the
+    engine discovers evidence by walking the tree and following file
+    symlinks — a symlinked file inside a valid directory smuggled
+    out-of-root data into the gap register. This pre-flight walks the
+    whole tree before the engine runs and refuses any symlink and any
+    entry resolving outside the project root, naming the offenders.
+    """
+    offenders: list[str] = []
+    for dirpath, dirnames, filenames in os.walk(evidence, followlinks=False):
+        for name in (*dirnames, *filenames):
+            entry = Path(dirpath) / name
+            shown = entry.relative_to(root).as_posix()
+            if entry.is_symlink():
+                offenders.append(f"{shown} (symlink)")
+                continue
+            try:
+                entry.resolve(strict=True).relative_to(root)
+            except (OSError, ValueError):
+                offenders.append(f"{shown} (escapes project root)")
+    if offenders:
+        raise ValueError(
+            "evidence tree contains entries the runner refuses to let "
+            "the engine read: " + "; ".join(sorted(offenders))
+        )
 
 
 def _gaps(executable: str, root: Path, args: argparse.Namespace) -> int:
     matrix = _safe_existing(root, args.matrix)
     evidence = _safe_dir(root, args.evidence)
+    _check_evidence_tree(root, evidence)
     command = [
         executable,
         "gaps",
@@ -507,10 +709,27 @@ def _gaps(executable: str, root: Path, args: argparse.Namespace) -> int:
         before = _snapshot(output)
         command.extend(["--output", str(output)])
     if output is None:
-        return subprocess.run(command, check=False).returncode
+        return _run_engine(command, args.timeout).returncode
     # With --output the engine's stdout chatter goes to stderr so the
     # runner's stdout stays a single machine-parseable JSON document.
-    completed = subprocess.run(command, check=False, capture_output=True, text=True)
+    try:
+        completed = _run_engine(
+            command, args.timeout, capture_output=True, text=True
+        )
+    except _EngineTimeout as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        print(
+            json.dumps(
+                {
+                    "gaps": None,
+                    "aee_exit_code": None,
+                    "timed_out": True,
+                    "ok": False,
+                },
+                indent=2,
+            )
+        )
+        return 2
     if completed.stdout:
         print(completed.stdout, file=sys.stderr, end="")
     if completed.stderr:
@@ -521,6 +740,7 @@ def _gaps(executable: str, root: Path, args: argparse.Namespace) -> int:
             {
                 "gaps": gaps_rel,
                 "aee_exit_code": completed.returncode,
+                "timed_out": False,
                 "ok": completed.returncode == 0 and gaps_rel is not None,
             },
             indent=2,
@@ -538,7 +758,25 @@ def _assess(executable: str, root: Path, args: argparse.Namespace) -> int:
     evaluator_extension_present = (
         root / ".specify" / "extensions" / "evaluator"
     ).is_dir()
-    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    if not evaluator_extension_present:
+        # Spec 005 (ER-01): the evaluator extension is a required
+        # companion, not an optional extra. Refuse here — after the
+        # presence sample, before any output path is created and
+        # before the engine runs — so a refused assess writes nothing.
+        raise ValueError(
+            "the spec-kit-evaluator extension is required for assess "
+            "but is not installed in this project "
+            "(.specify/extensions/evaluator/ not found). AEE is one "
+            "evaluator among many by design: the result assess "
+            "produces is written for the common evaluator, and "
+            "composing it with other evaluators' results through "
+            "that extension is part of the standard flow, so every "
+            "evaluator's output is handled the same way. Install the "
+            "pair together: specify extension add spec-kit-evaluator "
+            "(see the Spec Kit catalog or this extension's README), "
+            "then re-run assess."
+        )
+    stamp = _unique_stamp()
     phase = _safe_segment(args.phase)
     assessment = _safe_output(
         root, Path(f".specify/extensions/aee/assessments/aee-{phase}-{stamp}.json")
@@ -566,6 +804,8 @@ def _assess(executable: str, root: Path, args: argparse.Namespace) -> int:
         "--actor",
         args.actor,
     ]
+    if _supports_lenient(executable, "assess", timeout=min(30.0, args.timeout)):
+        command.append("--lenient")
     if args.policy:
         command.extend([
             "--policy",
@@ -600,7 +840,7 @@ def _assess(executable: str, root: Path, args: argparse.Namespace) -> int:
     # engines that ledger by default (post-1.4.0); the released 1.4.0
     # CLI ledgers only on an explicit --ledger, so the flag is passed
     # only when the installed CLI advertises it.
-    if _assess_supports_no_ledger(executable):
+    if _assess_supports_no_ledger(executable, timeout=min(30.0, args.timeout)):
         command.append("--no-ledger")
     before = {
         "assessment": _snapshot(assessment),
@@ -608,43 +848,125 @@ def _assess(executable: str, root: Path, args: argparse.Namespace) -> int:
         "ledger": _snapshot(ledger) if ledger else None,
     }
     # The Evaluator Contract result named below is produced by the
-    # engine itself (--evaluator-output); the separate spec-kit-evaluator
-    # extension is not invoked by this runner. The JSON reports whether
-    # it happens to be installed so consumers know compose/report are
-    # available.
-    completed = subprocess.run(command, check=False)
-    assessment_rel = _rel_or_none(root, assessment, before["assessment"])
+    # engine itself (--evaluator-output); composing it with other
+    # evaluators' results is the spec-kit-evaluator extension's work,
+    # whose presence the pre-flight above has already enforced. The
+    # JSON still reports evaluator_extension_present so consumers can
+    # see the pair is installed.
+    try:
+        completed = _run_engine(command, args.timeout)
+        returncode: int | None = completed.returncode
+        timed_out = False
+    except _EngineTimeout as exc:
+        # A timed-out run is refused as a whole (RT3-11): no stamp, no
+        # ledger append, no named outputs — even if the engine managed
+        # a partial write before it was killed.
+        print(f"refused: {exc}", file=sys.stderr)
+        returncode = None
+        timed_out = True
+    assessment_rel = (
+        None if timed_out else _rel_or_none(root, assessment, before["assessment"])
+    )
     extension_version: str | None = None
     ledger_verification: dict | None = None
+    latest_rel: str | None = None
+    verdict_display: dict | None = None
     if assessment_rel is not None:
         extension_version, ledger_verification = _stamp_and_ledger(
             assessment, ledger, args.actor, ledger_class
         )
+        latest_rel = _write_latest_pointer(root, phase, assessment_rel)
+        verdict_display = _verdict_display(assessment)
     print(
         json.dumps(
             {
                 "assessment": assessment_rel,
-                "evaluator_result": _rel_or_none(
-                    root, evaluator, before["evaluator"]
+                "verdict_display": verdict_display,
+                "evaluator_result": (
+                    None
+                    if timed_out
+                    else _rel_or_none(root, evaluator, before["evaluator"])
                 ),
                 "evaluator_extension_present": evaluator_extension_present,
                 "extension_version": extension_version,
                 "ledger": (
-                    _rel_or_none(root, ledger, before["ledger"]) if ledger else None
+                    _rel_or_none(root, ledger, before["ledger"])
+                    if ledger and not timed_out
+                    else None
                 ),
                 "ledger_verification": ledger_verification,
-                "aee_exit_code": completed.returncode,
-                "ok": completed.returncode in (0, 1),
+                "latest_pointer": latest_rel,
+                "aee_exit_code": returncode,
+                "timed_out": timed_out,
+                "ok": returncode in (0, 1),
             },
             indent=2,
         )
     )
-    return completed.returncode
+    return 2 if timed_out else returncode
+
+
+def _verdict_display(assessment_path: Path) -> dict | None:
+    """The realigned verdict display (Spec 004 P5-E2): the stamped
+    assessment's own verdict vocabulary, copied for the runner's
+    JSON so a consumer of the runner sees exactly what the bare CLI
+    reports on the same bundle - the stage-capped
+    `reported_statuses`, the `stage_caps` records, the lane pair
+    (lane 1 machine verification, lane 2 human acceptance), and the
+    `not_understood` residual-unknowns statement that must render
+    with every verdict (R5.3/R6.3). The runner computes nothing
+    here: every value is the engine's. A record lacking the fields
+    (pre-realignment) yields None, never fabricated values.
+    """
+    try:
+        value = json.loads(assessment_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(value, dict) or "reported_statuses" not in value:
+        return None
+    lanes = value.get("lanes") if isinstance(value.get("lanes"), dict) else {}
+    return {
+        "outcome": value.get("outcome"),
+        "methodology_version": value.get("methodology_version"),
+        "reported_statuses": value.get("reported_statuses"),
+        "stage_caps": value.get("stage_caps"),
+        "lanes": {
+            "lane_1": lanes.get("lane_1"),
+            "lane_2": lanes.get("lane_2"),
+        },
+        "not_understood": value.get("not_understood"),
+    }
+
+
+def _write_latest_pointer(root: Path, phase: str, assessment_rel: str) -> str:
+    """Maintain the latest-<phase> assessment pointer (RT3-13).
+
+    A plain JSON file (never a symlink) naming the assessment the most
+    recent successful assess for the phase wrote; `gate --latest`
+    resolves it. Written only after the assessment is stamped and
+    ledgered, so the pointer never names an unfinished record.
+    """
+    pointer = _safe_output(
+        root, Path(f".specify/extensions/aee/assessments/latest-{phase}.json")
+    )
+    pointer.write_text(
+        json.dumps(
+            {
+                "assessment": assessment_rel,
+                "phase": phase,
+                "written_at": datetime.now(UTC).isoformat(timespec="seconds"),
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return pointer.relative_to(root).as_posix()
 
 
 def _challenge(executable: str, root: Path, args: argparse.Namespace) -> int:
     source = _safe_existing(root, args.input)
-    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    stamp = _unique_stamp()
     phase = _safe_segment(args.phase)
     output = _safe_output(
         root, Path(f".specify/extensions/aee/challenges/aee-{phase}-{stamp}.json")
@@ -665,44 +987,67 @@ def _challenge(executable: str, root: Path, args: argparse.Namespace) -> int:
         "--actor",
         args.actor,
     ]
+    if _supports_lenient(executable, "challenge", timeout=min(30.0, args.timeout)):
+        command.append("--lenient")
     before = _snapshot(output)
-    completed = subprocess.run(command, check=False)
+    try:
+        completed = _run_engine(command, args.timeout)
+        returncode: int | None = completed.returncode
+        timed_out = False
+    except _EngineTimeout as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        returncode = None
+        timed_out = True
     print(
         json.dumps(
             {
-                "challenge": _rel_or_none(root, output, before),
-                "aee_exit_code": completed.returncode,
-                "ok": completed.returncode in (0, 1),
+                "challenge": (
+                    None if timed_out else _rel_or_none(root, output, before)
+                ),
+                "aee_exit_code": returncode,
+                "timed_out": timed_out,
+                "ok": returncode in (0, 1),
             },
             indent=2,
         )
     )
-    return completed.returncode
+    return 2 if timed_out else returncode
 
 
 def _graph(executable: str, root: Path, args: argparse.Namespace) -> int:
     source = _safe_existing(root, args.input)
-    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    stamp = _unique_stamp()
     output = _safe_output(
         root, Path(f".specify/extensions/aee/graphs/aee-claims-{stamp}.mmd")
     )
     before = _snapshot(output)
-    completed = subprocess.run(
-        [executable, "graph", "--input", str(source), "--output", str(output)],
-        check=False,
-    )
-    graph_rel = _rel_or_none(root, output, before)
+    graph_command = [executable, "graph", "--input", str(source), "--output", str(output)]
+    if _supports_lenient(executable, "graph", timeout=min(30.0, args.timeout)):
+        graph_command.append("--lenient")
+    try:
+        completed = _run_engine(
+            graph_command,
+            args.timeout,
+        )
+        returncode: int | None = completed.returncode
+        timed_out = False
+    except _EngineTimeout as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        returncode = None
+        timed_out = True
+    graph_rel = None if timed_out else _rel_or_none(root, output, before)
     print(
         json.dumps(
             {
                 "graph": graph_rel,
-                "aee_exit_code": completed.returncode,
-                "ok": completed.returncode == 0 and graph_rel is not None,
+                "aee_exit_code": returncode,
+                "timed_out": timed_out,
+                "ok": returncode == 0 and graph_rel is not None,
             },
             indent=2,
         )
     )
-    return completed.returncode
+    return 2 if timed_out else returncode
 
 
 def _verify(executable: str, root: Path, args: argparse.Namespace) -> int:
@@ -710,8 +1055,8 @@ def _verify(executable: str, root: Path, args: argparse.Namespace) -> int:
         ".specify/extensions/aee/ledger/epistemic-ledger.jsonl"
     )
     ledger = _safe_existing(root, ledger_arg)
-    return subprocess.run(
-        [executable, "verify-ledger", "--ledger", str(ledger)], check=False
+    return _run_engine(
+        [executable, "verify-ledger", "--ledger", str(ledger)], args.timeout
     ).returncode
 
 
@@ -741,7 +1086,11 @@ def _safe_output(root: Path, value: Path) -> Path:
     _reject_symlink_chain(root, candidate)
     candidate.parent.mkdir(parents=True, exist_ok=True)
     _reject_symlink_chain(root, candidate)
-    return candidate
+    # Return the RESOLVED path (RT3-17): callers hand this path to the
+    # engine for a later write, and returning the unresolved candidate
+    # left a check-then-use window between this validation and that
+    # write.
+    return candidate.resolve(strict=False)
 
 
 def _require_inside(root: Path, candidate: Path) -> None:

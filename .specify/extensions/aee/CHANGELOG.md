@@ -2,7 +2,66 @@
 
 All notable changes follow Semantic Versioning.
 
-## 1.2.0 - Unreleased
+## 1.4.0 - 2026-10-12
+
+- Design correction (specs/005-evaluator-required): the
+  spec-kit-evaluator extension is now a **required** companion,
+  declared `required: true` in `extension.yml` and enforced by the
+  runner — `assess` refuses with exit 2, naming the missing extension
+  and how to install it, when `.specify/extensions/evaluator/` is
+  absent from the project, and writes nothing. In 1.3.0 the extension
+  was declared optional and only the contract was required, which
+  made consistency opt-in; AEE is one evaluator among many by design,
+  and its results are composed through the common evaluator so every
+  evaluator's output is handled the same way. The pair is one system.
+  `check_install.py` now also exercises the refusal end to end
+  (evaluator extension removed → `assess` exits 2 naming it), README,
+  the assess command document, and the usage docs teach the pair as
+  one system, and the evaluator install reference moves to its
+  v1.1.0 release archive.
+
+## 1.3.0 - 2026-10-12
+
+- RT3 remediation (specs/rt3-remediation): `gaps` refuses symlinked or
+  out-of-root evidence in a runner-side pre-flight instead of letting it
+  close gaps (RT3-05); generated assessment/challenge/graph filenames
+  carry microsecond + random suffixes so same-second runs never collide
+  (RT3-08); every engine subprocess runs under `--timeout` (default
+  600 s) with a distinct timed-out verdict — exit 2, `timed_out: true`,
+  never a scored outcome (RT3-11); `assess` maintains a
+  `latest-<phase>` pointer and `gate --latest <phase>` gates it with an
+  age note (RT3-13); token-router discovery is confined to the project
+  root/parent, router ranges are strictly typed, and the route record
+  names the router path + SHA-256 (RT3-10); token-economy `shell` runs
+  in the project root under a timeout and redacts secret-looking argv
+  values from telemetry (RT3-09); `route` refuses files over a 256 MB
+  byte cap instead of loading them whole (RT3-18); `_safe_output`
+  returns resolved paths in both adapters (RT3-17); command templates
+  quote path placeholders verbatim (RT3-12); README/CHANGELOG/usage
+  drift corrected and pinned by tests (RT3-14); `check_install.py`
+  checks are explicit (survive `python -O`) with an optional
+  `--from-archive` mode (RT3-16); the config template header states
+  that no script loads it (RT3-19).
+- Spec 004 P5 vocabulary alignment (specs/004-vocabulary-alignment):
+  the engine floor moves to the realigned engine
+  (`applied-epistemic-engineering>=1.5.0,<2` — methodology 2.0, Spec
+  004 stage vocabulary) in the runner, `extension.yml`, and README,
+  and the runner's startup enforcement refuses older engines by name;
+  the `assess` JSON gains a `verdict_display` block copied from the
+  stamped assessment (outcome, methodology version, stage-capped
+  `reported_statuses`, `stage_caps`, the lane pair, `not_understood`),
+  so the extension displays exactly what the bare CLI reports on the
+  same bundle; the runner drives the engine's recorded `--lenient`
+  compatibility mode for assess/challenge/graph when the installed
+  engine advertises it, so pre-realignment bundles (no `stage`
+  field) load with the default on the record instead of being
+  refused; the assess/gate command documents teach the realigned
+  vocabulary (stages, exposition, headline decomposition roles,
+  reported-not-declared statuses, lane-paired reporting,
+  `not_understood` with every verdict, unjudged distinct from
+  abstained).
+
+## 1.2.0 - 2026-10-06
 
 - Spec 002 Phase 4 (extension parts): new `speckit.aee.draft-claims` command
   (ten commands total) and runner `draft-claims` subcommand over the engine's
@@ -25,7 +84,7 @@ All notable changes follow Semantic Versioning.
   surface for the gates, reliability, and review landed in engine 1.4.0, on
   top of the 1.1.0-1.3.0 library ports.
 
-## 1.1.0 - Unreleased
+## 1.1.0 - Released as part of 1.2.0 (no separate tag)
 
 - Integrate the token-economy policy into AEE core: declare optional `rtk`,
   `headroom`, `token-router`, and `ollama` tools; add `speckit.aee.route-evidence`

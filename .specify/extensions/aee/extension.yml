@@ -3,7 +3,7 @@ schema_version: '1.0'
 extension:
   id: aee
   name: Applied Epistemic Engineering
-  version: 1.2.0
+  version: 1.4.0
   description: Challenge claims, trace evidence, propagate uncertainty, and route epistemic failures across phases
   category: process
   effect: read-write
@@ -20,18 +20,25 @@ requires:
       version: '>=3.11'
     # CLI supplied by https://github.com/electrohire/applied-epistemic-engineering
     # 1.0.2 introduced the gaps command; 1.4.0 introduced the policy
-    # gates, reliability blending, and review subcommand used here.
+    # gates, reliability blending, and review subcommand; 1.5.0 is
+    # the realigned engine (Spec 004 vocabulary: lifecycle
+    # stages, stage-capped reported statuses, lane-paired outcomes,
+    # not_understood, methodology 2.0) - the floor moves to it so
+    # pre-realignment engines are refused cleanly.
     - name: aee
       required: true
-      version: '>=1.4.0,<2'
-    # Spec Kit extension, not a shell executable. OPTIONAL for this
-    # adapter: the runner never invokes spec-kit-evaluator code — the
-    # Evaluator Contract result is produced by the AEE engine itself
-    # (its --evaluator-output). Install the evaluator extension only
-    # for its own compose/report/route commands over that result.
+      version: '>=1.5.0,<2'
+    # Spec Kit extension, not a shell executable. REQUIRED companion:
+    # AEE is one evaluator among many by design, and its results are
+    # composed through the common evaluator extension so every
+    # evaluator's output is handled consistently. The contract alone
+    # would leave that consistency opt-in, so the pair is one system:
+    # this manifest declares the evaluator extension required and the
+    # runner's assess enforces it, refusing (exit 2) when the
+    # extension is not installed in the project.
     # https://github.com/electrohire/spec-kit-evaluator
     - name: spec-kit-evaluator
-      required: false
+      required: true
       version: '>=1.0.0,<2'
     # Optional token-economy tools. AEE cores the policy (measured-only
     # savings, cite-original-lines evidence) and depends on the tools; every
@@ -104,6 +111,9 @@ provides:
       runtimes:
         - python
 
+# Hooks bind no arguments; the artifact and phase each hook expects
+# (including the after_verify matrix/evidence defaults and its stop
+# condition) are specified in docs/usage.md, "Hook expectations".
 hooks:
   after_specify:
     command: speckit.aee.assess
