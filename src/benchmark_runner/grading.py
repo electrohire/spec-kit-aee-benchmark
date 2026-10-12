@@ -35,13 +35,31 @@ def grade(store, task_repo, harness_repo, expected_commit, expected_tasks_commit
         log = store.artifact(result.stdout+result.stderr)
         # v5 per-instance report retains instance ID as its top-level key.
         reports = list(working.rglob("report.json"))
-        resolved, refs = None, []
+        values, refs = set(), []
         for path in reports:
             data = json.loads(path.read_text())
             refs.append(store.artifact(path.read_bytes()))
             value = data.get(attempt["task_id"], {}).get("resolved")
             if type(value) is bool:
-                resolved = value
+                values.add(value)
+        resolved, reason = _bind_resolved(values, attempt["task_id"], result.returncode)
         store.append("grades", dict(attempt_id=attempt["attempt_id"], task_id=attempt["task_id"],
-                     run_id=run_id, resolved=resolved, reason=None if resolved is not None else "no independent resolved field",
+                     run_id=run_id, resolved=resolved, reason=reason,
                      timestamp=utc(), grader_exit_code=result.returncode, log=log, reports=refs))
+
+
+def _bind_resolved(values, task_id, grader_exit_code):
+    """Bind `resolved` to one identified grader run (FR-7.6).
+
+    Conflicting reports for the same instance are an error, never
+    last-wins; a non-zero grader exit code voids any report value, so a
+    failed grader run leaves the outcome unknown instead of minting a
+    resolution from a stale or partial report.
+    """
+    if len(values) > 1:
+        raise ValueError(f"conflicting grader reports for instance {task_id}")
+    if grader_exit_code != 0:
+        return None, f"grader exited {grader_exit_code}; report not bound to a successful run"
+    if not values:
+        return None, "no independent resolved field"
+    return values.pop(), None

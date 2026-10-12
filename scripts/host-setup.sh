@@ -179,6 +179,9 @@ EOF
     echo "Previous run directory holds a different frozen manifest; archiving (not deleting) to"
     echo "  $ARCHIVE"
     mv "$RUNS_DIR" "$ARCHIVE"
+    # FR-7.7: archived runs are provenance, never silent. Aggregate reports
+    # disclose the archive count and attempt totals alongside headline metrics.
+    echo "Archived prior runs now on disk: $(ls -d "$WORK"/runs/scored-v8-1-prev-* 2>/dev/null | wc -l) — reports must disclose them."
   fi
 fi
 

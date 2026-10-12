@@ -5,7 +5,48 @@ from decimal import Decimal
 
 from .accounting import TOKEN_FIELDS, unique_calls
 from .experiment import ARMS
-from .store import read_json
+from .store import read_json, sha
+
+
+def artifact_bound(store, grade):
+    """A grade counts only when bound to grader artifacts (FR-7.1): the
+    recorded grader log (and any per-instance reports) must be
+    content-addressed objects present in this store and hashing to their
+    recorded digests, from a grader run that exited successfully. A
+    hand-written grade with no grader run behind it is not bound."""
+    if grade.get("grader_exit_code") != 0:
+        return False
+    refs = [grade.get("log")] + list(grade.get("reports") or [])
+    refs = [r for r in refs if isinstance(r, dict) and r.get("sha256") and r.get("path")]
+    if not refs:
+        return False
+    return all((store.root/ref["path"]).is_file()
+               and sha((store.root/ref["path"]).read_bytes()) == ref["sha256"]
+               for ref in refs)
+
+
+def archived_runs(store):
+    """Disclose host-setup archives of prior runs (FR-7.7): directories the
+    setup script moved aside as `<run>-prev-<timestamp>`, with the distinct
+    attempt ids they recorded. Their attempts are never in this report's
+    denominators; they are provenance, disclosed rather than silent."""
+    parent, prefix = store.root.parent, store.root.name + "-prev-"
+    runs = []
+    if parent.is_dir():
+        for sibling in sorted(parent.iterdir()):
+            if not (sibling.is_dir() and sibling.name.startswith(prefix)):
+                continue
+            attempts = set()
+            stream = sibling/"attempts.jsonl"
+            if stream.is_file():
+                import json
+                for line in stream.read_text().splitlines():
+                    try:
+                        attempts.add(json.loads(line)["attempt_id"])
+                    except (ValueError, KeyError):
+                        continue
+            runs.append({"name": sibling.name, "attempts": len(attempts)})
+    return {"count": len(runs), "attempts": sum(r["attempts"] for r in runs), "runs": runs}
 
 
 def ratio(n, d):
@@ -68,12 +109,21 @@ def paired_bootstrap(rows, left, right, samples=2000, seed=20260917):
 
 
 def aggregate(store, *, synthetic=False):
+    # Reading the streams verifies their hash chains; a broken chain raises.
+    streams = {name: store.verify_stream(name)
+               for name in ("attempts", "calls", "grades", "budget")}
     latest = {r["attempt_id"]: r for r in store.events("attempts")}
-    grades = {}
+    grades, unverified_grades = {}, []
     for grade in store.events("grades"):
         if grade["attempt_id"] in grades and grades[grade["attempt_id"]] != grade:
             raise ValueError("multiple differing grades; select an explicit analysis version")
         grades[grade["attempt_id"]] = grade
+    # Grades with no bound grader artifact never reach the numerator: they
+    # are excluded (the attempt's grade becomes unknown) and disclosed.
+    for attempt_id, grade in list(grades.items()):
+        if not artifact_bound(store, grade):
+            unverified_grades.append(attempt_id)
+            del grades[attempt_id]
     calls = unique_calls(store.events("calls"))
     reservations = {e["call_id"]: e for e in store.events("budget")}
     rows = []
@@ -97,6 +147,9 @@ def aggregate(store, *, synthetic=False):
     unattempted = [s["attempt_id"] for s in frozen["schedule"] if s["attempt_id"] not in latest] if frozen else []
     return {"status": "synthetic_fixture" if synthetic else ("not_run" if not rows else "observed"),
             "unattempted_ids": unattempted, "unattempted_count": len(unattempted),
+            "integrity": {"streams": streams, "verified_grades": len(grades),
+                          "unverified_grade_attempts": sorted(unverified_grades)},
+            "archived_runs": archived_runs(store),
             "cost_basis": "list_price_estimate", "currency": "USD", "arms": arms,
             "comparisons": comparisons, "setup_cost": None,
             "setup_cost_reason": "controller session usage and human time not attributable",
@@ -110,4 +163,11 @@ def article_table(report):
         return "undefined" if x is None else str(round(x, 6)) if isinstance(x, float) else str(x)
     for arm, m in report["arms"].items():
         lines.append(f"| {arm} | {m['attempts']} | {m['resolved']} | {show(m['total_cost'])} | {show(m['cost_per_resolved'])} |")
+    archived = report.get("archived_runs") or {}
+    if archived.get("count"):
+        lines += ["", f"Archived prior runs disclosed: {archived['count']} "
+                      f"({archived['attempts']} attempts) excluded from the denominators above."]
+    unverified = (report.get("integrity") or {}).get("unverified_grade_attempts") or []
+    if unverified:
+        lines += ["", f"Grades excluded as unverified (no bound grader artifact): {len(unverified)}."]
     return "\n".join(lines)+"\n"
