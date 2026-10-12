@@ -13,7 +13,13 @@ AEE_PHASES = {"specify", "plan", "tasks", "implement"}
 
 
 def grounded_claims(claims, store, attempt_id):
-    """A model cannot promote invented evidence to a recorded observation."""
+    """A model cannot promote invented evidence to a recorded observation.
+
+    Grounding applies to every evidence kind (FR-7.4): any item whose ref
+    cannot be verified against this attempt's own tool artifacts is
+    downgraded to an asserted model claim, whatever kind it declared.
+    Kind labels confer no exemption.
+    """
     claims = json.loads(json.dumps(claims))
     allowed = {e["artifact"]["sha256"]: e["artifact"] for e in store.events("tools")
                if e.get("attempt_id") == attempt_id}
@@ -22,7 +28,7 @@ def grounded_claims(claims, store, attempt_id):
             digest = evidence.get("source_id")
             ref = allowed.get(digest)
             verified = ref and evidence.get("ref") == ref["path"] and sha((store.root/ref["path"]).read_bytes()) == digest
-            if evidence.get("kind") == "observed" and not verified:
+            if not verified:
                 evidence["kind"] = "asserted"
                 evidence["source_quality"] = "model"
                 evidence["description"] = "Unverified model assertion: "+evidence.get("description", "")
@@ -73,8 +79,10 @@ def assess(root, claims, phase, store, attempt_id):
                         "--phase", "after_"+phase, "--strategy", "strict", "--output", str(result_path)],
                        check=True, capture_output=True, env=env, timeout=60)
         composed = read_json(result_path)
-        # Evaluator 1.0.0 emits optional model_routing:null, contrary to its schema.
-        # Preserve raw output below, normalize only absent optional routing in adapter.
+        # The vendored evaluator (FR-6 build) composes schema-valid output.
+        # These two normalizations remain as defense against legacy composed
+        # files only: Evaluator 1.0.0 emitted model_routing:null contrary to
+        # its schema and injected _evaluator_id into findings.
         if composed.get("model_routing", "absent") is None:
             composed.pop("model_routing")
         for finding in composed.get("findings", []):
