@@ -47,7 +47,8 @@ print(f"Verified {audit_count} recorded AEE audits; documented superseded attemp
 
 from benchmark_runner.reporting import artifact_bound
 
-STREAMS = ("attempts", "calls", "grades", "budget")
+STREAMS = ("attempts", "calls", "grades", "budget", "tools", "history",
+           "assessments", "assessment_errors")
 stream_files = [p for root in (Path("reports/offline"), Path("reports/local"))
                 for name in STREAMS for p in root.glob(f"**/{name}.jsonl")]
 stores = sorted({p.parent for p in stream_files})
