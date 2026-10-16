@@ -1,5 +1,31 @@
 # Resume the ElectroHire benchmark
 
+## Current continuation — 2026-10-16
+
+Branch `feat/longitudinal-hallucination-economics`: engine1.5.3, Specify1.2.1,
+AEE1.5.2, evaluator1.1.2. Published identities and actual installation checked;
+see `docs/current-tooling.md` and Spec003. README leads with historical measured
+results and interpretation. No evidence currently establishes reduced
+hallucination or long-term financial savings. The lifecycle importer adds
+artifact-bound claim/cost analysis; its synthetic tests are not efficacy results.
+CI stays Ubuntu-only per user instruction. The final compatible dependency lock
+passed360tests, pin checks and recorded actual AEE/Evaluator checks. Focused
+validation passed49tests with6/6 narrow machine observations verified and one
+actual AEE result composed; no human acceptance was invented. The free local
+`qwen3.8-27b` workflow calibration04 is active; latency probes passed with480-second
+request timeout. `artifacts/current-pipeline-01.json` is authoritative: a gated
+runner waits for calibration, then replays actual AEE, scores12trajectories/
+36dependent checkpoints and exports all retained setup work. Do not start a
+duplicate generation process. Earlier GPT and Qwen failures remain setup costs.
+No comparative conclusion is available until that study completes. No paid inference, releases,
+PR merges or article publication are authorized.
+
+The September "running" statements below are historical handoff text. This
+checkout has no current Study02 status artifact: do not assert it completed or
+relabel it as a latest-version result. Check actual host/state before duplicating
+it. Fresh efficacy work needs a separate freeze and full workflow/grader preflight.
+Prior failed work remains counted.
+
 ## Active expanded comparison — 2026-09-17
 
 The user authorized all five follow-up improvements: calibrated runtime limits,

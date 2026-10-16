@@ -3,7 +3,7 @@ name: speckit-evaluator-run
 description: Run an evaluator against one or more artifacts and produce a versioned machine-readable result conforming to the evaluator result contract
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
-  author: github-spec-kit
+  author: ElectroHire
   source: evaluator:commands/speckit.evaluator.run.md
 ---
 
@@ -43,7 +43,7 @@ Look for evaluator configurations in `.specify/extensions/evaluator/`. An evalua
 
 1. Check `.specify/extensions/evaluator/evaluators.yml` for a list of registered evaluator IDs.
 2. For each registered evaluator, locate its configuration.
-3. If no evaluators are registered, produce a single result with `outcome: "pass"` and a note that no evaluators are configured.
+3. If no evaluators are registered, produce a single result with `outcome: "block"` and a `missing_evidence` finding stating that no evaluators are configured. **Fail closed** (Spec 003 FR-6.1): an empty registry is a configuration defect, not a pass — absence of evaluation must never read downstream as a green gate.
 
 ### 3. Run Each Evaluator
 

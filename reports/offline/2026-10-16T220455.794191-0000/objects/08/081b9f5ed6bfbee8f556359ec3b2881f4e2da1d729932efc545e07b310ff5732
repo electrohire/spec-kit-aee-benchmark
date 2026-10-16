@@ -1,0 +1,199 @@
+{
+  "schema_version": "1.0",
+  "methodology_version": "2.0",
+  "project": "aee-assessment-hsgyzs0h",
+  "phase": "after_tasks",
+  "outcome": "iterate",
+  "summary": "Assessed 1 claim(s); found 2 failure mode(s); 1 claim(s) below the 0.70 confidence threshold. Stage cap: 1 claim(s) below stage 'explained'; the outcome cannot be 'pass' (Spec 004 R1.4). Stage caps applied: 1 claim(s) reported below their author-declared status or in qualified form (Spec 004 R1.3). Not understood: 3 residual unknown(s) are recorded on this assessment (Spec 004 R5.2). Lane 1 (machine verification): outcome iterate; 0 claim(s) at or above the 0.70 threshold, 1 below. Lane 2 (human acceptance): stages by effective stage: created 1. Lane-2 lag: 1 claim(s) below explained; 1 stage-capped.",
+  "created_at": "2026-10-16T22:07:15.095049Z",
+  "claims": [
+    {
+      "id": "REQ-LIFECYCLE-001",
+      "text": "Lifecycle reporting binds independent grading, retains unknown costs and distinguishes claims from correctness.",
+      "kind": "requirement",
+      "status": "unsupported",
+      "boundary": [
+        "Frozen pilot and declared environment"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "A reproducible counterexample violates the stated requirement"
+      ],
+      "uncertainty": "high",
+      "severity": "medium",
+      "source_ref": "specs/003-lifecycle-evidence/spec.md",
+      "domain": "",
+      "confidence": 0.25,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-REQ-LIFECYCLE-001-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "REQ-LIFECYCLE-001",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-REQ-LIFECYCLE-001-STAGE-CAP",
+          "claim_id": "REQ-LIFECYCLE-001",
+          "challenge": "Stage cap",
+          "breakpoint": "Stage cap (Spec 004 R1.3): claim at stage 'created' may not report status 'unsupported'; reported as 'draft' (policy verdict ceiling: unjudged); the cap lifts with a recorded checking event (an assessment run recorded as a stage event) (Spec 004 R1.3)",
+          "severity": "low",
+          "category": "stage_cap",
+          "recovery_hint": "Record the stage event that lifts the cap: a recorded checking event (an assessment run recorded as a stage event).",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "created",
+      "stage_events": [],
+      "headline": false,
+      "role": null
+    }
+  ],
+  "scores": {
+    "REQ-LIFECYCLE-001": {
+      "claim_id": "REQ-LIFECYCLE-001",
+      "direct_score": 0.25,
+      "propagated_score": 0.25,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "unsupported",
+        "uncertainty": "high",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources",
+        "Independence basis: none (no identifiable supporting sources)",
+        "Stage cap (Spec 004 R1.3): claim at stage 'created' may not report status 'unsupported'; reported as 'draft' (policy verdict ceiling: unjudged)"
+      ]
+    }
+  },
+  "verdicts": {},
+  "recoveries": [
+    {
+      "failure_id": "AEE-REQ-LIFECYCLE-001-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "REQ-LIFECYCLE-001",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-REQ-LIFECYCLE-001-STAGE-CAP",
+      "claim_id": "REQ-LIFECYCLE-001",
+      "strategy": "define_falsifier",
+      "action": "Record the stage event that lifts the cap: a recorded checking event (an assessment run recorded as a stage event).",
+      "priority": 4,
+      "verification": "A concrete observation that would refute the claim is documented."
+    }
+  ],
+  "metadata": {
+    "threshold": 0.7,
+    "input": "C:/Users/trist/AppData/Local/Temp/aee-assessment-hsgyzs0h/claims.json",
+    "ledger": {
+      "mode": "custom",
+      "path": "C:/Users/trist/AppData/Local/Temp/aee-assessment-hsgyzs0h/.specify/extensions/aee/ledger/epistemic-ledger.jsonl"
+    },
+    "loading_mode": "lenient",
+    "engine_version": "1.5.3",
+    "extension_version": "1.5.2"
+  },
+  "reported_statuses": {
+    "REQ-LIFECYCLE-001": "draft"
+  },
+  "stage_caps": [
+    {
+      "claim_id": "REQ-LIFECYCLE-001",
+      "stage": "created",
+      "author_status": "unsupported",
+      "reported_status": "draft",
+      "verdict_ceiling": "unjudged",
+      "qualified_supported": false,
+      "note": "Stage cap (Spec 004 R1.3): claim at stage 'created' may not report status 'unsupported'; reported as 'draft' (policy verdict ceiling: unjudged)",
+      "lifting_event": "a recorded checking event (an assessment run recorded as a stage event)"
+    }
+  ],
+  "not_understood": [
+    "REQ-LIFECYCLE-001: Stage cap (Spec 004 R1.3): claim at stage 'created' may not report status 'unsupported'; reported as 'draft' (policy verdict ceiling: unjudged)",
+    "REQ-LIFECYCLE-001: open challenges this assessment does not resolve: coverage_gap.",
+    "REQ-LIFECYCLE-001: propagated score 0.250 is below the 0.70 threshold - the claim is not established by its evidence as recorded."
+  ],
+  "lanes": {
+    "lane_1": {
+      "label": "machine verification",
+      "outcome": "iterate",
+      "threshold": 0.7,
+      "claims_at_or_above_threshold": 0,
+      "claims_below_threshold": 1
+    },
+    "lane_2": {
+      "label": "human acceptance",
+      "stage_counts": {
+        "created": 1,
+        "checked": 0,
+        "explained": 0,
+        "accepted": 0,
+        "digested": 0
+      },
+      "claims_below_explained": 1,
+      "exposition_covered_claims": 0,
+      "exposition_missing_claims": 1,
+      "verified_unexplained_claims": 0,
+      "stage_capped_claims": 1,
+      "attribution_contested_claims": 0
+    },
+    "per_claim": {
+      "REQ-LIFECYCLE-001": {
+        "lane_1": {
+          "score": 0.25,
+          "direct_score": 0.25,
+          "author_status": "unsupported",
+          "at_or_above_threshold": false
+        },
+        "lane_2": {
+          "stage": "created",
+          "stored_stage": "created",
+          "stage_capped": true,
+          "cap_reasons": [
+            "Stage cap (Spec 004 R1.3): claim at stage 'created' may not report status 'unsupported'; reported as 'draft' (policy verdict ceiling: unjudged)"
+          ],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": false,
+          "attribution_contested": false
+        }
+      }
+    }
+  },
+  "digestion": {
+    "REQ-LIFECYCLE-001": {
+      "stage": "created",
+      "exposition_present": false,
+      "explainers": []
+    }
+  }
+}

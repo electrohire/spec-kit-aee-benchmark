@@ -1,0 +1,60 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.6, pytest-9.1.1, pluggy-1.7.0 -- C:\Users\trist\Development\ElectroHire\electrohire-aee-release\work\spec-kit-aee-benchmark\.venv-current\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\trist\Development\ElectroHire\electrohire-aee-release\work\spec-kit-aee-benchmark
+configfile: pyproject.toml
+plugins: anyio-4.15.1, platformdirs-4.13.3
+collecting ... collected 49 items
+
+tests/test_lifecycle.py::test_all_calls_regressions_and_false_completion PASSED [  2%]
+tests/test_lifecycle.py::test_failed_and_unknown_calls_not_free_or_complete PASSED [  4%]
+tests/test_lifecycle.py::test_unobserved_schedule_not_silently_dropped PASSED [  6%]
+tests/test_lifecycle.py::test_ungraded_claim_truth_and_unscored_detector PASSED [  8%]
+tests/test_lifecycle.py::test_fabricated_citation_and_wrong_attempt PASSED [ 10%]
+tests/test_lifecycle.py::test_rejects_invalid_evidence[tamper] PASSED    [ 12%]
+tests/test_lifecycle.py::test_rejects_invalid_evidence[traversal] PASSED [ 14%]
+tests/test_lifecycle.py::test_rejects_invalid_evidence[snapshot] PASSED  [ 16%]
+tests/test_lifecycle.py::test_rejects_invalid_evidence[skipped] PASSED   [ 18%]
+tests/test_lifecycle.py::test_rejects_invalid_evidence[empty] PASSED     [ 20%]
+tests/test_lifecycle.py::test_rejects_invalid_evidence[duplicate] PASSED [ 22%]
+tests/test_lifecycle.py::test_rejects_invalid_evidence[call] PASSED      [ 24%]
+tests/test_lifecycle.py::test_rejects_invalid_evidence[negative] PASSED  [ 26%]
+tests/test_lifecycle.py::test_rejects_invalid_evidence[discovery] PASSED [ 28%]
+tests/test_lifecycle.py::test_cli_writes_report_without_replacing_evidence PASSED [ 30%]
+tests/test_lifecycle.py::test_unmatched_schedule_rejected PASSED         [ 32%]
+tests/test_lifecycle.py::test_cli_cannot_overwrite_markdown_or_input PASSED [ 34%]
+tests/test_local_provider.py::test_model_name_required PASSED            [ 36%]
+tests/test_local_provider.py::test_check_local_server_rejects_wrong_checkpoint PASSED [ 38%]
+tests/test_local_provider.py::test_router_can_list_selected_model_after_other_models PASSED [ 40%]
+tests/test_local_provider.py::test_check_local_server_fail_closed_when_down PASSED [ 42%]
+tests/test_local_provider.py::test_query_zero_cost_and_openai_params_omitted PASSED [ 44%]
+tests/test_local_provider.py::test_local_identity_must_match_frozen_config PASSED [ 46%]
+tests/test_local_provider.py::test_wrong_response_model_rejected_but_native_usage_retained PASSED [ 48%]
+tests/test_local_provider.py::test_make_provider_selects_backend PASSED  [ 51%]
+tests/test_local_provider.py::test_schema_accepts_local_inference_cost_basis PASSED [ 53%]
+tests/test_local_provider.py::test_extract_text_prefers_content PASSED   [ 55%]
+tests/test_local_provider.py::test_extract_text_falls_back_to_reasoning_content PASSED [ 57%]
+tests/test_local_provider.py::test_extract_text_strips_think_blocks PASSED [ 59%]
+tests/test_local_provider.py::test_extract_text_empty_when_nothing PASSED [ 61%]
+tests/test_assessment_contract.py::test_controller_assess_calls_supply_attempt_identity PASSED [ 63%]
+tests/test_assessment_contract.py::test_readme_generated_table_matches_actual_measured_summaries PASSED [ 65%]
+tests/test_current_local.py::test_completion_pipeline_stops_before_generation_when_calibration_failed PASSED [ 67%]
+tests/test_current_local.py::test_failed_latency_request_retains_unknown_usage PASSED [ 69%]
+tests/test_current_local.py::test_every_active_local_claim_example_loads_strict_current_engine PASSED [ 71%]
+tests/test_current_local.py::test_ast_calibration_comparison_ignores_only_unrelated_launcher_changes PASSED [ 73%]
+tests/test_current_local.py::test_frozen_inputs_reject_change_and_preserve_bytes PASSED [ 75%]
+tests/test_current_local.py::test_current_provider_keeps_usage_when_wrong_response_identity PASSED [ 77%]
+tests/test_current_local.py::test_real_aee_assessment_is_bound_to_session_identity PASSED [ 79%]
+tests/test_report_current.py::test_completion_denominators_and_measured_costs PASSED [ 81%]
+tests/test_report_current.py::test_incomplete_or_misattributed_evidence_rejected[missing-row] PASSED [ 83%]
+tests/test_report_current.py::test_incomplete_or_misattributed_evidence_rejected[wrong-source] PASSED [ 85%]
+tests/test_report_current.py::test_incomplete_or_misattributed_evidence_rejected[wrong-grader] PASSED [ 87%]
+tests/test_report_current.py::test_incomplete_or_misattributed_evidence_rejected[wrong-verdict] PASSED [ 89%]
+tests/test_report_current.py::test_incomplete_or_misattributed_evidence_rejected[wrong-primary-verdict] PASSED [ 91%]
+tests/test_report_current.py::test_setup_retains_unknown_failures_without_double_counting_copies PASSED [ 93%]
+tests/test_project_assessment.py::test_real_project_keeps_ledger_and_composes_only_current_phase PASSED [ 95%]
+tests/test_project_assessment.py::test_project_refuses_observations_from_another_attempt PASSED [ 97%]
+tests/test_project_assessment.py::test_full_dependency_replay_retains_tools_and_all_four_ledgers PASSED [100%]
+
+- generated xml file: C:\Users\trist\Development\ElectroHire\electrohire-aee-release\work\spec-kit-aee-benchmark\reports\aee-validation\current-20261016-03\tests\junit.xml -
+============================= 49 passed in 31.39s =============================

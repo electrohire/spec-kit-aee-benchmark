@@ -2,6 +2,41 @@
 
 All notable changes to the Evaluator Contract extension will be documented in this file.
 
+## Unreleased
+
+## [1.1.2] - 2026-10-16
+
+### Changed
+- Publish the private vulnerability reporting policy, add a Python lint gate,
+  and fuzz malformed result bytes across all three composition strategies.
+
+- Add an evaluator agent skill for standalone and Spec Kit composition and
+  document natural-language use of the installed operation skills.
+- Clarify distribution and extension names, the limits of composition and
+  independent evaluation, and this repository's own Spec Kit/AEE setup.
+
+### Fixed
+- Treat non-UTF-8 result files as blocking invalid input instead of allowing
+  a Unicode decoding traceback to escape composition.
+
+## [1.1.1] - 2026-10-15
+
+### Fixed
+- The Python composer and `examples/demo.py` failed to parse on Python
+  3.11: they nested same-type quotes inside f-strings, which only Python
+  3.12+ (PEP 701) accepts. The quotes are now distinct (the composer
+  builds its outcome list outside the f-string); output is unchanged.
+- README installation used `specify extension add evaluator`, which the
+  discovery-only community catalog refuses, and a stale in-tree `--dev`
+  path; it now gives the release-archive `--from` command and the composer
+  dependencies.
+
+### Changed
+- CI runs the Python test suite on Ubuntu, Windows, and macOS with
+  Python 3.11, 3.12, and 3.13, matching applied-epistemic-engineering and
+  spec-kit-aee. It installs `jq` where missing and fails when a composer
+  toolchain is absent, so no target silently skips a parity leg.
+
 ## [1.1.0] - 2026-10-12
 
 ### Added

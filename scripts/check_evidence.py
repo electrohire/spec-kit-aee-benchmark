@@ -24,6 +24,27 @@ for manifest in manifests:
             raise SystemExit(f'Evidence manifest mismatch: {path}')
 print(f"Verified {len(objects)} immutable evidence objects and {len(manifests)} file manifests")
 
+# Preserve byte-exact process logs and verify the actual engine ledger anchors.
+# A superseded audit may document composition failure; its evidence still must
+# verify, and it must never be counted as a successful coupled assessment.
+from aee.ledger import HashChainLedger
+audit_count=0
+for claims_path in Path("reports/aee-validation").glob("*/claims.json"):
+    root=claims_path.parent
+    for claim in json.loads(claims_path.read_text())["claims"]:
+        for evidence in claim["evidence"]:
+            path=Path(evidence["ref"]).resolve()
+            if not path.is_relative_to(Path.cwd().resolve()) or sha(path.read_bytes())!=evidence["content_hash"]:
+                raise SystemExit(f"AEE observation checksum mismatch: {claims_path}")
+    if not HashChainLedger(root/"ledger.jsonl").verify(require_anchor=True).valid:
+        raise SystemExit(f"AEE ledger/anchor failure: {root}")
+    if not (root/"REVIEW.md").exists():
+        composed=json.loads((root/"composed.json").read_text())
+        if composed["metadata"]["evaluator_count"]!=1 or composed["metadata"].get("no_results"):
+            raise SystemExit(f"AEE result was not composed: {root}")
+    audit_count+=1
+print(f"Verified {audit_count} recorded AEE audits; documented superseded attempts remain separate")
+
 from benchmark_runner.reporting import artifact_bound
 
 STREAMS = ("attempts", "calls", "grades", "budget")

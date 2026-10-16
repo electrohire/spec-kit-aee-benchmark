@@ -29,7 +29,7 @@ EXTENSIONS = (("aee_extension", "aee"), ("evaluator_extension", "evaluator"))
 
 def tree_digest(base, excluded_top):
     lines = []
-    for path in sorted(base.rglob("*")):
+    for path in sorted(base.rglob("*"), key=lambda p: p.relative_to(base).as_posix()):
         if not path.is_file() or "__pycache__" in path.parts:
             continue
         rel = path.relative_to(base).as_posix()
@@ -53,6 +53,10 @@ def main():
         errors.append(f"engine pin: pyproject requires =={pin}, "
                       f"versions.json records {versions['aee_engine']}")
     registry = json.loads((ROOT/".specify/extensions/.registry").read_text())
+    specify_pin = re.search(r"specify-cli==([0-9.]+)", (ROOT/"pyproject.toml").read_text())
+    integration = json.loads((ROOT/".specify/integration.json").read_text())
+    if not specify_pin or specify_pin.group(1) != versions["specify"] or integration["version"] != versions["specify"]:
+        errors.append("Specify CLI pin, installed integration and versions.json differ")
     for key, dirname in EXTENSIONS:
         base = ROOT/".specify/extensions"/dirname
         found = extension_version(base)

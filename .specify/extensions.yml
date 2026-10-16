@@ -5,14 +5,6 @@ settings:
   auto_execute_hooks: true
 hooks:
   after_specify:
-  - extension: evaluator
-    command: speckit.evaluator.run
-    enabled: true
-    optional: true
-    priority: 20
-    prompt: Run evaluators against the specification?
-    description: Evaluate spec quality, evidence, and provenance after specification
-    condition: null
   - extension: aee
     command: speckit.aee.assess
     enabled: true
@@ -22,15 +14,15 @@ hooks:
     description: Challenge requirements, assumptions, boundaries, and evidence after
       specification
     condition: null
-  after_plan:
   - extension: evaluator
     command: speckit.evaluator.run
     enabled: true
     optional: true
     priority: 20
-    prompt: Run evaluators against the plan?
-    description: Evaluate plan assumptions, risks, and coverage after planning
+    prompt: Run evaluators against the specification?
+    description: Evaluate spec quality, evidence, and provenance after specification
     condition: null
+  after_plan:
   - extension: aee
     command: speckit.aee.assess
     enabled: true
@@ -39,15 +31,15 @@ hooks:
     prompt: Run an epistemic assessment of the plan?
     description: Challenge plan claims, decisions, dependencies, and supporting evidence
     condition: null
-  after_tasks:
   - extension: evaluator
     command: speckit.evaluator.run
     enabled: true
     optional: true
     priority: 20
-    prompt: Run evaluators against the task breakdown?
-    description: Evaluate task completeness and traceability after task generation
+    prompt: Run evaluators against the plan?
+    description: Evaluate plan assumptions, risks, and coverage after planning
     condition: null
+  after_tasks:
   - extension: aee
     command: speckit.aee.assess
     enabled: true
@@ -56,15 +48,15 @@ hooks:
     prompt: Run an epistemic assessment of the task breakdown?
     description: Challenge task traceability and the evidence required to verify completion
     condition: null
-  after_implement:
   - extension: evaluator
     command: speckit.evaluator.run
     enabled: true
     optional: true
     priority: 20
-    prompt: Run evaluators against the implementation?
-    description: Evaluate implementation against spec, plan, and tasks
+    prompt: Run evaluators against the task breakdown?
+    description: Evaluate task completeness and traceability after task generation
     condition: null
+  after_implement:
   - extension: aee
     command: speckit.aee.assess
     enabled: true
@@ -72,6 +64,14 @@ hooks:
     priority: 30
     prompt: Run an epistemic assessment of the implementation?
     description: Compare implementation claims with independently inspectable evidence
+    condition: null
+  - extension: evaluator
+    command: speckit.evaluator.run
+    enabled: true
+    optional: true
+    priority: 20
+    prompt: Run evaluators against the implementation?
+    description: Evaluate implementation against spec, plan, and tasks
     condition: null
   after_verify:
   - extension: aee

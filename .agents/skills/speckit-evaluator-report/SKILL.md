@@ -3,7 +3,7 @@ name: speckit-evaluator-report
 description: Render evaluator results as a human-readable report, CI annotation, or release gate
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
-  author: github-spec-kit
+  author: ElectroHire
   source: evaluator:commands/speckit.evaluator.report.md
 ---
 

@@ -87,7 +87,7 @@ def run(out,preflight,timeout):
         if summary['done'] and not diagnostic_changed:
             claims=grounded_claims(summary['done']['claims'],store,pair)
             assessment_begin=time.monotonic()
-            evaluation=assess(ROOT,claims,'implement',store)
+            evaluation=assess(ROOT,claims,'implement',store,folder.name)
             assessment_seconds=time.monotonic()-assessment_begin
         else:
             claims=None;evaluation=None;assessment_seconds=0
