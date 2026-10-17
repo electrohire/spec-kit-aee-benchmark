@@ -1,0 +1,63 @@
+{
+  "budget_debit": 11534,
+  "ended_at": "2026-10-16T22:18:11.310356+00:00",
+  "max_output": 4096,
+  "original_sha256": "2012c410451c4e63a1aa8beae35a59314e3664a1e2c4920b63832efe8c1097fc",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 10541,
+  "preflight_seconds": 0.0940000000409782,
+  "removed_history_messages": 0,
+  "request_seconds": 10.046999999787658,
+  "request_sha256": "328feb2fa7acaf4eb64e02fb9572fa86ab3ce7ce25bfea7351b25edae3fe1f00",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"done\",\"claims\":{\"schema_version\":\"1.0\",\"claims\":[{\"id\":\"R01\",\"text\":\"Create a smoke.py module that exposes a function add(a,b) returning the sum of a and b.\",\"kind\":\"requirement\",\"status\":\"supported\",\"boundary\":[\"Unscored calibration\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"Unscored calibration R01\",\"uncertainty\":\"high\",\"stage\":\"created\",\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"primary\",\"source_id\":\"dd7e733da2497e416ef08af602c1dafb09572736abf144d3f5771deff3a3ae78\",\"ref\":\"dd7e733da2497e416ef08af602c1dafb09572736abf144d3f5771deff3a3ae78\",\"direction\":\"supports\",\"description\":\"Created smoke.py with add function\"}]},{\"id\":\"R02\",\"text\":\"The add function must support negative integers, zero and floating point numbers.\",\"kind\":\"requirement\",\"status\":\"supported\",\"boundary\":[\"Unscored calibration\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"Unscored calibration R02\",\"uncertainty\":\"high\",\"stage\":\"created\",\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"primary\",\"source_id\":\"dd7e733da2497e416ef08af602c1dafb09572736abf144d3f5771deff3a3ae78\",\"ref\":\"dd7e733da2497e416ef08af602c1dafb09572736abf144d3f5771deff3a3ae78\",\"direction\":\"supports\",\"description\":\"add accepts negative values, zero and floats\"}]},{\"id\":\"R03\",\"text\":\"Add and run tests to verify the implementation.\",\"kind\":\"requirement\",\"status\":\"supported\",\"boundary\":[\"Unscored calibration\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"Unscored calibration R03\",\"uncertainty\":\"high\",\"stage\":\"created\",\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"primary\",\"source_id\":\"ec8d2291e484b8303f890c755442243f730e53f94a2514aacb58f35a2f63e992\",\"ref\":\"ec8d2291e484b8303f890c755442243f730e53f94a2514aacb58f35a2f63e992\",\"direction\":\"supports\",\"description\":\"Created tests in tests/test_smoke.py verifying add function\"}] }]} }",
+          "reasoning_content_sha256": "be08229e7338f83b2d28b829c0349fb82e094ba9bf61552f36a8085982177a68",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792189091,
+    "id": "chatcmpl-m4cRQP2qL6QaY7YCE42qhPINZeSpvVRB",
+    "model": "gpt-oss-20b-Q5_K_M",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 10462,
+      "predicted_ms": 9887.277,
+      "predicted_n": 993,
+      "predicted_per_second": 100.3309606881652,
+      "predicted_per_token_ms": 9.96701310483871,
+      "prompt_ms": 101.008,
+      "prompt_n": 79,
+      "prompt_per_second": 782.1162680183749,
+      "prompt_per_token_ms": 1.2785822784810126
+    },
+    "usage": {
+      "completion_tokens": 993,
+      "prompt_tokens": 10541,
+      "prompt_tokens_details": {
+        "cached_tokens": 10462
+      },
+      "total_tokens": 11534
+    }
+  },
+  "seconds": 10.046999999787658,
+  "source": "current-workflow-calibration-01/calls/call-0014.json",
+  "stage": 1,
+  "started_at": "2026-10-16T22:18:01.261177+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 993,
+    "prompt_tokens": 10541,
+    "prompt_tokens_details": {
+      "cached_tokens": 10462
+    },
+    "total_tokens": 11534
+  }
+}

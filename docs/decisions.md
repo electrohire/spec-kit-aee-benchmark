@@ -1,4 +1,10 @@
 # Decisions and observed deviations
+
+Current October tooling and prospective lifecycle analysis are documented in
+[current tooling](current-tooling.md) and [lifecycle protocol](lifecycle-protocol.md).
+The version-specific entries below are historical observations, not instructions
+to reinstall those earlier releases.
+
 - 2026-09-17: user explicitly excluded the ZIP. No ZIP content was imported or published.
 - Authenticated tbitcs; public ElectroHire repository creation authorized by brief.
 - Specify 1.0.0 init uses --integration codex --integration-options=--skills --script py.

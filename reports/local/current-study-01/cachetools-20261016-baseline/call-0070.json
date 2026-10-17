@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28681,
+  "ended_at": "2026-10-17T13:45:06.465739+00:00",
+  "max_output": 4096,
+  "original_sha256": "86a7afa3918e5ad3762933424e90b43a1c3984e04813f0ed69b0b6d17ae8e692",
+  "phase": "solve",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 28468,
+  "preflight_seconds": 1.422000000020489,
+  "removed_history_messages": 6,
+  "request_seconds": 11.905999999959022,
+  "request_sha256": "ffb3157ec49e8d84d7ac630f5c09a368d6c8f9dad54c66363c6de9ef5f323d06",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python - <<'PYEOF'\\nfrom tests.test_tagged_m3 import FakeTimer\\nt = FakeTimer(0.0)\\nfrom cachetools.tagged import TaggedCache\\nc = TaggedCache(4, timer=t)\\nc.put('a', 1, [])\\nc.put('b', 2, [], ttl=1)\\nc.put('c', 3, [])\\nc.put('d', 4, [])\\nt.advance(1)\\nprint('len after advance:', len(c))\\nprint('order:', list(c._TaggedCache__data._Cache__data))\\nc.put('e', 5, [])\\nprint('after put e, order:', list(c._TaggedCache__data._Cache__data))\\nprint('a in c:', 'a' in c)\\nPYEOF\"}",
+          "reasoning_sha256": "616502495dddd7e5fba91c96148ddc8c2969fe0d7dfb90841a9b60f1ed04bef1",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792244706,
+    "id": "chatcmpl-aKVUAYaarYPlkrQcmGG0qywMwVFFXFPq",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 27767,
+      "predicted_ms": 10370.468,
+      "predicted_n": 213,
+      "predicted_per_second": 20.44266468977099,
+      "predicted_per_token_ms": 48.91730188679246,
+      "prompt_ms": 1343.882,
+      "prompt_n": 701,
+      "prompt_per_second": 521.6231782254691,
+      "prompt_per_token_ms": 1.9170927246790301
+    },
+    "usage": {
+      "completion_tokens": 213,
+      "prompt_tokens": 28468,
+      "prompt_tokens_details": {
+        "cached_tokens": 27767
+      },
+      "total_tokens": 28681
+    }
+  },
+  "seconds": 11.905999999959022,
+  "stage": 3,
+  "started_at": "2026-10-17T13:44:54.542766+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 213,
+    "prompt_tokens": 28468,
+    "prompt_tokens_details": {
+      "cached_tokens": 27767
+    },
+    "total_tokens": 28681
+  }
+}

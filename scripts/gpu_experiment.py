@@ -217,7 +217,7 @@ def coding(args):
                 if arm == 'spec_kit_aee_adapted' and phase in ('specify', 'plan', 'tasks', 'implement'):
                     if frozen['attempt_seconds']-(time.monotonic()-begin) < 125:
                         raise TimeoutError('insufficient_remaining_assessment_budget')
-                    evaluation = assess(ROOT, claims(1), phase, Store(folder/'evidence'))
+                    evaluation = assess(ROOT, claims(1), phase, Store(folder/'evidence'), folder.name)
                     row['gaps'].append(dict(phase=phase, outcome=evaluation['outcome']))
                     history.append('AEE evidence-gap feedback; this is NOT an independent test grade:\n'+json.dumps(evaluation))
             if time.monotonic()-begin > frozen['attempt_seconds']:

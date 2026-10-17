@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28945,
+  "ended_at": "2026-10-17T18:56:39.330769+00:00",
+  "max_output": 4096,
+  "original_sha256": "fc32cf2b853e375daf3b81845cf2bbecab4da77266f43828cfd20e07f5e4cf5f",
+  "phase": "plan",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 27871,
+  "preflight_seconds": 1.343000000109896,
+  "removed_history_messages": 18,
+  "request_seconds": 54.67200000002049,
+  "request_sha256": "9240ec3d23505f0d4a07ac510559ce37c623c7c8f67bebf0dd90e6a27b99edcb",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && python3 .specify/scripts/python/setup_plan.py --json 2>&1 | tail -8 && ls .specify/extensions.yml 2>&1 | head -1\"}",
+          "reasoning_sha256": "b091998efe7a7bf35d8b3af9f36093b7d06cf20fd0175ee6d7b9d4915e9b78f2",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792263399,
+    "id": "chatcmpl-XFmCAXzyy5o67po2BmNRUuYRdgD8H4Mv",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 27829,
+      "predicted_ms": 54088.163,
+      "predicted_n": 1074,
+      "predicted_per_second": 19.837981925916026,
+      "predicted_per_token_ms": 50.40835321528425,
+      "prompt_ms": 437.236,
+      "prompt_n": 42,
+      "prompt_per_second": 96.0579641200633,
+      "prompt_per_token_ms": 10.410380952380953
+    },
+    "usage": {
+      "completion_tokens": 1074,
+      "prompt_tokens": 27871,
+      "prompt_tokens_details": {
+        "cached_tokens": 27829
+      },
+      "total_tokens": 28945
+    }
+  },
+  "seconds": 54.67200000002049,
+  "stage": 3,
+  "started_at": "2026-10-17T18:55:44.651438+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1074,
+    "prompt_tokens": 27871,
+    "prompt_tokens_details": {
+      "cached_tokens": 27829
+    },
+    "total_tokens": 28945
+  }
+}

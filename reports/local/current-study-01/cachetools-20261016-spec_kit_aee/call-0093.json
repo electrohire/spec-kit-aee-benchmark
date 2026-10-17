@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28374,
+  "ended_at": "2026-10-17T17:10:26.392169+00:00",
+  "max_output": 4096,
+  "original_sha256": "b2a1ba9bf372b98cc0fbc7df0152c1e49bccd0eb678992bc1595b5eff5673a99",
+  "phase": "plan",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 28131,
+  "preflight_seconds": 1.0159999998286366,
+  "removed_history_messages": 12,
+  "request_seconds": 13.156000000191852,
+  "request_sha256": "1cddca04c67c33c4a231a0be417a56a99fc50fce99b54efc1846a0e029bb052d",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"ls -la /testbed/specs/001-transactions/ /testbed/specs/001-transactions/contracts/ 2>/dev/null; echo ---; grep -n 'invalidate_many\\\\|resize\\\\|ttl\\\\|timer' /testbed/specs/001-transactions/plan.md | head; echo ---; grep -n 'invalidate_many\\\\|resize\\\\|ttl\\\\|timer' /testbed/specs/001-transactions/research.md 2>/dev/null | head\"}",
+          "reasoning_sha256": "29dd388b788beb132224bdd06782a20eb6bfd18b09f6f674a786a5c3b353a3a4",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792257026,
+    "id": "chatcmpl-Hl8AQmS40ShBGrH0X77C6HaU4xXZzSEw",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 26983,
+      "predicted_ms": 11445.61,
+      "predicted_n": 243,
+      "predicted_per_second": 21.14347771765769,
+      "predicted_per_token_ms": 47.29590909090909,
+      "prompt_ms": 1595.293,
+      "prompt_n": 1148,
+      "prompt_per_second": 719.6170233305105,
+      "prompt_per_token_ms": 1.3896280487804877
+    },
+    "usage": {
+      "completion_tokens": 243,
+      "prompt_tokens": 28131,
+      "prompt_tokens_details": {
+        "cached_tokens": 26983
+      },
+      "total_tokens": 28374
+    }
+  },
+  "seconds": 13.156000000191852,
+  "stage": 3,
+  "started_at": "2026-10-17T17:10:13.241870+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 243,
+    "prompt_tokens": 28131,
+    "prompt_tokens_details": {
+      "cached_tokens": 26983
+    },
+    "total_tokens": 28374
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "budget_debit": 19965,
+  "ended_at": "2026-10-17T13:04:20.615060+00:00",
+  "max_output": 4096,
+  "original_sha256": "faa189ba46357af08764bcb1fe9f84b3733022fa5025fa231c41bfaff2c8bd71",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 19230,
+  "preflight_seconds": 0.10899999993853271,
+  "removed_history_messages": 0,
+  "request_seconds": 35.65599999995902,
+  "request_sha256": "26995af87faa6093645346bfa12460528c3355ec4bf9e1444d5a69d9e582b4f6",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python - << 'EOF'\\nfrom cachetools.tagged import TaggedCache\\n\\n# maxsize=1 replacement\\nc = TaggedCache(1)\\nc.put('a', 1, ['t'])\\nc.put('a', 2, ['u'])\\nassert c.get('a') == 2 and c.invalidate('t') == 0 and c.invalidate('u') == 1 and len(c) == 0\\n\\n# eviction during replacement of a *different* key cleans memberships\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\nc.put('b', 2, ['y'])\\nc.put('b', 3, ['z'])\\nassert c.invalidate('y') == 0 and c.invalidate('z') == 1\\n\\n# evict via new key, then reuse evicted key with no tag\\nc = TaggedCache(2)\\nc.put('a', 1, ['t'])\\nc.put('b', 2, [])\\nc.put('c', 3, [])  # evicts 'a'\\nassert c.invalidate('t') == 0\\nc.put('a', 4, ['t'])\\nassert c.invalidate('t') == 1  # only the new 'a'\\n\\n# invalidate with non-string raises, state untouched\\nc = TaggedCache(2)\\nc.put('a', 1, ['x'])\\ntry:\\n    c.invalidate(None)\\n    raise SystemExit('expected ValueError')\\nexcept ValueError:\\n    pass\\nassert c.get('a') == 1 and len(c) == 1\\n\\n# default tags=() works, empty tags\\nc = TaggedCache(3)\\nc.put('k', {'v': 1})\\nassert c.get('k') == {'v': 1}\\nassert c.invalidate('anything') == 0\\n\\n# repr/len/currsize\\nassert len(c) == 1 and c.currsize == 1 and 'maxsize=3' in repr(c)\\n\\n# get refreshes recency even when evicting later\\nc = TaggedCache(2)\\nc.put('a', 1, [])\\nc.put('b', 2, [])\\nc.get('a')\\nc.put('c', 3, [])\\nassert 'a' in c and 'b' not in c\\n\\n# pop semantics\\nc.put('d', 4, [])\\nassert c.pop('d') == 4 and 'd' not in c\\nassert c.pop('d', 0) == 0\\ntry:\\n    c.pop('d'); raise SystemExit('expected KeyError')\\nexcept KeyError:\\n    pass\\n\\n# unhashable key\\ntry:\\n    c.put({'x': 1}, 1, [])\\n    raise SystemExit('expected error')\\nexcept (TypeError, ValueError):\\n    pass\\n\\n# deep copy on input\\nv = {'l': [1, 2]}\\nc.put('e', v, [])\\nv['l'].append(3)\\nassert c.get('e') == {'l': [1, 2]}\\n\\nprint('all edge checks passed')\\nEOF\"}",
+          "reasoning_sha256": "0334fae5760e0a6d47e3d9b2e3b52fc7c684be76d65e0cfd6095c802cc22a347",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792242260,
+    "id": "chatcmpl-SecvRBEtG7tvTkO6420MOWUHKfDeMVjO",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 18313,
+      "predicted_ms": 34164.129,
+      "predicted_n": 735,
+      "predicted_per_second": 21.48452255287995,
+      "predicted_per_token_ms": 46.5451348773842,
+      "prompt_ms": 1430.712,
+      "prompt_n": 917,
+      "prompt_per_second": 640.9396160792669,
+      "prompt_per_token_ms": 1.5602093784078517
+    },
+    "usage": {
+      "completion_tokens": 735,
+      "prompt_tokens": 19230,
+      "prompt_tokens_details": {
+        "cached_tokens": 18313
+      },
+      "total_tokens": 19965
+    }
+  },
+  "seconds": 35.65599999995902,
+  "stage": 1,
+  "started_at": "2026-10-17T13:03:44.947098+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 735,
+    "prompt_tokens": 19230,
+    "prompt_tokens_details": {
+      "cached_tokens": 18313
+    },
+    "total_tokens": 19965
+  }
+}

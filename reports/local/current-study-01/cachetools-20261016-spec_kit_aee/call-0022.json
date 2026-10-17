@@ -1,0 +1,62 @@
+{
+  "budget_debit": 29166,
+  "ended_at": "2026-10-17T16:06:32.166942+00:00",
+  "max_output": 4096,
+  "original_sha256": "a7a28a9a391800edcbb374c70ad3d7432fd73cc23cf79f05d2c3c52396313528",
+  "phase": "plan",
+  "preflight_http_requests": 12,
+  "preflight_input_tokens": 27971,
+  "preflight_seconds": 0.8279999999795109,
+  "removed_history_messages": 10,
+  "request_seconds": 94.78099999995902,
+  "request_sha256": "b83a73d691011de07db0d1ca9f04136e8f1f87d058aea4598fcb6e0f5f1e251b",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && ls .specify/scripts/python/ 2>/dev/null; echo ---; ls .specify/templates/; echo ---; ls .specify/extensions.yml 2>/dev/null || echo no-extensions-yml; echo ---; ls src/cachetools/ tests/ 2>/dev/null; echo ---; python3 --version; python3 -c \\\"import pytest; print('pytest', pytest.__version__)\\\" 2>&1; echo ---; PYTHONPATH=src:. python3 -c \\\"import cachetools, inspect; print('cachetools', cachetools.__file__); from cachetools import LRUCache; print('LRUCache OK'); import cachetools.tagged\\\" 2>&1 | head -5\"}",
+          "reasoning_sha256": "adae3bad7a89ec6edcb5d01f237b86626a0eadddc85073109036ed2d1d5b6b50",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792253192,
+    "id": "chatcmpl-5eFP6CJjQ4ZJy4vzlMi6jnoOpHmlwKK7",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 60015.692,
+      "predicted_n": 1195,
+      "predicted_per_second": 19.89479684746449,
+      "predicted_per_token_ms": 50.2643986599665,
+      "prompt_ms": 22734.16,
+      "prompt_n": 27971,
+      "prompt_per_second": 1230.3511543861748,
+      "prompt_per_token_ms": 0.8127760895212899
+    },
+    "usage": {
+      "completion_tokens": 1195,
+      "prompt_tokens": 27971,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 29166
+    }
+  },
+  "seconds": 94.78099999995902,
+  "stage": 1,
+  "started_at": "2026-10-17T16:04:57.372610+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1195,
+    "prompt_tokens": 27971,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 29166
+  }
+}

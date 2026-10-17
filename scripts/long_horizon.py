@@ -34,7 +34,7 @@ upstream tests to make them pass. Workflow artifacts are outside the submitted c
 CLAIMS='''At phase completion, include a claims object in your done JSON. Extract actual
 active requirements, not a generic assertion. Example shape (replace example values):
 "claims":{"schema_version":"1.0","claims":[{"id":"R01","text":"bounded claim",
-"kind":"requirement","status":"unsupported","boundary":["this milestone"],
+"kind":"requirement","status":"draft","stage":"created","boundary":["this milestone"],
 "depends_on":[],"conflicts_with":[],"falsification_tests":["specific counterexample"],
 "source_ref":"milestone requirement R01","uncertainty":"high","evidence":[]}]}
 Keep each requirement claim's kind="requirement" (claim kind is never "observed").
@@ -279,13 +279,13 @@ def campaign(output,upstream,image,metadata):
                         if arm=='spec_kit_aee' and phase in ('specify','plan','tasks','implement'):
                             try:
                                 claims=grounded_claims(done.get('claims') or {},store,arm)
-                                evaluation=assess(ROOT,claims,phase,store)
+                                evaluation=assess(ROOT,claims,phase,store,arm)
                                 row['assessments'].append(dict(phase=phase,outcome=evaluation['outcome'],claims=claims,evaluation=evaluation))
                                 agent.add_messages(dict(role='user',content='AEE/Evaluator evidence gaps (not hidden-test grades): '+json.dumps(evaluation)))
                                 if phase=='implement' and evaluation['outcome'] not in ('pass','warn'):
                                     done=run_phase(agent,model,provider,'evidence_rework','Gather available repository evidence and address the implementation gaps, preserving unresolved uncertainty. '+CLAIMS,deadline,120,start_count)
                                     claims=grounded_claims(done.get('claims') or {},store,arm)
-                                    again=assess(ROOT,claims,'implement',store)
+                                    again=assess(ROOT,claims,'implement',store,arm)
                                     row['assessments'].append(dict(phase='implement_rework',outcome=again['outcome'],claims=claims,evaluation=again))
                             except Exception as exc:
                                 row['assessments'].append(dict(phase=phase,error=type(exc).__name__+': '+str(exc)))

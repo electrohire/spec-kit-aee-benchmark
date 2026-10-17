@@ -1,0 +1,62 @@
+{
+  "budget_debit": 21689,
+  "ended_at": "2026-10-17T17:28:06.187539+00:00",
+  "max_output": 4096,
+  "original_sha256": "0ae34a4bf435b5ca245466337a3b3a1113063dd4702db67b0aa38c605fd59a3d",
+  "phase": "plan",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 20796,
+  "preflight_seconds": 0.15600000019185245,
+  "removed_history_messages": 0,
+  "request_seconds": 64.09399999980815,
+  "request_sha256": "b460b9b1b617fcf76d4a2ad9203dfc7fe7cd692966e94e638ba202701bbb927f",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "I'll start the plan phase by running the setup script and inspecting the current state.\n\n{\"action\":\"shell\",\"command\":\"cd /testbed && python3 .specify/scripts/python/setup_plan.py --json 2>&1 | head -c 2000; echo; echo \\\"===STATE===\\\"; ls -la .specify/memory/; echo \\\"---SPEC---\\\"; ls -la specs/001-transactions/ 2>/dev/null; echo \\\"---CONTRIB---\\\"; cat .specify/feature.json 2>/dev/null\"}",
+          "reasoning_sha256": "695d72ac91053784abcc7d5315c61437d4f3d084ef1fbef4a3c76e68af330d4a",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792258086,
+    "id": "chatcmpl-5BoaO5PEHTJUJ8OHPEoV8kAS7vdY7LPW",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 41857.043,
+      "predicted_n": 893,
+      "predicted_per_second": 21.31063104481604,
+      "predicted_per_token_ms": 46.924936098654705,
+      "prompt_ms": 16567.649,
+      "prompt_n": 20796,
+      "prompt_per_second": 1255.217321419593,
+      "prompt_per_token_ms": 0.7966747932294672
+    },
+    "usage": {
+      "completion_tokens": 893,
+      "prompt_tokens": 20796,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 21689
+    }
+  },
+  "seconds": 64.09399999980815,
+  "stage": 1,
+  "started_at": "2026-10-17T17:27:02.099718+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 893,
+    "prompt_tokens": 20796,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 21689
+  }
+}

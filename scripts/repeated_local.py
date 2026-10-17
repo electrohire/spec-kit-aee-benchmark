@@ -53,7 +53,11 @@ def reservation(call):
 
 def compact_assessment(value):
     # Preserve semantic fields without nested raw copies. Full JSON stays in evidence.
-    return {key:value.get(key) for key in ('outcome','findings','next_action','confidence','uncertainty') if key in value}
+    result={key:value.get(key) for key in ('outcome','findings','next_action','confidence','uncertainty') if key in value}
+    metadata=value.get('metadata') or {}
+    display={key:metadata[key] for key in ('lane_states','reported_statuses','evaluator_count') if key in metadata}
+    if display:result['metadata']=display
+    return result
 
 
 def tests_for(project, stage, public):
@@ -98,7 +102,7 @@ def grade(project,snapshot,stage,public,expected=None):
                    for n in ET.fromstring(xml).iter('testcase')]
         except ET.ParseError: cases=[]
         return dict(passed=result['exit_code']==0 and bool(cases) and (expected is None or len(cases)==expected) and all(c['passed'] for c in cases),
-                    test_count=len(cases),cases=cases,output=result['stdout']+result['stderr'],expected=expected)
+                    exit_code=result['exit_code'],test_count=len(cases),cases=cases,output=result['stdout']+result['stderr'],expected=expected)
 
 
 class Provider:
@@ -276,7 +280,7 @@ class Session:
 def do_assessment(session,row,phase,done):
     claims=grounded_claims(done['claims'],session.store,session.identity)
     started=time.monotonic()
-    evaluation=assess(ROOT,claims,phase,session.store)
+    evaluation=assess(ROOT,claims,phase,session.store,session.identity)
     value=dict(phase=phase,claims=claims,evaluation=evaluation,outcome=evaluation['outcome'],seconds=time.monotonic()-started)
     row['assessments'].append(value)
     session.history.append(dict(role='user',content='AEE/Evaluator findings (not hidden grades). Claim atomicity/schema/evidence-quality findings are not established code defects: fix claim structure or gather scoped evidence, and leave correct code unchanged unless a concrete behavioral defect is identified. Do not repeatedly rewrite passing tests to change claim wording. '+json.dumps(compact_assessment(evaluation))))
@@ -325,13 +329,18 @@ def latency(out):
     write_json(out/'calibration.json',dict(passed=True,timeout=timeout,context_tokens=tokens,samples=2,records=[f'call-{i:04}.json' for i in range(2)]))
 
 
-def campaign(out,preflight,timeout):
+def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=None,
+             context_preflight=None,assets=None,extra_sources=(),completion_contract='',freeze_hook=None,block_on_assessment=False):
     # No outcome-dependent changes and no rerun/resume of partial trajectories.
     out.mkdir(parents=True,exist_ok=False)
     cal=json.loads((preflight/'calibration.json').read_text());assert cal['passed']
-    gate=json.loads((ROOT/'artifacts/repeated-workflow-04/result.json').read_text());assert gate['passed']
-    latency_result=json.loads((ROOT/'artifacts/repeated-latency-01/calibration.json').read_text());assert latency_result['passed'] and timeout==latency_result['timeout']
-    context_calibration=json.loads((ROOT/'artifacts/context-selection-01/result.json').read_text())
+    workflow_preflight=workflow_preflight or ROOT/'artifacts/repeated-workflow-04/result.json'
+    latency_preflight=latency_preflight or ROOT/'artifacts/repeated-latency-01/calibration.json'
+    context_preflight=context_preflight or ROOT/'artifacts/context-selection-01/result.json'
+    assets=assets or ROOT/'artifacts/repeated-assets'
+    gate=json.loads(workflow_preflight.read_text());assert gate['passed']
+    latency_result=json.loads(latency_preflight.read_text());assert latency_result['passed'] and timeout==latency_result['timeout']
+    context_calibration=json.loads(context_preflight.read_text())
     assert context_calibration['passed'] and context_calibration['selector_sha256']==digest(ROOT/'scripts/context_window.py')
     for project,meta in PROJECTS.items():
         actual=subprocess.check_output(['git','-c','safe.directory='+str((ROOT/meta['upstream']).resolve()).replace('\\','/'),'-C',str(ROOT/meta['upstream']),'rev-parse','HEAD'],text=True).strip()
@@ -339,21 +348,26 @@ def campaign(out,preflight,timeout):
     schedule=[(p,s,a) for p in PROJECTS for s in SEEDS for a in ARMS]
     random.Random(SEEDS[0]).shuffle(schedule)
     hashes={str(p.relative_to(ROOT)):digest(p) for folder in (TASK,ROOT/'prompts',ROOT/'src/benchmark_runner',ROOT/'.specify/extensions',ROOT/'.specify/templates',ROOT/'.specify/scripts/python') for p in folder.rglob('*') if p.is_file() and '__pycache__' not in p.parts}
-    for item in (ROOT/'artifacts/repeated-assets/installed-aee').rglob('*.py'):
+    for item in (assets/'installed-aee').rglob('*.py'):
         hashes[str(item.relative_to(ROOT))]=digest(item)
     for name in ('hardware.json','server-launch.json','package-versions.json'):
-        item=ROOT/'artifacts/repeated-assets'/name;hashes[str(item.relative_to(ROOT))]=digest(item)
+        item=assets/name;hashes[str(item.relative_to(ROOT))]=digest(item)
     hashes['scripts/calibrate_repeated_workflow.py']=digest(ROOT/'scripts/calibrate_repeated_workflow.py')
     hashes['scripts/context_window.py']=digest(ROOT/'scripts/context_window.py')
     hashes['scripts/calibrate_context_selection.py']=digest(ROOT/'scripts/calibrate_context_selection.py')
-    hashes['artifacts/context-selection-01/result.json']=digest(ROOT/'artifacts/context-selection-01/result.json')
+    hashes[str(context_preflight.relative_to(ROOT))]=digest(context_preflight)
+    for item in (*extra_sources,workflow_preflight,latency_preflight):
+        hashes[str(item.relative_to(ROOT))]=digest(item)
     hashes['scripts/gpu_experiment.py']=digest(ROOT/'scripts/gpu_experiment.py')
     hashes['scripts/report_long_horizon.py']=digest(ROOT/'scripts/report_long_horizon.py')
     hashes['uv.lock']=digest(ROOT/'uv.lock')
     hashes['.specify/memory/constitution.md']=digest(ROOT/'.specify/memory/constitution.md')
     hashes['scripts/repeated_local.py']=digest(__file__);hashes['scripts/long_horizon.py']=digest(ROOT/'scripts/long_horizon.py')
+    hashes={name.replace('\\','/'):value for name,value in hashes.items()}
     freeze=dict(created_at=utc(),config={**CONFIG,'timeout':timeout},schedule=schedule,hashes=hashes,projects=PROJECTS,image=IMAGE,server_props=local_json('/props'),calibration=cal,workflow_calibration=gate,latency_calibration=latency_result,context_selection_calibration=context_calibration)
     write_json(out/'freeze.json',freeze,exclusive=True)
+    if freeze_hook is not None:
+        freeze_hook(out,freeze)
     rows=[]
     for project,seed,arm in schedule:
         identity=f'{project}-{seed}-{arm}';folder=out/identity;folder.mkdir()
@@ -380,36 +394,54 @@ def campaign(out,preflight,timeout):
                     instructions=goal
                     if arm!='baseline':
                         instructions=(ROOT/'prompts/adapter.md').read_text().replace('/workflow','/testbed')+'\n'+skill(phase).replace('$ARGUMENTS',goal+'\n'+spec)+'\n'+goal+'\nUse SPECIFY_FEATURE_DIRECTORY=/testbed/specs/001-transactions. Keep documents concise and evidence explicit.'
+                    if phase in ('solve','final_implement'):
+                        instructions+='\n'+completion_contract
                     limits={'constitution':32,'specify':32,'plan':32,'tasks':32,'implement':32,'converge':16,'final_implement':16}
                     need_claims=arm=='spec_kit_aee' and phase in ('specify','plan','tasks','implement')
                     phase_before=folder/f'stage{stage}-{phase}-before.tar';box.snapshot(phase_before)
                     phase_row=session.phase(phase,instructions,spec,stage,min(left,limits.get(phase,left)),deadline,need_claims)
                     phase_after=folder/f'stage{stage}-{phase}-after.tar';box.snapshot(phase_after)
-                    phase_row.update(source_changed=source_digest(phase_before)!=source_digest(phase_after),source_before=str(phase_before.relative_to(out)),source_after=str(phase_after.relative_to(out)))
+                    phase_row.update(source_changed=source_digest(phase_before)!=source_digest(phase_after),source_before=phase_before.relative_to(out).as_posix(),source_after=phase_after.relative_to(out).as_posix())
                     row['phases'].append(phase_row)
                     if need_claims and phase_row['done']:
                         try:
                             evaluation=do_assessment(session,row,phase,phase_row['done'])
-                            if phase=='implement' and evaluation['outcome'] not in ('pass','warn'):
+                            if block_on_assessment and evaluation['outcome']=='block':
+                                row['blocked_phase']=phase;row['blocked_reason']='AEE block verdict'
+                            elif phase=='implement' and evaluation['outcome'] not in ('pass','warn'):
                                 rework=session.phase('evidence_rework','Address actual evidence gaps with repository inspection/tests and scoped changes. Keep unsupported claims explicit; return revised claims.',spec,stage,min(16,max(0,CONFIG['primary_calls']-(len(provider.calls)-start))),deadline,True)
                                 row['phases'].append(rework)
-                                if rework['done']:do_assessment(session,row,'implement',rework['done'])
-                        except Exception as exc:row['assessments'].append(dict(phase=phase,error=repr(exc)))
+                                if rework['done']:
+                                    checked=do_assessment(session,row,'implement',rework['done'])
+                                    if block_on_assessment and checked['outcome']=='block':
+                                        row['blocked_phase']=phase;row['blocked_reason']='AEE block after evidence rework'
+                        except Exception as exc:
+                            row['assessments'].append(dict(phase=phase,error=repr(exc)))
+                            if block_on_assessment:
+                                row['blocked_phase']=phase;row['blocked_reason']='AEE execution error'
                     write_json(out/'attempts.json',rows)
+                    if row.get('blocked_phase'):break
                 primary=folder/f'stage{stage}-primary.tar';box.snapshot(primary)
+                primary_terminal=(row['phases'][-1].get('done') or {}) if row['phases'] else {}
+                primary_declaration=primary_terminal.get('completion_asserted')
+                row['primary_completion_asserted']=primary_declaration if type(primary_declaration) is bool else None
                 expected=cal['projects'][project]['reference'][f'{stage}-public']['test_count']
-                row['primary_snapshot']=str(primary.relative_to(out));row['public_primary']=grade(project,primary,stage,True,expected)
+                row['primary_snapshot']=primary.relative_to(out).as_posix();row['public_primary']=grade(project,primary,stage,True,expected)
                 current=row['public_primary']
                 for iteration in (1,2):
-                    if current['passed']:break
+                    if current['passed'] or row.get('blocked_phase'):break
                     before=source_digest(primary if iteration==1 else folder/f'stage{stage}-repair1.tar')
-                    repair=session.phase('repair','Repair using public test feedback. Preserve active requirements.\n'+current['output'][-12000:],spec,stage,CONFIG['repair_calls'],deadline)
+                    repair=session.phase('repair','Repair using public test feedback. Preserve active requirements.\n'+current['output'][-12000:]+'\n'+completion_contract,spec,stage,CONFIG['repair_calls'],deadline)
                     snap=folder/f'stage{stage}-repair{iteration}.tar';box.snapshot(snap)
                     current=grade(project,snap,stage,True,expected)
-                    repair.update(round=iteration,grade=current,source_changed=source_digest(snap)!=before,snapshot=str(snap.relative_to(out)))
+                    repair.update(round=iteration,grade=current,source_changed=source_digest(snap)!=before,snapshot=snap.relative_to(out).as_posix())
                     row['repairs'].append(repair)
                 final=folder/f'stage{stage}-final.tar';box.snapshot(final)
-                row.update(final_snapshot=str(final.relative_to(out)),public_final=current,seconds=time.monotonic()-begin,calls=len(provider.calls)-start,ended_at=utc())
+                row.update(final_snapshot=final.relative_to(out).as_posix(),public_final=current,seconds=time.monotonic()-begin,calls=len(provider.calls)-start,ended_at=utc())
+                terminal=(row['repairs'] or row['phases'])[-1].get('done') or {}
+                declaration=terminal.get('completion_asserted')
+                row['completion_asserted']=declaration if type(declaration) is bool else None
+                row['completion_declaration_source']='repair' if row['repairs'] else 'primary'
                 notes=box.execute('find .specify specs -type f 2>/dev/null; test ! -f HANDOFF.md || cat HANDOFF.md')
                 row['notes_index']=notes
                 if arm!='baseline':

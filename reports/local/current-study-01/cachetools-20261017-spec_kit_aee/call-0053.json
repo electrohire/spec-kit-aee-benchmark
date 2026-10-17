@@ -1,0 +1,62 @@
+{
+  "budget_debit": 7909,
+  "ended_at": "2026-10-17T04:20:55.191752+00:00",
+  "max_output": 4096,
+  "original_sha256": "e976094e6c527e4e18ea1eb0bdf4a4610f6195a02daf7ffde50718e202b24112",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 7732,
+  "preflight_seconds": 0.10899999993853271,
+  "removed_history_messages": 0,
+  "request_seconds": 17.530999999959022,
+  "request_sha256": "842489a2a4f8b5ea8f4fb932b219f8f622ac6e7d492df993e6c4537029f72bff",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "<tool_call>\n{\"action\":\"shell\",\"command\":\"ls /testbed; echo ---; ls /testbed/.specify 2>/dev/null; echo ---; ls /testbed/specs 2>/dev/null; echo ---; cat /testbed/.specify/extensions.yml 2>/dev/null || echo NO_EXTENSIONS\"}\n</parameter>\n</function>\n</tool_call>",
+          "reasoning_sha256": "18c206a55d403513d16093a858db655d9f32f004c32db6a2ddd0f30d55e32f92",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792210855,
+    "id": "chatcmpl-02qhU4AQ7jkVV9LEeDeZo83pLpxUyoC8",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 7517.857,
+      "predicted_n": 177,
+      "predicted_per_second": 23.41092681065894,
+      "predicted_per_token_ms": 42.71509659090909,
+      "prompt_ms": 6449.244,
+      "prompt_n": 7732,
+      "prompt_per_second": 1198.9002121799083,
+      "prompt_per_token_ms": 0.8340977754785307
+    },
+    "usage": {
+      "completion_tokens": 177,
+      "prompt_tokens": 7732,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 7909
+    }
+  },
+  "seconds": 17.530999999959022,
+  "stage": 3,
+  "started_at": "2026-10-17T04:20:37.657496+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 177,
+    "prompt_tokens": 7732,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 7909
+  }
+}

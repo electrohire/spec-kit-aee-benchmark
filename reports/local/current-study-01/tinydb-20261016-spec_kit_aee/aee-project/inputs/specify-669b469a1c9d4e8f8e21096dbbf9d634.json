@@ -1,0 +1,110 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md written (210 lines) with FR-001..FR-004 encoding R01, including ValueError cases and [] for empty input",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "3b3be41d4c0f814128509f5ef19f856a361e9f7cd509cc8d11c6f9668fedf846e3",
+          "source_id": "3b3be41d4c0f814128509f5ef19f856a361e9f7cd509cc8d11c6f9668fedf846e3",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: checklist validation: 0 NEEDS CLARIFICATION markers; FR-001..FR-009 present and mapped to R01/R02/R03",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "c0699212854cd24b9125f016c6e91a2c27cb9b15f29dba339ef03e568071536e",
+          "source_id": "c0699212854cd24b9125f016c6e91a2c27cb9b15f29dba339ef03e568071536e",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "apply([{'op':'insert','document':{'a':[1]}}]) returns [] or a remove op contributes an ID to the result",
+        "apply([]) returns anything other than []",
+        "apply([{'op':'update','doc_id':1,'values':{}}]) or apply('not-a-list') does not raise ValueError"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R01; spec FR-001..FR-004",
+      "stage": "created",
+      "status": "draft",
+      "text": "apply(operations) accepts a list of operation dicts; each op is {'op':'insert','document':dict} or {'op':'remove','doc_id':positive integer}; returns list of inserted document IDs in insertion order (removes add nothing); empty input returns []; unknown/malformed operations raise ValueError.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md written with FR-005..FR-007 encoding R02 (atomicity, missing-ID error, handle visibility); assumption A2 defers the missing-ID error type to plan",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "3b3be41d4c0f814128509f5ef19f856a361e9f7cd509cc8d11c6f9668fedf846e3",
+          "source_id": "3b3be41d4c0f814128509f5ef19f856a361e9f7cd509cc8d11c6f9668fedf846e3",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "Seed table, acquire handle via db.table('_default'), apply [insert, remove(missing ID)]; if the handle still shows the batch-inserted document, R02 is falsified",
+        "Apply a valid batch through the writer; if a previously acquired table handle does not show the inserted documents, R02 is falsified"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R02; spec FR-005..FR-007",
+      "stage": "created",
+      "status": "draft",
+      "text": "Batch application is atomic: validate and apply sequentially, but on any error restore the complete pre-batch default-table data; a remove targeting a missing ID is an error; previously acquired db.table('_default') handles reflect both success and rollback.",
+      "uncertainty": "medium"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md written with FR-008..FR-009 encoding R03 (ordinary API compatibility, no aliasing of nested data)",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "3b3be41d4c0f814128509f5ef19f856a361e9f7cd509cc8d11c6f9668fedf846e3",
+          "source_id": "3b3be41d4c0f814128509f5ef19f856a361e9f7cd509cc8d11c6f9668fedf846e3",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: pre-state check: specs/001-transactions existed and was empty; no init-options.json or feature.json, so sequential numbering and default template were used",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "4f760ecfcd855c332c1f568ab6efe5e46b31b5ab9be53fcbbbe238c048d5ef56",
+          "source_id": "4f760ecfcd855c332c1f568ab6efe5e46b31b5ab9be53fcbbbe238c048d5ef56",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "Insert a nested document via apply(), then mutate the caller's original dict; if the stored document changes, R03 is falsified",
+        "Wrap a TinyDB with preexisting docs and perform ordinary inserts/reads before and after batch use; any behavior difference falsifies R03"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R03; spec FR-008..FR-009",
+      "stage": "created",
+      "status": "draft",
+      "text": "Ordinary TinyDB reads/writes and preexisting documents continue to work when BatchWriter wraps the instance; inserted and returned nested data must not alias the caller's input; mutating an operation after apply cannot mutate the database.",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

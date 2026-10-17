@@ -1,0 +1,62 @@
+{
+  "budget_debit": 29868,
+  "ended_at": "2026-10-17T04:20:09.847413+00:00",
+  "max_output": 4096,
+  "original_sha256": "cf8cdf4d103672eb753de92ff92f906978e7eec8d8c196bd63ef4765708a8d0c",
+  "phase": "specify",
+  "preflight_http_requests": 16,
+  "preflight_input_tokens": 27370,
+  "preflight_seconds": 1.3910000000614673,
+  "removed_history_messages": 58,
+  "request_seconds": 127.2960000000894,
+  "request_sha256": "5df4f6e47eabc92d5143989c78cd548bf1eb935d4861361165ce03ee475e6fc2",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && cat > src/cachetools/tagged.py <<'PYEOF'\\n\\\"\\\"\\\"Tag-aware bounded LRU cache.\\\"\\\"\\\"\\n\\nimport copy\\n\\nfrom . import LRUCache\\n\\n__all__ = (\\\"TaggedCache\\\",)\\n\\n\\ndef _validate_maxsize(maxsize):\\n    \\\"\\\"\\\"Return maxsize if it is a positive integer (bool excluded), else raise.\\\"\\\"\\\"\\n    if isinstance(maxsize, bool) or not isinstance(maxsize, int) or maxsize <= 0:\\n        raise ValueError(\\\"maxsize must be a positive integer, got %r\\\" % (maxsize,))\\n    return maxsize\\n\\n\\ndef _normalize_tags(tags):\\n    \\\"\\\"\\\"Validate and deduplicate tags, consuming the iterable exactly once.\\n\\n    Returns a set of unique strings. A bare string is rejected, as is any\\n    non-string entry. Raises ValueError before the caller mutates state.\\n    \\\"\\\"\\\"\\n    if isinstance(tags, str):\\n        raise ValueError(\\\"tags must be an iterable of strings, not a bare string\\\")\\n    seen = set()\\n    for tag in tags:\\n        if not isinstance(tag, str):\\n            raise ValueError(\\\"tags must be strings, got %r\\\" % (tag,))\\n        seen.add(tag)\\n    return seen\\n\\n\\nclass TaggedCache(LRUCache):\\n    \\\"\\\"\\\"Bounded LRU cache whose entries carry deduplicated string tags.\\n\\n    Values are deep-copied on input (``put``) and output (``get``) so the\\n    stored value is detached from caller objects. Tag memberships are\\n    removed on replacement, invalidation, eviction, and ``del`` so LRU\\n    eviction never leaves stale memberships.\\n    \\\"\\\"\\\"\\n\\n    def __init__(self, maxsize):\\n        _validate_maxsize(maxsize)\\n        LRUCache.__init__(self, maxsize)\\n        self._tags = {}\\n        self._tag_index = {}\\n\\n    def put(self, key, value, tags=()):\\n        \\\"\\\"\\\"Insert or replace ``key`` with a deep copy of ``value`` tagged by\\n        ``tags`` (a finite iterable of strings, deduplicated, consumed once).\\n\\n        Invalid tags raise ValueError before any existing state changes.\\n        Replacing an existing key drops its old tag memberships and refreshes\\n        its LRU recency.\\n        \\\"\\\"\\\"\\n        tag_set = _normalize_tags(tags)\\n        if key in self and key in self._tags:\\n            self._drop_memberships(key, self._tags[key])\\n        self[key] = copy.deepcopy(value)\\n        self._tags[key] = frozenset(tag_set)\\n        for tag in tag_set:\\n            self._tag_index.setdefault(tag, set()).add(key)\\n\\n    def get(self, key, default=_MISSING):\\n        \\\"\\\"\\\"Return a detached deep copy of the stored value for ``key``,\\n        refreshing its LRU recency. Raises KeyError for missing keys when no\\n        default is given.\\\"\\\"\\\"\\n        if key in self:\\n            value = self[key]  # refreshes recency via LRUCache.__getitem__\\n            return copy.deepcopy(value)\\n        if default is _MISSING:\\n            raise KeyError(key)\\n        return default\\n\\n    def invalidate(self, tag):\\n        \\\"\\\"\\\"Remove all currently cached entries carrying ``tag``; return the\\n        number removed.\\\"\\\"\\\"\\n        return self._remove_tagged(self._tag_index.get(tag, ()))\\n\\n    def invalidate_many(self, tags, mode=\\\"any\\\"):\\n        \\\"\\\"\\\"Remove entries matching ``tags`` and return the number of distinct\\n        keys removed.\\n\\n        ``mode='any'`` removes the union (entries carrying at least one\\n        requested tag); ``mode='all'`` removes entries carrying every\\n        requested tag. An empty requested tag set removes zero entries in\\n        either mode. Invalid ``mode`` or tags raise ValueError before any\\n        mutation.\\n        \\\"\\\"\\\"\\n        if mode not in (\\\"any\\\", \\\"all\\\"):\\n            raise ValueError(\\\"mode must be 'any' or 'all', got %r\\\" % (mode,))\\n        tag_set = _normalize_tags(tags)\\n        if not tag_set:\\n            return 0\\n        if mode == \\\"any\\\":\\n            keys = set()\\n            for tag in tag_set:\\n                keys.update(self._tag_index.get(tag, ()))\\n        else:\\n            key_sets = [self._tag_index.get(tag, set()) for tag in tag_set]\\n            keys = set(key_sets[0])\\n            for ks in key_sets[1:]:\\n                keys &= ks\\n        return self._remove_tagged(keys)\\n\\n    def resize(self, maxsize):\\n        \\\"\\\"\\\"Change the cache capacity in place. Invalid maxsize raises\\n        ValueError before any mutation. Shrinking evicts least-recently-used\\n        entries; growing does not evict. Surviving entries keep their LRU\\n        order and any absolute expiry.\\\"\\\"\\\"\\n        _validate_maxsize(maxsize)\\n        current = self.maxsize\\n        if maxsize < current:\\n            while len(self) > maxsize:\\n                self.popitem()\\n        self.maxsize = maxsize\\n\\n    def popitem(self):\\n        \\\"\\\"\\\"Remove and return the least-recently-used ``(key, value)`` pair,\\n        dropping its tag memberships.\\\"\\\"\\\"\\n        key, value = LRUCache.popitem(self)\\n        self._drop_memberships(key, self._tags.pop(key, ()))\\n        return key, value\\n\\n    def __delitem__(self, key):\\n        LRUCache.__delitem__(self, key)\\n        self._drop_memberships(key, self._tags.pop(key, ()))\\n\\n    def _drop_memberships(self, key, tag_set):\\n        for tag in tag_set:\\n            members = self._tag_index.get(tag)\\n            if members is None:\\n                continue\\n            members.discard(key)\\n            if not members:\\n                del self._tag_index[tag]\\n\\n    def _remove_tagged(self, keys):\\n        for key in list(keys):\\n            if key in self:\\n                del self[key]\\n        return len(keys)\\n\\n\\n_MISSING = object()\\nPYEOF\\necho WROTE; python -c \\\"import sys; sys.path.insert(0,'src'); from cachetools.tagged import TaggedCache; c=TaggedCache(2); c.put('a',1,['x']); print(c.get('a'), c.invalidate('x'), len(c))\\\"\"}",
+          "reasoning_sha256": "aecf0861968d0cc90aae7257598a1c68d8b5e3b1aacf2b7957929b95c85ced24",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792210809,
+    "id": "chatcmpl-sASUGoygd174GTyLMKz9JnedJaNTeLlc",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 27341,
+      "predicted_ms": 126778.196,
+      "predicted_n": 2498,
+      "predicted_per_second": 19.695815832558463,
+      "predicted_per_token_ms": 50.77220504605526,
+      "prompt_ms": 421.181,
+      "prompt_n": 29,
+      "prompt_per_second": 68.85400813427006,
+      "prompt_per_token_ms": 14.52348275862069
+    },
+    "usage": {
+      "completion_tokens": 2498,
+      "prompt_tokens": 27370,
+      "prompt_tokens_details": {
+        "cached_tokens": 27341
+      },
+      "total_tokens": 29868
+    }
+  },
+  "seconds": 127.2960000000894,
+  "stage": 2,
+  "started_at": "2026-10-17T04:18:02.548735+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2498,
+    "prompt_tokens": 27370,
+    "prompt_tokens_details": {
+      "cached_tokens": 27341
+    },
+    "total_tokens": 29868
+  }
+}

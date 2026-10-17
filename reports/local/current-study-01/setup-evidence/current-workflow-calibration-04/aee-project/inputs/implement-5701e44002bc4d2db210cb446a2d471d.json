@@ -1,0 +1,207 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: cat smoke.py shows def add(a, b): with body 'return a + b'",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "source_id": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: quickstart run prints '3 2 4 3.75 3.5' including add(1,2)==3",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "source_id": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "python3 -c 'from smoke import add; print(add(1,2))' does not print 3",
+        "smoke.py missing or add body differs from 'return a + b'"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R01",
+      "stage": "created",
+      "status": "draft",
+      "text": "smoke.py exists at /testbed and defines add(a,b) whose body is 'return a + b'.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: pytest run: 9 passed including all 7 R02 category tests (negative, zero, float, mixed)",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "1b121094eb0cbd2adc5654d91f81cca6df7c00644eadf7fcdff5ff121bbc87cb",
+          "source_id": "1b121094eb0cbd2adc5654d91f81cca6df7c00644eadf7fcdff5ff121bbc87cb",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: quickstart prints '3 2 4 3.75 3.5' covering negative, zero, float, mixed cases",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "source_id": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "any of add(-3,5)==2, add(-2,-3)==-5, add(0,4)==4, add(1.5,2.25)==3.75, add(-1.5,0.5)==-1.0, add(1,2.5)==3.5, add(0,2.5)==2.5 fails"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R02",
+      "stage": "created",
+      "status": "draft",
+      "text": "add() is correct for negative integers, zero, floats, and mixed int/float operands.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01",
+        "R02"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: FINAL-EV-A '9 passed' exit 0 for tests/test_smoke.py; FINAL-EV-B '232 passed' exit 0 for full suite",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "source_id": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: TDD red phase recorded before implementation: collection error 'cannot import name add from smoke'",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "366941dcdddb05df2829964d7dba947693cfff374b31a941d3144dde9336690c",
+          "source_id": "366941dcdddb05df2829964d7dba947693cfff374b31a941d3144dde9336690c",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "pytest on tests/test_smoke.py reports any failure or nonzero exit",
+        "full-suite run reports any failure"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R03",
+      "stage": "created",
+      "status": "draft",
+      "text": "Tests exist and were run with 0 failures: 9/9 in tests/test_smoke.py and 232/232 in the full suite, both exit 0.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: git status --porcelain -- tinydb printed nothing; full status lists only new files smoke.py, tests/test_smoke.py, .specify/, specs/",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "source_id": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: FINAL-EV-D: filtering git status for tinydb/tests excluding the new test file leaves no modified entries",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "source_id": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "git status --porcelain -- tinydb prints any entry"
+      ],
+      "id": "C1",
+      "kind": "requirement",
+      "source_ref": "milestone constraint 'Do not modify TinyDB'",
+      "stage": "created",
+      "status": "draft",
+      "text": "The TinyDB package (tinydb/) was not modified by this implementation.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: full git status --porcelain lists only .specify/, smoke.py, specs/, tests/test_smoke.py as untracked; no service/deployment files",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "source_id": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "git status shows a new service, CLI entrypoint, Dockerfile, or deployment file"
+      ],
+      "id": "C2",
+      "kind": "requirement",
+      "source_ref": "milestone constraint 'No service or deployment is involved'",
+      "stage": "created",
+      "status": "draft",
+      "text": "No service or deployment artifacts were added; only smoke.py and tests/test_smoke.py were created as code.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: grep counts: unchecked 0, checked 11; no malformed leading-space task lines remain",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "source_id": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "grep -c '^- \\[ \\]' tasks.md is nonzero",
+        "grep -c '^- \\[X\\]' tasks.md is not 11"
+      ],
+      "id": "F1",
+      "kind": "requirement",
+      "source_ref": "speckit-implement completion criteria",
+      "stage": "created",
+      "status": "draft",
+      "text": "All 11 tasks (T001-T011) in specs/001-transactions/tasks.md are marked [X] with 0 unchecked.",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

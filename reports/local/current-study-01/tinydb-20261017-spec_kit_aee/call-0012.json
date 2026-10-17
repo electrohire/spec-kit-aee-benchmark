@@ -1,0 +1,62 @@
+{
+  "budget_debit": 13731,
+  "ended_at": "2026-10-17T05:01:09.704431+00:00",
+  "max_output": 4096,
+  "original_sha256": "bde5ab1fa88dd83c0197742ebc5947d89eaaed6b36be27f3e9a7abf20dc9ada2",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 13636,
+  "preflight_seconds": 0.11000000010244548,
+  "removed_history_messages": 0,
+  "request_seconds": 5.030999999959022,
+  "request_sha256": "a58891d07e8fd3c8b30deda2ba7045c4e5b1f3ca5157e54ef73e75ad825aed9e",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && python3 .specify/scripts/python/resolve_template.py spec-template --json 2>&1 | python3 -c \\\"import json,sys; d=json.load(sys.stdin); print(d['TEMPLATE_CONTENT'])\\\"\"}",
+          "reasoning_sha256": "5e8f3c47501c1b9526337d3595dbf3458863903994894d9622403c51b078d8f5",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792213269,
+    "id": "chatcmpl-8VnxxUxrT99ix0iqr4ul8geQLhWmSCXS",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 13271,
+      "predicted_ms": 4120.605,
+      "predicted_n": 95,
+      "predicted_per_second": 22.812184133155206,
+      "predicted_per_token_ms": 43.836223404255314,
+      "prompt_ms": 841.539,
+      "prompt_n": 365,
+      "prompt_per_second": 433.7291557491691,
+      "prompt_per_token_ms": 2.305586301369863
+    },
+    "usage": {
+      "completion_tokens": 95,
+      "prompt_tokens": 13636,
+      "prompt_tokens_details": {
+        "cached_tokens": 13271
+      },
+      "total_tokens": 13731
+    }
+  },
+  "seconds": 5.030999999959022,
+  "stage": 1,
+  "started_at": "2026-10-17T05:01:04.676892+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 95,
+    "prompt_tokens": 13636,
+    "prompt_tokens_details": {
+      "cached_tokens": 13271
+    },
+    "total_tokens": 13731
+  }
+}

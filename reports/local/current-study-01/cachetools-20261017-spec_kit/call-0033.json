@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28675,
+  "ended_at": "2026-10-17T14:20:32.327516+00:00",
+  "max_output": 4096,
+  "original_sha256": "0940a55892312104d52281898538c380658d3c0f9c19c87719b26971272958c4",
+  "phase": "plan",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 27776,
+  "preflight_seconds": 1.3589999999385327,
+  "removed_history_messages": 8,
+  "request_seconds": 66.65599999995902,
+  "request_sha256": "7843b7dfe8f3fe4aa018e09124ed5077a86d8cfecab9cf5649cde217e75b01bb",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && mkdir -p specs/001-transactions/contracts && cat > specs/001-transactions/contracts/tagged-cache-api.md <<'EOF'\\n# Contract: cachetools.tagged.TaggedCache public API\\n\\nPhase 1 output. This is the externally observable contract of the new\\nmodule. Existing cachetools contracts (Cache, LRUCache, FIFOCache,\\nLFUCache, MRUCache, RRCache, TLRUCache, TTLCache, cached, cachedmethod,\\nkeys) are unchanged (Constitution Principle I).\\n\\n## Import\\n\\n```python\\nfrom cachetools.tagged import TaggedCache\\n```\\n\\n## Constructor\\n\\n```python\\nTaggedCache(maxsize)\\n```\\n\\n- maxsize: positive int, bool excluded; otherwise `ValueError` (FR-014).\\n- Returns a cache with zero live entries; `len(c) == 0`, `c.maxsize ==\\n  maxsize`.\\n\\n## put\\n\\n```python\\nc.put(key, value, tags=())\\n```\\n\\n- key: hashable; unhashable -> TypeError (Python contract).\\n- value: any object; stored as a deep copy (FR-005). If deepcopy fails,\\n  the exception propagates and prior state is unchanged (FR-015).\\n- tags: default `()`; must be a finite iterable of str; not a bare str or\\n  bytes; duplicate tags deduplicated; empty allowed (FR-006..FR-008).\\n  Violations raise `ValueError` before any state change (FR-008).\\n- Effect: inserts or replaces the entry; the entry becomes\\n  most-recently-used (D2); on replacement, old tag memberships are removed\\n  first (FR-010). No return value (None).\\n\\n## get\\n\\n```python\\nv = c.get(key)\\nv = c.get(key, default)   # inherited Cache.get\\n```\\n\\n- Hit: returns a detached deep copy of the stored value (FR-003); entry\\n  becomes most-recently-used (FR-012).\\n- Miss: `c.get(key)` raises `KeyError`; `c.get(key, default)` returns\\n  default (FR-004).\\n\\n## invalidate\\n\\n```python\\nn = c.invalidate(tag)\\n```\\n\\n- Removes exactly the live entries currently carrying `tag`; returns the\\n  number removed (0 if none). Tag not present -> 0. (FR-009)\\n\\n## Inherited observable behavior (from Cache/LRUCache, unchanged)\\n\\n- `len(c)`: number of live entries (FR-013); never exceeds maxsize.\\n- `key in c`, `iter(c)`, `c[key]` (deep-copied, KeyError on miss),\\n  `c[key] = value` (plain value, no tags; refreshes recency),\\n  `del c[key]`, `c.pop(key[, default])`, `c.clear()`, `c.setdefault(...)`,\\n  `c.maxsize`, `c.currsize`, `c.getsizeof(value)`, `repr(c)`.\\n- Every stored value costs one slot (FR-016): eviction is purely by count\\n  and LRU recency, independent of value size/shape.\\n\\n## Error summary\\n\\n| Condition | Exception |\\n|---|---|\\n| maxsize not a positive non-bool int | ValueError |\\n| tags is a bare str/bytes | ValueError |\\n| any tag entry is not str | ValueError |\\n| value not deepcopy-able (on put) | the deepcopy exception (e.g., TypeError) |\\n| get on missing key (no default) | KeyError |\\n| unhashable key | TypeError |\\nEOF\\necho CONTRACT_OK; wc -l specs/001-transactions/contracts/tagged-cache-api.md\"}",
+          "reasoning_sha256": "a9701925858884bfd4ddb89ea812dce470bea07c0408bc1a5bb5cd214021ccc7",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792246832,
+    "id": "chatcmpl-IZiZt5sNpjR6LXrp97vesrSwk27JD47D",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 2743,
+      "predicted_ms": 45283.166,
+      "predicted_n": 899,
+      "predicted_per_second": 19.83076889986005,
+      "predicted_per_token_ms": 50.42668819599109,
+      "prompt_ms": 20457.601,
+      "prompt_n": 25033,
+      "prompt_per_second": 1223.6527635865027,
+      "prompt_per_token_ms": 0.8172253026005672
+    },
+    "usage": {
+      "completion_tokens": 899,
+      "prompt_tokens": 27776,
+      "prompt_tokens_details": {
+        "cached_tokens": 2743
+      },
+      "total_tokens": 28675
+    }
+  },
+  "seconds": 66.65599999995902,
+  "stage": 1,
+  "started_at": "2026-10-17T14:19:25.667908+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 899,
+    "prompt_tokens": 27776,
+    "prompt_tokens_details": {
+      "cached_tokens": 2743
+    },
+    "total_tokens": 28675
+  }
+}

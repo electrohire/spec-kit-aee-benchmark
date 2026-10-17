@@ -1,0 +1,62 @@
+{
+  "budget_debit": 7868,
+  "ended_at": "2026-10-17T09:10:20.306868+00:00",
+  "max_output": 4096,
+  "original_sha256": "4068f953cf5a55522f404416d0f7917aa51eeb9adfaf293a18d8833c36cc4af4",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 7706,
+  "preflight_seconds": 0.10900000017136335,
+  "removed_history_messages": 0,
+  "request_seconds": 7.781999999890104,
+  "request_sha256": "382eb07ea3333228f794b29da52c5a8f4152f700a06b2494c186359cd72d8c38",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "<tool_call>\n{\"action\":\"shell\",\"command\":\"cat /testbed/.specify/feature.json 2>/dev/null; echo ---; ls /testbed/specs/001-transactions; echo ---; ls /testbed/.specify/templates /testbed/.specify/memory /testbed/.specify/scripts; echo ---; cat /testbed/.specify/extensions.yml 2>/dev/null || echo NO_EXTENSIONS; echo ---; cat /testbed/.specify/init-options.json 2>/dev/null || echo NO_INIT_OPTIONS\"}",
+          "reasoning_sha256": "b02791fabebd9214193f49e45ec5847d0c09892528d799d9b9ca469a6b41269d",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792228220,
+    "id": "chatcmpl-KsD1VkXkFmXeY8IMH5cODhvsEUvgygi2",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 7411,
+      "predicted_ms": 7006.226,
+      "predicted_n": 162,
+      "predicted_per_second": 22.979561321601672,
+      "predicted_per_token_ms": 43.51693167701863,
+      "prompt_ms": 679.828,
+      "prompt_n": 295,
+      "prompt_per_second": 433.9332890083963,
+      "prompt_per_token_ms": 2.3045016949152544
+    },
+    "usage": {
+      "completion_tokens": 162,
+      "prompt_tokens": 7706,
+      "prompt_tokens_details": {
+        "cached_tokens": 7411
+      },
+      "total_tokens": 7868
+    }
+  },
+  "seconds": 7.781999999890104,
+  "stage": 3,
+  "started_at": "2026-10-17T09:10:12.523305+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 162,
+    "prompt_tokens": 7706,
+    "prompt_tokens_details": {
+      "cached_tokens": 7411
+    },
+    "total_tokens": 7868
+  }
+}

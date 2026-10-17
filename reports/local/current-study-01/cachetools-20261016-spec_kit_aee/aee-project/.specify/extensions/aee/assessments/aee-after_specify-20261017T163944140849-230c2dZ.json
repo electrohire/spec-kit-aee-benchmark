@@ -1,0 +1,1416 @@
+{
+  "schema_version": "1.0",
+  "methodology_version": "2.0",
+  "project": "cachetools-20261016-spec_kit_aee",
+  "phase": "after_specify",
+  "outcome": "gather_evidence",
+  "summary": "Assessed 9 claim(s); found 25 failure mode(s); 9 claim(s) below the 0.70 confidence threshold. Shared evidence: 1 supporting source(s) shared across 2 of 9 claim(s); the same evidence set supports multiple claims (FR-2.8, reporting only, no outcome effect in this phase). Draft cap: 9 draft claim(s) capped at gather_evidence/iterate (FR-2.3). Stage cap: 9 claim(s) below stage 'explained'; the outcome cannot be 'pass' (Spec 004 R1.4). Not understood: 17 residual unknown(s) are recorded on this assessment (Spec 004 R5.2). Lane 1 (machine verification): outcome gather_evidence; 0 claim(s) at or above the 0.70 threshold, 9 below. Lane 2 (human acceptance): stages by effective stage: created 9. Lane-2 lag: 9 claim(s) below explained.",
+  "created_at": "2026-10-17T16:39:44.909502Z",
+  "claims": [
+    {
+      "id": "R01",
+      "text": "put(key,value,tags=()) inserts/replaces an entry for a hashable key; get(key) returns a detached deep copy or raises KeyError for missing keys; values are deep-copied on input; tags must be a finite iterable of strings, deduplicated; a bare string as tags and non-string tag entries are rejected with ValueError before any existing state changes.",
+      "kind": "requirement",
+      "status": "draft",
+      "boundary": [
+        "milestone 1",
+        "FR-002..FR-004"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "4d143e79a7627d5f6af024bf459d03d41adb4915c4756e6ce62c08bdf7ab9395",
+          "kind": "asserted",
+          "direction": "supports",
+          "source_quality": "model",
+          "description": "Unverified model assertion: acceptance_public.py exercises put/get/invalidate and tag replacement on cachetools.tagged.TaggedCache",
+          "source_id": "4d143e79a7627d5f6af024bf459d03d41adb4915c4756e6ce62c08bdf7ab9395",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "mutating the input object after put changes the stored value",
+        "mutating a returned object changes the stored value on a later get",
+        "put with tags='x' or tags=[1] mutates state before raising",
+        "duplicate tags cause double counting in invalidate"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "milestone 1 requirement R01",
+      "domain": "",
+      "confidence": 0.21500000000000005,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R01",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-R01-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R01",
+          "challenge": "Independent-evidence challenge",
+          "breakpoint": "Only model self-attestation supports the claim",
+          "severity": "high",
+          "category": "unverified_assertion",
+          "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-R01-INDEPENDENCE-UNMODELED",
+          "claim_id": "R01",
+          "challenge": "Shared-evidence independence challenge",
+          "breakpoint": "Supporting evidence '4d143e79a7627d5f6af024bf459d03d41adb4915c4756e6ce62c08bdf7ab9395' (ref(s): 4d143e79a7627d5f6af024bf459d03d41adb4915c4756e6ce62c08bdf7ab9395) is shared with claim(s) R02 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+          "severity": "medium",
+          "category": "independence_unmodeled",
+          "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-R01-DRAFT-CAP",
+          "claim_id": "R01",
+          "challenge": "Draft outcome cap",
+          "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+          "severity": "low",
+          "category": "draft_cap",
+          "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "created",
+      "stage_events": [],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "R02",
+      "text": "invalidate(tag) removes exactly the currently cached entries carrying that tag and returns the number removed; replacing a key removes its old tag memberships; LRU eviction leaves no stale memberships affecting later reuse of the same key; get refreshes LRU recency; len(cache) counts live entries.",
+      "kind": "requirement",
+      "status": "draft",
+      "boundary": [
+        "milestone 1",
+        "FR-005..FR-009"
+      ],
+      "depends_on": [
+        "R01"
+      ],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "4d143e79a7627d5f6af024bf459d03d41adb4915c4756e6ce62c08bdf7ab9395",
+          "kind": "asserted",
+          "direction": "supports",
+          "source_quality": "model",
+          "description": "Unverified model assertion: acceptance_public.py checks invalidate counts and that replacement removes old tag memberships",
+          "source_id": "4d143e79a7627d5f6af024bf459d03d41adb4915c4756e6ce62c08bdf7ab9395",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "invalidate removes untagged entries or returns a wrong count",
+        "re-putting a key keeps old tag memberships",
+        "eviction leaves stale membership affecting later re-put",
+        "get does not refresh recency",
+        "len exceeds maxsize"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "milestone 1 requirement R02",
+      "domain": "",
+      "confidence": 0.19250000000000003,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R02",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-R02-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R02",
+          "challenge": "Independent-evidence challenge",
+          "breakpoint": "Only model self-attestation supports the claim",
+          "severity": "high",
+          "category": "unverified_assertion",
+          "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-R02-INDEPENDENCE-UNMODELED",
+          "claim_id": "R02",
+          "challenge": "Shared-evidence independence challenge",
+          "breakpoint": "Supporting evidence '4d143e79a7627d5f6af024bf459d03d41adb4915c4756e6ce62c08bdf7ab9395' (ref(s): 4d143e79a7627d5f6af024bf459d03d41adb4915c4756e6ce62c08bdf7ab9395) is shared with claim(s) R01 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+          "severity": "medium",
+          "category": "independence_unmodeled",
+          "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-R02-DRAFT-CAP",
+          "claim_id": "R02",
+          "challenge": "Draft outcome cap",
+          "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+          "severity": "low",
+          "category": "draft_cap",
+          "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "created",
+      "stage_events": [],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "R02-EXT",
+      "text": "Overwriting an existing key via put refreshes its LRU recency, making it the most-recently-used entry (Claim-A extension, variant put_no_recency_refresh, 2026-09-21; active per spec A8, variant label traceability only).",
+      "kind": "requirement",
+      "status": "draft",
+      "boundary": [
+        "milestone 1",
+        "Claim-A 2026-09-21",
+        "FR-010"
+      ],
+      "depends_on": [
+        "R02"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "after put on an existing key, a subsequent insertion evicts the overwritten key instead of the true LRU entry"
+      ],
+      "uncertainty": "medium",
+      "severity": "medium",
+      "source_ref": "Claim-A candidate extension (variant put_no_recency_refresh, 2026-09-21)",
+      "domain": "",
+      "confidence": 0.15833333333333333,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R02-EXT-DRAFT-CAP",
+          "claim_id": "R02-EXT",
+          "challenge": "Draft outcome cap",
+          "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+          "severity": "low",
+          "category": "draft_cap",
+          "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "created",
+      "stage_events": [],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "R03",
+      "text": "maxsize must be a positive integer excluding bool (ValueError otherwise); invalid replacement input must leave the old value, tags, and recency unchanged; every value costs exactly one capacity slot regardless of object size.",
+      "kind": "requirement",
+      "status": "draft",
+      "boundary": [
+        "milestone 1",
+        "FR-001,FR-011,FR-012"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "TaggedCache(True)/TaggedCache(0)/TaggedCache(-1)/TaggedCache(2.0) do not raise ValueError",
+        "a failed put changes stored value, tags, or recency",
+        "a large object evicts more than one slot"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "milestone 1 requirement R03",
+      "domain": "",
+      "confidence": 0.225,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R03",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-R03-DRAFT-CAP",
+          "claim_id": "R03",
+          "challenge": "Draft outcome cap",
+          "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+          "severity": "low",
+          "category": "draft_cap",
+          "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "created",
+      "stage_events": [],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "R04",
+      "text": "invalidate_many(tags, mode='any'): mode='any' removes the union of live entries carrying any supplied tag; mode='all' removes only entries carrying every supplied tag; empty requested tags remove zero entries in either mode (empty 'all' does NOT match every key); returns the number of distinct removed keys; invalid mode or tags rejected with ValueError before any mutation; invalidate(tag) remains compatible.",
+      "kind": "requirement",
+      "status": "draft",
+      "boundary": [
+        "milestone 2",
+        "FR-014..FR-016"
+      ],
+      "depends_on": [
+        "R01",
+        "R02"
+      ],
+      "conflicts_with": [
+        "OLD GENERATED DESIGN NOTE CLAIMING EMPTY ALL-TAGS MATCHES EVERY KEY (SUPERSEDED, SPEC A9)"
+      ],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "invalidate_many([], mode='all') removes every entry instead of zero",
+        "mode='any' removes only the intersection",
+        "invalid mode or tags='ab' mutates state before raising",
+        "returned count is not the distinct removed-key count"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "milestone 2 requirement R04 + conflicting evidence packet (superseded)",
+      "domain": "",
+      "confidence": 0.19250000000000003,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R04-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R04",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-R04-COUNTEREXAMPLE-CHALLENGE",
+          "claim_id": "R04",
+          "challenge": "Counterexample challenge",
+          "breakpoint": "Absolute language is used without a bounded domain",
+          "severity": "high",
+          "category": "assumption_unvalidated",
+          "recovery_hint": "Narrow the claim or document evidence covering the entire domain.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-R04-DRAFT-CAP",
+          "claim_id": "R04",
+          "challenge": "Draft outcome cap",
+          "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+          "severity": "low",
+          "category": "draft_cap",
+          "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "created",
+      "stage_events": [],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "R05",
+      "text": "resize(maxsize) validates a positive non-bool integer first (ValueError otherwise); preserves surviving entries and their LRU order; shrinking evicts least-recently-used entries; growing does not evict; a failed resize preserves all state and never flushes the cache; the maxsize property reports the current capacity.",
+      "kind": "requirement",
+      "status": "draft",
+      "boundary": [
+        "milestone 2",
+        "FR-017,FR-018"
+      ],
+      "depends_on": [
+        "R02"
+      ],
+      "conflicts_with": [
+        "OLD GENERATED DESIGN NOTE CLAIMING RESIZING MAY FLUSH THE CACHE (SUPERSEDED, SPEC A9)"
+      ],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "resize(True)/resize(0)/resize(-1)/resize(2.5) mutates capacity or entries",
+        "shrinking evicts recently-used entries or reorders survivors",
+        "growing evicts entries",
+        "a failed resize changes observable state or flushes",
+        "maxsize property does not report post-resize capacity"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "milestone 2 requirement R05 + conflicting evidence packet (superseded)",
+      "domain": "",
+      "confidence": 0.18,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R05-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R05",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-R05-COUNTEREXAMPLE-CHALLENGE",
+          "claim_id": "R05",
+          "challenge": "Counterexample challenge",
+          "breakpoint": "Absolute language is used without a bounded domain",
+          "severity": "high",
+          "category": "assumption_unvalidated",
+          "recovery_hint": "Narrow the claim or document evidence covering the entire domain.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-R05-DRAFT-CAP",
+          "claim_id": "R05",
+          "challenge": "Draft outcome cap",
+          "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+          "severity": "low",
+          "category": "draft_cap",
+          "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "created",
+      "stage_events": [],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "R05-CLAR",
+      "text": "Preserving a surviving entry across resize preserves its absolute expiry (R07/R08 define expiry as entry state); a resize that drops expiries (immortal) or recomputes them from resize time does not satisfy R05. Expiry is not in the current milestone input, so this clause binds future expiry state (FR-019, A10).",
+      "kind": "requirement",
+      "status": "draft",
+      "boundary": [
+        "milestone 2",
+        "Claim-A round 2 2026-09-22",
+        "FR-019"
+      ],
+      "depends_on": [
+        "R05"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "after resize, a surviving entry's absolute expiry differs from its pre-resize expiry (dropped or recomputed from resize time)"
+      ],
+      "uncertainty": "medium",
+      "severity": "medium",
+      "source_ref": "Claim-A candidate extensions, round 2 (2026-09-22) R05 clarification",
+      "domain": "",
+      "confidence": 0.18,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R05-CLAR-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R05-CLAR",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-R05-CLAR-DRAFT-CAP",
+          "claim_id": "R05-CLAR",
+          "challenge": "Draft outcome cap",
+          "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+          "severity": "low",
+          "category": "draft_cap",
+          "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "created",
+      "stage_events": [],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "R06",
+      "text": "Tags may be passed as generators (any finite iterable) and must be consumed only once, with the cache storing only the materialized deduplicated tag set; returned values remain detached across repeated gets and puts, including nested lists/dicts (no aliasing with the stored value or other returned objects).",
+      "kind": "requirement",
+      "status": "draft",
+      "boundary": [
+        "milestone 2",
+        "FR-020,FR-021"
+      ],
+      "depends_on": [
+        "R01"
+      ],
+      "conflicts_with": [],
+      "evidence": [],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "an instrumented generator is consumed more than once or re-consumed after put returns",
+        "two successive get() calls return the same object or alias the stored value",
+        "mutating a returned nested list/dict changes the stored value"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "milestone 2 requirement R06",
+      "domain": "",
+      "confidence": 0.175,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-R06-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R06",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-R06-DRAFT-CAP",
+          "claim_id": "R06",
+          "challenge": "Draft outcome cap",
+          "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+          "severity": "low",
+          "category": "draft_cap",
+          "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "created",
+      "stage_events": [],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "PRESERVE",
+      "text": "All existing cachetools APIs are preserved unchanged; TaggedCache is built on the existing cachetools.LRUCache for bounded storage; upstream tests remain unchanged and passing; acceptance_public.py is the public gate and must not be modified.",
+      "kind": "requirement",
+      "status": "draft",
+      "boundary": [
+        "milestone 1",
+        "milestone 2",
+        "FR-013"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "aeccefc9fad8781fc6f8ef662aee28425a2f27191706206b35075cff99376eac",
+          "kind": "asserted",
+          "direction": "supports",
+          "source_quality": "model",
+          "description": "Unverified model assertion: baseline: PYTHONPATH=src:. python3 -m pytest tests/ -q -> 216 passed (upstream suite green before TaggedCache exists)",
+          "source_id": "aeccefc9fad8781fc6f8ef662aee28425a2f27191706206b35075cff99376eac",
+          "independent_of": [],
+          "observed_at": null,
+          "content_hash": null
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "any existing upstream test fails or is modified",
+        "existing cache classes change behavior",
+        "acceptance_public.py is modified"
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "milestone 1 + milestone 2 implementation constraints",
+      "domain": "",
+      "confidence": 0.2108333333333334,
+      "confidence_band": "low",
+      "failures": [
+        {
+          "id": "AEE-PRESERVE-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "PRESERVE",
+          "challenge": "Irreducibility challenge",
+          "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+          "severity": "medium",
+          "category": "coverage_gap",
+          "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-PRESERVE-COUNTEREXAMPLE-CHALLENGE",
+          "claim_id": "PRESERVE",
+          "challenge": "Counterexample challenge",
+          "breakpoint": "Absolute language is used without a bounded domain",
+          "severity": "high",
+          "category": "assumption_unvalidated",
+          "recovery_hint": "Narrow the claim or document evidence covering the entire domain.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-PRESERVE-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "PRESERVE",
+          "challenge": "Independent-evidence challenge",
+          "breakpoint": "Only model self-attestation supports the claim",
+          "severity": "high",
+          "category": "unverified_assertion",
+          "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-PRESERVE-DRAFT-CAP",
+          "claim_id": "PRESERVE",
+          "challenge": "Draft outcome cap",
+          "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+          "severity": "low",
+          "category": "draft_cap",
+          "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "created",
+      "stage_events": [],
+      "headline": false,
+      "role": null
+    }
+  ],
+  "scores": {
+    "R01": {
+      "claim_id": "R01",
+      "direct_score": 0.21500000000000005,
+      "propagated_score": 0.21500000000000005,
+      "band": "low",
+      "components": {
+        "evidence": 0.050000000000000044,
+        "independence": 0.5,
+        "falsifiability": 0.75,
+        "boundary": 0.75,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "draft",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "No observed supporting evidence",
+        "Fewer than two independent supporting sources",
+        "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+        "Falsification test 'mutating the input object after put changes the stored value' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+        "Falsification test 'mutating a returned object changes the stored value on a later get' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+        "Boundary entry 'FR-002..FR-004' earns partial credit (FR-8.7): failed criteria: placeholder content",
+        "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 1 unknown of 1 item(s); unknown freshness counts as stale (FR-8.6)"
+      ]
+    },
+    "R02": {
+      "claim_id": "R02",
+      "direct_score": 0.19250000000000003,
+      "propagated_score": 0.19250000000000003,
+      "band": "low",
+      "components": {
+        "evidence": 0.050000000000000044,
+        "independence": 0.5,
+        "falsifiability": 0.6,
+        "boundary": 0.75,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "draft",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "No observed supporting evidence",
+        "Fewer than two independent supporting sources",
+        "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+        "Falsification test 're-putting a key keeps old tag memberships' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+        "Falsification test 'eviction leaves stale membership affecting later re-put' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+        "Falsification test 'get does not refresh recency' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+        "Boundary entry 'FR-005..FR-009' earns partial credit (FR-8.7): failed criteria: placeholder content",
+        "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 1 unknown of 1 item(s); unknown freshness counts as stale (FR-8.6)"
+      ]
+    },
+    "R02-EXT": {
+      "claim_id": "R02-EXT",
+      "direct_score": 0.15833333333333333,
+      "propagated_score": 0.15833333333333333,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 0.5,
+        "boundary": 0.8333333333333334,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "draft",
+        "uncertainty": "medium",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources",
+        "Independence basis: none (no identifiable supporting sources)",
+        "Falsification test 'after put on an existing key, a subsequent insertion evicts the overwritten key instead of the true LRU entry' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+        "Boundary entry 'FR-010' earns partial credit (FR-8.7): failed criteria: placeholder content"
+      ]
+    },
+    "R03": {
+      "claim_id": "R03",
+      "direct_score": 0.225,
+      "propagated_score": 0.225,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 0.75,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "draft",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources",
+        "Independence basis: none (no identifiable supporting sources)",
+        "Boundary entry 'FR-001,FR-011,FR-012' earns partial credit (FR-8.7): failed criteria: placeholder content"
+      ]
+    },
+    "R04": {
+      "claim_id": "R04",
+      "direct_score": 0.225,
+      "propagated_score": 0.19250000000000003,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 0.75,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "draft",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": [
+          "OLD GENERATED DESIGN NOTE CLAIMING EMPTY ALL-TAGS MATCHES EVERY KEY (SUPERSEDED, SPEC A9)"
+        ]
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources",
+        "Independence basis: none (no identifiable supporting sources)",
+        "Boundary entry 'FR-014..FR-016' earns partial credit (FR-8.7): failed criteria: placeholder content",
+        "Capped by weakest dependency at 0.193"
+      ]
+    },
+    "R05": {
+      "claim_id": "R05",
+      "direct_score": 0.18,
+      "propagated_score": 0.18,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 0.7,
+        "boundary": 0.75,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "draft",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": [
+          "OLD GENERATED DESIGN NOTE CLAIMING RESIZING MAY FLUSH THE CACHE (SUPERSEDED, SPEC A9)"
+        ]
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources",
+        "Independence basis: none (no identifiable supporting sources)",
+        "Falsification test 'shrinking evicts recently-used entries or reorders survivors' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+        "Falsification test 'growing evicts entries' earns partial credit (FR-8.7): failed criteria: fewer than four words; no checkable condition (no numeric bound, comparator, or observation/action term)",
+        "Falsification test 'maxsize property does not report post-resize capacity' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+        "Boundary entry 'FR-017,FR-018' earns partial credit (FR-8.7): failed criteria: placeholder content"
+      ]
+    },
+    "R05-CLAR": {
+      "claim_id": "R05-CLAR",
+      "direct_score": 0.23333333333333334,
+      "propagated_score": 0.18,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 1.0,
+        "boundary": 0.8333333333333334,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "draft",
+        "uncertainty": "medium",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources",
+        "Independence basis: none (no identifiable supporting sources)",
+        "Boundary entry 'FR-019' earns partial credit (FR-8.7): failed criteria: placeholder content",
+        "Capped by weakest dependency at 0.180"
+      ]
+    },
+    "R06": {
+      "claim_id": "R06",
+      "direct_score": 0.175,
+      "propagated_score": 0.175,
+      "band": "low",
+      "components": {
+        "evidence": 0.0,
+        "independence": 0.0,
+        "falsifiability": 0.6666666666666666,
+        "boundary": 0.75,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "draft",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "No supporting evidence",
+        "Fewer than two independent supporting sources",
+        "Independence basis: none (no identifiable supporting sources)",
+        "Falsification test 'two successive get() calls return the same object or alias the stored value' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+        "Falsification test 'mutating a returned nested list/dict changes the stored value' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+        "Boundary entry 'FR-020,FR-021' earns partial credit (FR-8.7): failed criteria: placeholder content"
+      ]
+    },
+    "PRESERVE": {
+      "claim_id": "PRESERVE",
+      "direct_score": 0.2108333333333334,
+      "propagated_score": 0.2108333333333334,
+      "band": "low",
+      "components": {
+        "evidence": 0.050000000000000044,
+        "independence": 0.5,
+        "falsifiability": 0.6666666666666666,
+        "boundary": 0.8333333333333334,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "draft",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "No observed supporting evidence",
+        "Fewer than two independent supporting sources",
+        "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+        "Falsification test 'existing cache classes change behavior' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+        "Falsification test 'acceptance_public.py is modified' earns partial credit (FR-8.7): failed criteria: fewer than four words; no checkable condition (no numeric bound, comparator, or observation/action term)",
+        "Boundary entry 'FR-013' earns partial credit (FR-8.7): failed criteria: placeholder content",
+        "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 1 unknown of 1 item(s); unknown freshness counts as stale (FR-8.6)"
+      ]
+    }
+  },
+  "verdicts": {},
+  "recoveries": [
+    {
+      "failure_id": "AEE-PRESERVE-COUNTEREXAMPLE-CHALLENGE",
+      "claim_id": "PRESERVE",
+      "strategy": "narrow_boundary",
+      "action": "Narrow the claim or document evidence covering the entire domain.",
+      "priority": 2,
+      "verification": "The claim identifies its applicable system, population, time, and conditions."
+    },
+    {
+      "failure_id": "AEE-PRESERVE-INDEPENDENT-EVIDENCE-CHA",
+      "claim_id": "PRESERVE",
+      "strategy": "gather_evidence",
+      "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R01-INDEPENDENT-EVIDENCE-CHA",
+      "claim_id": "R01",
+      "strategy": "gather_evidence",
+      "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R02-INDEPENDENT-EVIDENCE-CHA",
+      "claim_id": "R02",
+      "strategy": "gather_evidence",
+      "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+      "priority": 2,
+      "verification": "At least one inspectable non-self-attested evidence item is attached."
+    },
+    {
+      "failure_id": "AEE-R04-COUNTEREXAMPLE-CHALLENGE",
+      "claim_id": "R04",
+      "strategy": "narrow_boundary",
+      "action": "Narrow the claim or document evidence covering the entire domain.",
+      "priority": 2,
+      "verification": "The claim identifies its applicable system, population, time, and conditions."
+    },
+    {
+      "failure_id": "AEE-R05-COUNTEREXAMPLE-CHALLENGE",
+      "claim_id": "R05",
+      "strategy": "narrow_boundary",
+      "action": "Narrow the claim or document evidence covering the entire domain.",
+      "priority": 2,
+      "verification": "The claim identifies its applicable system, population, time, and conditions."
+    },
+    {
+      "failure_id": "AEE-PRESERVE-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "PRESERVE",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R01-INDEPENDENCE-UNMODELED",
+      "claim_id": "R01",
+      "strategy": "clarify",
+      "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+      "priority": 3,
+      "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+    },
+    {
+      "failure_id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R01",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R02-INDEPENDENCE-UNMODELED",
+      "claim_id": "R02",
+      "strategy": "clarify",
+      "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+      "priority": 3,
+      "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+    },
+    {
+      "failure_id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R02",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R03",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R04-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R04",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R05-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R05",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R05-CLAR-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R05-CLAR",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-R06-IRREDUCIBILITY-CHALLENGE",
+      "claim_id": "R06",
+      "strategy": "decompose",
+      "action": "Split the claim into atomic propositions and link them explicitly.",
+      "priority": 3,
+      "verification": "Every resulting claim contains one independently falsifiable proposition."
+    },
+    {
+      "failure_id": "AEE-PRESERVE-DRAFT-CAP",
+      "claim_id": "PRESERVE",
+      "strategy": "define_falsifier",
+      "action": "Ratify the claim (change its status from draft) to lift the cap.",
+      "priority": 4,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-R01-DRAFT-CAP",
+      "claim_id": "R01",
+      "strategy": "define_falsifier",
+      "action": "Ratify the claim (change its status from draft) to lift the cap.",
+      "priority": 4,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-R02-DRAFT-CAP",
+      "claim_id": "R02",
+      "strategy": "define_falsifier",
+      "action": "Ratify the claim (change its status from draft) to lift the cap.",
+      "priority": 4,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-R02-EXT-DRAFT-CAP",
+      "claim_id": "R02-EXT",
+      "strategy": "define_falsifier",
+      "action": "Ratify the claim (change its status from draft) to lift the cap.",
+      "priority": 4,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-R03-DRAFT-CAP",
+      "claim_id": "R03",
+      "strategy": "define_falsifier",
+      "action": "Ratify the claim (change its status from draft) to lift the cap.",
+      "priority": 4,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-R04-DRAFT-CAP",
+      "claim_id": "R04",
+      "strategy": "define_falsifier",
+      "action": "Ratify the claim (change its status from draft) to lift the cap.",
+      "priority": 4,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-R05-DRAFT-CAP",
+      "claim_id": "R05",
+      "strategy": "define_falsifier",
+      "action": "Ratify the claim (change its status from draft) to lift the cap.",
+      "priority": 4,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-R05-CLAR-DRAFT-CAP",
+      "claim_id": "R05-CLAR",
+      "strategy": "define_falsifier",
+      "action": "Ratify the claim (change its status from draft) to lift the cap.",
+      "priority": 4,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-R06-DRAFT-CAP",
+      "claim_id": "R06",
+      "strategy": "define_falsifier",
+      "action": "Ratify the claim (change its status from draft) to lift the cap.",
+      "priority": 4,
+      "verification": "A concrete observation that would refute the claim is documented."
+    }
+  ],
+  "metadata": {
+    "threshold": 0.7,
+    "input": "C:/Users/trist/Development/ElectroHire/electrohire-aee-release/work/spec-kit-aee-benchmark/artifacts/current-study-01/cachetools-20261016-spec_kit_aee/aee-project/inputs/specify-10a76293b08e4f4fab200f2b9e0d8d8b.json",
+    "ledger": {
+      "mode": "custom",
+      "path": "C:/Users/trist/Development/ElectroHire/electrohire-aee-release/work/spec-kit-aee-benchmark/artifacts/current-study-01/cachetools-20261016-spec_kit_aee/aee-project/.specify/extensions/aee/ledger/epistemic-ledger.jsonl"
+    },
+    "loading_mode": "lenient",
+    "engine_version": "1.5.3",
+    "extension_version": "1.5.2"
+  },
+  "reported_statuses": {
+    "R01": "draft",
+    "R02": "draft",
+    "R02-EXT": "draft",
+    "R03": "draft",
+    "R04": "draft",
+    "R05": "draft",
+    "R05-CLAR": "draft",
+    "R06": "draft",
+    "PRESERVE": "draft"
+  },
+  "stage_caps": [],
+  "not_understood": [
+    "R01: open challenges this assessment does not resolve: coverage_gap, independence_unmodeled, unverified_assertion.",
+    "R01: propagated score 0.215 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+    "R02: open challenges this assessment does not resolve: coverage_gap, independence_unmodeled, unverified_assertion.",
+    "R02: propagated score 0.193 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+    "R02-EXT: propagated score 0.158 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+    "R03: open challenges this assessment does not resolve: coverage_gap.",
+    "R03: propagated score 0.225 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+    "R04: open challenges this assessment does not resolve: assumption_unvalidated, coverage_gap.",
+    "R04: propagated score 0.193 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+    "R05: open challenges this assessment does not resolve: assumption_unvalidated, coverage_gap.",
+    "R05: propagated score 0.180 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+    "R05-CLAR: open challenges this assessment does not resolve: coverage_gap.",
+    "R05-CLAR: propagated score 0.180 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+    "R06: open challenges this assessment does not resolve: coverage_gap.",
+    "R06: propagated score 0.175 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+    "PRESERVE: open challenges this assessment does not resolve: assumption_unvalidated, coverage_gap, unverified_assertion.",
+    "PRESERVE: propagated score 0.211 is below the 0.70 threshold - the claim is not established by its evidence as recorded."
+  ],
+  "lanes": {
+    "lane_1": {
+      "label": "machine verification",
+      "outcome": "gather_evidence",
+      "threshold": 0.7,
+      "claims_at_or_above_threshold": 0,
+      "claims_below_threshold": 9
+    },
+    "lane_2": {
+      "label": "human acceptance",
+      "stage_counts": {
+        "created": 9,
+        "checked": 0,
+        "explained": 0,
+        "accepted": 0,
+        "digested": 0
+      },
+      "claims_below_explained": 9,
+      "exposition_covered_claims": 0,
+      "exposition_missing_claims": 9,
+      "verified_unexplained_claims": 0,
+      "stage_capped_claims": 0,
+      "attribution_contested_claims": 0
+    },
+    "per_claim": {
+      "R01": {
+        "lane_1": {
+          "score": 0.21500000000000005,
+          "direct_score": 0.21500000000000005,
+          "author_status": "draft",
+          "at_or_above_threshold": false
+        },
+        "lane_2": {
+          "stage": "created",
+          "stored_stage": "created",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": false,
+          "attribution_contested": false
+        }
+      },
+      "R02": {
+        "lane_1": {
+          "score": 0.19250000000000003,
+          "direct_score": 0.19250000000000003,
+          "author_status": "draft",
+          "at_or_above_threshold": false
+        },
+        "lane_2": {
+          "stage": "created",
+          "stored_stage": "created",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": false,
+          "attribution_contested": false
+        }
+      },
+      "R02-EXT": {
+        "lane_1": {
+          "score": 0.15833333333333333,
+          "direct_score": 0.15833333333333333,
+          "author_status": "draft",
+          "at_or_above_threshold": false
+        },
+        "lane_2": {
+          "stage": "created",
+          "stored_stage": "created",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": false,
+          "attribution_contested": false
+        }
+      },
+      "R03": {
+        "lane_1": {
+          "score": 0.225,
+          "direct_score": 0.225,
+          "author_status": "draft",
+          "at_or_above_threshold": false
+        },
+        "lane_2": {
+          "stage": "created",
+          "stored_stage": "created",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": false,
+          "attribution_contested": false
+        }
+      },
+      "R04": {
+        "lane_1": {
+          "score": 0.19250000000000003,
+          "direct_score": 0.225,
+          "author_status": "draft",
+          "at_or_above_threshold": false
+        },
+        "lane_2": {
+          "stage": "created",
+          "stored_stage": "created",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": false,
+          "attribution_contested": false
+        }
+      },
+      "R05": {
+        "lane_1": {
+          "score": 0.18,
+          "direct_score": 0.18,
+          "author_status": "draft",
+          "at_or_above_threshold": false
+        },
+        "lane_2": {
+          "stage": "created",
+          "stored_stage": "created",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": false,
+          "attribution_contested": false
+        }
+      },
+      "R05-CLAR": {
+        "lane_1": {
+          "score": 0.18,
+          "direct_score": 0.23333333333333334,
+          "author_status": "draft",
+          "at_or_above_threshold": false
+        },
+        "lane_2": {
+          "stage": "created",
+          "stored_stage": "created",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": false,
+          "attribution_contested": false
+        }
+      },
+      "R06": {
+        "lane_1": {
+          "score": 0.175,
+          "direct_score": 0.175,
+          "author_status": "draft",
+          "at_or_above_threshold": false
+        },
+        "lane_2": {
+          "stage": "created",
+          "stored_stage": "created",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": false,
+          "attribution_contested": false
+        }
+      },
+      "PRESERVE": {
+        "lane_1": {
+          "score": 0.2108333333333334,
+          "direct_score": 0.2108333333333334,
+          "author_status": "draft",
+          "at_or_above_threshold": false
+        },
+        "lane_2": {
+          "stage": "created",
+          "stored_stage": "created",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": false,
+          "attribution_contested": false
+        }
+      }
+    }
+  },
+  "digestion": {
+    "R01": {
+      "stage": "created",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "R02": {
+      "stage": "created",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "R02-EXT": {
+      "stage": "created",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "R03": {
+      "stage": "created",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "R04": {
+      "stage": "created",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "R05": {
+      "stage": "created",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "R05-CLAR": {
+      "stage": "created",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "R06": {
+      "stage": "created",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "PRESERVE": {
+      "stage": "created",
+      "exposition_present": false,
+      "explainers": []
+    }
+  }
+}

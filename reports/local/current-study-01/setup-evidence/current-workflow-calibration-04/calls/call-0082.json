@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28676,
+  "ended_at": "2026-10-17T00:25:25.005684+00:00",
+  "max_output": 4096,
+  "original_sha256": "7cecf3819f4b031f7ad219b9315e2a355c41ea20db85bfe91ee1559b93a5889c",
+  "phase": "repair",
+  "preflight_http_requests": 18,
+  "preflight_input_tokens": 28377,
+  "preflight_seconds": 1.4380000000819564,
+  "removed_history_messages": 104,
+  "request_seconds": 15.063000000081956,
+  "request_sha256": "b0c8cbe8448fbffa0b08646b803075ecd185d60b7807ff04702d0bd1c569be0c",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"done\",\"summary\":\"Repaired injected calibration regression in smoke.py: add(a,b) had been changed to return a-b (all 9 target tests failed). Restored body to return a + b with docstring. Verified: target suite 9 passed; full suite 232 passed (TinyDB unbroken); quickstart prints 3 2 4 3.75 3.5; git status --porcelain -- tinydb empty (unmodified). No test or upstream files changed.\"}",
+          "reasoning_sha256": "1b10a0e90827ee0ec0b00e591f1e9233e96fa590d31e9ff3e97d0e608dee4291",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792196725,
+    "id": "chatcmpl-o7s8DcGPlUSHI1Zh4e8qsshEDXhDjtR7",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 28335,
+      "predicted_ms": 14511.322,
+      "predicted_n": 299,
+      "predicted_per_second": 20.535689305219744,
+      "predicted_per_token_ms": 48.695711409395976,
+      "prompt_ms": 422.665,
+      "prompt_n": 42,
+      "prompt_per_second": 99.36947700897873,
+      "prompt_per_token_ms": 10.06345238095238
+    },
+    "usage": {
+      "completion_tokens": 299,
+      "prompt_tokens": 28377,
+      "prompt_tokens_details": {
+        "cached_tokens": 28335
+      },
+      "total_tokens": 28676
+    }
+  },
+  "seconds": 15.063000000081956,
+  "stage": 1,
+  "started_at": "2026-10-17T00:25:09.936745+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 299,
+    "prompt_tokens": 28377,
+    "prompt_tokens_details": {
+      "cached_tokens": 28335
+    },
+    "total_tokens": 28676
+  }
+}

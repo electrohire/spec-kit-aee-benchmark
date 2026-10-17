@@ -1,0 +1,62 @@
+{
+  "budget_debit": 5620,
+  "ended_at": "2026-10-17T04:57:06.803953+00:00",
+  "max_output": 4096,
+  "original_sha256": "a84b7a3abd75ac81ba04e74b43a9b717e1251e2b8116ff6376970334c35a64b4",
+  "phase": "constitution",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 5434,
+  "preflight_seconds": 0.14099999982863665,
+  "removed_history_messages": 0,
+  "request_seconds": 9.016000000061467,
+  "request_sha256": "b10f301b3c1a76cc3413957ca9fb9541b6f871d653251d99fb59f3767c3b9b12",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && ls .venv 2>/dev/null; which python python3; python3 .specify/scripts/python/resolve_template.py constitution-template --json 2>&1 | head -80\"}",
+          "reasoning_sha256": "c0c75b843e7c1eafac80e68da1c325bc89f57e2d1c94587adce59d4762a2e8f6",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792213026,
+    "id": "chatcmpl-56XHEvF9PhYeBGqXYuXAWbHUA7CTNTPR",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 4572,
+      "predicted_ms": 7831.649,
+      "predicted_n": 186,
+      "predicted_per_second": 23.62210053080775,
+      "predicted_per_token_ms": 42.33323783783784,
+      "prompt_ms": 1133.893,
+      "prompt_n": 862,
+      "prompt_per_second": 760.2128243141107,
+      "prompt_per_token_ms": 1.3154211136890952
+    },
+    "usage": {
+      "completion_tokens": 186,
+      "prompt_tokens": 5434,
+      "prompt_tokens_details": {
+        "cached_tokens": 4572
+      },
+      "total_tokens": 5620
+    }
+  },
+  "seconds": 9.016000000061467,
+  "stage": 1,
+  "started_at": "2026-10-17T04:56:57.784037+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 186,
+    "prompt_tokens": 5434,
+    "prompt_tokens_details": {
+      "cached_tokens": 4572
+    },
+    "total_tokens": 5620
+  }
+}

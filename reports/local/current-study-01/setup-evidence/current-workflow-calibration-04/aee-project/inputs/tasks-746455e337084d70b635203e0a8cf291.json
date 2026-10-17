@@ -1,0 +1,242 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: grep output: T001 'Create empty file smoke.py at repository root /testbed/smoke.py', US1 goal 'add(a, b) in smoke.py returns a + b', T006 'def add(a, b): ... body return a + b'",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "47982a3b2f927e79ec38bb24d8341590f9758f20748dff5a8eada82e60cca6dd",
+          "source_id": "47982a3b2f927e79ec38bb24d8341590f9758f20748dff5a8eada82e60cca6dd",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "grep of tasks.md shows no task creating /testbed/smoke.py",
+        "tasks.md does not specify add(a,b) body 'return a + b'"
+      ],
+      "id": "R01-TASKS",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R01; spec FR-001/FR-002",
+      "stage": "created",
+      "status": "draft",
+      "text": "tasks.md declares creating smoke.py at the repository root and defining add(a, b) whose body returns a + b.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01-TASKS"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: grep output: Phase 4 'User Story 2 - Negative Integers, Zero, Floats (P2) [R02]' and T007 listing 7 tests with exact assertions add(-3,5)==2, add(0,4)==4, add(1.5,2.25)==3.75, add(1,2.5)==3.5 etc.",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "ebbbfc9d53f2abf4a451451f220d24e5d241619435e3297fec42d79c1cb9583d",
+          "source_id": "ebbbfc9d53f2abf4a451451f220d24e5d241619435e3297fec42d79c1cb9583d",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "T007 lacks any of negative-int, zero, float, or mixed-type test cases",
+        "expected sums in T007 differ from a+b"
+      ],
+      "id": "R02-TASKS",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R02; spec FR-003..FR-005",
+      "stage": "created",
+      "status": "draft",
+      "text": "tasks.md declares test tasks covering negative integers, zero, floats, and mixed int/float with exact expected sums.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01-TASKS",
+        "R02-TASKS"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: grep output: US3 goal 'executed and passes with 0 failures (SC-002)', T009 run 'PYTHONPATH=src:. python3 -m pytest tests/test_smoke.py' expecting 0 failed exit 0, T010 full-suite 0 failures",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "cd64cb1d5c1091e6ecd79910794363bc263f271b4cfb436be4c0fa3b18d430a9",
+          "source_id": "cd64cb1d5c1091e6ecd79910794363bc263f271b4cfb436be4c0fa3b18d430a9",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "no task runs pytest on tests/test_smoke.py",
+        "no task requires 0 failures / exit code 0"
+      ],
+      "id": "R03-TASKS",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R03; spec FR-006, SC-002",
+      "stage": "created",
+      "status": "draft",
+      "text": "tasks.md declares executing the test suite with 0 failures and exit code 0 as the acceptance outcome.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: git status --porcelain -- tinydb tests printed nothing with exit 0 (no modifications); tasks.md T004 and Constraints-honored line restate the untouched constraint",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "36b2cee545aeca2108d12fe3429fbdebdd63226d62643d15759edee24f5fcfb2",
+          "source_id": "36b2cee545aeca2108d12fe3429fbdebdd63226d62643d15759edee24f5fcfb2",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "git status --porcelain -- tinydb tests prints any entry"
+      ],
+      "id": "C1-TASKS",
+      "kind": "requirement",
+      "source_ref": "milestone constraint 'Do not modify TinyDB'; spec FR-007; constitution principle I",
+      "stage": "created",
+      "status": "draft",
+      "text": "The TinyDB package and its existing tests are unmodified as of the tasks phase.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: grep of 'service|deployment' over tasks.md matches only the constraints line 'only smoke.py and tests/test_smoke.py are created/modified; ... no service, no deployment'",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "256cceaa81ccd2768f995f565d4a2260534b4ee44f662dbe920c389002c233f9",
+          "source_id": "256cceaa81ccd2768f995f565d4a2260534b4ee44f662dbe920c389002c233f9",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "any task line in tasks.md creates a service, CLI, or deployment artifact",
+        "any task modifies a file other than smoke.py or tests/test_smoke.py"
+      ],
+      "id": "C2-TASKS",
+      "kind": "requirement",
+      "source_ref": "milestone constraint 'No service or deployment is involved'; spec SC-004",
+      "stage": "created",
+      "status": "draft",
+      "text": "tasks.md contains no service or deployment tasks; only smoke.py and tests/test_smoke.py are to be created or modified.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: wc -l reports 78 lines and grep -c of '- [ ] T' reports exactly 11 task lines in specs/001-transactions/tasks.md",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "368229594abb72ff9da3e1e1c841553a39bf2994f797e6e4b6e67ac065a3f9c9",
+          "source_id": "368229594abb72ff9da3e1e1c841553a39bf2994f797e6e4b6e67ac065a3f9c9",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: grep -nE of all 11 task lines shows each starts '- [ ] T0NN' with [P]/[US#] markers where applicable and a file path; the malformed-line filter printed the lines only because the sed-truncated first column made the negative pattern match, and manual inspection of the full output confirms every line is well-formed",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "ac897e1e70c4edc826b3ad9b1cfdbbb512378f20c957fececf111c11f41bbf0e",
+          "source_id": "ac897e1e70c4edc826b3ad9b1cfdbbb512378f20c957fececf111c11f41bbf0e",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "task count differs from 11",
+        "any task line lacks checkbox, sequential ID, or file path",
+        "phases are not organized by user story"
+      ],
+      "id": "F1-TASKS",
+      "kind": "requirement",
+      "source_ref": "speckit-tasks Task Generation Rules; plan.md Project Structure",
+      "stage": "created",
+      "status": "draft",
+      "text": "tasks.md exists with 11 tasks (T001-T011) in the strict checklist format, organized into setup, foundational, per-user-story, and polish phases.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: grep output: line 5 'Tests requested: YES ... written before implementation (TDD)' and line 68 'US1: T005 (tests first, TDD) -> T006 (implementation)'; T006/T008 carry 'depends on T005'/'depends on T007'",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "bf1ec24f5fc4340f4422bc7182e1ee7fd4ce323c069672d5611736900c8df6bb",
+          "source_id": "bf1ec24f5fc4340f4422bc7182e1ee7fd4ce323c069672d5611736900c8df6bb",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "implementation task T006 appears before test task T005 without a dependency note",
+        "T008 lacks a dependency on T007"
+      ],
+      "id": "F2-TASKS",
+      "kind": "requirement",
+      "source_ref": "speckit-tasks 'Tests (if requested)' ordering; R03",
+      "stage": "created",
+      "status": "draft",
+      "text": "tasks.md declares TDD ordering: story test tasks precede their implementation tasks with explicit dependencies.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: ls output: 'NO extensions.yml - skipping hooks' (file absent); constitution.md confirmed present and was read as a design input",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "5601db5d4d6cc8ca9ecae68e36ade2d7441cfee70f3244cfe4fdee48a54ee900",
+          "source_id": "5601db5d4d6cc8ca9ecae68e36ade2d7441cfee70f3244cfe4fdee48a54ee900",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "ls .specify/extensions.yml succeeds",
+        "any before_tasks/after_tasks hook was invoked"
+      ],
+      "id": "F3-TASKS",
+      "kind": "requirement",
+      "source_ref": "speckit-tasks Pre/Post-Execution Hooks rules",
+      "stage": "created",
+      "status": "draft",
+      "text": "No extension hooks were executed for this phase because .specify/extensions.yml does not exist in the project root.",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

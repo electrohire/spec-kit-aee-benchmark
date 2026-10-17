@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28945,
+  "ended_at": "2026-10-17T13:18:59.749213+00:00",
+  "max_output": 4096,
+  "original_sha256": "5e738ec6d0dee3082f94e171fced51a3ff810875ea03b9e0b1e86eb0d5d16882",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 26525,
+  "preflight_seconds": 0.1559999999590218,
+  "removed_history_messages": 0,
+  "request_seconds": 123.06300000008196,
+  "request_sha256": "3326b7a889df5a89c4a561072512d16bc514b9123dd0d384ae28d8395b19eeaa",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && cat > tests/test_tagged_m2.py << 'EOF'\\nimport pytest\\n\\nfrom cachetools.tagged import TaggedCache\\n\\n\\n# ---------------- R04: invalidate_many ----------------\\n\\ndef test_invalidate_many_any_union():\\n    c = TaggedCache(8)\\n    c.put('a', 1, ['x'])\\n    c.put('b', 2, ['x', 'y'])\\n    c.put('c', 3, ['y'])\\n    c.put('d', 4, ['z'])\\n    assert c.invalidate_many(['x', 'y']) == 3\\n    assert len(c) == 1 and 'd' in c\\n\\n\\ndef test_invalidate_many_all():\\n    c = TaggedCache(8)\\n    c.put('a', 1, ['x'])\\n    c.put('b', 2, ['x', 'y'])\\n    c.put('c', 3, ['y'])\\n    c.put('d', 4, ['x', 'y', 'z'])\\n    assert c.invalidate_many(['x', 'y'], mode='all') == 2\\n    assert 'a' in c and 'c' in c\\n\\n\\ndef test_invalidate_many_empty_removes_zero():\\n    c = TaggedCache(4)\\n    c.put('a', 1, ['x'])\\n    c.put('b', 2, [])\\n    assert c.invalidate_many([]) == 0\\n    assert c.invalidate_many([], mode='all') == 0\\n    assert len(c) == 2\\n\\n\\ndef test_invalidate_many_distinct_keys():\\n    c = TaggedCache(8)\\n    c.put('a', 1, ['x', 'y'])\\n    c.put('b', 2, ['x'])\\n    c.put('c', 3, ['y'])\\n    assert c.invalidate_many(['x', 'y', 'y']) == 3\\n    assert len(c) == 0\\n\\n\\ndef test_invalidate_many_bad_mode_rejected_before_mutation():\\n    c = TaggedCache(4)\\n    c.put('a', 1, ['x'])\\n    with pytest.raises(ValueError):\\n        c.invalidate_many(['x'], mode='ANY')\\n    with pytest.raises(ValueError):\\n        c.invalidate_many(['x'], mode=1)\\n    assert len(c) == 1 and c.get('a') == 1\\n\\n\\ndef test_invalidate_many_bad_tags_rejected_before_mutation():\\n    c = TaggedCache(4)\\n    c.put('a', 1, ['x'])\\n    with pytest.raises(ValueError):\\n        c.invalidate_many('xy')  # bare string\\n    with pytest.raises(ValueError):\\n        c.invalidate_many(['x', 1])\\n    with pytest.raises(ValueError):\\n        c.invalidate_many(42)\\n    assert len(c) == 1 and c.get('a') == 1\\n\\n\\ndef test_invalidate_many_generator_consumed_once():\\n    calls = []\\n\\n    def gen():\\n        for t in ('x', 'y'):\\n            calls.append(t)\\n            yield t\\n\\n    c = TaggedCache(8)\\n    c.put('a', 1, ['x'])\\n    c.put('b', 2, ['y'])\\n    c.put('c', 3, [])\\n    assert c.invalidate_many(gen()) == 2\\n    assert calls == ['x', 'y']\\n    assert 'c' in c\\n\\n\\n# ---------------- R05: resize ----------------\\n\\ndef test_resize_validation():\\n    c = TaggedCache(4)\\n    for bad in (0, -3, True, False, 1.5, '2', None):\\n        with pytest.raises(ValueError):\\n            c.resize(bad)\\n    assert c.maxsize == 4\\n\\n\\ndef test_resize_shrink_evicts_lru():\\n    c = TaggedCache(4)\\n    c.put('a', 1, ['t1'])\\n    c.put('b', 2, ['t2'])\\n    c.put('c', 3, ['t3'])\\n    c.put('d', 4, ['t4'])\\n    c.get('a')  # a -> MRU, so eviction order: b, c, d\\n    c.resize(2)\\n    assert c.maxsize == 2\\n    assert 'a' in c and 'd' in c\\n    assert 'b' not in c and 'c' not in c\\n    # evicted entries' tags are cleaned up\\n    assert c.invalidate('t2') == 0\\n    assert c.invalidate('t3') == 0\\n    assert c.invalidate('t1') == 1\\n    assert c.invalidate('t4') == 1\\n    assert len(c) == 0\\n\\n\\ndef test_resize_shrink_preserves_lru_order():\\n    c = TaggedCache(3)\\n    c.put('a', 1, [])\\n    c.put('b', 2, [])\\n    c.put('c', 3, [])\\n    c.get('a')  # order: b, c, a\\n    c.resize(2)  # evicts b\\n    assert 'b' not in c\\n    c.put('d', 4, [])  # evicts c (next LRU), order: a, d\\n    assert 'c' not in c\\n    c.put('e', 5, [])  # evicts a\\n    assert 'a' not in c and 'd' in c and 'e' in c\\n\\n\\ndef test_resize_grow_does_not_evict():\\n    c = TaggedCache(2)\\n    c.put('a', 1, ['x'])\\n    c.put('b', 2, ['y'])\\n    c.resize(5)\\n    assert c.maxsize == 5\\n    assert len(c) == 2 and 'a' in c and 'b' in c\\n\\n\\ndef test_resize_same_size_noop():\\n    c = TaggedCache(3)\\n    c.put('a', 1, [])\\n    c.resize(3)\\n    assert c.maxsize == 3 and len(c) == 1\\n\\n\\ndef test_resize_failed_preserves_state():\\n    c = TaggedCache(3)\\n    c.put('a', 1, ['t'])\\n    c.put('b', 2, [])\\n    try:\\n        c.resize(0)\\n        raise SystemExit('expected ValueError')\\n    except ValueError:\\n        pass\\n    assert c.maxsize == 3 and len(c) == 2\\n    assert c.get('a') == 1 and c.get('b') == 2\\n    assert c.invalidate('t') == 1\\n\\n\\ndef test_resize_then_put_respects_new_capacity():\\n    c = TaggedCache(3)\\n    c.put('a', 1, [])\\n    c.put('b', 2, [])\\n    c.put('c', 3, [])\\n    c.resize(2)  # evicts a\\n    c.put('d', 4, [])  # evicts b\\n    assert 'a' not in c and 'b' not in c\\n    assert 'c' in c and 'd' in c\\n    c.put('e', 5, [])  # would exceed capacity: evicts c\\n    assert 'c' not in c and 'd' in c and 'e' in c\\n    assert len(c) == 2\\n\\n\\ndef test_resize_to_one():\\n    c = TaggedCache(4)\\n    for k in 'abcd':\\n        c.put(k, k, [])\\n    c.get('a')\\n    c.resize(1)\\n    assert c.maxsize == 1 and len(c) == 1 and 'a' in c\\n\\n\\n# ---------------- R06: generators and detachment ----------------\\n\\ndef test_put_generator_tags_consumed_once():\\n    consumed = []\\n\\n    def gen():\\n        for t in ('p', 'q'):\\n            consumed.append(t)\\n            yield t\\n\\n    c = TaggedCache(4)\\n    c.put('k', 1, gen())\\n    assert consumed == ['p', 'q']\\n    assert c.invalidate('p') == 1\\n    assert c.invalidate('q') == 0\\n\\n\\ndef test_put_rejects_generator_reuse_not_needed():\\n    # a generator is a valid iterable; single consumption suffices\\n    c = TaggedCache(4)\\n    c.put('k', 1, (t for t in ['a', 'a', 'b']))\\n    assert c.invalidate('a') == 1\\n    assert c.invalidate('b') == 1\\n    assert len(c) == 0\\n\\n\\ndef test_detached_across_repeated_gets_and_puts():\\n    c = TaggedCache(4)\\n    value = {'l': [1, 2], 'd': {'n': [3]}}\\n    c.put('k', value, ['t'])\\n    v1 = c.get('k')\\n    v1['l'].append(9)\\n    v1['d']['n'].append(9)\\n    v2 = c.get('k')\\n    assert v2 == {'l': [1, 2], 'd': {'n': [3]}}\\n    assert v1 is not v2\\n    v2['l'].append(10)\\n    assert c.get('k') == {'l': [1, 2], 'd': {'n': [3]}}\\n    # replace with nested value; old external mutation must not leak\\n    new = {'l': [1], 'd': {'n': [2]}}\\n    c.put('k', new, ['t'])\\n    new['l'].append(77)\\n    assert c.get('k') == {'l': [1], 'd': {'n': [2]}}\\n\\n\\ndef test_invalidate_many_mode_default_is_any():\\n    c = TaggedCache(8)\\n    c.put('a', 1, ['x'])\\n    c.put('b', 2, ['x', 'y'])\\n    assert c.invalidate_many(['y']) == 1\\n    assert 'a' in c\\nEOF\\nPYTHONPATH=src:. python -m pytest tests/test_tagged_m2.py tests/test_tagged.py acceptance_public.py -q 2>&1 | tail -5\"}",
+          "reasoning_sha256": "db2839289ca2445b4be88edf634b73c360dab293e23f9ebf10c30f9e73f6c9ae",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792243139,
+    "id": "chatcmpl-ea3xeNpc4D6LSKvZ2Ej8AUXB66CEMZtq",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 26483,
+      "predicted_ms": 122578.682,
+      "predicted_n": 2420,
+      "predicted_per_second": 19.734263417842918,
+      "predicted_per_token_ms": 50.67328730880529,
+      "prompt_ms": 360.146,
+      "prompt_n": 42,
+      "prompt_per_second": 116.61937103285888,
+      "prompt_per_token_ms": 8.574904761904762
+    },
+    "usage": {
+      "completion_tokens": 2420,
+      "prompt_tokens": 26525,
+      "prompt_tokens_details": {
+        "cached_tokens": 26483
+      },
+      "total_tokens": 28945
+    }
+  },
+  "seconds": 123.06300000008196,
+  "stage": 2,
+  "started_at": "2026-10-17T13:16:56.691281+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2420,
+    "prompt_tokens": 26525,
+    "prompt_tokens_details": {
+      "cached_tokens": 26483
+    },
+    "total_tokens": 28945
+  }
+}

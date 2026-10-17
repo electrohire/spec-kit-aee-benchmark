@@ -1,0 +1,1 @@
+{"command": "mkdir -p tests && cat <<'EOF' > tests/test_smoke.py\nimport pytest\nfrom smoke import add\n\ndef test_add_integers():\n    assert add(1, 2) == 3\n\ndef test_add_floats():\n    assert add(1.5, 2.5) == 4.0\n\ndef test_add_negative():\n    assert add(-1, -2) == -3\n\ndef test_add_zero():\n    assert add(0, 0) == 0\nEOF", "exit_code": 0, "stderr": "", "stdout": ""}

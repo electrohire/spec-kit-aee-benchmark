@@ -1,0 +1,63 @@
+{
+  "budget_debit": 10292,
+  "ended_at": "2026-10-16T22:26:08.070304+00:00",
+  "max_output": 4096,
+  "original_sha256": "df5f7fb3c98aef01a28d17cd0792ee34429d6b9f1789da8eaf813b802db1eb9d",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 9333,
+  "preflight_seconds": 0.14000000013038516,
+  "removed_history_messages": 0,
+  "request_seconds": 9.530999999959022,
+  "request_sha256": "7c0fcb85586da976fceb89efbb1cc00b2db4c65960ff261fe77ecb4011d3f14d",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"done\",\"claims\":[{\"id\":\"R01\",\"text\":\"Create smoke.py with add(a,b) returning a+b\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"this milestone\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"milestone requirement R01\",\"uncertainty\":\"high\",\"alternatives\":[],\"assumptions\":[],\"confidence\":\"high\",\"confidence_band\":[],\"dispositions\":[],\"domain\":[],\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"source_id\":\"tests/test_smoke.py\",\"direction\":\"supports\",\"description\":\"Unit tests confirm add function returns correct sum for integers and floats.\"}],\"metadata\":{},\"role\":null,\"severity\":null,\"headline\":\"\"},{\"id\":\"R02\",\"text\":\"Support negative integers, zero and floats\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"this milestone\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"milestone requirement R02\",\"uncertainty\":\"high\",\"alternatives\":[],\"assumptions\":[],\"confidence\":\"high\",\"confidence_band\":[],\"dispositions\":[],\"domain\":[],\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"source_id\":\"tests/test_smoke.py\",\"direction\":\"supports\",\"description\":\"Unit tests confirm add handles negative integers, zero and floats.\"}],\"metadata\":{},\"role\":null,\"severity\":null,\"headline\":\"\"},{\"id\":\"R03\",\"text\":\"Add and run tests\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"this milestone\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"milestone requirement R03\",\"uncertainty\":\"high\",\"alternatives\":[],\"assumptions\":[],\"confidence\":\"high\",\"confidence_band\":[],\"dispositions\":[],\"domain\":[],\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"source_id\":\"tests/test_smoke.py\",\"direction\":\"supports\",\"description\":\"Pytest run produced no failures, confirming tests are executed.\"}],\"metadata\":{},\"role\":null,\"severity\":null,\"headline\":\"\"}]}",
+          "reasoning_content_sha256": "c70eb025c536cc9a062fa885d4d5c57778450fdd1839bc02646236539c99f5d5",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792189568,
+    "id": "chatcmpl-TLNvb5sTxNh1SNgUpdrRju96UaePhRHx",
+    "model": "gpt-oss-20b-Q5_K_M",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 8964,
+      "predicted_ms": 9232.898,
+      "predicted_n": 959,
+      "predicted_per_second": 103.7594046852895,
+      "predicted_per_token_ms": 9.637680584551147,
+      "prompt_ms": 192.821,
+      "prompt_n": 369,
+      "prompt_per_second": 1913.6919733846416,
+      "prompt_per_token_ms": 0.522550135501355
+    },
+    "usage": {
+      "completion_tokens": 959,
+      "prompt_tokens": 9333,
+      "prompt_tokens_details": {
+        "cached_tokens": 8964
+      },
+      "total_tokens": 10292
+    }
+  },
+  "seconds": 9.530999999959022,
+  "source": "current-workflow-calibration-02/calls/call-0017.json",
+  "stage": 1,
+  "started_at": "2026-10-16T22:25:58.526863+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 959,
+    "prompt_tokens": 9333,
+    "prompt_tokens_details": {
+      "cached_tokens": 8964
+    },
+    "total_tokens": 10292
+  }
+}

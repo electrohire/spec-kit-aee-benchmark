@@ -653,8 +653,17 @@ class _LocalSandbox:
         self.cwd = str(cwd)
 
     def execute(self, cmd, timeout=30):
+        import os
+        from pathlib import Path
+        if cmd.startswith("cat "):
+            return {"exit_code": 0, "stdout": Path(cmd[4:]).read_text(), "stderr": ""}
+        env = dict(os.environ)
+        import re
+        while match := re.match(r"^([A-Z_]+)=([^ ]*) ", cmd):
+            env[match[1]] = match[2]
+            cmd = cmd[match.end():]
         out = subprocess.run(cmd, shell=True, cwd=self.cwd,
-                             capture_output=True, text=True, timeout=timeout)
+                             capture_output=True, text=True, timeout=timeout, env=env)
         return {"exit_code": out.returncode, "stdout": out.stdout, "stderr": out.stderr}
 
 

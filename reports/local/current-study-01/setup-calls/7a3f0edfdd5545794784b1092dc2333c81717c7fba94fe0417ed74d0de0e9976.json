@@ -1,0 +1,63 @@
+{
+  "budget_debit": 14808,
+  "ended_at": "2026-10-16T22:28:24.009701+00:00",
+  "max_output": 4096,
+  "original_sha256": "7a3f0edfdd5545794784b1092dc2333c81717c7fba94fe0417ed74d0de0e9976",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 13970,
+  "preflight_seconds": 0.11000000010244548,
+  "removed_history_messages": 0,
+  "request_seconds": 8.563000000081956,
+  "request_sha256": "691cdb4184024c1bbf0f357ad552ea63785f7b99758ae0ddb5d370d9317b79fb",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"done\",\"claims\":{\"schema_version\":\"1.0\",\"claims\":[{\"id\":\"R01\",\"text\":\"Create smoke.py with add(a,b) returning a+b\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"this milestone\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"milestone requirement R01\",\"uncertainty\":\"high\",\"alternatives\":[],\"assumptions\":[],\"confidence\":null,\"confidence_band\":null,\"dispositions\":[],\"domain\":[],\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"source_id\":\"tests/test_smoke.py\",\"direction\":\"supports\",\"description\":\"Unit tests confirm add function returns correct sum for integers and floats.\",\"ref\":\"tests/test_smoke.py\"}],\"metadata\":{},\"role\":\"\",\"severity\":\"info\",\"headline\":\"\"},{\"id\":\"R02\",\"text\":\"Support negative integers, zero and floats\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"this milestone\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"milestone requirement R02\",\"uncertainty\":\"high\",\"alternatives\":[],\"assumptions\":[],\"confidence\":null,\"confidence_band\":null,\"dispositions\":[],\"domain\":[],\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"source_id\":\"tests/test_smoke.py\",\"direction\":\"supports\",\"description\":\"Unit tests confirm add handles negative integers, zero and floats.\",\"ref\":\"tests/test_smoke.py\"}],\"metadata\":{},\"role\":\"\",\"severity\":\"info\",\"headline\":\"\"},{\"id\":\"R03\",\"text\":\"Add and run tests\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"this milestone\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"milestone requirement R03\",\"uncertainty\":\"high\",\"alternatives\":[],\"assumptions\":[],\"confidence\":null,\"confidence_band\":null,\"dispositions\":[],\"domain\":[],\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"source_id\":\"tests/test_smoke.py\",\"direction\":\"supports\",\"description\":\"Pytest run produced no failures, confirming tests are executed.\",\"ref\":\"tests/test_smoke.py\"}],\"metadata\":{},\"role\":\"\",\"severity\":\"info\",\"headline\":\"\"}]} }",
+          "reasoning_content_sha256": "6d13d3b7a6cccdd6e935606238cc7f2aeccd73a546aeeeacfa93d1873f21a25a",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792189704,
+    "id": "chatcmpl-dCpsBAq8rtQ9Ud7GKCEaUn4GnUMq4Fbw",
+    "model": "gpt-oss-20b-Q5_K_M",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 13911,
+      "predicted_ms": 8357.426,
+      "predicted_n": 838,
+      "predicted_per_second": 100.15045302225829,
+      "predicted_per_token_ms": 9.984977299880525,
+      "prompt_ms": 90.898,
+      "prompt_n": 59,
+      "prompt_per_second": 649.0791876608947,
+      "prompt_per_token_ms": 1.54064406779661
+    },
+    "usage": {
+      "completion_tokens": 838,
+      "prompt_tokens": 13970,
+      "prompt_tokens_details": {
+        "cached_tokens": 13911
+      },
+      "total_tokens": 14808
+    }
+  },
+  "seconds": 8.563000000081956,
+  "source": "current-workflow-calibration-02/calls/call-0037.json",
+  "stage": 1,
+  "started_at": "2026-10-16T22:28:15.437910+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 838,
+    "prompt_tokens": 13970,
+    "prompt_tokens_details": {
+      "cached_tokens": 13911
+    },
+    "total_tokens": 14808
+  }
+}

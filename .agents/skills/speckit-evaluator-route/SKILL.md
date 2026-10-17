@@ -3,7 +3,7 @@ name: speckit-evaluator-route
 description: Recommend which model tier to use for the next SDD phase based on evaluator findings — enables the portfolio approach (budget for routine, premium for critical)
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
-  author: github-spec-kit
+  author: ElectroHire
   source: evaluator:commands/speckit.evaluator.route.md
 ---
 

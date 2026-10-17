@@ -1,0 +1,62 @@
+{
+  "budget_debit": 16814,
+  "ended_at": "2026-10-17T14:08:08.876121+00:00",
+  "max_output": 4096,
+  "original_sha256": "4ea4f85efb840ab927c7a005b847d34eb72604585f007de98ab38c10be79af27",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 14775,
+  "preflight_seconds": 0.23499999986961484,
+  "removed_history_messages": 0,
+  "request_seconds": 99.48499999986961,
+  "request_sha256": "eb9f781624aa8ac17918bedcb5c2bbd41d148bcf497b0739fd57346d58370657",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && cat > specs/001-transactions/spec.md <<'EOF'\\n# Feature Specification: Tagged Cache (cachetools.tagged.TaggedCache)\\n\\n**Feature Branch**: `001-transactions`\\n\\n**Created**: 2026-10-17\\n\\n**Status**: Draft\\n\\n**Input**: User description: \\\"Build cachetools.tagged.TaggedCache(maxsize), using the existing\\nLRUCache for bounded storage and preserving all existing cachetools APIs. R01-R03\\nplus Claim-A candidate extension (variant put_no_recency_refresh, 2026-09-21).\\\"\\n\\n## User Scenarios & Testing *(mandatory)*\\n\\n### User Story 1 - Store and retrieve values with tags (Priority: P1)\\n\\nA library user creates a TaggedCache with a maximum number of entries, stores\\nvalues together with a set of tags, and later retrieves a value by key. The\\nvalue handed out is a fully detached deep copy: mutating it (including nested\\nobjects) does not affect the stored value, and the caller cannot observe the\\nstored value through the returned object. Values are deep-copied on input too,\\nso mutating the original object after storing it does not change what the cache\\nreturns. Missing keys raise KeyError.\\n\\n**Why this priority**: This is the core value of the feature; without safe\\nput/get with tags, nothing else works. It is the minimal viable product.\\n\\n**Independent Test**: Fully testable by constructing a TaggedCache, putting a\\nnested value with tags, getting it back, mutating the returned copy, and\\nverifying the stored value is unchanged; a second get returns equal content.\\n\\n**Acceptance Scenarios**:\\n\\n1. **Given** an empty cache of maxsize 2, **When** put(key, value, tags) is\\ncalled, **Then** the entry is stored and a later get(key) returns a deep copy\\nequal to value.\\n2. **Given** a stored value containing nested mutable objects, **When** the\\ncaller mutates the object returned by get(key), **Then** a subsequent get(key)\\nreturns the original, unmutated content.\\n3. **Given** a caller mutates its original object after put, **When** get(key)\\nis called, **Then** the stored content reflects the value as it was at put\\ntime, not the later mutation.\\n4. **Given** a key that was never stored (or was evicted/invalidated), **When**\\nget(key) is called, **Then** KeyError is raised.\\n5. **Given** a key already present, **When** put(key, new_value) is called,\\n**Then** the entry is replaced so get(key) returns a copy of new_value.\\n\\n---\\n\\n### User Story 2 - Invalidate by tag and rely on LRU eviction (Priority: P2)\\n\\nA user calls invalidate(tag) to remove every currently cached entry carrying\\nthat tag, receiving the exact count removed. Tag memberships always reflect\\nlive entries: replacing a key drops its old tags, and LRU eviction never leaves\\nstale tag memberships that would make later reuse of the same key behave as if\\nan old (evicted) entry still existed. get(key) refreshes LRU recency, so\\nfrequently read entries survive eviction longest. len(cache) reports the number\\nof live entries.\\n\\n**Why this priority**: Tag-based invalidation and correct LRU behavior are the\\ndistinctive guarantees that justify the feature; they build directly on P1.\\n\\n**Independent Test**: Fill a small cache to force eviction, call invalidate on\\na tag, and verify the returned count, that only matching keys were removed,\\nthat evicted keys are gone, and that re-putting an evicted key behaves as a\\nfresh entry.\\n\\n**Acceptance Scenarios**:\\n\\n1. **Given** three live entries, two carrying tag \\\"a\\\", **When** invalidate(\\\"a\\\")\\nis called, **Then** it returns 2 and only those two keys are missing.\\n2. **Given** a key stored with tags (\\\"a\\\",\\\"b\\\"), **When** put(key, new_value,\\ntags=(\\\"c\\\",)) is called, **Then** invalidate(\\\"a\\\") and invalidate(\\\"b\\\") each\\nreturn 0 and invalidate(\\\"c\\\") returns 1.\\n3. **Given** a cache of maxsize 2 with entries k1 (tag \\\"old\\\") and k2, **When**\\nput(k3, v3, tags=(\\\"old\\\")) evicts k1, **Then** len(cache) is 2, invalidate\\n(\\\"old\\\") returns 1 (removing only k3), and get(k1) raises KeyError.\\n4. **Given** entries k1, k2, k3 in a maxsize-3 cache, **When** get(k1) is\\ncalled and then put(k4, v4) evicts the least-recently-used entry, **Then** k2\\n(the LRU) is evicted, k1 is still present, and get(k2) raises KeyError.\\n5. **Given** a key evicted by LRU while carrying tag \\\"t\\\", **When** the same key\\nis put again with tag \\\"t\\\", **Then** invalidate(\\\"t\\\") counts exactly the live\\nentries carrying \\\"t\\\"; the prior evicted membership is not counted or removed.\\n\\n---\\n\\n### User Story 3 - Safe configuration and atomic replacement (Priority: P3)\\n\\nA user configures the cache with a maximum size and can rely that invalid input\\nnever corrupts state: maxsize must be a positive integer (bool is rejected),\\nand a failed put (invalid tags, or a value that cannot be copied) leaves the\\npreviously stored value, its tags, and its recency position unchanged. Every\\nstored value costs exactly one capacity slot regardless of its size or shape.\\n\\n**Why this priority**: Defensive guarantees that prevent silent corruption;\\nimportant, but they protect the P1/P2 flows rather than adding new capability.\\n\\n**Independent Test**: Attempt to construct TaggedCache with 0, -1, 2.5, \\\"5\\\",\\nTrue, False; attempt put with a bare string as tags, with a non-string tag\\nentry, and with an uncopyable value; verify each raises the documented error\\nand the prior state is intact.\\n\\n**Acceptance Scenarios**:\\n\\n1. **Given** maxsize values 0, -1, 2.5, \\\"5\\\", True, False, **When**\\nTaggedCache(maxsize) is called, **Then** a ValueError is raised (True and\\nFalse are rejected even though they are integers).\\n2. **Given** a cache with key k stored under tag \\\"a\\\", **When** put(k, v,\\ntags=\\\"a\\\") (bare string) is called, **Then** ValueError is raised and get(k)\\nstill returns the old value with tag \\\"a\\\" still active (invalidate(\\\"a\\\") would\\nstill return 1).\\n3. **Given** a cache with key k stored, **When** put(k, v, tags=(\\\"a\\\", 1)) is\\ncalled, **Then** ValueError is raised and the old value/tags/recency are\\nunchanged.\\n4. **Given** a cache with key k stored, **When** put(k, value, tags) is called\\nwith a value that cannot be deep-copied, **Then** an error is raised and the\\nold value, tags, and recency position are unchanged.\\n5. **Given** a cache of maxsize 2, **When** two entries (large nested objects\\nand a small int) are stored, **Then** both fit and a third put evicts the LRU\\nentry; size never affects slot cost.\\n\\n---\\n\\n### Edge Cases\\n\\n- Tags given as a finite iterable (list, tuple, generator, set) of strings are\\n  accepted; duplicate tags are deduplicated, so invalidate counts each live\\n  entry once.\\n- An empty tags iterable (including the default) stores the entry with no tag\\n  memberships.\\n- A bare string passed as tags is rejected (a string is an iterable of\\n  characters, but it is not a valid tag collection).\\n- A tag entry that is not a string is rejected.\\n- Replacing an existing key with new tags removes the old tag memberships\\n  before the new ones take effect (no transient double membership observable\\n  through invalidate).\\n- LRU eviction of a tagged entry removes its tag memberships so later reuse of\\n  the same key starts clean.\\n- get on a hit refreshes recency; get on a miss raises KeyError and changes\\n  nothing.\\n- len(cache) always equals the number of live entries (never exceeds maxsize,\\n  never counts evicted or invalidated entries).\\n- Keys are hashable; unhashable keys raise TypeError on put (standard Python\\n  hashing contract).\\nEOF\\necho PART1_OK; wc -l specs/001-transactions/spec.md\"}",
+          "reasoning_sha256": "c5ddedb143b08c4f905dd81971c03bbd408d9a1e0c1bb0a9f60285c0f8783ff2",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792246088,
+    "id": "chatcmpl-K7kX5Er8sDQEtpHqlWu0G7cBftsJfxHx",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 14746,
+      "predicted_ms": 98985.156,
+      "predicted_n": 2039,
+      "predicted_per_second": 20.58894567989568,
+      "predicted_per_token_ms": 48.569752698724244,
+      "prompt_ms": 369.017,
+      "prompt_n": 29,
+      "prompt_per_second": 78.58716536094543,
+      "prompt_per_token_ms": 12.724724137931034
+    },
+    "usage": {
+      "completion_tokens": 2039,
+      "prompt_tokens": 14775,
+      "prompt_tokens_details": {
+        "cached_tokens": 14746
+      },
+      "total_tokens": 16814
+    }
+  },
+  "seconds": 99.48499999986961,
+  "stage": 1,
+  "started_at": "2026-10-17T14:06:29.385205+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2039,
+    "prompt_tokens": 14775,
+    "prompt_tokens_details": {
+      "cached_tokens": 14746
+    },
+    "total_tokens": 16814
+  }
+}

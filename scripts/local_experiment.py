@@ -34,7 +34,7 @@ def digest(path):
 def claims(n, text='The proposed implementation satisfies the exercise requirements.'):
     return {'schema_version': '1.0', 'claims': [dict(
         id=f'REQ-{i:04}', text=text + f' Requirement {i}.', kind='requirement',
-        status='supported', boundary=['This exercise only'], depends_on=[],
+        status='draft', stage='created', boundary=['This exercise only'], depends_on=[],
         conflicts_with=[], falsification_tests=['An independent upstream test fails'],
         source_ref='model-response', uncertainty='high', evidence=[dict(
             ref='model-response', kind='asserted', direction='supports',
@@ -70,7 +70,7 @@ def runtime(out):
                 content = result.to_dict()
                 substantive = {k: content[k] for k in ('outcome', 'claims', 'scores', 'recoveries')}
             elif kind == 'pipeline':
-                content = assess(ROOT, payload, 'plan', store)
+                content = assess(ROOT, payload, 'plan', store, 'runtime-calibration')
                 outcome = content['outcome']
                 substantive = {k: content.get(k) for k in ('outcome', 'findings', 'next_action')}
             else:
@@ -182,7 +182,7 @@ def coding(out):
                 if phase in ('solve', 'implement', 'converge'):
                     code = extract(text)
                 if arm == 'spec_kit_aee_adapted' and phase in ('specify', 'plan', 'tasks', 'implement'):
-                    evaluation = assess(ROOT, claims(1), phase, Store(attempt/'evidence'))
+                    evaluation = assess(ROOT, claims(1), phase, Store(attempt/'evidence'), attempt.name)
                     gaps.append(dict(phase=phase, outcome=evaluation['outcome']))
                     history.append('Independent evidence gate (no upstream tests available during generation):\n' + json.dumps(evaluation))
             except Exception as exc:

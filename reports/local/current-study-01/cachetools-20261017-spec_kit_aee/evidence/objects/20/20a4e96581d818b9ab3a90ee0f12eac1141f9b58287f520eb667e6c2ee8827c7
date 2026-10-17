@@ -1,0 +1,1 @@
+{"command": "sed -n 26,80p /testbed/acceptance_public.py", "exit_code": 0, "stderr": "", "stdout": "    now = [0]\n    c = TaggedCache(2, timer=lambda: now[0])\n    c.put('a', 1, ttl=2)\n    now[0] = 3\n    with pytest.raises(KeyError):\n        c.get('a')\nimport pytest\nfrom cachetools.tagged import TaggedCache"}

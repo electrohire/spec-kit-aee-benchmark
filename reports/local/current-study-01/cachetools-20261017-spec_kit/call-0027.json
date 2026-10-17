@@ -1,0 +1,62 @@
+{
+  "budget_debit": 24486,
+  "ended_at": "2026-10-17T14:13:36.702614+00:00",
+  "max_output": 4096,
+  "original_sha256": "c7c5172a78881c0d0448ac13bfd739ace448d3d6f2ac25341a8ca6363033298c",
+  "phase": "plan",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 23357,
+  "preflight_seconds": 0.1869999999180436,
+  "removed_history_messages": 0,
+  "request_seconds": 57.71900000004098,
+  "request_sha256": "1b9a0fc9ed448d404130d7784af1ee6188628ad3242844a78de9c6481c347287",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && sed -n '224,250p' src/cachetools/__init__.py && echo ---TESTS--- && head -30 tests/test_lru.py && echo ---SETUP--- && grep -n 'packages\\\\|testpaths\\\\|packages_dir\\\\|where=' setup.cfg pyproject.toml tox.ini 2>/dev/null | head; echo ---ACCEPT---; head -30 acceptance_public.py\"}",
+          "reasoning_sha256": "faf509133c9b88ede23cc61b62ced89a06b8ef8d11f0035fe2c81330968af610",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792246416,
+    "id": "chatcmpl-Y2Jv01nMD6Oo4cqpK54F3R15fVwci7TQ",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 21604,
+      "predicted_ms": 55651.401,
+      "predicted_n": 1129,
+      "predicted_per_second": 20.269031502010165,
+      "predicted_per_token_ms": 49.33634840425532,
+      "prompt_ms": 1976.716,
+      "prompt_n": 1753,
+      "prompt_per_second": 886.824409778643,
+      "prompt_per_token_ms": 1.1276189389617797
+    },
+    "usage": {
+      "completion_tokens": 1129,
+      "prompt_tokens": 23357,
+      "prompt_tokens_details": {
+        "cached_tokens": 21604
+      },
+      "total_tokens": 24486
+    }
+  },
+  "seconds": 57.71900000004098,
+  "stage": 1,
+  "started_at": "2026-10-17T14:12:38.987153+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1129,
+    "prompt_tokens": 23357,
+    "prompt_tokens_details": {
+      "cached_tokens": 21604
+    },
+    "total_tokens": 24486
+  }
+}

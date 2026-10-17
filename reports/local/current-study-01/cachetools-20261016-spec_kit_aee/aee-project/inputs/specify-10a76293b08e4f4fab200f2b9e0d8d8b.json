@@ -1,0 +1,243 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "milestone 1",
+        "FR-002..FR-004"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: acceptance_public.py exercises put/get/invalidate and tag replacement on cachetools.tagged.TaggedCache",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "4d143e79a7627d5f6af024bf459d03d41adb4915c4756e6ce62c08bdf7ab9395",
+          "source_id": "4d143e79a7627d5f6af024bf459d03d41adb4915c4756e6ce62c08bdf7ab9395",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "mutating the input object after put changes the stored value",
+        "mutating a returned object changes the stored value on a later get",
+        "put with tags='x' or tags=[1] mutates state before raising",
+        "duplicate tags cause double counting in invalidate"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "milestone 1 requirement R01",
+      "stage": "created",
+      "status": "draft",
+      "text": "put(key,value,tags=()) inserts/replaces an entry for a hashable key; get(key) returns a detached deep copy or raises KeyError for missing keys; values are deep-copied on input; tags must be a finite iterable of strings, deduplicated; a bare string as tags and non-string tag entries are rejected with ValueError before any existing state changes.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "milestone 1",
+        "FR-005..FR-009"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: acceptance_public.py checks invalidate counts and that replacement removes old tag memberships",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "4d143e79a7627d5f6af024bf459d03d41adb4915c4756e6ce62c08bdf7ab9395",
+          "source_id": "4d143e79a7627d5f6af024bf459d03d41adb4915c4756e6ce62c08bdf7ab9395",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "invalidate removes untagged entries or returns a wrong count",
+        "re-putting a key keeps old tag memberships",
+        "eviction leaves stale membership affecting later re-put",
+        "get does not refresh recency",
+        "len exceeds maxsize"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "milestone 1 requirement R02",
+      "stage": "created",
+      "status": "draft",
+      "text": "invalidate(tag) removes exactly the currently cached entries carrying that tag and returns the number removed; replacing a key removes its old tag memberships; LRU eviction leaves no stale memberships affecting later reuse of the same key; get refreshes LRU recency; len(cache) counts live entries.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "milestone 1",
+        "Claim-A 2026-09-21",
+        "FR-010"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R02"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "after put on an existing key, a subsequent insertion evicts the overwritten key instead of the true LRU entry"
+      ],
+      "id": "R02-ext",
+      "kind": "requirement",
+      "source_ref": "Claim-A candidate extension (variant put_no_recency_refresh, 2026-09-21)",
+      "stage": "created",
+      "status": "draft",
+      "text": "Overwriting an existing key via put refreshes its LRU recency, making it the most-recently-used entry (Claim-A extension, variant put_no_recency_refresh, 2026-09-21; active per spec A8, variant label traceability only).",
+      "uncertainty": "medium"
+    },
+    {
+      "boundary": [
+        "milestone 1",
+        "FR-001,FR-011,FR-012"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [],
+      "falsification_tests": [
+        "TaggedCache(True)/TaggedCache(0)/TaggedCache(-1)/TaggedCache(2.0) do not raise ValueError",
+        "a failed put changes stored value, tags, or recency",
+        "a large object evicts more than one slot"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "milestone 1 requirement R03",
+      "stage": "created",
+      "status": "draft",
+      "text": "maxsize must be a positive integer excluding bool (ValueError otherwise); invalid replacement input must leave the old value, tags, and recency unchanged; every value costs exactly one capacity slot regardless of object size.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "milestone 2",
+        "FR-014..FR-016"
+      ],
+      "conflicts_with": [
+        "old generated design note claiming empty all-tags matches every key (superseded, spec A9)"
+      ],
+      "depends_on": [
+        "R01",
+        "R02"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "invalidate_many([], mode='all') removes every entry instead of zero",
+        "mode='any' removes only the intersection",
+        "invalid mode or tags='ab' mutates state before raising",
+        "returned count is not the distinct removed-key count"
+      ],
+      "id": "R04",
+      "kind": "requirement",
+      "source_ref": "milestone 2 requirement R04 + conflicting evidence packet (superseded)",
+      "stage": "created",
+      "status": "draft",
+      "text": "invalidate_many(tags, mode='any'): mode='any' removes the union of live entries carrying any supplied tag; mode='all' removes only entries carrying every supplied tag; empty requested tags remove zero entries in either mode (empty 'all' does NOT match every key); returns the number of distinct removed keys; invalid mode or tags rejected with ValueError before any mutation; invalidate(tag) remains compatible.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "milestone 2",
+        "FR-017,FR-018"
+      ],
+      "conflicts_with": [
+        "old generated design note claiming resizing may flush the cache (superseded, spec A9)"
+      ],
+      "depends_on": [
+        "R02"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "resize(True)/resize(0)/resize(-1)/resize(2.5) mutates capacity or entries",
+        "shrinking evicts recently-used entries or reorders survivors",
+        "growing evicts entries",
+        "a failed resize changes observable state or flushes",
+        "maxsize property does not report post-resize capacity"
+      ],
+      "id": "R05",
+      "kind": "requirement",
+      "source_ref": "milestone 2 requirement R05 + conflicting evidence packet (superseded)",
+      "stage": "created",
+      "status": "draft",
+      "text": "resize(maxsize) validates a positive non-bool integer first (ValueError otherwise); preserves surviving entries and their LRU order; shrinking evicts least-recently-used entries; growing does not evict; a failed resize preserves all state and never flushes the cache; the maxsize property reports the current capacity.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "milestone 2",
+        "Claim-A round 2 2026-09-22",
+        "FR-019"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R05"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "after resize, a surviving entry's absolute expiry differs from its pre-resize expiry (dropped or recomputed from resize time)"
+      ],
+      "id": "R05-clar",
+      "kind": "requirement",
+      "source_ref": "Claim-A candidate extensions, round 2 (2026-09-22) R05 clarification",
+      "stage": "created",
+      "status": "draft",
+      "text": "Preserving a surviving entry across resize preserves its absolute expiry (R07/R08 define expiry as entry state); a resize that drops expiries (immortal) or recomputes them from resize time does not satisfy R05. Expiry is not in the current milestone input, so this clause binds future expiry state (FR-019, A10).",
+      "uncertainty": "medium"
+    },
+    {
+      "boundary": [
+        "milestone 2",
+        "FR-020,FR-021"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [],
+      "falsification_tests": [
+        "an instrumented generator is consumed more than once or re-consumed after put returns",
+        "two successive get() calls return the same object or alias the stored value",
+        "mutating a returned nested list/dict changes the stored value"
+      ],
+      "id": "R06",
+      "kind": "requirement",
+      "source_ref": "milestone 2 requirement R06",
+      "stage": "created",
+      "status": "draft",
+      "text": "Tags may be passed as generators (any finite iterable) and must be consumed only once, with the cache storing only the materialized deduplicated tag set; returned values remain detached across repeated gets and puts, including nested lists/dicts (no aliasing with the stored value or other returned objects).",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "milestone 1",
+        "milestone 2",
+        "FR-013"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: baseline: PYTHONPATH=src:. python3 -m pytest tests/ -q -> 216 passed (upstream suite green before TaggedCache exists)",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "aeccefc9fad8781fc6f8ef662aee28425a2f27191706206b35075cff99376eac",
+          "source_id": "aeccefc9fad8781fc6f8ef662aee28425a2f27191706206b35075cff99376eac",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "any existing upstream test fails or is modified",
+        "existing cache classes change behavior",
+        "acceptance_public.py is modified"
+      ],
+      "id": "PRESERVE",
+      "kind": "requirement",
+      "source_ref": "milestone 1 + milestone 2 implementation constraints",
+      "stage": "created",
+      "status": "draft",
+      "text": "All existing cachetools APIs are preserved unchanged; TaggedCache is built on the existing cachetools.LRUCache for bounded storage; upstream tests remain unchanged and passing; acceptance_public.py is the public gate and must not be modified.",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

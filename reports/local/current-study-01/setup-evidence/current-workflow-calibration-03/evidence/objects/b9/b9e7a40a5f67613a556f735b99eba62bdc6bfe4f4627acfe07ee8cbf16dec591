@@ -1,0 +1,196 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: setup_plan.py JSON output confirms IMPL_PLAN=/testbed/specs/001-transactions/plan.md and BRANCH=001-transactions, the artifact where R01 is planned",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "9725b27109f9bebfddaf8e10f583eb52358999b60a1cb5708bf26935e0331d81",
+          "source_id": "9725b27109f9bebfddaf8e10f583eb52358999b60a1cb5708bf26935e0331d81",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: plan.md (3528 bytes) and contracts/contract.md (736 bytes) written; contract.md fixes signature add(a: int|float, b: int|float) -> a+b and import path",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "bd3d8929eebe4b5c6148afec7496a257d5558e0500f13c52ad4199dfc84c7592",
+          "source_id": "bd3d8929eebe4b5c6148afec7496a257d5558e0500f13c52ad4199dfc84c7592",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "plan.md or contracts/contract.md does not specify smoke.py at repo root with add(a,b) -> a+b"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R01",
+      "stage": "created",
+      "status": "draft",
+      "text": "Implementation plan specifies creating /testbed/smoke.py exposing add(a,b) returning a+b, importable via PYTHONPATH=src:.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: research.md R4 (float comparison decision) and quickstart.md scenario 2 (expected output '-9 0 3.75') written as separate files in the same verified write batch",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "bd3d8929eebe4b5c6148afec7496a257d5558e0500f13c52ad4199dfc84c7592",
+          "source_id": "bd3d8929eebe4b5c6148afec7496a257d5558e0500f13c52ad4199dfc84c7592",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "research.md lacks a float-comparison decision, or quickstart.md scenario 2 does not assert add(-7,-2)=-9, add(0,0)=0, add(1.5,2.25)=3.75"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R02",
+      "stage": "created",
+      "status": "draft",
+      "text": "Plan covers correct sums for negative integers, zero, and floats, including the float-comparison strategy for tests.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01",
+        "R02"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: pytest 9.1.1 successfully collected 12 tests from tests/test_utils.py with '-o addopts=', proving the planned invocation pattern works despite pytest.ini --cov flags",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "646a791347aec8b4fefd564eb69ddf1809a8b3fc20d5089a80879840a870e400",
+          "source_id": "646a791347aec8b4fefd564eb69ddf1809a8b3fc20d5089a80879840a870e400",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: ModuleNotFoundError for pytest_cov confirms why the -o addopts= override is required in the planned test command",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "f64f6d4e2a6caf09671ae1871747cb766721d654424b7c48f41ef704128c59e0",
+          "source_id": "f64f6d4e2a6caf09671ae1871747cb766721d654424b7c48f41ef704128c59e0",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "the planned command 'PYTHONPATH=src:. python3 -m pytest tests/test_smoke.py -o addopts=' fails to collect or run in this environment"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R03",
+      "stage": "created",
+      "status": "draft",
+      "text": "Plan fixes a runnable, passing pytest invocation for tests/test_smoke.py that works in this environment.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: git diff --stat -- tinydb tests produced no output (empty diff) at plan time",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "f64f6d4e2a6caf09671ae1871747cb766721d654424b7c48f41ef704128c59e0",
+          "source_id": "f64f6d4e2a6caf09671ae1871747cb766721d654424b7c48f41ef704128c59e0",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: post-design git status --porcelain shows only untracked .specify/ and specs/; no tracked file modified",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "d7ef34b5136de7a61b58f37f374e537d3526efad707937e1a7281e24c286858a",
+          "source_id": "d7ef34b5136de7a61b58f37f374e537d3526efad707937e1a7281e24c286858a",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "git diff or git status shows any change under tinydb/ or existing tests/*.py"
+      ],
+      "id": "R04",
+      "kind": "requirement",
+      "source_ref": "milestone constraint: Do not modify TinyDB",
+      "stage": "created",
+      "status": "draft",
+      "text": "The upstream tinydb package and its existing tests remain unmodified through planning.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: find shows exactly 7 concise files under specs/001-transactions (spec, checklist, plan, research, data-model, quickstart, contracts/contract); grep scan found no placeholders or NEEDS CLARIFICATION tokens",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "d7ef34b5136de7a61b58f37f374e537d3526efad707937e1a7281e24c286858a",
+          "source_id": "d7ef34b5136de7a61b58f37f374e537d3526efad707937e1a7281e24c286858a",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "any workflow artifact appears outside specs/001-transactions or a file is placeholder-only/bloated"
+      ],
+      "id": "R05",
+      "kind": "requirement",
+      "source_ref": "milestone constraint: Keep workflow artifacts concise",
+      "stage": "created",
+      "status": "draft",
+      "text": "Workflow artifacts remain concise and are confined to specs/001-transactions.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: plan-template copy and setup confirm the plan artifact exists; plan.md Technical Context records Project Type as single module with no service/CLI/deployment, and contract.md states no CLI/HTTP/service surface",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "9725b27109f9bebfddaf8e10f583eb52358999b60a1cb5708bf26935e0331d81",
+          "source_id": "9725b27109f9bebfddaf8e10f583eb52358999b60a1cb5708bf26935e0331d81",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "plan.md, contract.md, or quickstart.md specifies a service, CLI entrypoint, or deployment step"
+      ],
+      "id": "R06",
+      "kind": "requirement",
+      "source_ref": "milestone constraint: No service or deployment",
+      "stage": "created",
+      "status": "draft",
+      "text": "The plan introduces no service, CLI, or deployment surface.",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

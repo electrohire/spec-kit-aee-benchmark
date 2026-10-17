@@ -1,0 +1,62 @@
+{
+  "budget_debit": 9087,
+  "ended_at": "2026-10-17T18:25:12.152544+00:00",
+  "max_output": 4096,
+  "original_sha256": "a67e4712fdec7d309aa579c268f79c539eec1b00aaf1271a66f387bde27591b6",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 8945,
+  "preflight_seconds": 0.17100000008940697,
+  "removed_history_messages": 0,
+  "request_seconds": 7.6560000001918525,
+  "request_sha256": "eb915e2e3c9716ce89f52d3924bf0cd3727073f4b110b6baf1e21e826ac5408d",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "No extension hooks exist. Let me inspect the existing spec directory, templates, memory, and prior notes.\n\n{\"action\":\"shell\",\"command\":\"find /testbed/specs -type f | head -50 && echo --- && cat /testbed/.specify/feature.json && echo --- && ls /testbed/.specify/templates /testbed/.specify/memory /testbed/.specify/scripts && echo --- && cat /testbed/HANDOFF.md\"}",
+          "reasoning_sha256": "1e6b80c5ddabe81000dbd0c30852e2860c120b0a2a657ea45465d86efd86e807",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792261512,
+    "id": "chatcmpl-yFC5Nqr6rYNZwedVhnbrGx6SHSPFiAec",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 7587,
+      "predicted_ms": 6080.588,
+      "predicted_n": 142,
+      "predicted_per_second": 23.18854689710929,
+      "predicted_per_token_ms": 43.12473758865248,
+      "prompt_ms": 1523.032,
+      "prompt_n": 1358,
+      "prompt_per_second": 891.6424605655037,
+      "prompt_per_token_ms": 1.1215257731958763
+    },
+    "usage": {
+      "completion_tokens": 142,
+      "prompt_tokens": 8945,
+      "prompt_tokens_details": {
+        "cached_tokens": 7587
+      },
+      "total_tokens": 9087
+    }
+  },
+  "seconds": 7.6560000001918525,
+  "stage": 3,
+  "started_at": "2026-10-17T18:25:04.482723+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 142,
+    "prompt_tokens": 8945,
+    "prompt_tokens_details": {
+      "cached_tokens": 7587
+    },
+    "total_tokens": 9087
+  }
+}

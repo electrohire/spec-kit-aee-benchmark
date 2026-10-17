@@ -1,0 +1,187 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md written with FR-002/FR-003/FR-004 documenting R01 put/get/copying/tag-validation behavior",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "030305e01dba2c210e36ad34f067dc5bbb25c96ca54c303147f15afa894e651d",
+          "source_id": "030305e01dba2c210e36ad34f067dc5bbb25c96ca54c303147f15afa894e651d",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: checklists/requirements.md created marking FR-001..FR-013 testable and unambiguous",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "6b4b134c50167a0f82ad8c1433b8ff5f4c3512dca634876631b05a0cb86328c1",
+          "source_id": "6b4b134c50167a0f82ad8c1433b8ff5f4c3512dca634876631b05a0cb86328c1",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "put then get returns a mutated copy instead of the stored value",
+        "get on a missing key returns None instead of raising KeyError",
+        "tags=['x','x'] leaves two memberships instead of one",
+        "tags='x' or tags=[1] mutates state before raising ValueError"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R01",
+      "stage": "created",
+      "status": "draft",
+      "text": "put(key,value,tags=()) inserts/replaces; get returns detached deep copy or KeyError; values copied on input; tags a finite iterable of strings, deduplicated; bare string and non-string entries rejected with ValueError before any state change.",
+      "uncertainty": "high"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md written with FR-005..FR-009 documenting R02 invalidate/recency/eviction-hygiene/len behavior",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "030305e01dba2c210e36ad34f067dc5bbb25c96ca54c303147f15afa894e651d",
+          "source_id": "030305e01dba2c210e36ad34f067dc5bbb25c96ca54c303147f15afa894e651d",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: grep confirmed 0 NEEDS CLARIFICATION markers and FR-010 present in spec.md (spec documents R02 plus extension)",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "1795d91ce56664b1ac7904fe658c4134b74285347bf468c6da895159eadb3f6a",
+          "source_id": "1795d91ce56664b1ac7904fe658c4134b74285347bf468c6da895159eadb3f6a",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "invalidate returns wrong count or removes untagged entries",
+        "re-put with new tags still matches the old tag",
+        "evicted key re-put carries a stale tag",
+        "get on a hit does not change the eviction victim",
+        "len exceeds maxsize"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R02",
+      "stage": "created",
+      "status": "draft",
+      "text": "invalidate(tag) removes exactly live entries carrying tag and returns count; replace removes old tag memberships; LRU eviction leaves no stale memberships; get refreshes recency; len counts live entries.",
+      "uncertainty": "high"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R02"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md written with FR-010 and Assumption A8 recording the extension as active (variant label traceability-only, does not override refresh)",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "030305e01dba2c210e36ad34f067dc5bbb25c96ca54c303147f15afa894e651d",
+          "source_id": "030305e01dba2c210e36ad34f067dc5bbb25c96ca54c303147f15afa894e651d",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: grep confirmed FR-010 (recency refresh on overwrite) is present in spec.md",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "1795d91ce56664b1ac7904fe658c4134b74285347bf468c6da895159eadb3f6a",
+          "source_id": "1795d91ce56664b1ac7904fe658c4134b74285347bf468c6da895159eadb3f6a",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "after replacing the LRU key it is evicted next instead of surviving (recency not refreshed on overwrite)"
+      ],
+      "id": "R02E",
+      "kind": "requirement",
+      "source_ref": "Claim-A candidate extension (variant put_no_recency_refresh, 2026-09-21)",
+      "stage": "created",
+      "status": "draft",
+      "text": "R02 extension (Claim-A, variant put_no_recency_refresh, 2026-09-21): overwriting an existing key via put refreshes its LRU recency, making it the most-recently-used entry.",
+      "uncertainty": "high"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md written with FR-001, FR-011, FR-012 documenting R03 maxsize validation, atomic replacement, and one-slot-per-value",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "030305e01dba2c210e36ad34f067dc5bbb25c96ca54c303147f15afa894e651d",
+          "source_id": "030305e01dba2c210e36ad34f067dc5bbb25c96ca54c303147f15afa894e651d",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "TaggedCache(0)/(-1)/(True)/(2.0) does not raise ValueError",
+        "a failed put with bad tags changes the stored value/tags/recency",
+        "putting maxsize large objects plus one fails to evict the LRU entry"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R03",
+      "stage": "created",
+      "status": "draft",
+      "text": "maxsize must be a positive integer excluding bool (ValueError otherwise); invalid replacement input leaves old value/tags/recency unchanged; each value costs one capacity slot regardless of object size.",
+      "uncertainty": "high"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md written with FR-013 and Assumption A6 documenting API preservation and LRUCache-based additive module",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "030305e01dba2c210e36ad34f067dc5bbb25c96ca54c303147f15afa894e651d",
+          "source_id": "030305e01dba2c210e36ad34f067dc5bbb25c96ca54c303147f15afa894e651d",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: acceptance_public.py inspected (unchanged) showing the public gate: basic put/get/invalidate and replacement tag-membership tests",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "1f350068aa07cb8c7cc5a41aa713b421b90908f497acbe39dbd23a2e0c166ca5",
+          "source_id": "1f350068aa07cb8c7cc5a41aa713b421b90908f497acbe39dbd23a2e0c166ca5",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "any existing public API behavior changes",
+        "an upstream test is edited or fails",
+        "acceptance_public.py is modified"
+      ],
+      "id": "PRES",
+      "kind": "requirement",
+      "source_ref": "milestone preservation constraint",
+      "stage": "created",
+      "status": "draft",
+      "text": "Preserve all existing cachetools APIs; build TaggedCache on the existing cachetools.LRUCache for bounded storage; upstream tests remain unchanged and passing; acceptance_public.py is the public gate and must not be modified.",
+      "uncertainty": "high"
+    }
+  ],
+  "schema_version": "1.0"
+}

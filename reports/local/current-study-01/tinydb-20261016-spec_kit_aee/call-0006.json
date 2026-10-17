@@ -1,0 +1,62 @@
+{
+  "budget_debit": 7210,
+  "ended_at": "2026-10-17T17:19:49.289478+00:00",
+  "max_output": 4096,
+  "original_sha256": "ec07cd5d406cf0664c781bd5bb4208280e08fdb2d0abf38dd4bd6e0f934d5a45",
+  "phase": "constitution",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 7097,
+  "preflight_seconds": 0.0779999999795109,
+  "removed_history_messages": 0,
+  "request_seconds": 6.280999999959022,
+  "request_sha256": "8c17a72474bb184b1b61c87a470a5948617d81164a10850e508ec8c6a9696871",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "The file was written but my grep pattern was invalid. Let me verify no bracketed placeholder tokens remain and confirm the final content.\n\n{\"action\":\"shell\",\"command\":\"cd /testbed && grep -nF '[' .specify/memory/constitution.md | grep -vF 'Sync Impact' || echo NO_PLACEHOLDER_TOKENS; echo ---; tail -3 .specify/memory/constitution.md\"}",
+          "reasoning_sha256": "0e7162dcbf2d15bb0c6e3e4385795be00285b0c374f9eb912601b83ad1dd6695",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792257589,
+    "id": "chatcmpl-qpVAqpNvGyJeYNwQNgPcjRyRKAFruFQt",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 5872,
+      "predicted_ms": 4798.034,
+      "predicted_n": 113,
+      "predicted_per_second": 23.342894193746854,
+      "predicted_per_token_ms": 42.83958928571428,
+      "prompt_ms": 1389.623,
+      "prompt_n": 1225,
+      "prompt_per_second": 881.5340563591707,
+      "prompt_per_token_ms": 1.1343861224489797
+    },
+    "usage": {
+      "completion_tokens": 113,
+      "prompt_tokens": 7097,
+      "prompt_tokens_details": {
+        "cached_tokens": 5872
+      },
+      "total_tokens": 7210
+    }
+  },
+  "seconds": 6.280999999959022,
+  "stage": 1,
+  "started_at": "2026-10-17T17:19:43.000161+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 113,
+    "prompt_tokens": 7097,
+    "prompt_tokens_details": {
+      "cached_tokens": 5872
+    },
+    "total_tokens": 7210
+  }
+}

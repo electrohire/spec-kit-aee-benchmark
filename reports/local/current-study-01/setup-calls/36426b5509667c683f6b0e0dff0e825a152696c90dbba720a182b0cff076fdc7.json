@@ -1,0 +1,63 @@
+{
+  "budget_debit": 7386,
+  "ended_at": "2026-10-16T22:15:38.752345+00:00",
+  "max_output": 4096,
+  "original_sha256": "36426b5509667c683f6b0e0dff0e825a152696c90dbba720a182b0cff076fdc7",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 5906,
+  "preflight_seconds": 0.1410000000614673,
+  "removed_history_messages": 0,
+  "request_seconds": 15.327999999979511,
+  "request_sha256": "33b7c55eb85d3c5ce496e7529135f49ab370a3e661281f26713c0c292b2c9f96",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cat <<'EOF' > smoke.py\\n\\\"\\\"\\\"\\\"Smoke utility module.\\n\\nProvides a simple add function that supports integers and floats.\\n\\\"\\\"\\\"\\n\\ndef add(a, b):\\n    \\\"\\\"\\\"Return the sum of a and b.\\n\\n    Parameters\\n    ----------\\n    a : int | float\\n        First operand.\\n    b : int | float\\n        Second operand.\\n\\n    Returns\\n    -------\\n    int | float\\n        The arithmetic sum of a and b.\\n\\n    Notes\\n    -----\\n    The function accepts negative numbers, zero, and floating point numbers.\\n    \\\"\\\"\\\"\\n    return a + b\\nEOF\"}",
+          "reasoning_content_sha256": "66b9e611544fbc7115059a89aa02cba7b7d9846d20689db13aaebf2f140f4718",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792188938,
+    "id": "chatcmpl-5mtIbZ7HA18xasZcyQWNxwIDCmtxXxsL",
+    "model": "gpt-oss-20b-Q5_K_M",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 13763.613,
+      "predicted_n": 1480,
+      "predicted_per_second": 107.45724977881898,
+      "predicted_per_token_ms": 9.306026369168357,
+      "prompt_ms": 1452.329,
+      "prompt_n": 5906,
+      "prompt_per_second": 4066.5716927776007,
+      "prompt_per_token_ms": 0.24590738232306128
+    },
+    "usage": {
+      "completion_tokens": 1480,
+      "prompt_tokens": 5906,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 7386
+    }
+  },
+  "seconds": 15.327999999979511,
+  "source": "current-workflow-calibration-01/calls/call-0004.json",
+  "stage": 1,
+  "started_at": "2026-10-16T22:15:23.423045+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1480,
+    "prompt_tokens": 5906,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 7386
+  }
+}

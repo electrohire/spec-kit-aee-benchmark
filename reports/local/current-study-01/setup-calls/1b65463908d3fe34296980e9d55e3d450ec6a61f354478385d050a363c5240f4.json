@@ -1,0 +1,63 @@
+{
+  "budget_debit": 24640,
+  "ended_at": "2026-10-16T23:39:34.474262+00:00",
+  "max_output": 4096,
+  "original_sha256": "1b65463908d3fe34296980e9d55e3d450ec6a61f354478385d050a363c5240f4",
+  "phase": "tasks",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 24481,
+  "preflight_seconds": 1.2649999998975545,
+  "removed_history_messages": 32,
+  "request_seconds": 24.765000000130385,
+  "request_sha256": "6bf08afa11f04ea30aa5d1c6f564d6e0ae6a2f8f24d87dcdb6eb1483936df8c6",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && python3 .specify/scripts/python/setup_tasks.py --json 2>/dev/null | python3 -c \\\"import json,sys; d=json.load(sys.stdin); print('FEATURE_DIR:',d.get('FEATURE_DIR')); print('TEMPLATE:',d.get('TASKS_TEMPLATE')); print('AVAILABLE_DOCS:',d.get('AVAILABLE_DOCS')); print('HAS_CONTENT:', 'TASKS_TEMPLATE_CONTENT' in d)\\\"\"}",
+          "reasoning_content_sha256": "7bb3f46f4e001fd1ab050787099253ee3dd9623e8889fac5ffee0ca078d5881b",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792193974,
+    "id": "chatcmpl-EFq0fWwAOfphCbQmREFLi7zkSvjn59HM",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 3575,
+      "predicted_ms": 7287.823,
+      "predicted_n": 159,
+      "predicted_per_second": 21.6799996377519,
+      "predicted_per_token_ms": 46.12546202531646,
+      "prompt_ms": 16866.948,
+      "prompt_n": 20906,
+      "prompt_per_second": 1239.4654919194627,
+      "prompt_per_token_ms": 0.8067993877355784
+    },
+    "usage": {
+      "completion_tokens": 159,
+      "prompt_tokens": 24481,
+      "prompt_tokens_details": {
+        "cached_tokens": 3575
+      },
+      "total_tokens": 24640
+    }
+  },
+  "seconds": 24.765000000130385,
+  "source": "current-workflow-calibration-04/calls/call-0030.json",
+  "stage": 1,
+  "started_at": "2026-10-16T23:39:09.697416+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 159,
+    "prompt_tokens": 24481,
+    "prompt_tokens_details": {
+      "cached_tokens": 3575
+    },
+    "total_tokens": 24640
+  }
+}

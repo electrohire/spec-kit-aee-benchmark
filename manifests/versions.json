@@ -1,1 +1,37 @@
-{"aee_engine":"1.5.0","aee_engine_commit":"c0d80947989eb874d29521816004b5e2487cdd5c","aee_extension":"1.4.0","archives":{"aee":{"sha256":"14e02e74f65acd1d5f9360694315f7201aa753c82246f508426d9d39ecfd5464","url":"https://github.com/electrohire/spec-kit-aee/archive/refs/tags/v1.4.0.zip"},"evaluator":{"sha256":"07ac2aa1c7b6666327051fa1456ceb74f99e7c471da5fbb7765f964437298785","url":"https://github.com/electrohire/spec-kit-evaluator/archive/refs/tags/v1.1.0.zip"}},"evaluator_extension":"1.1.0","extension_commits":{"aee":"d7d7ce46721a5d5e776c62d020e40cec60c7c94c","evaluator":"8c7e6bb6830a73a81b051fed1a5d984333d8cd80"},"mini_research_commit":"04d809ceab9df28f9adaed044884180159172930","mini_swe_agent":"2.4.6","model":null,"pin_notes":{"aee_engine":"Engine 1.5.0, cut from engine main c0d80947989eb874d29521816004b5e2487cdd5c (the Spec 004 joint-phase merge; that tree reports version 1.5.0, verified locally against the commit before this bump). Pin bumped 2026-10-12 together with the fixture stage migration (docs/protocol.md, 'Engine 1.5.0 fixture migration, 2026-10-12'): claim bundles the runner strict-loads now carry an explicit stage. Extension and evaluator pins are unchanged; their bumps ride their own releases.","aee_extension":"Vendored from spec-kit-aee release v1.4.0 (tag commit d7d7ce4; extension version 1.4.0, 10 commands, engine floor >=1.5.0,<2). The 1.4.0 manifest declares the spec-kit-evaluator extension a required companion and the runner's assess enforces it (exit 2 when .specify/extensions/evaluator/ is absent from the project), so the benchmark vendors the pair together and the workflow installs the pair into assessment sandboxes. The vendored claims template still carries no stage field; the 1.4.0 runner loads pre-stage-vocabulary bundles through the engine's --lenient path, which defaults stage to created on the record (assessment metadata carries loading_mode and stage_defaults).","archives":"Archive sha256 values are the digests of the release tag archives downloaded from GitHub on 2026-10-12 for the extension re-vendor, computed locally from the downloaded bytes. The binding pins are the tag commits above plus the vendored tree digests in vendored_sha256, enforced by scripts/check_pins.py in CI.","evaluator_extension":"Vendored from spec-kit-evaluator release v1.1.0 (tag commit 8c7e6bb; extension version 1.1.0; FR-6 composition contract, the FR-7 reference evaluator, and Spec 004 P5 lane-paired composition in all three composers). Required companion of the vendored AEE extension 1.4.0: the pair is one system."},"price_snapshot":null,"python":"3.12.6","specify":"1.0.0","swebench":"5.0.2","swebench_commit":"02e7a74ffd0b707aab73d203fe87bdc7c76afc8e","tasks_commit":"3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d","vendored_sha256":{"aee":"b71c5a309950aa499380a12cf9a9e40274312b466cd9fc8c5dfdc23b666254db","evaluator":"cbcff103dfc4cfa833ed6e11dc1579c86ef61d305b16a57d5e41a3bfb68d4139"}}
+{
+  "aee_engine": "1.5.3",
+  "aee_engine_commit": "3e98ae59fbeaee463f39e4089bb27e111c97d3b1",
+  "aee_extension": "1.5.2",
+  "archives": {
+    "aee": {
+      "url": "https://github.com/electrohire/spec-kit-aee/archive/refs/tags/v1.5.2.zip",
+      "sha256": "d64db9145754cf7ebb623e4630e5e09f37f59da755456160c38379927e6e9515"
+    },
+    "evaluator": {
+      "url": "https://github.com/electrohire/spec-kit-evaluator/archive/refs/tags/v1.1.2.zip",
+      "sha256": "f2803c5da687bb4f269b31023983dbe827a7dd36d1cff626afec96b7aed9ff95"
+    }
+  },
+  "evaluator_extension": "1.1.2",
+  "extension_commits": {
+    "aee": "0f3779846737eb5f54143e4149e3fad74f1607eb",
+    "evaluator": "40413aef4951f4eea947ed2e2291a7b123a6bac3"
+  },
+  "mini_research_commit": "04d809ceab9df28f9adaed044884180159172930",
+  "mini_swe_agent": "2.4.6",
+  "model": null,
+  "pin_notes": {
+    "current_refresh": "2026-10-16: Specify1.2.1 init and exact public AEE1.5.2/evaluator1.1.2 installed through Specify CLI. Engine1.5.3 pinned from public PyPI. Historical reports and freeze manifests were not edited. Current native skills copied to new treatment inputs; workflows remain explicitly described as host-adapted.",
+    "digest": "SHA256 sorted POSIX relative paths + NUL + fileSHA256 + LF, excluding controller-local artifacts as scripts/check_pins.py specifies."
+  },
+  "price_snapshot": null,
+  "python": "3.12.6",
+  "specify": "1.2.1",
+  "swebench": "5.0.2",
+  "swebench_commit": "02e7a74ffd0b707aab73d203fe87bdc7c76afc8e",
+  "tasks_commit": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d",
+  "vendored_sha256": {
+    "aee": "a53865767f4bd2f67c103242e00f1945549b7bf3c0f9ca2dcd1e5cec139082a5",
+    "evaluator": "9acb5b0a6353edc35ffb877fb792763af296755ad74f7a3794243f2c40692283"
+  }
+}

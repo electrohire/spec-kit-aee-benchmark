@@ -58,6 +58,8 @@ def parser():
     s = sub.add_parser("aggregate"); s.add_argument("store", type=Path); s.add_argument("output", type=Path)
     s.add_argument("--synthetic", action="store_true")
     s = sub.add_parser("article-table"); s.add_argument("report", type=Path)
+    s = sub.add_parser("lifecycle-report")
+    s.add_argument("evidence", type=Path); s.add_argument("output", type=Path)
     return p
 
 
@@ -92,6 +94,20 @@ def main(argv=None):
             from .reporting import article_table
             print(article_table(read_json(args.report)))
             return 0
+        elif args.command == "lifecycle-report":
+            from .lifecycle import summarize, markdown
+            if args.output.suffix.lower() != ".json":
+                raise ValueError("lifecycle output must have a .json suffix")
+            markdown_path = args.output.with_suffix(".md")
+            if args.output.exists() or markdown_path.exists():
+                raise ValueError("lifecycle output already exists")
+            try:
+                result = summarize(read_json(args.evidence), args.evidence.parent)
+            except (KeyError, TypeError) as exc:
+                raise ValueError("invalid lifecycle evidence structure") from exc
+            write_json(args.output, result, exclusive=True)
+            with markdown_path.open("x", encoding="utf-8", newline="\n") as handle:
+                handle.write(markdown(result))
         print(json.dumps(result, indent=2, allow_nan=False))
         return 0
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as e:

@@ -1,4 +1,40 @@
 # Reproduction
+
+## Current free local study
+
+The [current protocol](../benchmarks/current_local/PROTOCOL.md) is separate from
+the historical SWE-bench pilot below. Its host-specific model ID, weights path,
+loopback service and immutable Docker image are recorded by `current_local.py`.
+Do not substitute another model and reuse an existing freeze or claim the Ubuntu
+offline CI executed GPU inference. No provider credentials or paid endpoint is used.
+
+Using new output directories, run `scripts/current_local.py grade-calibration`,
+`context-calibration`, and `latency`, then `workflow-calibration` with
+`--latency LATENCY/calibration.json`. Run `scripts/audit_current_image.py` to
+record the image isolation check. All seven workflow phases, four real AEE/
+Evaluator invocations and independently checked injected-regression repair must
+pass before scoring. Keep failed preparations and every native call.
+
+`scripts/complete_current_study.py --help` lists the explicit workflow, grade,
+context, latency, image-audit, preflight, raw, report and status paths. It waits
+for that workflow, stops on failure, copies successful evidence, replays the four
+actual AEE checkpoints under the final dependencies, and runs the frozen twelve
+trajectories/thirty-six dependent checkpoints. Supply every earlier readiness and
+failed/successful calibration folder with repeated `--setup` arguments. It never
+retries a failed campaign, resumes incomplete trajectories, merges or publishes.
+The status and per-command logs remain under the chosen status directory.
+
+After complete export, run `scripts/readme_results.py` to regenerate the prominent
+README table from measured JSON, review the paired outcomes and unknowns, and run
+the offline checks before committing. Public exports omit raw prompts/native
+reasoning while retaining hashes, so exact public prompt replay is unavailable.
+Raw artifacts stay local; independent grade sources and bound snapshots are
+exported. A failed preflight is not a scored treatment result.
+
+See [current tooling](current-tooling.md) for installed versions and immutable
+archive reproduction, and the [lifecycle protocol](lifecycle-protocol.md) for
+hallucination/cost reporting. Historical freezes retain their original versions.
+
 ## Offline checks (PowerShell or Linux)
 Install uv 0.11.32 and Python 3.12.6. From repository:
 ```

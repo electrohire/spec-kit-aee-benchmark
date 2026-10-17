@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28650,
+  "ended_at": "2026-10-17T14:22:38.562051+00:00",
+  "max_output": 4096,
+  "original_sha256": "bf28b8e0ea74be028541b7994a75238ada5f3c18b124f11dc92b195f362477cd",
+  "phase": "plan",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 28435,
+  "preflight_seconds": 1.047000000020489,
+  "removed_history_messages": 12,
+  "request_seconds": 32.139999999897555,
+  "request_sha256": "7c19effaca8c89f930ac5f77ef1ba25f41d369a99fca4447b0e36c710d3bb0bd",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && ls specs/001-transactions/ specs/001-transactions/contracts/ && echo --- && grep -nE '\\\\[FEATURE\\\\]|\\\\[DATE\\\\]|\\\\[###-feature|NEEDS CLARIFICATION|\\\\[REMOVE IF UNUSED\\\\]|Option [0-9]' specs/001-transactions/plan.md || echo NO_PLACEHOLDERS_IN_PLAN; echo ---; grep -c 'Decision:' specs/001-transactions/research.md; grep -n 'Gate result' specs/001-transactions/plan.md; echo ---; PYTHONPATH=src:. python -m pytest tests/ -q 2>&1 | tail -1\"}",
+          "reasoning_sha256": "8528a3afa560d732e454a452ae08d8eee14bac2e82460e4ae0ef60361e0629a4",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792246958,
+    "id": "chatcmpl-rqtLB5rmZTasPTbd0VZK6P1J84ETeiT9",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 2743,
+      "predicted_ms": 10135.899,
+      "predicted_n": 215,
+      "predicted_per_second": 21.113075416398683,
+      "predicted_per_token_ms": 47.364014018691584,
+      "prompt_ms": 21044.621,
+      "prompt_n": 25692,
+      "prompt_per_second": 1220.834530590976,
+      "prompt_per_token_ms": 0.8191118246925112
+    },
+    "usage": {
+      "completion_tokens": 215,
+      "prompt_tokens": 28435,
+      "prompt_tokens_details": {
+        "cached_tokens": 2743
+      },
+      "total_tokens": 28650
+    }
+  },
+  "seconds": 32.139999999897555,
+  "stage": 1,
+  "started_at": "2026-10-17T14:22:06.422917+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 215,
+    "prompt_tokens": 28435,
+    "prompt_tokens_details": {
+      "cached_tokens": 2743
+    },
+    "total_tokens": 28650
+  }
+}

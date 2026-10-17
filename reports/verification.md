@@ -1,5 +1,37 @@
 # Requirement-to-evidence matrix
 
+## October controller refresh and lifecycle reporting
+
+- [Current dependency checks](../docs/current-tooling.md): latest public engine,
+  Spec Kit extensions and CLI installed; 106 dependencies compatible.
+- [Lifecycle contract](../docs/lifecycle-protocol.md) and
+  [adversarial importer tests](../tests/test_lifecycle.py): hashed independent
+  grades, exact expected-case discovery, false completion, unsupported citations,
+  detector denominators, failed/unknown costs, regressions and matched trajectories.
+- [Generated README table](../scripts/readme_results.py) checked against historical
+  measured summaries in CI. Synthetic tests are not comparative benchmark results.
+- [Free readiness probe](feasibility/local-20261016/result.json): one call,
+  102 measured input+output tokens, expected identity, $0 API spend. This is not
+  complete-workflow calibration or long-term savings evidence.
+- [Latest offline run](latest-offline.json) records tests plus actual AEE/evaluator
+  composition at specify, plan, tasks and implementation. Their claim judgments
+  remain distinct from independent test grades. Initial deliberately unsupported
+  composite controller claim received `iterate`; its atomic draft replacements
+  retain uncertainty rather than fabricating evidence of efficacy.
+- [Focused actual AEE audit](aee-validation/current-20261017-04/summary.json):
+  51 tests passed; seven of seven narrow machine observations above threshold,
+  zero evidence-verification findings, and one actual AEE result composed by
+  Evaluator. Human acceptance remains explicitly absent; overall `iterate` is
+  not converted to a fabricated pass.
+
+The [current-version attempt](local/current-study-01/analysis.md) completed all 36
+checkpoints; 12final hidden test inventories completed and 24 structured snapshots
+failed collection and remain ungraded. Actual AEE coverage was 6/48 planned
+checkpoints, all specification. No completed-workflow efficacy benefit follows.
+Historical hallucination rates were not annotated and remain unmeasured. The user explicitly
+requested Ubuntu-only benchmark CI; no cross-platform coverage is claimed here.
+
+
 ## GPU continuation evidence
 
 - [Measurement index and ledger](local/README.md): 1,001 benchmark-model calls,

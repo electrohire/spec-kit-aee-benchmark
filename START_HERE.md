@@ -1,4 +1,36 @@
-# Resume the ElectroHire benchmark
+# Resume the benchmark
+
+## Current continuation — 2026-10-17
+
+Branch `feat/longitudinal-hallucination-economics`, PR18. Engine 1.5.3,
+Specify 1.2.1, extension 1.5.2, evaluator 1.1.2; compatible 106-package lock.
+Current-study-01 completed 12 trajectories / 36 checkpoints, independent grading
+attempts and export; no inference process should be restarted. Read
+reports/local/current-study-01/analysis.md and post-run-audit.json first.
+Baseline accepted 9/12 hidden checkpoints and delivered 2/4 final projects.
+Structured arms accepted 0 and delivered 0; all 24 are UNGRADED collection errors
+(22 missing modules, 2 import-time NameErrors), not complete failing test suites.
+Neither structured workflow completed; AEE reached 6/48 planned checkpoints,
+all specification. All 52 public repair records made 0 model calls after budgets
+expired. This is not proof of completed-workflow efficacy or financial savings.
+1,131 scored calls retain one HTTP500/unknown usage; 174 setup calls retain 3 unknowns.
+Raw requests/native reasoning stay local; public hashes preserve provenance.
+
+Calibration04 passed 83 calls / all 7 phases / 4 actual AEE checks/injected repair.
+Four-checkpoint dependency replay matched with anchored ledger 1..4. 362 offline tests and the focused 51-test/7-observation AEE audit passed.
+Final exact-head Ubuntu CI must pass on PR18 before it is marked ready. CI stays Ubuntu-only. No paid inference, PR merge, release,
+email or article publication authorized. Finish review/README/validation,
+commit/push results and mark PR18 ready only when complete and green.
+
+After ALL benchmarking/evidence is complete, the user authorized cross-linked
+feature request issues in engine/AEE extension/evaluator for scoped preflight,
+fresh trusted execution evidence, enforceable requirement/test links and
+status-aware context handoff. Audit existing functionality and issues first;
+create requests, not implementations. Detailed current state/requirements:
+C:/Users/trist/Development/ElectroHire/electrohire-aee-release/benchmark-work-checkpoint.json.
+
+The September sections below are historical; do not duplicate older campaigns
+or relabel their freezes as current results. Preserve all earlier failures.
 
 ## Active expanded comparison — 2026-09-17
 

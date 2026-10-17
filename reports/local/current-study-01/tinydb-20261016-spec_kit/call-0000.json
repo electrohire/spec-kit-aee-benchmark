@@ -1,0 +1,62 @@
+{
+  "budget_debit": 4019,
+  "ended_at": "2026-10-17T08:04:48.241307+00:00",
+  "max_output": 4096,
+  "original_sha256": "da1f53de192b017a4f42c169bc0ce1e1a08c78d3a48a74aab45f6c1528811bcd",
+  "phase": "constitution",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 3514,
+  "preflight_seconds": 0.13999999989755452,
+  "removed_history_messages": 0,
+  "request_seconds": 38.92200000002049,
+  "request_sha256": "fe496d2942aad63e851ab552302f0ea1dbdc449d652382d8c39119051d40e331",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "<tool_call>\n{\"action\":\"shell\",\"command\":\"ls -la /testbed; echo ---; ls -la /testbed/.specify 2>/dev/null; echo ---; cat /testbed/.specify/extensions.yml 2>/dev/null || echo NO_EXTENSIONS_YML; echo ---; ls /testbed/.specify/scripts/python/ 2>/dev/null; echo ---; ls /testbed/.specify/memory/ 2>/dev/null || echo NO_MEMORY_DIR\"}\n</parameter>\n</parameter>\n</user>\n",
+          "reasoning_sha256": "9dd06c628c1310f3d3a6c9547dcf2795a07d47062f1aaf7e2d73b23c3a3281f4",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792224288,
+    "id": "chatcmpl-NuRtJO3ZsdjL93gf5SN8T2guv7DFbjEC",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 21833.749,
+      "predicted_n": 505,
+      "predicted_per_second": 23.08352999752814,
+      "predicted_per_token_ms": 43.320930555555556,
+      "prompt_ms": 4345.377,
+      "prompt_n": 3514,
+      "prompt_per_second": 808.6755188330034,
+      "prompt_per_token_ms": 1.2365899260102449
+    },
+    "usage": {
+      "completion_tokens": 505,
+      "prompt_tokens": 3514,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 4019
+    }
+  },
+  "seconds": 38.92200000002049,
+  "stage": 1,
+  "started_at": "2026-10-17T08:04:09.312382+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 505,
+    "prompt_tokens": 3514,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 4019
+  }
+}

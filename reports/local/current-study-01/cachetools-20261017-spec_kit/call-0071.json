@@ -1,0 +1,62 @@
+{
+  "budget_debit": 21472,
+  "ended_at": "2026-10-17T15:11:46.342594+00:00",
+  "max_output": 4096,
+  "original_sha256": "2e5923dc3951b6c23b3e582786257f43cc3604f6fa4acc3db2648824e3029081",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 20361,
+  "preflight_seconds": 0.125,
+  "removed_history_messages": 0,
+  "request_seconds": 54.42100000008941,
+  "request_sha256": "f76c89e8f57750cc034918333d41316b7663e863af5d0f82c17d73f8f40bb661",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"ls /testbed/HANDOFF.md /testbed/specs/001-transactions/HANDOFF.md 2>&1; git -C /testbed status --short | head; git -C /testbed log --oneline -5 2>&1 | head -6; ls /testbed/src/cachetools/tagged.py 2>&1\"}",
+          "reasoning_sha256": "e1e9454afcd821dc2f45ec6c4a61bc93ecb7de3a385189a78625975b9773c0dc",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792249906,
+    "id": "chatcmpl-2dR4MDE1ADko8oMgLfn1Ns4K8RGcH3lX",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 18852,
+      "predicted_ms": 52476.647,
+      "predicted_n": 1111,
+      "predicted_per_second": 21.152266073707036,
+      "predicted_per_token_ms": 47.27625855855855,
+      "prompt_ms": 1821.736,
+      "prompt_n": 1509,
+      "prompt_per_second": 828.330778993224,
+      "prompt_per_token_ms": 1.2072471835652752
+    },
+    "usage": {
+      "completion_tokens": 1111,
+      "prompt_tokens": 20361,
+      "prompt_tokens_details": {
+        "cached_tokens": 18852
+      },
+      "total_tokens": 21472
+    }
+  },
+  "seconds": 54.42100000008941,
+  "stage": 3,
+  "started_at": "2026-10-17T15:10:51.920647+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1111,
+    "prompt_tokens": 20361,
+    "prompt_tokens_details": {
+      "cached_tokens": 18852
+    },
+    "total_tokens": 21472
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "budget_debit": 28908,
+  "ended_at": "2026-10-17T00:09:59.650937+00:00",
+  "max_output": 4096,
+  "original_sha256": "43027f8c394af37a9fce1c5ffd6d784e02d9b9af5befd1d77db9931c48dea865",
+  "phase": "converge",
+  "preflight_http_requests": 16,
+  "preflight_input_tokens": 27708,
+  "preflight_seconds": 1.421000000089407,
+  "removed_history_messages": 84,
+  "request_seconds": 61.42200000002049,
+  "request_sha256": "aa472f53426a7f87b420b061faeede97d7dfc2f64abcc9b3b0aeea770e6aa8cf",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && echo '=== EV7-full: bare existing runner target suite (FR-006) ===' && PYTHONPATH=src:. python3 -m pytest tests/test_smoke.py 2>&1 | head -8; echo \\\"EV7-EXIT:${PIPESTATUS[0]}\\\"; echo '=== EV8-full: bare existing runner full suite (SC-002) ===' && PYTHONPATH=src:. python3 -m pytest 2>&1 | head -8; echo \\\"EV8-EXIT:${PIPESTATUS[0]}\\\"; echo '=== EV12: pytest-cov present? ===' && (python3 -c \\\"import pytest_cov\\\" 2>/dev/null && echo 'pytest_cov PRESENT' || echo 'pytest_cov ABSENT')\"}",
+          "reasoning_content_sha256": "5c1eeb2068da11b432671d76d0182e25794b05bb80087f4e3556fc5d8f34e414",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792195799,
+    "id": "chatcmpl-mABoqDbEPBf7J1vcYgug599vOuiQioTJ",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 27124,
+      "predicted_ms": 60049.049,
+      "predicted_n": 1200,
+      "predicted_per_second": 19.967010634922794,
+      "predicted_per_token_ms": 50.08260967472894,
+      "prompt_ms": 1259.266,
+      "prompt_n": 584,
+      "prompt_per_second": 463.76222339045125,
+      "prompt_per_token_ms": 2.1562773972602742
+    },
+    "usage": {
+      "completion_tokens": 1200,
+      "prompt_tokens": 27708,
+      "prompt_tokens_details": {
+        "cached_tokens": 27124
+      },
+      "total_tokens": 28908
+    }
+  },
+  "seconds": 61.42200000002049,
+  "source": "current-workflow-calibration-04/calls/call-0064.json",
+  "stage": 1,
+  "started_at": "2026-10-17T00:08:58.223505+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1200,
+    "prompt_tokens": 27708,
+    "prompt_tokens_details": {
+      "cached_tokens": 27124
+    },
+    "total_tokens": 28908
+  }
+}

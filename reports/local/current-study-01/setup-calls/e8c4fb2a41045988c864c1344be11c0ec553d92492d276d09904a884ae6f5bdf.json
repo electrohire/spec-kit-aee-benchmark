@@ -1,0 +1,63 @@
+{
+  "budget_debit": 29057,
+  "ended_at": "2026-10-16T22:57:48.988008+00:00",
+  "max_output": 4096,
+  "original_sha256": "e8c4fb2a41045988c864c1344be11c0ec553d92492d276d09904a884ae6f5bdf",
+  "phase": "tasks",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 27914,
+  "preflight_seconds": 1.625,
+  "removed_history_messages": 32,
+  "request_seconds": 62.125,
+  "request_sha256": "012129b619e900d8802532260d4d307d8c82a81172b30b68d816ceb2263a47cb",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && echo '=== T001: verify test runner ===' && PYTHONPATH=src:. python3 -m pytest tests/test_utils.py -o addopts= -q 2>&1 | tail -2 && echo '=== T002: create smoke.py (docstring only) ===' && printf '\"\"\"Smoke test utility for arithmetic.\"\"\"\\n' > smoke.py && PYTHONPATH=src:. python3 -c \"import smoke\" && echo 'T002 checkpoint: import ok'\"}",
+          "reasoning_content_sha256": "79383ee1fa458c5bd21290d951afd2b6d793f5aba3ee2fe1ef3f7feac05d42ac",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792191468,
+    "id": "chatcmpl-DlK4F8bkwI6FtCdHuDk8Kfy2CcBS6xDX",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 27002,
+      "predicted_ms": 60296.305,
+      "predicted_n": 1143,
+      "predicted_per_second": 18.939800705864148,
+      "predicted_per_token_ms": 52.79886602451839,
+      "prompt_ms": 1720.357,
+      "prompt_n": 912,
+      "prompt_per_second": 530.1225268941272,
+      "prompt_per_token_ms": 1.8863563596491228
+    },
+    "usage": {
+      "completion_tokens": 1143,
+      "prompt_tokens": 27914,
+      "prompt_tokens_details": {
+        "cached_tokens": 27002
+      },
+      "total_tokens": 29057
+    }
+  },
+  "seconds": 62.125,
+  "source": "current-workflow-calibration-03/calls/call-0029.json",
+  "stage": 1,
+  "started_at": "2026-10-16T22:56:46.860496+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1143,
+    "prompt_tokens": 27914,
+    "prompt_tokens_details": {
+      "cached_tokens": 27002
+    },
+    "total_tokens": 29057
+  }
+}

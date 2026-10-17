@@ -1,0 +1,1750 @@
+{
+  "schema_version": "1.0",
+  "evaluator": {
+    "id": "aee",
+    "version": "1.0.0",
+    "name": "Applied Epistemic Engineering",
+    "url": "https://github.com/electrohire/spec-kit-aee"
+  },
+  "phase": "after_tasks",
+  "outcome": "gather_evidence",
+  "summary": "Assessed 8 claim(s); found 26 failure mode(s); 8 claim(s) below the 0.70 confidence threshold. Draft cap: 8 draft claim(s) capped at gather_evidence/iterate (FR-2.3). Stage cap: 8 claim(s) below stage 'explained'; the outcome cannot be 'pass' (Spec 004 R1.4). Not understood: 16 residual unknown(s) are recorded on this assessment (Spec 004 R5.2). Lane 1 (machine verification): outcome gather_evidence; 0 claim(s) at or above the 0.70 threshold, 8 below. Lane 2 (human acceptance): stages by effecti",
+  "findings": [
+    {
+      "id": "AEE-R01-TASKS-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone requirement R01; spec FR-001/FR-002",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "47982a3b2f927e79ec38bb24d8341590f9758f20748dff5a8eada82e60cca6dd",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep output: T001 'Create empty file smoke.py at repository root /testbed/smoke.py', US1 goal 'add(a, b) in smoke.py returns a + b', T006 'def add(a, b): ... body return a + b'"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R01; spec FR-001/FR-002"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R01-TASKS-INDEPENDENT-EVIDENCE-CHA",
+      "severity": "high",
+      "kind": "unverified_assertion",
+      "subject": "milestone requirement R01; spec FR-001/FR-002",
+      "description": "Only model self-attestation supports the claim",
+      "evidence_refs": [
+        {
+          "ref": "47982a3b2f927e79ec38bb24d8341590f9758f20748dff5a8eada82e60cca6dd",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep output: T001 'Create empty file smoke.py at repository root /testbed/smoke.py', US1 goal 'add(a, b) in smoke.py returns a + b', T006 'def add(a, b): ... body return a + b'"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R01; spec FR-001/FR-002"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Independent-evidence challenge"
+    },
+    {
+      "id": "AEE-R01-TASKS-NEGATION-CONFLICT-CHALLE",
+      "severity": "medium",
+      "kind": "contradiction",
+      "subject": "milestone requirement R01; spec FR-001/FR-002",
+      "description": "R01-TASKS may contradict C2-TASKS",
+      "evidence_refs": [
+        {
+          "ref": "47982a3b2f927e79ec38bb24d8341590f9758f20748dff5a8eada82e60cca6dd",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep output: T001 'Create empty file smoke.py at repository root /testbed/smoke.py', US1 goal 'add(a, b) in smoke.py returns a + b', T006 'def add(a, b): ... body return a + b'"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R01; spec FR-001/FR-002"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "clarify",
+      "rationale": "Negation conflict challenge"
+    },
+    {
+      "id": "AEE-R01-TASKS-DRAFT-CAP",
+      "severity": "low",
+      "kind": "other",
+      "subject": "milestone requirement R01; spec FR-001/FR-002",
+      "description": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+      "evidence_refs": [
+        {
+          "ref": "47982a3b2f927e79ec38bb24d8341590f9758f20748dff5a8eada82e60cca6dd",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep output: T001 'Create empty file smoke.py at repository root /testbed/smoke.py', US1 goal 'add(a, b) in smoke.py returns a + b', T006 'def add(a, b): ... body return a + b'"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R01; spec FR-001/FR-002"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Draft outcome cap"
+    },
+    {
+      "id": "AEE-R02-TASKS-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone requirement R02; spec FR-003..FR-005",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "ebbbfc9d53f2abf4a451451f220d24e5d241619435e3297fec42d79c1cb9583d",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep output: Phase 4 'User Story 2 - Negative Integers, Zero, Floats (P2) [R02]' and T007 listing 7 tests with exact assertions add(-3,5)==2, add(0,4)==4, add(1.5,2.25)==3.75, add(1,2.5)==3.5 etc."
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R02; spec FR-003..FR-005",
+        "R01-TASKS"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R02-TASKS-INDEPENDENT-EVIDENCE-CHA",
+      "severity": "high",
+      "kind": "unverified_assertion",
+      "subject": "milestone requirement R02; spec FR-003..FR-005",
+      "description": "Only model self-attestation supports the claim",
+      "evidence_refs": [
+        {
+          "ref": "ebbbfc9d53f2abf4a451451f220d24e5d241619435e3297fec42d79c1cb9583d",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep output: Phase 4 'User Story 2 - Negative Integers, Zero, Floats (P2) [R02]' and T007 listing 7 tests with exact assertions add(-3,5)==2, add(0,4)==4, add(1.5,2.25)==3.75, add(1,2.5)==3.5 etc."
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R02; spec FR-003..FR-005",
+        "R01-TASKS"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Independent-evidence challenge"
+    },
+    {
+      "id": "AEE-R02-TASKS-NEGATION-CONFLICT-CHALLE",
+      "severity": "medium",
+      "kind": "contradiction",
+      "subject": "milestone requirement R02; spec FR-003..FR-005",
+      "description": "R02-TASKS may contradict C2-TASKS",
+      "evidence_refs": [
+        {
+          "ref": "ebbbfc9d53f2abf4a451451f220d24e5d241619435e3297fec42d79c1cb9583d",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep output: Phase 4 'User Story 2 - Negative Integers, Zero, Floats (P2) [R02]' and T007 listing 7 tests with exact assertions add(-3,5)==2, add(0,4)==4, add(1.5,2.25)==3.75, add(1,2.5)==3.5 etc."
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R02; spec FR-003..FR-005",
+        "R01-TASKS"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "clarify",
+      "rationale": "Negation conflict challenge"
+    },
+    {
+      "id": "AEE-R02-TASKS-DRAFT-CAP",
+      "severity": "low",
+      "kind": "other",
+      "subject": "milestone requirement R02; spec FR-003..FR-005",
+      "description": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+      "evidence_refs": [
+        {
+          "ref": "ebbbfc9d53f2abf4a451451f220d24e5d241619435e3297fec42d79c1cb9583d",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep output: Phase 4 'User Story 2 - Negative Integers, Zero, Floats (P2) [R02]' and T007 listing 7 tests with exact assertions add(-3,5)==2, add(0,4)==4, add(1.5,2.25)==3.75, add(1,2.5)==3.5 etc."
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R02; spec FR-003..FR-005",
+        "R01-TASKS"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Draft outcome cap"
+    },
+    {
+      "id": "AEE-R03-TASKS-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone requirement R03; spec FR-006, SC-002",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "cd64cb1d5c1091e6ecd79910794363bc263f271b4cfb436be4c0fa3b18d430a9",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep output: US3 goal 'executed and passes with 0 failures (SC-002)', T009 run 'PYTHONPATH=src:. python3 -m pytest tests/test_smoke.py' expecting 0 failed exit 0, T010 full-suite 0 failures"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R03; spec FR-006, SC-002",
+        "R01-TASKS",
+        "R02-TASKS"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R03-TASKS-INDEPENDENT-EVIDENCE-CHA",
+      "severity": "high",
+      "kind": "unverified_assertion",
+      "subject": "milestone requirement R03; spec FR-006, SC-002",
+      "description": "Only model self-attestation supports the claim",
+      "evidence_refs": [
+        {
+          "ref": "cd64cb1d5c1091e6ecd79910794363bc263f271b4cfb436be4c0fa3b18d430a9",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep output: US3 goal 'executed and passes with 0 failures (SC-002)', T009 run 'PYTHONPATH=src:. python3 -m pytest tests/test_smoke.py' expecting 0 failed exit 0, T010 full-suite 0 failures"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R03; spec FR-006, SC-002",
+        "R01-TASKS",
+        "R02-TASKS"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Independent-evidence challenge"
+    },
+    {
+      "id": "AEE-R03-TASKS-NEGATION-CONFLICT-CHALLE",
+      "severity": "medium",
+      "kind": "contradiction",
+      "subject": "milestone requirement R03; spec FR-006, SC-002",
+      "description": "R03-TASKS may contradict C2-TASKS",
+      "evidence_refs": [
+        {
+          "ref": "cd64cb1d5c1091e6ecd79910794363bc263f271b4cfb436be4c0fa3b18d430a9",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep output: US3 goal 'executed and passes with 0 failures (SC-002)', T009 run 'PYTHONPATH=src:. python3 -m pytest tests/test_smoke.py' expecting 0 failed exit 0, T010 full-suite 0 failures"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R03; spec FR-006, SC-002",
+        "R01-TASKS",
+        "R02-TASKS"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "clarify",
+      "rationale": "Negation conflict challenge"
+    },
+    {
+      "id": "AEE-R03-TASKS-DRAFT-CAP",
+      "severity": "low",
+      "kind": "other",
+      "subject": "milestone requirement R03; spec FR-006, SC-002",
+      "description": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+      "evidence_refs": [
+        {
+          "ref": "cd64cb1d5c1091e6ecd79910794363bc263f271b4cfb436be4c0fa3b18d430a9",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep output: US3 goal 'executed and passes with 0 failures (SC-002)', T009 run 'PYTHONPATH=src:. python3 -m pytest tests/test_smoke.py' expecting 0 failed exit 0, T010 full-suite 0 failures"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R03; spec FR-006, SC-002",
+        "R01-TASKS",
+        "R02-TASKS"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Draft outcome cap"
+    },
+    {
+      "id": "AEE-C1-TASKS-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone constraint 'Do not modify TinyDB'; spec FR-007; constitution principle I",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "36b2cee545aeca2108d12fe3429fbdebdd63226d62643d15759edee24f5fcfb2",
+          "kind": "asserted",
+          "description": "Unverified model assertion: git status --porcelain -- tinydb tests printed nothing with exit 0 (no modifications); tasks.md T004 and Constraints-honored line restate the untouched constraint"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'Do not modify TinyDB'; spec FR-007; constitution principle I"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-C1-TASKS-INDEPENDENT-EVIDENCE-CHA",
+      "severity": "high",
+      "kind": "unverified_assertion",
+      "subject": "milestone constraint 'Do not modify TinyDB'; spec FR-007; constitution principle I",
+      "description": "Only model self-attestation supports the claim",
+      "evidence_refs": [
+        {
+          "ref": "36b2cee545aeca2108d12fe3429fbdebdd63226d62643d15759edee24f5fcfb2",
+          "kind": "asserted",
+          "description": "Unverified model assertion: git status --porcelain -- tinydb tests printed nothing with exit 0 (no modifications); tasks.md T004 and Constraints-honored line restate the untouched constraint"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'Do not modify TinyDB'; spec FR-007; constitution principle I"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Independent-evidence challenge"
+    },
+    {
+      "id": "AEE-C1-TASKS-DRAFT-CAP",
+      "severity": "low",
+      "kind": "other",
+      "subject": "milestone constraint 'Do not modify TinyDB'; spec FR-007; constitution principle I",
+      "description": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+      "evidence_refs": [
+        {
+          "ref": "36b2cee545aeca2108d12fe3429fbdebdd63226d62643d15759edee24f5fcfb2",
+          "kind": "asserted",
+          "description": "Unverified model assertion: git status --porcelain -- tinydb tests printed nothing with exit 0 (no modifications); tasks.md T004 and Constraints-honored line restate the untouched constraint"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'Do not modify TinyDB'; spec FR-007; constitution principle I"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Draft outcome cap"
+    },
+    {
+      "id": "AEE-C2-TASKS-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone constraint 'No service or deployment is involved'; spec SC-004",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "256cceaa81ccd2768f995f565d4a2260534b4ee44f662dbe920c389002c233f9",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep of 'service|deployment' over tasks.md matches only the constraints line 'only smoke.py and tests/test_smoke.py are created/modified; ... no service, no deployment'"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'No service or deployment is involved'; spec SC-004"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-C2-TASKS-INDEPENDENT-EVIDENCE-CHA",
+      "severity": "high",
+      "kind": "unverified_assertion",
+      "subject": "milestone constraint 'No service or deployment is involved'; spec SC-004",
+      "description": "Only model self-attestation supports the claim",
+      "evidence_refs": [
+        {
+          "ref": "256cceaa81ccd2768f995f565d4a2260534b4ee44f662dbe920c389002c233f9",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep of 'service|deployment' over tasks.md matches only the constraints line 'only smoke.py and tests/test_smoke.py are created/modified; ... no service, no deployment'"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'No service or deployment is involved'; spec SC-004"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Independent-evidence challenge"
+    },
+    {
+      "id": "AEE-C2-TASKS-NEGATION-CONFLICT-CHALLE",
+      "severity": "medium",
+      "kind": "contradiction",
+      "subject": "milestone constraint 'No service or deployment is involved'; spec SC-004",
+      "description": "C2-TASKS may contradict F2-TASKS",
+      "evidence_refs": [
+        {
+          "ref": "256cceaa81ccd2768f995f565d4a2260534b4ee44f662dbe920c389002c233f9",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep of 'service|deployment' over tasks.md matches only the constraints line 'only smoke.py and tests/test_smoke.py are created/modified; ... no service, no deployment'"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'No service or deployment is involved'; spec SC-004"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "clarify",
+      "rationale": "Negation conflict challenge"
+    },
+    {
+      "id": "AEE-C2-TASKS-DRAFT-CAP",
+      "severity": "low",
+      "kind": "other",
+      "subject": "milestone constraint 'No service or deployment is involved'; spec SC-004",
+      "description": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+      "evidence_refs": [
+        {
+          "ref": "256cceaa81ccd2768f995f565d4a2260534b4ee44f662dbe920c389002c233f9",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep of 'service|deployment' over tasks.md matches only the constraints line 'only smoke.py and tests/test_smoke.py are created/modified; ... no service, no deployment'"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'No service or deployment is involved'; spec SC-004"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Draft outcome cap"
+    },
+    {
+      "id": "AEE-F1-TASKS-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "speckit-tasks Task Generation Rules; plan.md Project Structure",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "368229594abb72ff9da3e1e1c841553a39bf2994f797e6e4b6e67ac065a3f9c9",
+          "kind": "asserted",
+          "description": "Unverified model assertion: wc -l reports 78 lines and grep -c of '- [ ] T' reports exactly 11 task lines in specs/001-transactions/tasks.md"
+        },
+        {
+          "ref": "ac897e1e70c4edc826b3ad9b1cfdbbb512378f20c957fececf111c11f41bbf0e",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep -nE of all 11 task lines shows each starts '- [ ] T0NN' with [P]/[US#] markers where applicable and a file path; the malformed-line filter printed the lines only because the sed-truncated first column made the negative pattern match, and manual inspection of the full output confirms every line is well-formed"
+        }
+      ],
+      "provenance_refs": [
+        "speckit-tasks Task Generation Rules; plan.md Project Structure"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-F1-TASKS-INDEPENDENT-EVIDENCE-CHA",
+      "severity": "high",
+      "kind": "unverified_assertion",
+      "subject": "speckit-tasks Task Generation Rules; plan.md Project Structure",
+      "description": "Only model self-attestation supports the claim",
+      "evidence_refs": [
+        {
+          "ref": "368229594abb72ff9da3e1e1c841553a39bf2994f797e6e4b6e67ac065a3f9c9",
+          "kind": "asserted",
+          "description": "Unverified model assertion: wc -l reports 78 lines and grep -c of '- [ ] T' reports exactly 11 task lines in specs/001-transactions/tasks.md"
+        },
+        {
+          "ref": "ac897e1e70c4edc826b3ad9b1cfdbbb512378f20c957fececf111c11f41bbf0e",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep -nE of all 11 task lines shows each starts '- [ ] T0NN' with [P]/[US#] markers where applicable and a file path; the malformed-line filter printed the lines only because the sed-truncated first column made the negative pattern match, and manual inspection of the full output confirms every line is well-formed"
+        }
+      ],
+      "provenance_refs": [
+        "speckit-tasks Task Generation Rules; plan.md Project Structure"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Independent-evidence challenge"
+    },
+    {
+      "id": "AEE-F1-TASKS-DRAFT-CAP",
+      "severity": "low",
+      "kind": "other",
+      "subject": "speckit-tasks Task Generation Rules; plan.md Project Structure",
+      "description": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+      "evidence_refs": [
+        {
+          "ref": "368229594abb72ff9da3e1e1c841553a39bf2994f797e6e4b6e67ac065a3f9c9",
+          "kind": "asserted",
+          "description": "Unverified model assertion: wc -l reports 78 lines and grep -c of '- [ ] T' reports exactly 11 task lines in specs/001-transactions/tasks.md"
+        },
+        {
+          "ref": "ac897e1e70c4edc826b3ad9b1cfdbbb512378f20c957fececf111c11f41bbf0e",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep -nE of all 11 task lines shows each starts '- [ ] T0NN' with [P]/[US#] markers where applicable and a file path; the malformed-line filter printed the lines only because the sed-truncated first column made the negative pattern match, and manual inspection of the full output confirms every line is well-formed"
+        }
+      ],
+      "provenance_refs": [
+        "speckit-tasks Task Generation Rules; plan.md Project Structure"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Draft outcome cap"
+    },
+    {
+      "id": "AEE-F2-TASKS-INDEPENDENT-EVIDENCE-CHA",
+      "severity": "high",
+      "kind": "unverified_assertion",
+      "subject": "speckit-tasks 'Tests (if requested)' ordering; R03",
+      "description": "Only model self-attestation supports the claim",
+      "evidence_refs": [
+        {
+          "ref": "bf1ec24f5fc4340f4422bc7182e1ee7fd4ce323c069672d5611736900c8df6bb",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep output: line 5 'Tests requested: YES ... written before implementation (TDD)' and line 68 'US1: T005 (tests first, TDD) -> T006 (implementation)'; T006/T008 carry 'depends on T005'/'depends on T007'"
+        }
+      ],
+      "provenance_refs": [
+        "speckit-tasks 'Tests (if requested)' ordering; R03"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Independent-evidence challenge"
+    },
+    {
+      "id": "AEE-F2-TASKS-DRAFT-CAP",
+      "severity": "low",
+      "kind": "other",
+      "subject": "speckit-tasks 'Tests (if requested)' ordering; R03",
+      "description": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+      "evidence_refs": [
+        {
+          "ref": "bf1ec24f5fc4340f4422bc7182e1ee7fd4ce323c069672d5611736900c8df6bb",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep output: line 5 'Tests requested: YES ... written before implementation (TDD)' and line 68 'US1: T005 (tests first, TDD) -> T006 (implementation)'; T006/T008 carry 'depends on T005'/'depends on T007'"
+        }
+      ],
+      "provenance_refs": [
+        "speckit-tasks 'Tests (if requested)' ordering; R03"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Draft outcome cap"
+    },
+    {
+      "id": "AEE-F3-TASKS-INDEPENDENT-EVIDENCE-CHA",
+      "severity": "high",
+      "kind": "unverified_assertion",
+      "subject": "speckit-tasks Pre/Post-Execution Hooks rules",
+      "description": "Only model self-attestation supports the claim",
+      "evidence_refs": [
+        {
+          "ref": "5601db5d4d6cc8ca9ecae68e36ade2d7441cfee70f3244cfe4fdee48a54ee900",
+          "kind": "asserted",
+          "description": "Unverified model assertion: ls output: 'NO extensions.yml - skipping hooks' (file absent); constitution.md confirmed present and was read as a design input"
+        }
+      ],
+      "provenance_refs": [
+        "speckit-tasks Pre/Post-Execution Hooks rules"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Independent-evidence challenge"
+    },
+    {
+      "id": "AEE-F3-TASKS-DRAFT-CAP",
+      "severity": "low",
+      "kind": "other",
+      "subject": "speckit-tasks Pre/Post-Execution Hooks rules",
+      "description": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+      "evidence_refs": [
+        {
+          "ref": "5601db5d4d6cc8ca9ecae68e36ade2d7441cfee70f3244cfe4fdee48a54ee900",
+          "kind": "asserted",
+          "description": "Unverified model assertion: ls output: 'NO extensions.yml - skipping hooks' (file absent); constitution.md confirmed present and was read as a design input"
+        }
+      ],
+      "provenance_refs": [
+        "speckit-tasks Pre/Post-Execution Hooks rules"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Draft outcome cap"
+    }
+  ],
+  "next_action": {
+    "kind": "gather_evidence",
+    "target_phase": null,
+    "message": "Pause and collect independently inspectable evidence."
+  },
+  "metadata": {
+    "timestamp": "2026-10-16T23:48:06.383953Z",
+    "artifacts_evaluated": [
+      "inputs/tasks-746455e337084d70b635203e0a8cf291.json"
+    ],
+    "model": null,
+    "deterministic": true,
+    "engine_version": "1.5.3",
+    "aee_methodology_version": "2.0",
+    "lanes": {
+      "lane_1": {
+        "label": "machine verification",
+        "outcome": "gather_evidence",
+        "threshold": 0.7,
+        "claims_at_or_above_threshold": 0,
+        "claims_below_threshold": 8
+      },
+      "lane_2": {
+        "label": "human acceptance",
+        "stage_counts": {
+          "created": 8,
+          "checked": 0,
+          "explained": 0,
+          "accepted": 0,
+          "digested": 0
+        },
+        "claims_below_explained": 8,
+        "exposition_covered_claims": 0,
+        "exposition_missing_claims": 8,
+        "verified_unexplained_claims": 0,
+        "stage_capped_claims": 0,
+        "attribution_contested_claims": 0
+      }
+    },
+    "not_understood": [
+      "R01-TASKS: open challenges this assessment does not resolve: contradiction, coverage_gap, unverified_assertion.",
+      "R01-TASKS: propagated score 0.190 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+      "R02-TASKS: open challenges this assessment does not resolve: contradiction, coverage_gap, unverified_assertion.",
+      "R02-TASKS: propagated score 0.190 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+      "R03-TASKS: open challenges this assessment does not resolve: contradiction, coverage_gap, unverified_assertion.",
+      "R03-TASKS: propagated score 0.190 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+      "C1-TASKS: open challenges this assessment does not resolve: coverage_gap, unverified_assertion.",
+      "C1-TASKS: propagated score 0.152 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+      "C2-TASKS: open challenges this assessment does not resolve: contradiction, coverage_gap, unverified_assertion.",
+      "C2-TASKS: propagated score 0.152 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+      "F1-TASKS: open challenges this assessment does not resolve: coverage_gap, unverified_assertion.",
+      "F1-TASKS: propagated score 0.329 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+      "F2-TASKS: open challenges this assessment does not resolve: unverified_assertion.",
+      "F2-TASKS: propagated score 0.228 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+      "F3-TASKS: open challenges this assessment does not resolve: unverified_assertion.",
+      "F3-TASKS: propagated score 0.152 is below the 0.70 threshold - the claim is not established by its evidence as recorded."
+    ],
+    "reported_statuses": {
+      "R01-TASKS": "draft",
+      "R02-TASKS": "draft",
+      "R03-TASKS": "draft",
+      "C1-TASKS": "draft",
+      "C2-TASKS": "draft",
+      "F1-TASKS": "draft",
+      "F2-TASKS": "draft",
+      "F3-TASKS": "draft"
+    }
+  },
+  "state": {
+    "aee": {
+      "project": "current-calibration",
+      "claims": [
+        {
+          "id": "R01-TASKS",
+          "text": "tasks.md declares creating smoke.py at the repository root and defining add(a, b) whose body returns a + b.",
+          "kind": "requirement",
+          "status": "draft",
+          "boundary": [
+            "this milestone"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "47982a3b2f927e79ec38bb24d8341590f9758f20748dff5a8eada82e60cca6dd",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: grep output: T001 'Create empty file smoke.py at repository root /testbed/smoke.py', US1 goal 'add(a, b) in smoke.py returns a + b', T006 'def add(a, b): ... body return a + b'",
+              "source_id": "47982a3b2f927e79ec38bb24d8341590f9758f20748dff5a8eada82e60cca6dd",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "grep of tasks.md shows no task creating /testbed/smoke.py",
+            "tasks.md does not specify add(a,b) body 'return a + b'"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone requirement R01; spec FR-001/FR-002",
+          "domain": "",
+          "confidence": 0.19000000000000003,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-R01-TASKS-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R01-TASKS",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R01-TASKS-INDEPENDENT-EVIDENCE-CHA",
+              "claim_id": "R01-TASKS",
+              "challenge": "Independent-evidence challenge",
+              "breakpoint": "Only model self-attestation supports the claim",
+              "severity": "high",
+              "category": "unverified_assertion",
+              "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R01-TASKS-NEGATION-CONFLICT-CHALLE",
+              "claim_id": "R01-TASKS",
+              "challenge": "Negation conflict challenge",
+              "breakpoint": "R01-TASKS may contradict C2-TASKS",
+              "severity": "medium",
+              "category": "contradiction",
+              "recovery_hint": "Confirm whether the claims share a boundary and preserve both pending review.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R01-TASKS-DRAFT-CAP",
+              "claim_id": "R01-TASKS",
+              "challenge": "Draft outcome cap",
+              "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+              "severity": "low",
+              "category": "draft_cap",
+              "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "created",
+          "stage_events": [],
+          "headline": false,
+          "role": null
+        },
+        {
+          "id": "R02-TASKS",
+          "text": "tasks.md declares test tasks covering negative integers, zero, floats, and mixed int/float with exact expected sums.",
+          "kind": "requirement",
+          "status": "draft",
+          "boundary": [
+            "this milestone"
+          ],
+          "depends_on": [
+            "R01-TASKS"
+          ],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "ebbbfc9d53f2abf4a451451f220d24e5d241619435e3297fec42d79c1cb9583d",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: grep output: Phase 4 'User Story 2 - Negative Integers, Zero, Floats (P2) [R02]' and T007 listing 7 tests with exact assertions add(-3,5)==2, add(0,4)==4, add(1.5,2.25)==3.75, add(1,2.5)==3.5 etc.",
+              "source_id": "ebbbfc9d53f2abf4a451451f220d24e5d241619435e3297fec42d79c1cb9583d",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "T007 lacks any of negative-int, zero, float, or mixed-type test cases",
+            "expected sums in T007 differ from a+b"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone requirement R02; spec FR-003..FR-005",
+          "domain": "",
+          "confidence": 0.19000000000000003,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-R02-TASKS-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R02-TASKS",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R02-TASKS-INDEPENDENT-EVIDENCE-CHA",
+              "claim_id": "R02-TASKS",
+              "challenge": "Independent-evidence challenge",
+              "breakpoint": "Only model self-attestation supports the claim",
+              "severity": "high",
+              "category": "unverified_assertion",
+              "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R02-TASKS-NEGATION-CONFLICT-CHALLE",
+              "claim_id": "R02-TASKS",
+              "challenge": "Negation conflict challenge",
+              "breakpoint": "R02-TASKS may contradict C2-TASKS",
+              "severity": "medium",
+              "category": "contradiction",
+              "recovery_hint": "Confirm whether the claims share a boundary and preserve both pending review.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R02-TASKS-DRAFT-CAP",
+              "claim_id": "R02-TASKS",
+              "challenge": "Draft outcome cap",
+              "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+              "severity": "low",
+              "category": "draft_cap",
+              "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "created",
+          "stage_events": [],
+          "headline": false,
+          "role": null
+        },
+        {
+          "id": "R03-TASKS",
+          "text": "tasks.md declares executing the test suite with 0 failures and exit code 0 as the acceptance outcome.",
+          "kind": "requirement",
+          "status": "draft",
+          "boundary": [
+            "this milestone"
+          ],
+          "depends_on": [
+            "R01-TASKS",
+            "R02-TASKS"
+          ],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "cd64cb1d5c1091e6ecd79910794363bc263f271b4cfb436be4c0fa3b18d430a9",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: grep output: US3 goal 'executed and passes with 0 failures (SC-002)', T009 run 'PYTHONPATH=src:. python3 -m pytest tests/test_smoke.py' expecting 0 failed exit 0, T010 full-suite 0 failures",
+              "source_id": "cd64cb1d5c1091e6ecd79910794363bc263f271b4cfb436be4c0fa3b18d430a9",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "no task runs pytest on tests/test_smoke.py",
+            "no task requires 0 failures / exit code 0"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone requirement R03; spec FR-006, SC-002",
+          "domain": "",
+          "confidence": 0.19000000000000003,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-R03-TASKS-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R03-TASKS",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R03-TASKS-INDEPENDENT-EVIDENCE-CHA",
+              "claim_id": "R03-TASKS",
+              "challenge": "Independent-evidence challenge",
+              "breakpoint": "Only model self-attestation supports the claim",
+              "severity": "high",
+              "category": "unverified_assertion",
+              "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R03-TASKS-NEGATION-CONFLICT-CHALLE",
+              "claim_id": "R03-TASKS",
+              "challenge": "Negation conflict challenge",
+              "breakpoint": "R03-TASKS may contradict C2-TASKS",
+              "severity": "medium",
+              "category": "contradiction",
+              "recovery_hint": "Confirm whether the claims share a boundary and preserve both pending review.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R03-TASKS-DRAFT-CAP",
+              "claim_id": "R03-TASKS",
+              "challenge": "Draft outcome cap",
+              "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+              "severity": "low",
+              "category": "draft_cap",
+              "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "created",
+          "stage_events": [],
+          "headline": false,
+          "role": null
+        },
+        {
+          "id": "C1-TASKS",
+          "text": "The TinyDB package and its existing tests are unmodified as of the tasks phase.",
+          "kind": "requirement",
+          "status": "draft",
+          "boundary": [
+            "this milestone"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "36b2cee545aeca2108d12fe3429fbdebdd63226d62643d15759edee24f5fcfb2",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: git status --porcelain -- tinydb tests printed nothing with exit 0 (no modifications); tasks.md T004 and Constraints-honored line restate the untouched constraint",
+              "source_id": "36b2cee545aeca2108d12fe3429fbdebdd63226d62643d15759edee24f5fcfb2",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "git status --porcelain -- tinydb tests prints any entry"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone constraint 'Do not modify TinyDB'; spec FR-007; constitution principle I",
+          "domain": "",
+          "confidence": 0.1525,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-C1-TASKS-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "C1-TASKS",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-C1-TASKS-INDEPENDENT-EVIDENCE-CHA",
+              "claim_id": "C1-TASKS",
+              "challenge": "Independent-evidence challenge",
+              "breakpoint": "Only model self-attestation supports the claim",
+              "severity": "high",
+              "category": "unverified_assertion",
+              "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-C1-TASKS-DRAFT-CAP",
+              "claim_id": "C1-TASKS",
+              "challenge": "Draft outcome cap",
+              "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+              "severity": "low",
+              "category": "draft_cap",
+              "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "created",
+          "stage_events": [],
+          "headline": false,
+          "role": null
+        },
+        {
+          "id": "C2-TASKS",
+          "text": "tasks.md contains no service or deployment tasks; only smoke.py and tests/test_smoke.py are to be created or modified.",
+          "kind": "requirement",
+          "status": "draft",
+          "boundary": [
+            "this milestone"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "256cceaa81ccd2768f995f565d4a2260534b4ee44f662dbe920c389002c233f9",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: grep of 'service|deployment' over tasks.md matches only the constraints line 'only smoke.py and tests/test_smoke.py are created/modified; ... no service, no deployment'",
+              "source_id": "256cceaa81ccd2768f995f565d4a2260534b4ee44f662dbe920c389002c233f9",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "any task line in tasks.md creates a service, CLI, or deployment artifact",
+            "any task modifies a file other than smoke.py or tests/test_smoke.py"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone constraint 'No service or deployment is involved'; spec SC-004",
+          "domain": "",
+          "confidence": 0.1525,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-C2-TASKS-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "C2-TASKS",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-C2-TASKS-INDEPENDENT-EVIDENCE-CHA",
+              "claim_id": "C2-TASKS",
+              "challenge": "Independent-evidence challenge",
+              "breakpoint": "Only model self-attestation supports the claim",
+              "severity": "high",
+              "category": "unverified_assertion",
+              "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-C2-TASKS-NEGATION-CONFLICT-CHALLE",
+              "claim_id": "C2-TASKS",
+              "challenge": "Negation conflict challenge",
+              "breakpoint": "C2-TASKS may contradict F2-TASKS",
+              "severity": "medium",
+              "category": "contradiction",
+              "recovery_hint": "Confirm whether the claims share a boundary and preserve both pending review.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-C2-TASKS-DRAFT-CAP",
+              "claim_id": "C2-TASKS",
+              "challenge": "Draft outcome cap",
+              "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+              "severity": "low",
+              "category": "draft_cap",
+              "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "created",
+          "stage_events": [],
+          "headline": false,
+          "role": null
+        },
+        {
+          "id": "F1-TASKS",
+          "text": "tasks.md exists with 11 tasks (T001-T011) in the strict checklist format, organized into setup, foundational, per-user-story, and polish phases.",
+          "kind": "requirement",
+          "status": "draft",
+          "boundary": [
+            "this milestone"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "368229594abb72ff9da3e1e1c841553a39bf2994f797e6e4b6e67ac065a3f9c9",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: wc -l reports 78 lines and grep -c of '- [ ] T' reports exactly 11 task lines in specs/001-transactions/tasks.md",
+              "source_id": "368229594abb72ff9da3e1e1c841553a39bf2994f797e6e4b6e67ac065a3f9c9",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            },
+            {
+              "ref": "ac897e1e70c4edc826b3ad9b1cfdbbb512378f20c957fececf111c11f41bbf0e",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: grep -nE of all 11 task lines shows each starts '- [ ] T0NN' with [P]/[US#] markers where applicable and a file path; the malformed-line filter printed the lines only because the sed-truncated first column made the negative pattern match, and manual inspection of the full output confirms every line is well-formed",
+              "source_id": "ac897e1e70c4edc826b3ad9b1cfdbbb512378f20c957fececf111c11f41bbf0e",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "task count differs from 11",
+            "any task line lacks checkbox, sequential ID, or file path",
+            "phases are not organized by user story"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "speckit-tasks Task Generation Rules; plan.md Project Structure",
+          "domain": "",
+          "confidence": 0.32862500000000006,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-F1-TASKS-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "F1-TASKS",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-F1-TASKS-INDEPENDENT-EVIDENCE-CHA",
+              "claim_id": "F1-TASKS",
+              "challenge": "Independent-evidence challenge",
+              "breakpoint": "Only model self-attestation supports the claim",
+              "severity": "high",
+              "category": "unverified_assertion",
+              "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-F1-TASKS-DRAFT-CAP",
+              "claim_id": "F1-TASKS",
+              "challenge": "Draft outcome cap",
+              "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+              "severity": "low",
+              "category": "draft_cap",
+              "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "created",
+          "stage_events": [],
+          "headline": false,
+          "role": null
+        },
+        {
+          "id": "F2-TASKS",
+          "text": "tasks.md declares TDD ordering: story test tasks precede their implementation tasks with explicit dependencies.",
+          "kind": "requirement",
+          "status": "draft",
+          "boundary": [
+            "this milestone"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "bf1ec24f5fc4340f4422bc7182e1ee7fd4ce323c069672d5611736900c8df6bb",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: grep output: line 5 'Tests requested: YES ... written before implementation (TDD)' and line 68 'US1: T005 (tests first, TDD) -> T006 (implementation)'; T006/T008 carry 'depends on T005'/'depends on T007'",
+              "source_id": "bf1ec24f5fc4340f4422bc7182e1ee7fd4ce323c069672d5611736900c8df6bb",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "implementation task T006 appears before test task T005 without a dependency note",
+            "T008 lacks a dependency on T007"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "speckit-tasks 'Tests (if requested)' ordering; R03",
+          "domain": "",
+          "confidence": 0.2275,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-F2-TASKS-INDEPENDENT-EVIDENCE-CHA",
+              "claim_id": "F2-TASKS",
+              "challenge": "Independent-evidence challenge",
+              "breakpoint": "Only model self-attestation supports the claim",
+              "severity": "high",
+              "category": "unverified_assertion",
+              "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-F2-TASKS-DRAFT-CAP",
+              "claim_id": "F2-TASKS",
+              "challenge": "Draft outcome cap",
+              "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+              "severity": "low",
+              "category": "draft_cap",
+              "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "created",
+          "stage_events": [],
+          "headline": false,
+          "role": null
+        },
+        {
+          "id": "F3-TASKS",
+          "text": "No extension hooks were executed for this phase because .specify/extensions.yml does not exist in the project root.",
+          "kind": "requirement",
+          "status": "draft",
+          "boundary": [
+            "this milestone"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "5601db5d4d6cc8ca9ecae68e36ade2d7441cfee70f3244cfe4fdee48a54ee900",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: ls output: 'NO extensions.yml - skipping hooks' (file absent); constitution.md confirmed present and was read as a design input",
+              "source_id": "5601db5d4d6cc8ca9ecae68e36ade2d7441cfee70f3244cfe4fdee48a54ee900",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "ls .specify/extensions.yml succeeds",
+            "any before_tasks/after_tasks hook was invoked"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "speckit-tasks Pre/Post-Execution Hooks rules",
+          "domain": "",
+          "confidence": 0.1525,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-F3-TASKS-INDEPENDENT-EVIDENCE-CHA",
+              "claim_id": "F3-TASKS",
+              "challenge": "Independent-evidence challenge",
+              "breakpoint": "Only model self-attestation supports the claim",
+              "severity": "high",
+              "category": "unverified_assertion",
+              "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-F3-TASKS-DRAFT-CAP",
+              "claim_id": "F3-TASKS",
+              "challenge": "Draft outcome cap",
+              "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+              "severity": "low",
+              "category": "draft_cap",
+              "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "created",
+          "stage_events": [],
+          "headline": false,
+          "role": null
+        }
+      ],
+      "scores": {
+        "R01-TASKS": {
+          "claim_id": "R01-TASKS",
+          "direct_score": 0.19000000000000003,
+          "propagated_score": 0.19000000000000003,
+          "band": "low",
+          "components": {
+            "evidence": 0.050000000000000044,
+            "independence": 0.5,
+            "falsifiability": 0.75,
+            "boundary": 0.5,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "draft",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "No observed supporting evidence",
+            "Fewer than two independent supporting sources",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+            "Falsification test \"tasks.md does not specify add(a,b) body 'return a + b'\" earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+            "Boundary entry 'this milestone' earns partial credit (FR-8.7): failed criteria: names no scope or limit (no scope term or numeric bound)",
+            "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 1 unknown of 1 item(s); unknown freshness counts as stale (FR-8.6)"
+          ]
+        },
+        "R02-TASKS": {
+          "claim_id": "R02-TASKS",
+          "direct_score": 0.2275,
+          "propagated_score": 0.19000000000000003,
+          "band": "low",
+          "components": {
+            "evidence": 0.050000000000000044,
+            "independence": 0.5,
+            "falsifiability": 1.0,
+            "boundary": 0.5,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "draft",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "No observed supporting evidence",
+            "Fewer than two independent supporting sources",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+            "Boundary entry 'this milestone' earns partial credit (FR-8.7): failed criteria: names no scope or limit (no scope term or numeric bound)",
+            "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 1 unknown of 1 item(s); unknown freshness counts as stale (FR-8.6)",
+            "Capped by weakest dependency at 0.190"
+          ]
+        },
+        "R03-TASKS": {
+          "claim_id": "R03-TASKS",
+          "direct_score": 0.19000000000000003,
+          "propagated_score": 0.19000000000000003,
+          "band": "low",
+          "components": {
+            "evidence": 0.050000000000000044,
+            "independence": 0.5,
+            "falsifiability": 0.75,
+            "boundary": 0.5,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "draft",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "No observed supporting evidence",
+            "Fewer than two independent supporting sources",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+            "Falsification test 'no task runs pytest on tests/test_smoke.py' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+            "Boundary entry 'this milestone' earns partial credit (FR-8.7): failed criteria: names no scope or limit (no scope term or numeric bound)",
+            "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 1 unknown of 1 item(s); unknown freshness counts as stale (FR-8.6)"
+          ]
+        },
+        "C1-TASKS": {
+          "claim_id": "C1-TASKS",
+          "direct_score": 0.1525,
+          "propagated_score": 0.1525,
+          "band": "low",
+          "components": {
+            "evidence": 0.050000000000000044,
+            "independence": 0.5,
+            "falsifiability": 0.5,
+            "boundary": 0.5,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "draft",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "No observed supporting evidence",
+            "Fewer than two independent supporting sources",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+            "Falsification test 'git status --porcelain -- tinydb tests prints any entry' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+            "Boundary entry 'this milestone' earns partial credit (FR-8.7): failed criteria: names no scope or limit (no scope term or numeric bound)",
+            "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 1 unknown of 1 item(s); unknown freshness counts as stale (FR-8.6)"
+          ]
+        },
+        "C2-TASKS": {
+          "claim_id": "C2-TASKS",
+          "direct_score": 0.1525,
+          "propagated_score": 0.1525,
+          "band": "low",
+          "components": {
+            "evidence": 0.050000000000000044,
+            "independence": 0.5,
+            "falsifiability": 0.5,
+            "boundary": 0.5,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "draft",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "No observed supporting evidence",
+            "Fewer than two independent supporting sources",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+            "Falsification test 'any task line in tasks.md creates a service, CLI, or deployment artifact' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+            "Falsification test 'any task modifies a file other than smoke.py or tests/test_smoke.py' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+            "Boundary entry 'this milestone' earns partial credit (FR-8.7): failed criteria: names no scope or limit (no scope term or numeric bound)",
+            "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 1 unknown of 1 item(s); unknown freshness counts as stale (FR-8.6)"
+          ]
+        },
+        "F1-TASKS": {
+          "claim_id": "F1-TASKS",
+          "direct_score": 0.32862500000000006,
+          "propagated_score": 0.32862500000000006,
+          "band": "low",
+          "components": {
+            "evidence": 0.09750000000000003,
+            "independence": 1.0,
+            "falsifiability": 0.8333333333333334,
+            "boundary": 0.5,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "draft",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "No observed supporting evidence",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+            "Falsification test 'phases are not organized by user story' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+            "Boundary entry 'this milestone' earns partial credit (FR-8.7): failed criteria: names no scope or limit (no scope term or numeric bound)",
+            "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 2 unknown of 2 item(s); unknown freshness counts as stale (FR-8.6)"
+          ]
+        },
+        "F2-TASKS": {
+          "claim_id": "F2-TASKS",
+          "direct_score": 0.2275,
+          "propagated_score": 0.2275,
+          "band": "low",
+          "components": {
+            "evidence": 0.050000000000000044,
+            "independence": 0.5,
+            "falsifiability": 1.0,
+            "boundary": 0.5,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "draft",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "No observed supporting evidence",
+            "Fewer than two independent supporting sources",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+            "Boundary entry 'this milestone' earns partial credit (FR-8.7): failed criteria: names no scope or limit (no scope term or numeric bound)",
+            "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 1 unknown of 1 item(s); unknown freshness counts as stale (FR-8.6)"
+          ]
+        },
+        "F3-TASKS": {
+          "claim_id": "F3-TASKS",
+          "direct_score": 0.1525,
+          "propagated_score": 0.1525,
+          "band": "low",
+          "components": {
+            "evidence": 0.050000000000000044,
+            "independence": 0.5,
+            "falsifiability": 0.5,
+            "boundary": 0.5,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "draft",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "No observed supporting evidence",
+            "Fewer than two independent supporting sources",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+            "Falsification test 'ls .specify/extensions.yml succeeds' earns partial credit (FR-8.7): failed criteria: fewer than four words; no checkable condition (no numeric bound, comparator, or observation/action term)",
+            "Falsification test 'any before_tasks/after_tasks hook was invoked' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+            "Boundary entry 'this milestone' earns partial credit (FR-8.7): failed criteria: names no scope or limit (no scope term or numeric bound)",
+            "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 1 unknown of 1 item(s); unknown freshness counts as stale (FR-8.6)"
+          ]
+        }
+      },
+      "recoveries": [
+        {
+          "failure_id": "AEE-C1-TASKS-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "C1-TASKS",
+          "strategy": "gather_evidence",
+          "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-C2-TASKS-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "C2-TASKS",
+          "strategy": "gather_evidence",
+          "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-F1-TASKS-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "F1-TASKS",
+          "strategy": "gather_evidence",
+          "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-F2-TASKS-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "F2-TASKS",
+          "strategy": "gather_evidence",
+          "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-F3-TASKS-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "F3-TASKS",
+          "strategy": "gather_evidence",
+          "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-R01-TASKS-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R01-TASKS",
+          "strategy": "gather_evidence",
+          "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-R02-TASKS-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R02-TASKS",
+          "strategy": "gather_evidence",
+          "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-R03-TASKS-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R03-TASKS",
+          "strategy": "gather_evidence",
+          "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-C1-TASKS-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "C1-TASKS",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-C2-TASKS-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "C2-TASKS",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-C2-TASKS-NEGATION-CONFLICT-CHALLE",
+          "claim_id": "C2-TASKS",
+          "strategy": "resolve_contradiction",
+          "action": "Confirm whether the claims share a boundary and preserve both pending review.",
+          "priority": 3,
+          "verification": "Both positions remain recorded; discriminating evidence resolves or scopes them."
+        },
+        {
+          "failure_id": "AEE-F1-TASKS-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "F1-TASKS",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R01-TASKS-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R01-TASKS",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R01-TASKS-NEGATION-CONFLICT-CHALLE",
+          "claim_id": "R01-TASKS",
+          "strategy": "resolve_contradiction",
+          "action": "Confirm whether the claims share a boundary and preserve both pending review.",
+          "priority": 3,
+          "verification": "Both positions remain recorded; discriminating evidence resolves or scopes them."
+        },
+        {
+          "failure_id": "AEE-R02-TASKS-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R02-TASKS",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R02-TASKS-NEGATION-CONFLICT-CHALLE",
+          "claim_id": "R02-TASKS",
+          "strategy": "resolve_contradiction",
+          "action": "Confirm whether the claims share a boundary and preserve both pending review.",
+          "priority": 3,
+          "verification": "Both positions remain recorded; discriminating evidence resolves or scopes them."
+        },
+        {
+          "failure_id": "AEE-R03-TASKS-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R03-TASKS",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R03-TASKS-NEGATION-CONFLICT-CHALLE",
+          "claim_id": "R03-TASKS",
+          "strategy": "resolve_contradiction",
+          "action": "Confirm whether the claims share a boundary and preserve both pending review.",
+          "priority": 3,
+          "verification": "Both positions remain recorded; discriminating evidence resolves or scopes them."
+        },
+        {
+          "failure_id": "AEE-C1-TASKS-DRAFT-CAP",
+          "claim_id": "C1-TASKS",
+          "strategy": "define_falsifier",
+          "action": "Ratify the claim (change its status from draft) to lift the cap.",
+          "priority": 4,
+          "verification": "A concrete observation that would refute the claim is documented."
+        },
+        {
+          "failure_id": "AEE-C2-TASKS-DRAFT-CAP",
+          "claim_id": "C2-TASKS",
+          "strategy": "define_falsifier",
+          "action": "Ratify the claim (change its status from draft) to lift the cap.",
+          "priority": 4,
+          "verification": "A concrete observation that would refute the claim is documented."
+        },
+        {
+          "failure_id": "AEE-F1-TASKS-DRAFT-CAP",
+          "claim_id": "F1-TASKS",
+          "strategy": "define_falsifier",
+          "action": "Ratify the claim (change its status from draft) to lift the cap.",
+          "priority": 4,
+          "verification": "A concrete observation that would refute the claim is documented."
+        },
+        {
+          "failure_id": "AEE-F2-TASKS-DRAFT-CAP",
+          "claim_id": "F2-TASKS",
+          "strategy": "define_falsifier",
+          "action": "Ratify the claim (change its status from draft) to lift the cap.",
+          "priority": 4,
+          "verification": "A concrete observation that would refute the claim is documented."
+        },
+        {
+          "failure_id": "AEE-F3-TASKS-DRAFT-CAP",
+          "claim_id": "F3-TASKS",
+          "strategy": "define_falsifier",
+          "action": "Ratify the claim (change its status from draft) to lift the cap.",
+          "priority": 4,
+          "verification": "A concrete observation that would refute the claim is documented."
+        },
+        {
+          "failure_id": "AEE-R01-TASKS-DRAFT-CAP",
+          "claim_id": "R01-TASKS",
+          "strategy": "define_falsifier",
+          "action": "Ratify the claim (change its status from draft) to lift the cap.",
+          "priority": 4,
+          "verification": "A concrete observation that would refute the claim is documented."
+        },
+        {
+          "failure_id": "AEE-R02-TASKS-DRAFT-CAP",
+          "claim_id": "R02-TASKS",
+          "strategy": "define_falsifier",
+          "action": "Ratify the claim (change its status from draft) to lift the cap.",
+          "priority": 4,
+          "verification": "A concrete observation that would refute the claim is documented."
+        },
+        {
+          "failure_id": "AEE-R03-TASKS-DRAFT-CAP",
+          "claim_id": "R03-TASKS",
+          "strategy": "define_falsifier",
+          "action": "Ratify the claim (change its status from draft) to lift the cap.",
+          "priority": 4,
+          "verification": "A concrete observation that would refute the claim is documented."
+        }
+      ]
+    }
+  }
+}
