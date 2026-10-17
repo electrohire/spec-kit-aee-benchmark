@@ -1,0 +1,62 @@
+{
+  "budget_debit": 10756,
+  "ended_at": "2026-10-17T00:30:50.900942+00:00",
+  "max_output": 4096,
+  "original_sha256": "53105ccb4c733074ff7b1cdd72ba967467a35bbc89beff490e381d7eec0ae882",
+  "phase": "constitution",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 9982,
+  "preflight_seconds": 0.1410000000614673,
+  "removed_history_messages": 0,
+  "request_seconds": 35.82800000021234,
+  "request_sha256": "d6ef3272d6269dd0702a2098e813497658cbbdfd8a57b3e4b4e3d7322bd968e4",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"done\",\"summary\":\"Constitution phase complete. Wrote /testbed/.specify/memory/constitution.md (101 lines, 5619 chars) from the resolved template (.specify/scripts/python/resolve_template.py constitution-template --json succeeded; .specify/templates/constitution-template.md is the active layer; no .specify/extensions.yml exists, so no before/after hooks were checked or run). Project name chosen from the task: cachetools. All 5 supplied approved principles adopted as Core Principles: I. Preserve Existing Public API Behavior; II. Testable Acceptance Criteria; III. Evidence Over Assertion; IV. Simple, Scoped Implementations; V. Documented Assumptions and Regressions. Added Development Workflow section (feature dir specs/001-transactions, phase order, implementation deferred to src/cachetools/tagged.py, upstream tests and acceptance_public.py unmodified) and a concrete Governance section (supremacy, amendment procedure, semver policy, compliance review, ratification note). Sync Impact Report included as HTML-commented section at top: scaffold -> 1.0.0, all five placeholder principles mapped to adopted titles, no removed sections, no TODOs. Validation (observed via grep/head/tail): no unresolved bracket tokens remain outside the intentionally retained report references to the replaced placeholders; version line matches report (1.0.0); dates ISO (Ratified 2026-10-17, Last Amended 2026-10-17, from `date +%F`). Version 1.0.0: initial adoption of the scaffold with the five approved principles. Scope guard honored: only the constitution file was created/modified; no application source, tests, or other artifacts touched. Suggested commit message: docs: adopt cachetools constitution v1.0.0 (five approved principles + governance). Next Actions (deferred non-governance intents, not executed): (1) Implement cachetools.tagged.TaggedCache per R01-R03 in src/cachetools/tagged.py with own tests, keeping upstream tests and acceptance_public.py unchanged \u2014 follow with $speckit-specify (feature directory specs/001-transactions), then $speckit-plan, $speckit-tasks, $speckit-implement; (2) Record Claim-A candidate extension (variant put_no_recency_refresh, 2026-09-21: put on existing key refreshes LRU recency) as an explicit extension in the spec, not silently merged into R02 \u2014 handle during $speckit-specify.\"}",
+          "reasoning_sha256": "19c742fa1663e69da236837e02823a6660bd8ba983331c44aee0776ee7df0063",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792197050,
+    "id": "chatcmpl-CPpnO11pq1ktNVmJFgOVc527ZbtguTzN",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 9182,
+      "predicted_ms": 34595.823,
+      "predicted_n": 774,
+      "predicted_per_second": 22.343737855289643,
+      "predicted_per_token_ms": 44.75526908150064,
+      "prompt_ms": 1189.215,
+      "prompt_n": 800,
+      "prompt_per_second": 672.7126718045097,
+      "prompt_per_token_ms": 1.4865187499999999
+    },
+    "usage": {
+      "completion_tokens": 774,
+      "prompt_tokens": 9982,
+      "prompt_tokens_details": {
+        "cached_tokens": 9182
+      },
+      "total_tokens": 10756
+    }
+  },
+  "seconds": 35.82800000021234,
+  "stage": 1,
+  "started_at": "2026-10-17T00:30:15.058501+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 774,
+    "prompt_tokens": 9982,
+    "prompt_tokens_details": {
+      "cached_tokens": 9182
+    },
+    "total_tokens": 10756
+  }
+}

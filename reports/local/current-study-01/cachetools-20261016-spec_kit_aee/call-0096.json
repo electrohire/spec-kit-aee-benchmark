@@ -1,0 +1,62 @@
+{
+  "budget_debit": 27580,
+  "ended_at": "2026-10-17T17:11:44.460123+00:00",
+  "max_output": 4096,
+  "original_sha256": "f6a24dd8eca8da584903138dd043c5ce1e0f0fa2d36722f90cc51526c9cab4ea",
+  "phase": "plan",
+  "preflight_http_requests": 16,
+  "preflight_input_tokens": 27274,
+  "preflight_seconds": 1.1400000001303852,
+  "removed_history_messages": 16,
+  "request_seconds": 34.71900000004098,
+  "request_sha256": "ef5b33d5c98c3dc991f9f613b33b7355286c7219fa9b3aabb2a47afb465fecde",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cat /testbed/.specify/memory/constitution.md 2>/dev/null | head -60; echo ---; ls /testbed/src/cachetools/; echo ---; grep -n 'class LRUCache' -A 20 /testbed/src/cachetools/__init__.py | head -40\"}",
+          "reasoning_sha256": "d36545b8cfe69633f155480aec66d540f969d96e398d0c10d8ff37888a2151cf",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792257104,
+    "id": "chatcmpl-G0NBizHihswvyA7rvExq5VfM8aOCTOeM",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 3522,
+      "predicted_ms": 14472.788,
+      "predicted_n": 306,
+      "predicted_per_second": 21.07403217679966,
+      "predicted_per_token_ms": 47.45176393442623,
+      "prompt_ms": 19430.304,
+      "prompt_n": 23752,
+      "prompt_per_second": 1222.4204006278028,
+      "prompt_per_token_ms": 0.8180491748063321
+    },
+    "usage": {
+      "completion_tokens": 306,
+      "prompt_tokens": 27274,
+      "prompt_tokens_details": {
+        "cached_tokens": 3522
+      },
+      "total_tokens": 27580
+    }
+  },
+  "seconds": 34.71900000004098,
+  "stage": 3,
+  "started_at": "2026-10-17T17:11:09.730252+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 306,
+    "prompt_tokens": 27274,
+    "prompt_tokens_details": {
+      "cached_tokens": 3522
+    },
+    "total_tokens": 27580
+  }
+}

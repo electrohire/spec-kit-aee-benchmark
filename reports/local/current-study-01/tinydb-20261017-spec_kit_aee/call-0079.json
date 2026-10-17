@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28546,
+  "ended_at": "2026-10-17T06:29:35.358959+00:00",
+  "max_output": 4096,
+  "original_sha256": "39fbcc01b5d3b28bb5ae2ca2cae20551f7b3822688d91d22394ea617b46337ec",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 26302,
+  "preflight_seconds": 0.1410000000614673,
+  "removed_history_messages": 0,
+  "request_seconds": 113.90599999995902,
+  "request_sha256": "9cfaccb236a323e64fae4bd5b80c8bb548eeeb93b78f8bb94650f55078d0fa58",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"draft\",\"claims\":{\"schema_version\":\"1.0\",\"claims\":[{\"id\":\"R01\",\"text\":\"BatchWriter.apply(operations) accepts a list of operation dicts, each exactly {'op':'insert','document':dict} or {'op':'remove','doc_id':positive integer}; returns a list of inserted document IDs in operation order (removes add no result); empty input returns []; unknown/malformed operations raise ValueError.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 1\",\"all active milestones\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[\"apply([{'op':'insert','document':{'x':1}}]) != [1] on fresh db\",\"apply([]) != []\",\"apply with unknown op does not raise ValueError\"],\"source_ref\":\"milestone 1 R01\",\"uncertainty\":\"low\",\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"primary\",\"ref\":\"bb8b6da7875d13717cf4cf3b7f050428d4cd3efc83f3708c2d1c3178f96d55fd\",\"source_id\":\"bb8b6da7875d13717cf4cf3b7f050428d4cd3efc83f3708c2d1c3178f96d55fd\",\"direction\":\"supports\",\"description\":\"acceptance_public.py test_public_basic exercises apply insert/remove and ID return\"}]},{\"id\":\"R02\",\"text\":\"Batch application is atomic: validate and apply sequentially, but on any error restore the complete pre-batch default-table data; a remove targeting a missing ID is an error; previously acquired db.table('_default') handles must reflect both success and rollback.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 1\",\"all active milestones\"],\"depends_on\":[\"R01\"],\"conflicts_with\":[],\"falsification_tests\":[\"batch [insert ok, remove missing id] leaves earlier insert in table\",\"pre-acquired handle shows rolled-back state as stale\"],\"source_ref\":\"milestone 1 R02\",\"uncertainty\":\"low\",\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"primary\",\"ref\":\"bb8b6da7875d13717cf4cf3b7f050428d4cd3efc83f3708c2d1c3178f96d55fd\",\"source_id\":\"bb8b6da7875d13717cf4cf3b7f050428d4cd3efc83f3708c2d1c3178f96d55fd\",\"direction\":\"supports\",\"description\":\"acceptance_public.py test_public_atomic asserts full rollback of earlier insert when a remove targets missing id 99\"}]},{\"id\":\"R03\",\"text\":\"Ordinary TinyDB reads/writes and preexisting documents continue to work; inserted and returned nested data must not alias the caller's input; mutating an operation after apply cannot mutate the database.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 1\",\"all active milestones\"],\"depends_on\":[\"R01\"],\"conflicts_with\":[],\"falsification_tests\":[\"mutating caller op dict after apply changes stored document\",\"mutating returned nested data changes stored document\",\"db.insert/db.all regress while BatchWriter exists\"],\"source_ref\":\"milestone 1 R03\",\"uncertainty\":\"low\",\"evidence\":[]},{\"id\":\"R04\",\"text\":\"Reject bool as a doc_id even though bool is an int subclass; validate operations structurally before committing changes; raise ValueError for unsupported fields, non-list operations, or non-dict documents; accept empty dictionaries as documents.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 2\",\"all active milestones\"],\"depends_on\":[\"R01\"],\"conflicts_with\":[\"superseded older note claiming bool IDs are accepted (unverified, superseded by R04/R05 per milestone 2)\"],\"falsification_tests\":[\"apply remove with doc_id=True succeeds instead of ValueError\",\"apply with non-list operations does not raise ValueError\",\"insert with document={} rejected\",\"structural error committed partial changes before raising\"],\"source_ref\":\"milestone 2 R04\",\"uncertainty\":\"low\",\"evidence\":[]},{\"id\":\"R05\",\"text\":\"preview(operations) returns the inserted IDs that apply would produce but leaves all data and the next insertion ID unchanged, including on errors; preview and failed apply must not consume IDs; existing table handles and query caches must remain coherent.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 2\",\"all active milestones\"],\"depends_on\":[\"R01\",\"R04\"],\"conflicts_with\":[\"superseded older note claiming preview may consume IDs (unverified, superseded by R04/R05 per milestone 2)\"],\"falsification_tests\":[\"preview of one insert on empty db changes next insertion ID\",\"failed apply consumes an ID\",\"preview mutates table data\",\"pre-acquired handle or query cache incoherent after preview\"],\"source_ref\":\"milestone 2 R05\",\"uncertainty\":\"low\",\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"primary\",\"ref\":\"bb8b6da7875d13717cf4cf3b7f050428d4cd3efc83f3708c2d1c3178f96d55fd\",\"source_id\":\"bb8b6da7875d13717cf4cf3b7f050428d4cd3efc83f3708c2d1c3178f96d55fd\",\"direction\":\"supports\",\"description\":\"acceptance_public.py test_public_preview asserts preview==[1] with empty table, then apply(ops)==[1]\"}]},{\"id\":\"R05b\",\"text\":\"preview must return a new, detached list on every call; mutating a list previously returned by preview must not affect subsequent preview results or any internal writer state.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"Claim-A candidate extension (variant preview_cache_alias, 2026-09-21)\"],\"depends_on\":[\"R05\"],\"conflicts_with\":[],\"falsification_tests\":[\"two preview calls return the same list object\",\"mutating an earlier preview list changes a later preview result or internal state\"],\"source_ref\":\"Claim-A candidate extension R05b\",\"uncertainty\":\"low\",\"evidence\":[]},{\"id\":\"R05c\",\"text\":\"apply advances the wrapper next-insertion-ID state on every successful batch and writes that state back to the underlying table so subsequent inserts via apply or direct db.insert continue the ID sequence without reuse or rewind, even across remove operations.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"Claim-A candidate extensions round 2 (2026-09-22)\"],\"depends_on\":[\"R01\",\"R02\"],\"conflicts_with\":[],\"falsification_tests\":[\"after successful batch, direct db.insert reuses an ID already used\",\"ID sequence rewinds after removes in a successful batch\",\"wrapper next-ID state not persisted so later apply/preview diverges from direct inserts\"],\"source_ref\":\"Claim-A candidate extensions round 2 R05 clarification\",\"uncertainty\":\"low\",\"evidence\":[]},{\"id\":\"R07\",\"text\":\"apply(operations, token=None) supports an optional nonempty string idempotency token: repeating an already successful identical batch/token returns a detached copy of the original inserted IDs without rerunning mutations, even if other direct database writes occurred; reusing a token with different operations raises ValueError without changing data; failed batches do not consume a token; None means normal operation; invalid tokens raise ValueError.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 3\"],\"depends_on\":[\"R01\",\"R02\"],\"conflicts_with\":[],\"falsification_tests\":[\"repeating a successful tokenized batch inserts documents a second time\",\"token reuse with different ops mutates data or does not raise ValueError\",\"a failed batch consumes its token\",\"nonempty-string-invalid token (empty string, int) accepted\"],\"source_ref\":\"milestone 3 R07\",\"uncertainty\":\"low\",\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"primary\",\"ref\":\"bb8b6da7875d13717cf4cf3b7f050428d4cd3efc83f3708c2d1c3178f96d55fd\",\"source_id\":\"bb8b6da7875d13717cf4cf3b7f050428d4cd3efc83f3708c2d1c3178f96d55fd\",\"direction\":\"supports\",\"description\":\"acceptance_public.py test_public_idempotent asserts apply(ops, token='a') twice returns [1] with len(db)==1\"}]},{\"id\":\"R08\",\"text\":\"Token bookkeeping belongs to this BatchWriter instance, never in user documents; preview never records/consumes a token and keeps its original signature; return lists must not expose internal token bookkeeping through mutation.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 3\"],\"depends_on\":[\"R07\",\"R05\"],\"conflicts_with\":[],\"falsification_tests\":[\"token metadata appears inside a user document\",\"preview signature changed to accept a token\",\"mutating a returned list from a tokenized apply changes bookkeeping or later replay results\"],\"source_ref\":\"milestone 3 R08\",\"uncertainty\":\"low\",\"evidence\":[]}]}}",
+          "reasoning_sha256": "349457a81a1f875d74a53e84391f6ae1ed8454d529cbdd3068ae567de30ee23b",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792218575,
+    "id": "chatcmpl-tC6GuwWILPAk0dNGdVRBp6KBhUR4esOF",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 26257,
+      "predicted_ms": 113313.094,
+      "predicted_n": 2244,
+      "predicted_per_second": 19.79471145673597,
+      "predicted_per_token_ms": 50.518543914400354,
+      "prompt_ms": 490.292,
+      "prompt_n": 45,
+      "prompt_per_second": 91.78204009039511,
+      "prompt_per_token_ms": 10.895377777777778
+    },
+    "usage": {
+      "completion_tokens": 2244,
+      "prompt_tokens": 26302,
+      "prompt_tokens_details": {
+        "cached_tokens": 26257
+      },
+      "total_tokens": 28546
+    }
+  },
+  "seconds": 113.90599999995902,
+  "stage": 3,
+  "started_at": "2026-10-17T06:27:41.454561+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2244,
+    "prompt_tokens": 26302,
+    "prompt_tokens_details": {
+      "cached_tokens": 26257
+    },
+    "total_tokens": 28546
+  }
+}

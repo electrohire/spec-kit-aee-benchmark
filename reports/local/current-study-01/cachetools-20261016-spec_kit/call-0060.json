@@ -1,0 +1,62 @@
+{
+  "budget_debit": 10628,
+  "ended_at": "2026-10-17T01:37:44.502816+00:00",
+  "max_output": 4096,
+  "original_sha256": "b980f61f67597bb8aef925b2a67239278d3fec6124254a411be1338695fdfd5d",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 10404,
+  "preflight_seconds": 0.0779999999795109,
+  "removed_history_messages": 0,
+  "request_seconds": 11.531999999890104,
+  "request_sha256": "e70f6614b145a8e44c63552f844dbad98a10cd19b1c49f4e7dffc24df197631b",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"sed -n '50,200p' /testbed/.specify/templates/spec-template.md; echo ===CHECKLIST===; cat /testbed/.specify/templates/checklist-template.md; echo ===CONSTITUTION===; head -60 /testbed/.specify/memory/constitution.md\"}",
+          "reasoning_sha256": "d99cf75441186ffa3cac7a50a224e163d81630000cdac951ab1754b4eaf496dc",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792201064,
+    "id": "chatcmpl-x10tGCsMm4tQ7b5gPaw8I2Wjt8uwqzdH",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 8661,
+      "predicted_ms": 9695.732,
+      "predicted_n": 224,
+      "predicted_per_second": 22.99981063833035,
+      "predicted_per_token_ms": 43.47861883408072,
+      "prompt_ms": 1784.742,
+      "prompt_n": 1743,
+      "prompt_per_second": 976.6117455632243,
+      "prompt_per_token_ms": 1.0239483648881238
+    },
+    "usage": {
+      "completion_tokens": 224,
+      "prompt_tokens": 10404,
+      "prompt_tokens_details": {
+        "cached_tokens": 8661
+      },
+      "total_tokens": 10628
+    }
+  },
+  "seconds": 11.531999999890104,
+  "stage": 3,
+  "started_at": "2026-10-17T01:37:32.962437+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 224,
+    "prompt_tokens": 10404,
+    "prompt_tokens_details": {
+      "cached_tokens": 8661
+    },
+    "total_tokens": 10628
+  }
+}

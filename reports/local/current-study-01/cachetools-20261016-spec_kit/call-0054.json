@@ -1,0 +1,62 @@
+{
+  "budget_debit": 26479,
+  "ended_at": "2026-10-17T01:32:48.281771+00:00",
+  "max_output": 4096,
+  "original_sha256": "ad95a0d28fcfe646f860ff122608cd47d4f9886792a26f307b122d267e08ca12",
+  "phase": "tasks",
+  "preflight_http_requests": 16,
+  "preflight_input_tokens": 26263,
+  "preflight_seconds": 1.4839999999385327,
+  "removed_history_messages": 42,
+  "request_seconds": 32.96900000004098,
+  "request_sha256": "f6dd2b2dd08784a9d4f80daa952b554a8211e0363eaaf647c074dba09ee3da5a",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && python3 .specify/scripts/python/setup_tasks.py --json > /tmp/tasks_setup.json 2>&1; python3 - <<'PYEOF'\\nimport json\\nd=json.load(open('/tmp/tasks_setup.json'))\\nprint({k:(v if k!='TASKS_TEMPLATE_CONTENT' else f'<{len(v)} chars>') for k,v in d.items()})\\nprint('template tail:')\\nprint(d['TASKS_TEMPLATE_CONTENT'][-1200:])\\nPYEOF\"}",
+          "reasoning_sha256": "1efb4b44cf02ee5572a0eedee9ff91a0a2015a2be6c229b02750b313dac2a03d",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792200768,
+    "id": "chatcmpl-vh7ZswN8b2rO8jNRAEZvvZuRtvHx3wCg",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 10014.989,
+      "predicted_n": 216,
+      "predicted_per_second": 21.4678218817814,
+      "predicted_per_token_ms": 46.58134418604651,
+      "prompt_ms": 21083.433,
+      "prompt_n": 26263,
+      "prompt_per_second": 1245.6700007062416,
+      "prompt_per_token_ms": 0.8027808323496936
+    },
+    "usage": {
+      "completion_tokens": 216,
+      "prompt_tokens": 26263,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 26479
+    }
+  },
+  "seconds": 32.96900000004098,
+  "stage": 2,
+  "started_at": "2026-10-17T01:32:15.316087+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 216,
+    "prompt_tokens": 26263,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 26479
+  }
+}

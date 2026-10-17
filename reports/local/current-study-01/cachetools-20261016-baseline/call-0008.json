@@ -1,0 +1,62 @@
+{
+  "budget_debit": 10240,
+  "ended_at": "2026-10-17T12:53:48.601170+00:00",
+  "max_output": 4096,
+  "original_sha256": "abf56564ac0c2672df6589aeebf4576c2507511fe0161d64f4d733ef7298b375",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 7703,
+  "preflight_seconds": 0.07800000021234155,
+  "removed_history_messages": 0,
+  "request_seconds": 114.68700000015087,
+  "request_sha256": "6a6c9668765405e9aeca7e12132ae56b365fac608d62bb6e56a081611ccfb3e7",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cat > /testbed/src/cachetools/tagged.py << 'EOF'\\n\\\"\\\"\\\"Tagged cache implementation built on top of :class:`LRUCache`.\\\"\\\"\\\"\\n\\nimport copy\\n\\nfrom . import LRUCache\\n\\n\\ndef _normalize_tags(tags):\\n    \\\"\\\"\\\"Validate and deduplicate *tags*, returning a tuple of strings.\\n\\n    A bare string is rejected, as are non-string entries.  The iterable\\n    must be finite; any iteration error propagates to the caller.\\n\\n    \\\"\\\"\\\"\\n    if isinstance(tags, str):\\n        raise ValueError(\\\"tags must be an iterable of strings, not a str\\\")\\n    try:\\n        iterator = iter(tags)\\n    except TypeError as exc:\\n        raise ValueError(\\\"tags must be an iterable of strings, got %r\\\" % (tags,)) from exc\\n    seen = set()\\n    result = []\\n    for tag in iterator:\\n        if not isinstance(tag, str):\\n            raise ValueError(\\\"tags must be an iterable of strings, got %r\\\" % (tag,))\\n        if tag not in seen:\\n            seen.add(tag)\\n            result.append(tag)\\n    return tuple(result)\\n\\n\\nclass TaggedCache:\\n    \\\"\\\"\\\"A tag-aware bounded cache backed by :class:`LRUCache`.\\n\\n    Values are stored as detached deep copies and values are copied on\\n    input.  Each entry costs exactly one capacity slot regardless of\\n    object size.\\n\\n    \\\"\\\"\\\"\\n\\n    def __init__(self, maxsize):\\n        if isinstance(maxsize, bool) or not isinstance(maxsize, int):\\n            raise ValueError(\\\"maxsize must be a positive integer, got %r\\\" % (maxsize,))\\n        if maxsize < 1:\\n            raise ValueError(\\\"maxsize must be a positive integer, got %r\\\" % (maxsize,))\\n        self.__maxsize = maxsize\\n        self.__data = LRUCache(maxsize)\\n        # key -> tuple of tags; kept in sync with self.__data\\n        self.__tags = {}\\n\\n    @property\\n    def maxsize(self):\\n        \\\"\\\"\\\"The maximum size of the cache.\\\"\\\"\\\"\\n        return self.__maxsize\\n\\n    @property\\n    def currsize(self):\\n        \\\"\\\"\\\"The current number of entries in the cache.\\\"\\\"\\\"\\n        return len(self.__data)\\n\\n    def __len__(self):\\n        return len(self.__data)\\n\\n    def __contains__(self, key):\\n        return key in self.__data\\n\\n    def put(self, key, value, tags=()):\\n        \\\"\\\"\\\"Insert or replace *key* with a deep copy of *value*.\\n\\n        *tags* must be a finite iterable of strings; duplicate tags are\\n        removed while preserving first-seen order.  Overwriting an\\n        existing key replaces its tag memberships and refreshes its LRU\\n        recency, making it the most-recently-used entry.  Invalid input\\n        (bad tags or an unhashable key) raises ``ValueError``/``TypeError``\\n        without changing existing state.\\n\\n        \\\"\\\"\\\"\\n        tag_tuple = _normalize_tags(tags)\\n        # touching the key validates hashability before any mutation\\n        existing = key in self.__data\\n        new_value = copy.deepcopy(value)\\n        if existing:\\n            # remove old tag memberships first, then restore recency\\n            # after the LRU update so replacement tags are not lost\\n            self.__remove_memberships(key)\\n            self.__data[key] = new_value\\n            self.__tags[key] = tag_tuple\\n            for tag in tag_tuple:\\n                self.__add_membership(tag, key)\\n        else:\\n            self.__data[key] = new_value\\n            self.__tags[key] = tag_tuple\\n            for tag in tag_tuple:\\n                self.__add_membership(tag, key)\\n\\n    def get(self, key):\\n        \\\"\\\"\\\"Return a detached deep copy of the value stored under *key*.\\n\\n        Refreshes the LRU recency of *key*.  Raises ``KeyError`` for\\n        missing keys.\\n\\n        \\\"\\\"\\\"\\n        if key not in self.__data:\\n            raise KeyError(key)\\n        value = self.__data[key]  # refreshes recency via LRUCache.__getitem__\\n        return copy.deepcopy(value)\\n\\n    def invalidate(self, tag):\\n        \\\"\\\"\\\"Remove all currently cached entries carrying *tag*.\\n\\n        Returns the number of entries removed.\\n\\n        \\\"\\\"\\\"\\n        if not isinstance(tag, str):\\n            raise ValueError(\\\"tag must be a string, got %r\\\" % (tag,))\\n        keys = list(self.__memberships.get(tag, ()))\\n        for key in keys:\\n            del self[key]\\n        return len(keys)\\n\\n    def __delitem__(self, key):\\n        if key not in self.__data:\\n            raise KeyError(key)\\n        self.__remove_memberships(key)\\n        del self.__data[key]\\n        del self.__tags[key]\\n\\n    def __getitem__(self, key):\\n        if key not in self.__data:\\n            raise KeyError(key)\\n        value = self.__data[key]\\n        return copy.deepcopy(value)\\n\\n    def pop(self, key, default=_marker := object()):\\n        if key in self:\\n            value = self[key]\\n            del self[key]\\n            return value\\n        elif default is self.pop.__defaults_marker:\\n            raise KeyError(key)\\n        return default\\n\\n    def clear(self):\\n        \\\"\\\"\\\"Remove all entries from the cache.\\\"\\\"\\\"\\n        self.__data.clear()\\n        self.__tags.clear()\\n        self.__memberships.clear()\\n\\n    def __repr__(self):\\n        return \\\"TaggedCache(maxsize=%r, currsize=%r)\\\" % (self.__maxsize, len(self))\\n\\n    # -- internal helpers -------------------------------------------------\\n\\n    def __add_membership(self, tag, key):\\n        self.__memberships.setdefault(tag, []).append(key)\\n\\n    def __remove_memberships(self, key):\\n        for tag in self.__tags.get(key, ()):\\n            members = self.__memberships.get(tag)\\n            if members is not None:\\n                try:\\n                    members.remove(key)\\n                except ValueError:\\n                    pass\\n                if not members:\\n                    del self.__memberships[tag]\\n\\n    @property\\n    def __memberships(self):\\n        # tag -> list of keys; lazily created to keep __init__ simple\\n        try:\\n            return self._TaggedCache__memberships_map\\n        except AttributeError:\\n            self._TaggedCache__memberships_map = {}\\n            return self._TaggedCache__memberships_map\\nEOF\\necho written\"}",
+          "reasoning_sha256": "9a361c5831169f100437a35c6da0adda80818f13388de1087faf469d8e1ea9e7",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792241628,
+    "id": "chatcmpl-wqS8tfyOy4I74PRbSYHDaBwUOvynbBc8",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 6985,
+      "predicted_ms": 113684.886,
+      "predicted_n": 2537,
+      "predicted_per_second": 22.307274865015916,
+      "predicted_per_token_ms": 44.828425078864356,
+      "prompt_ms": 960.729,
+      "prompt_n": 718,
+      "prompt_per_second": 747.3491484070951,
+      "prompt_per_token_ms": 1.3380626740947075
+    },
+    "usage": {
+      "completion_tokens": 2537,
+      "prompt_tokens": 7703,
+      "prompt_tokens_details": {
+        "cached_tokens": 6985
+      },
+      "total_tokens": 10240
+    }
+  },
+  "seconds": 114.68700000015087,
+  "stage": 1,
+  "started_at": "2026-10-17T12:51:53.904929+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2537,
+    "prompt_tokens": 7703,
+    "prompt_tokens_details": {
+      "cached_tokens": 6985
+    },
+    "total_tokens": 10240
+  }
+}

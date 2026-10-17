@@ -1,0 +1,62 @@
+{
+  "budget_debit": 30793,
+  "ended_at": "2026-10-17T04:14:08.558660+00:00",
+  "max_output": 4096,
+  "original_sha256": "45d50a6df13f6dfd30cf66737e2074b0285e2a46a1bc53b63ebc14fe7a054dca",
+  "phase": "specify",
+  "preflight_http_requests": 16,
+  "preflight_input_tokens": 28126,
+  "preflight_seconds": 1.172000000020489,
+  "removed_history_messages": 56,
+  "request_seconds": 136.4220000000205,
+  "request_sha256": "213bddf520b1d1bc834b4b069cace9ca2a44496e2c2638b2fcca455ed32412cb",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"draft\",\"claims\":{\"schema_version\":\"1.0\",\"claims\":[{\"id\":\"R01\",\"text\":\"TaggedCache(maxsize) built on LRUCache: put(key,value,tags=()) inserts/replaces; get(key) returns detached deep copy or raises KeyError; values copied on input; keys hashable; tags finite iterable of strings deduplicated; bare string or nonstring tag rejected with ValueError before any state change.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 1\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[\"mutating returned copy or original input changes stored value\",\"get on missing key returns None instead of KeyError\",\"put(k,v,'ab') or put(k,v,('a',1)) mutates prior state before raising ValueError\"],\"source_ref\":\"milestone 1 requirement R01\",\"uncertainty\":\"low\",\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"ref\":\"b8daea9af4df52732f45b27081b9a15ae928873956657b556c2a494707fdfc12\",\"source_id\":\"b8daea9af4df52732f45b27081b9a15ae928873956657b556c2a494707fdfc12\",\"direction\":\"supports\",\"description\":\"acceptance_public.py test_public_basic/test_public_replacement exercise put/get/invalidate on cachetools.tagged.TaggedCache\"}]},{\"id\":\"R02\",\"text\":\"invalidate(tag) removes exactly currently cached entries carrying that tag and returns count; replacing a key removes old tag memberships; LRU eviction leaves no stale memberships affecting later reuse of the same key; get refreshes LRU recency; len counts live entries.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 1\"],\"depends_on\":[\"R01\"],\"conflicts_with\":[],\"falsification_tests\":[\"evicted key's old tag still counted by invalidate(tag)\",\"len(cache) counts evicted entries\",\"get on oldest entry does not protect it from next eviction\"],\"source_ref\":\"milestone 1 requirement R02\",\"uncertainty\":\"low\",\"evidence\":[]},{\"id\":\"R02-EXT\",\"text\":\"Overwriting an existing key via put refreshes its LRU recency, making it the most-recently-used entry (Claim-A candidate extension, variant put_no_recency_refresh, 2026-09-21).\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 1\",\"claim-a-2026-09-21\"],\"depends_on\":[\"R02\"],\"conflicts_with\":[],\"falsification_tests\":[\"overwrite of oldest entry in full cache still evicts that same key or another key instead of refreshing it\"],\"source_ref\":\"Claim-A candidate extension 2026-09-21 (variant label contradicts text; text adopted per latest-requirement-text rule)\",\"uncertainty\":\"medium\",\"evidence\":[]},{\"id\":\"R03\",\"text\":\"maxsize must be a positive integer excluding bool (ValueError otherwise); invalid replacement input leaves old value/tags/recency unchanged; every value costs exactly one capacity slot.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 1\"],\"depends_on\":[\"R01\"],\"conflicts_with\":[],\"falsification_tests\":[\"TaggedCache(0)/(-1)/True/2.5/\\\"3\\\" constructs successfully\",\"invalid put on existing key changes its value/tags/recency\",\"large value evicts more than one slot\"],\"source_ref\":\"milestone 1 requirement R03\",\"uncertainty\":\"low\",\"evidence\":[]},{\"id\":\"R04\",\"text\":\"invalidate_many(tags, mode='any'): mode='any' removes union, mode='all' removes entries containing every supplied tag; empty requested tags remove zero entries for either mode; returns count of distinct removed keys; invalid mode or tags rejected before mutation; invalidate(tag) stays compatible. Supersedes old note 'empty all-tags matches every key'.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 2\"],\"depends_on\":[\"R02\"],\"conflicts_with\":[\"old design note: empty all-tags matches every key (superseded)\"],\"falsification_tests\":[\"invalidate_many([], mode='all') on non-empty cache removes entries\",\"invalidate_many(['x','y'], mode='all') removes an entry with only 'x'\",\"invalid mode mutates state before raising\",\"return counts keys twice for one entry\"],\"source_ref\":\"milestone 2 requirement R04\",\"uncertainty\":\"low\",\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"ref\":\"b8daea9af4df52732f45b27081b9a15ae928873956657b556c2a494707fdfc12\",\"source_id\":\"b8daea9af4df52732f45b27081b9a15ae928873956657b556c2a494707fdfc12\",\"direction\":\"supports\",\"description\":\"acceptance_public.py test_public_union_resize asserts invalidate_many(['x','y']) == 3 (union over overlapping tags)\"}]},{\"id\":\"R05\",\"text\":\"resize(maxsize): validates positive non-bool integer first (failed resize preserves all state); preserves surviving entries and their LRU order; shrinking evicts least-recently-used; growing does not evict; maxsize property reports current capacity. Supersedes old note 'resizing may flush the cache'.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 2\"],\"depends_on\":[\"R03\"],\"conflicts_with\":[\"old design note: resizing may flush the cache (superseded)\"],\"falsification_tests\":[\"resize(True) or resize(0) mutates state\",\"shrinking evicts most-recently-used or arbitrary entries\",\"growing evicts entries\",\"resize failure leaves maxsize/entries/recency changed\"],\"source_ref\":\"milestone 2 requirement R05\",\"uncertainty\":\"low\",\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"ref\":\"b8daea9af4df52732f45b27081b9a15ae928873956657b556c2a494707fdfc12\",\"source_id\":\"b8daea9af4df52732f45b27081b9a15ae928873956657b556c2a494707fdfc12\",\"direction\":\"supports\",\"description\":\"acceptance_public.py test_public_union_resize asserts c.resize(1) then c.maxsize == 1\"}]},{\"id\":\"R05-CLR\",\"text\":\"Preserving a surviving entry across resize preserves its absolute expiry (R07/R08 define the expiry as entry state); a resize that drops expiries (making entries immortal) or recomputes them from resize time does not satisfy the requirement.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 2\",\"claim-a-round2-2026-09-22\"],\"depends_on\":[\"R05\"],\"conflicts_with\":[],\"falsification_tests\":[\"after resize, a surviving entry's absolute expiry timestamp differs from before resize or becomes None/immortal\"],\"source_ref\":\"Claim-A candidate extensions round 2 (2026-09-22), R05 clarification\",\"uncertainty\":\"high\",\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"primary\",\"ref\":\"e4e497ea1a89974671f5877e46b1f0b46e4bada3f8f093b3240beb84f61ee49d\",\"source_id\":\"e4e497ea1a89974671f5877e46b1f0b46e4bada3f8f093b3240beb84f61ee49d\",\"direction\":\"supports\",\"description\":\"src/cachetools/tagged.py does not exist yet; no expiry implementation exists to preserve. Referenced R07/R08 are not present in any provided requirement text - unresolved gap: expiry semantics for TaggedCache are undefined beyond this clarification.\"}]},{\"id\":\"R06\",\"text\":\"Tags may be passed as generators and must be consumed only once; returned values must remain detached across repeated gets and puts, including nested lists/dicts.\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"milestone 2\"],\"depends_on\":[\"R01\",\"R03\"],\"conflicts_with\":[],\"falsification_tests\":[\"generator tags consumed twice (e.g. re-iterated or stored as iterable)\",\"mutating a returned nested list/dict changes the stored value on a later get\"],\"source_ref\":\"milestone 2 requirement R06\",\"uncertainty\":\"low\",\"evidence\":[]}]}}",
+          "reasoning_sha256": "a4c09168c9259a9a6e16a9ef1665ed349739912ed0afe7dd54a49c12fbb3755b",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792210448,
+    "id": "chatcmpl-rKbqGKYbHX3pKfszZr1cz8YXP11IcEqb",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 28097,
+      "predicted_ms": 135876.485,
+      "predicted_n": 2667,
+      "predicted_per_second": 19.62076072250471,
+      "predicted_per_token_ms": 50.96642348087021,
+      "prompt_ms": 434.525,
+      "prompt_n": 29,
+      "prompt_per_second": 66.73954317933375,
+      "prompt_per_token_ms": 14.983620689655172
+    },
+    "usage": {
+      "completion_tokens": 2667,
+      "prompt_tokens": 28126,
+      "prompt_tokens_details": {
+        "cached_tokens": 28097
+      },
+      "total_tokens": 30793
+    }
+  },
+  "seconds": 136.4220000000205,
+  "stage": 2,
+  "started_at": "2026-10-17T04:11:52.133940+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2667,
+    "prompt_tokens": 28126,
+    "prompt_tokens_details": {
+      "cached_tokens": 28097
+    },
+    "total_tokens": 30793
+  }
+}

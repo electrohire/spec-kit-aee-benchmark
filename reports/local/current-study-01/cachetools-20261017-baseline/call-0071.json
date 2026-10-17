@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28869,
+  "ended_at": "2026-10-17T03:06:49.492927+00:00",
+  "max_output": 4096,
+  "original_sha256": "cfd2bc0cef83c707e33bc978f34fe1a738f1b5ab17b0861a2a17aa2f97ab8d8b",
+  "phase": "solve",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 28100,
+  "preflight_seconds": 1.0,
+  "removed_history_messages": 4,
+  "request_seconds": 39.21899999980815,
+  "request_sha256": "fcd4f4b7e52035d04b5919658cd4c80a207ddfa677e31251d907ab5dbff12186",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "All 317 tests pass and no upstream files were modified. Let me update the handoff notes.\n\n{\"action\":\"shell\",\"command\":\"cd /testbed && cat > HANDOFF.md <<'EOF'\\n# HANDOFF \u2014 cachetools tagged cache (milestone 3 complete)\\n\\n## Status: R01-R08 implemented in src/cachetools/tagged.py\\n- R01-R03: put/get deep-copy detachment, tag normalization (finite iterable of\\n  strings, bare string/bytes rejected, nonstring entries rejected, dedup, single\\n  consumption pass), invalidate(), LRU recency on put/get, one slot per value,\\n  maxsize positive int (bool excluded). Invalid replacement input never mutates\\n  state (tags/ttl validated up front).\\n- R04: invalidate_many(tags, mode='any'|'all'); empty requested tags -> 0;\\n  invalid mode/tags raise ValueError before mutation.\\n- R05: resize(maxsize) validates first; shrink evicts LRU via _TaggedLRUCache\\n  (records evicted keys to prune tag memberships/expiry); grow never evicts;\\n  survivors keep values/tags/LRU order/absolute expiry; maxsize property.\\n- R06: generator tags consumed once; deep copies detached across gets/puts.\\n- R07: TaggedCache(maxsize, timer=None) default time.monotonic; put(..., ttl=None);\\n  ttl None = immortal; finite nonnegative int/float (bool excluded) -> expiry\\n  timer()+ttl; invalid ttl (neg, bool, nan, inf, non-number) ValueError before\\n  mutation; ttl=0 immediately expired; expiry boundary (now >= expiry) expired.\\n- R08: __purge_expired() runs before get/put/len/resize/invalidate/invalidate_many/\\n  pop; purge uses del (no recency touch on survivors); overwrite replaces prior\\n  expiry; invalidation counts only live entries; expired/missing get -> KeyError.\\n\\n## Design notes\\n- _TaggedLRUCache(LRUCache) records evicted keys in _evicted; _resize mutates\\n  _Cache__maxsize directly and pops LRU items. Expiry stored in TaggedCache\\n  (not in values) so resize preserves absolute expiry (round-2 clarification).\\n- Timer only consulted when expiry state exists; failing timer -> no expiry.\\n- Superseded old design note ('empty all-tags matches every key / resize may\\n  flush') is WRONG per R04/R05 \u2014 do not follow it.\\n\\n## Verification (run with PYTHONPATH=src:.)\\n- python -m pytest tests/ acceptance_public.py -q  -> 317 passed\\n  (313 upstream + 4 public incl. test_public_ttl)\\n- Extra TTL tests in /tmp/test_ttl_extra.py (20 tests) also pass; kept out of\\n  tests/ to avoid touching upstream test suite. Coverage: boundary expiry,\\n  ttl=0, invalid ttl before mutation, overwrite expiry replace, purge before\\n  len/put/resize/invalidate without recency touch, resize preserves absolute\\n  expiry, tag cleanup after expiry, key reuse after expiry.\\nEOF\\necho done\"}",
+          "reasoning_sha256": "fd42b3d7ae155ed958e19d3ea40c2d366e4d9993a3ac9ebeea5d3567e7c87329",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792206409,
+    "id": "chatcmpl-IKcPdBM0UGaPFEkiSU68Vket9AQn6Okv",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 27785,
+      "predicted_ms": 38154.212,
+      "predicted_n": 769,
+      "predicted_per_second": 20.128839248468818,
+      "predicted_per_token_ms": 49.679963541666666,
+      "prompt_ms": 931.386,
+      "prompt_n": 315,
+      "prompt_per_second": 338.2056419143084,
+      "prompt_per_token_ms": 2.956780952380952
+    },
+    "usage": {
+      "completion_tokens": 769,
+      "prompt_tokens": 28100,
+      "prompt_tokens_details": {
+        "cached_tokens": 27785
+      },
+      "total_tokens": 28869
+    }
+  },
+  "seconds": 39.21899999980815,
+  "stage": 3,
+  "started_at": "2026-10-17T03:06:10.265839+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 769,
+    "prompt_tokens": 28100,
+    "prompt_tokens_details": {
+      "cached_tokens": 27785
+    },
+    "total_tokens": 28869
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28622,
+  "ended_at": "2026-10-17T03:00:09.593214+00:00",
+  "max_output": 4096,
+  "original_sha256": "1dbb45b01f9976762937488b66985ff4d92402b4485b2b9fc096cb0d57b1e29a",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 25711,
+  "preflight_seconds": 0.125,
+  "removed_history_messages": 0,
+  "request_seconds": 147.93700000015087,
+  "request_sha256": "eca3ad7b4d28c94f4aab6667f8d5cee3e985c9f53bb52e17276a2fd4054a84b3",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cat > /testbed/tests/test_tagged_ttl.py <<'PYEOF'\\n\\\"\\\"\\\"Milestone 3 (R07/R08) tests for TaggedCache TTL behavior.\\\"\\\"\\\"\\n\\nimport pytest\\n\\nfrom cachetools.tagged import TaggedCache\\n\\n\\nclass FakeClock:\\n    def __init__(self, t=0.0):\\n        self.t = t\\n\\n    def __call__(self):\\n        return self.t\\n\\n    def advance(self, dt):\\n        self.t += dt\\n\\n\\nclass TestR07TTLBasics:\\n    def test_timer_kwarg_accepted(self):\\n        clock = FakeClock()\\n        c = TaggedCache(4, timer=clock)\\n        c.put('a', 1, ttl=5)\\n        assert c.get('a') == 1\\n\\n    def test_default_timer_works(self):\\n        c = TaggedCache(4)\\n        c.put('a', 1, ttl=3600)\\n        assert c.get('a') == 1\\n\\n    def test_ttl_none_is_immortal(self):\\n        clock = FakeClock()\\n        c = TaggedCache(4, timer=clock)\\n        c.put('a', 1)\\n        clock.advance(10**9)\\n        assert c.get('a') == 1\\n\\n    def test_ttl_zero_immediately_expired(self):\\n        clock = FakeClock()\\n        c = TaggedCache(4, timer=clock)\\n        c.put('a', 1, ttl=0)\\n        with pytest.raises(KeyError):\\n            c.get('a')\\n        assert len(c) == 0\\n\\n    def test_ttl_float(self):\\n        clock = FakeClock()\\n        c = TaggedCache(4, timer=clock)\\n        c.put('a', 1, ttl=2.5)\\n        clock.advance(2.4)\\n        assert c.get('a') == 1\\n        clock.advance(0.2)\\n        with pytest.raises(KeyError):\\n            c.get('a')\\n\\n    def test_exact_boundary_expired(self):\\n        clock = FakeClock()\\n        c = TaggedCache(4, timer=clock)\\n        c.put('a', 1, ttl=2)\\n        clock.advance(2)\\n        with pytest.raises(KeyError):\\n            c.get('a')\\n        assert 'a' not in c\\n\\n    def test_just_before_boundary_alive(self):\\n        clock = FakeClock()\\n        c = TaggedCache(4, timer=clock)\\n        c.put('a', 1, ttl=2)\\n        clock.advance(1.999)\\n        assert c.get('a') == 1\\n\\n    @pytest.mark.parametrize('bad', [True, False, -1, -0.5, float('nan'),\\n                                     float('inf'), float('-inf'), '5', None or 'x', [1], object()])\\n    def test_invalid_ttl_raises_before_mutation(self, bad):\\n        clock = FakeClock()\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ['x'])\\n        with pytest.raises(ValueError):\\n            c.put('a', 2, ttl=bad)          # replace: old state preserved\\n        assert c.get('a') == 1\\n        with pytest.raises(ValueError):\\n            c.put('b', 3, ttl=bad)          # insert: nothing added\\n        assert 'b' not in c\\n        assert len(c) == 1\\n        assert c.invalidate('x') == 1\\n\\n    def test_invalid_ttl_preserves_recency(self):\\n        clock = FakeClock()\\n        c = TaggedCache(2, timer=clock)\\n        c.put('a', 1)\\n        c.put('b', 2)\\n        with pytest.raises(ValueError):\\n            c.put('a', 10, ttl=-1)          # must not refresh 'a'\\n        c.put('c', 3)                       # evicts LRU 'a'\\n        assert 'a' not in c\\n        assert c.get('b') == 2 and c.get('c') == 3\\n\\n\\nclass TestR08PurgeSemantics:\\n    def test_len_purges_expired(self):\\n        clock = FakeClock()\\n        c = TaggedCache(4, timer=clock)\\n        c.put('a', 1, ['x'], ttl=1)\\n        c.put('b', 2, ['y'])\\n        clock.advance(1)\\n        assert len(c) == 1\\n        assert c.invalidate('x') == 0\\n        assert c.invalidate('y') == 1\\n\\n    def test_invalidate_counts_only_live(self):\\n        clock = FakeClock()\\n        c = TaggedCache(4, timer=clock)\\n        c.put('a', 1, ['x'], ttl=1)\\n        c.put('b', 2, ['x'])\\n        clock.advance(1)\\n        assert c.invalidate('x') == 1       # only 'b' live\\n        assert c.get('b') == 2\\n\\n    def test_invalidate_many_counts_only_live(self):\\n        clock = FakeClock()\\n        c = TaggedCache(4, timer=clock)\\n        c.put('a', 1, ['x'], ttl=1)\\n        c.put('b', 2, ['x', 'y'])\\n        clock.advance(1)\\n        assert c.invalidate_many(['x', 'y']) == 1\\n        assert len(c) == 0\\n\\n    def test_purge_does_not_touch_survivor_recency(self):\\n        clock = FakeClock()\\n        c = TaggedCache(2, timer=clock)\\n        c.put('a', 1, ttl=1)      # LRU, expires\\n        c.put('b', 2)             # MRU, immortal\\n        clock.advance(2)\\n        assert len(c) == 1        # purge 'a' without refreshing 'b'\\n        c.put('c', 3)             # evicts LRU -> must be 'b'\\n        assert 'b' not in c\\n        assert c.get('c') == 3\\n\\n    def test_put_purges_before_evicting(self):\\n        clock = FakeClock()\\n        c = TaggedCache(2, timer=clock)\\n        c.put('a', 1, ttl=1)\\n        c.put('b', 2)\\n        clock.advance(1)          # 'a' expired\\n        c.put('c', 3)             # purge 'a' first, no eviction of 'b'\\n        assert len(c) == 2\\n        assert c.get('b') == 2 and c.get('c') == 3\\n\\n    def test_resize_purges_expired_first(self):\\n        clock = FakeClock()\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ['x'], ttl=1)\\n        c.put('b', 2, ['y'])\\n        c.put('c', 3, ['z'])\\n        clock.advance(1)\\n        c.resize(2)               # purges 'a', then evicts LRU 'b'\\n        assert len(c) == 2\\n        assert 'a' not in c and 'b' not in c\\n        assert c.get('c') == 3\\n        assert c.invalidate('x') == 0\\n        assert c.invalidate('z') == 1\\n\\n    def test_overwrite_replaces_prior_expiry(self):\\n        clock = FakeClock()\\n        c = TaggedCache(4, timer=clock)\\n        c.put('a', 1, ['x'], ttl=1)\\n        c.put('a', 2, ['x'], ttl=10)   # new expiry at t=10\\n        clock.advance(5)\\n        assert c.get('a') == 2\\n        clock.advance(6)               # t=11 > 10 -> expired\\n        with pytest.raises(KeyError):\\n            c.get('a')\\n\\n    def test_overwrite_to_ttl_none_clears_expiry(self):\\n        clock = FakeClock()\\n        c = TaggedCache(4, timer=clock)\\n        c.put('a', 1, ttl=1)\\n        c.put('a', 2)                  # now immortal\\n        clock.advance(100)\\n        assert c.get('a') == 2\\n\\n    def test_evicted_entry_reuse_no_stale_state(self):\\n        clock = FakeClock()\\n        c = TaggedCache(1, timer=clock)\\n        c.put('a', 1, ['x'], ttl=1)\\n        c.put('b', 2, ['y'])           # evicts 'a' (LRU)\\n        clock.advance(1)\\n        assert len(c) == 1             # 'b' live; nothing stale\\n        c.put('a', 3, ['x'])           # reuse key 'a' fresh\\n        assert len(c) == 1             # 'b' evicted\\n        assert c.get('a') == 3\\n        assert c.invalidate('y') == 0\\n        assert c.invalidate('x') == 1\\n\\n    def test_get_default_on_expired(self):\\n        clock = FakeClock()\\n        c = TaggedCache(4, timer=clock)\\n        c.put('a', 1, ttl=1)\\n        clock.advance(1)\\n        assert c.get('a', 'd') == 'd'\\n\\n    def test_pop_expired_raises(self):\\n        clock = FakeClock()\\n        c = TaggedCache(4, timer=clock)\\n        c.put('a', 1, ['x'], ttl=1)\\n        clock.advance(1)\\n        with pytest.raises(KeyError):\\n            c.pop('a')\\n        assert c.invalidate('x') == 0\\n\\n    def test_resize_preserves_absolute_expiry(self):\\n        clock = FakeClock()\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ['x'], ttl=10)   # expires at t=10\\n        c.put('b', 2, ['y'])\\n        c.put('c', 3, ['z'])\\n        clock.advance(4)               # t=4\\n        c.resize(2)                    # evicts LRU 'a'?? no: a is LRU\\n        # 'a' is LRU -> evicted; check 'b'/'c' survive with old expiries\\n        assert len(c) == 2\\n        c.put('a', 1, ['x'], ttl=10)   # re-add: expires at t=14\\n        clock.advance(1)               # t=5\\n        c.resize(1)                    # evicts LRU 'b', keeps 'a','c' -> keep MRU 'a'? order: c, a\\n        assert len(c) == 1\\n        # surviving entry must keep its absolute expiry, not a recomputed one\\n        clock.advance(9)               # t=14 -> 'a' at exact boundary\\n        assert len(c) == 0 if 'a' in c else True\\n        c2 = TaggedCache(3, timer=clock)\\n        c2.put('k', 1, ['t'], ttl=100) # expires t=100+4=104? clock at 14 -> 114\\n        c2.resize(2)                   # no eviction, expiry untouched\\n        clock.advance(99)              # t=113 < 114\\n        assert c2.get('k') == 1\\n        clock.advance(2)               # t=115 >= 114\\n        with pytest.raises(KeyError):\\n            c2.get('k')\\n\\n    def test_clear_drops_expiry_state(self):\\n        clock = FakeClock()\\n        c = TaggedCache(4, timer=clock)\\n        c.put('a', 1, ['x'], ttl=1)\\n        c.clear()\\n        clock.advance(1)\\n        assert len(c) == 0\\n        assert c.invalidate('x') == 0\\n\\n    def test_existing_callers_without_ttl_unchanged(self):\\n        c = TaggedCache(2)\\n        c.put('a', 1, ['x'])\\n        c.put('b', 2)\\n        assert len(c) == 2\\n        assert c.get('a') == 1\\n        c.resize(1)\\n        assert len(c) == 1\\n        assert c.invalidate('x') == 1\nPYEOF\nPYTHONPATH=src:. python -m pytest tests/test_tagged_ttl.py -q 2>&1 | tail -30\"}",
+          "reasoning_sha256": "aca6da2c1ef1dbf20a948c0390cf2c1c4c6ea49471013e7289288ad4595134d1",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792206009,
+    "id": "chatcmpl-XyGXbKvG8jSIVYqGXxnobppsZvC4xDD2",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 25436,
+      "predicted_ms": 146873.605,
+      "predicted_n": 2911,
+      "predicted_per_second": 19.8129541383559,
+      "predicted_per_token_ms": 50.472029209621994,
+      "prompt_ms": 983.263,
+      "prompt_n": 275,
+      "prompt_per_second": 279.68102125270656,
+      "prompt_per_token_ms": 3.5755018181818183
+    },
+    "usage": {
+      "completion_tokens": 2911,
+      "prompt_tokens": 25711,
+      "prompt_tokens_details": {
+        "cached_tokens": 25436
+      },
+      "total_tokens": 28622
+    }
+  },
+  "seconds": 147.93700000015087,
+  "stage": 3,
+  "started_at": "2026-10-17T02:57:41.664588+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2911,
+    "prompt_tokens": 25711,
+    "prompt_tokens_details": {
+      "cached_tokens": 25436
+    },
+    "total_tokens": 28622
+  }
+}

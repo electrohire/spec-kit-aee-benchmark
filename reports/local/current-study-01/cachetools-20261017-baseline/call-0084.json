@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28685,
+  "ended_at": "2026-10-17T03:13:08.413273+00:00",
+  "max_output": 4096,
+  "original_sha256": "bb9ffc5935219b04753caee4eebcebf1d3612432fb411ee7853ddb826ca32ca0",
+  "phase": "solve",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 28245,
+  "preflight_seconds": 1.0,
+  "removed_history_messages": 6,
+  "request_seconds": 23.015999999828637,
+  "request_sha256": "779649146aab113a44edcca80755388738928aec54653110775bf3cd8f3e6709",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"done\",\"summary\":\"Implemented R07/R08 TTL support in src/cachetools/tagged.py on top of the existing R01-R06 TaggedCache: constructor accepts timer=None (defaults to time.monotonic); put() accepts ttl=None where a finite nonnegative int/float (bool, inf, nan, negative, non-numeric rejected with ValueError before any mutation) sets an absolute expiry at timer()+ttl; ttl=0 expires immediately and the exact boundary (now >= expiry) is expired. A __purge_expired() pass runs before get/put/len/resize/invalidate/invalidate_many/pop, removing expired entries without touching survivors' LRU recency; overwrites replace prior expiry; invalidation counts only live entries; expired/missing get raises KeyError. Per-key absolute expiries are stored in a dedicated dict so resize preserves them (Claim-A round 2) and key reuse after expiry leaves no stale tag memberships. Verified: PYTHONPATH=src:. pytest tests/ acceptance_public.py -> 317 passed (313 upstream+own tests unchanged, 4 public acceptance including test_public_ttl); 20 additional TTL edge tests in /tmp/test_ttl_extra.py all passed (boundary expiry, invalid ttl values, purge-before-len/put/resize/invalidate, resize preserving absolute expiry, tag cleanup). Upstream tests and acceptance_public.py were not modified; HANDOFF.md updated.\",\"completion_asserted\":true}",
+          "reasoning_sha256": "be85f023b13de9f3b1800d38f3e4f4e04c139a4f973c2c7c95f017d152e65eef",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792206788,
+    "id": "chatcmpl-t35zI6Vr6VZVHq22EIbZccweWRK2NDA4",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 27445,
+      "predicted_ms": 21472.384,
+      "predicted_n": 440,
+      "predicted_per_second": 20.444865367534412,
+      "predicted_per_token_ms": 48.912036446469244,
+      "prompt_ms": 1427.207,
+      "prompt_n": 800,
+      "prompt_per_second": 560.5353673293363,
+      "prompt_per_token_ms": 1.7840087500000001
+    },
+    "usage": {
+      "completion_tokens": 440,
+      "prompt_tokens": 28245,
+      "prompt_tokens_details": {
+        "cached_tokens": 27445
+      },
+      "total_tokens": 28685
+    }
+  },
+  "seconds": 23.015999999828637,
+  "stage": 3,
+  "started_at": "2026-10-17T03:12:45.388340+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 440,
+    "prompt_tokens": 28245,
+    "prompt_tokens_details": {
+      "cached_tokens": 27445
+    },
+    "total_tokens": 28685
+  }
+}

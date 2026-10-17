@@ -1,0 +1,213 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: plan.md written (100 lines); Summary and Source Code tree declare smoke.py at root with add(a,b)->a+b and mark it NEW",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "af694408478f865a0632082dd1cc2cb27b780dbef7f01748abd15e88e3d12c37",
+          "source_id": "af694408478f865a0632082dd1cc2cb27b780dbef7f01748abd15e88e3d12c37",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "plan.md does not place smoke.py at root",
+        "plan.md does not define add(a,b) returning a+b"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R01; spec FR-001/FR-002",
+      "stage": "created",
+      "status": "draft",
+      "text": "The plan specifies smoke.py at the repository root exposing add(a,b) that returns a+b for integer inputs.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: contracts/addition.md (43 lines) created with a 9-row behavior table covering negative ints, zero, float+float, and mixed int/float with expected sums",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "f10ec56b53aaaddd0d8691a80ec847648db74b826dde837e70aafdf8fb16409a",
+          "source_id": "f10ec56b53aaaddd0d8691a80ec847648db74b826dde837e70aafdf8fb16409a",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "contracts/addition.md behavior table lacks negative-int, zero, or float rows",
+        "expected sums differ from a+b"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R02; spec FR-003..FR-005",
+      "stage": "created",
+      "status": "draft",
+      "text": "The plan specifies add() supporting negative integers, zero, and floats (incl. mixed int/float) with exact expected sums.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01",
+        "R02"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: research.md (76 lines) R2 records decision: pytest 9.1.1 + tests/test_smoke.py, run from /testbed with existing pytest.ini config",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "50d8dd70fb6cbd68a41efcd8e6a79896db1a2d5505214a7c0719b106a59bd761",
+          "source_id": "50d8dd70fb6cbd68a41efcd8e6a79896db1a2d5505214a7c0719b106a59bd761",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "research.md R2 decision absent",
+        "quickstart.md scenario 2 does not require 0 failures"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R03; spec FR-006, SC-002",
+      "stage": "created",
+      "status": "draft",
+      "text": "The plan specifies automated tests in tests/test_smoke.py executed with the existing pytest runner, with 0 failures as the acceptance outcome.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: git status --porcelain -- tinydb tests produced empty output (exit 0): no modifications to TinyDB sources or existing tests at plan phase",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "c49bb3254eb202e7a19996e1f0e3920176075dc48ff912143808fe6c6366e1b4",
+          "source_id": "c49bb3254eb202e7a19996e1f0e3920176075dc48ff912143808fe6c6366e1b4",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "git status --porcelain -- tinydb tests shows any entry"
+      ],
+      "id": "C1",
+      "kind": "requirement",
+      "source_ref": "milestone constraint 'Do not modify TinyDB'; spec FR-007; constitution principle I",
+      "stage": "created",
+      "status": "draft",
+      "text": "The TinyDB package and its tests are unmodified as of the plan phase.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: find lists exactly 7 feature files, all under specs/001-transactions; plan.md Technical Context states 'Project Type: single-purpose utility module (not a service, CLI, or library distribution)'",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "8d1a30a75819dc46014d9ddf7ec8ef3ad21ec3a615fd652d53f8ec8b3bf40598",
+          "source_id": "8d1a30a75819dc46014d9ddf7ec8ef3ad21ec3a615fd652d53f8ec8b3bf40598",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: contracts/addition.md Non-goals section: no CLI, no service endpoint, no persistence, no logging, no TinyDB changes",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "f10ec56b53aaaddd0d8691a80ec847648db74b826dde837e70aafdf8fb16409a",
+          "source_id": "f10ec56b53aaaddd0d8691a80ec847648db74b826dde837e70aafdf8fb16409a",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "any feature artifact exists outside specs/001-transactions",
+        "plan.md mandates a service, CLI, or deployment"
+      ],
+      "id": "C2",
+      "kind": "requirement",
+      "source_ref": "milestone constraints; spec SC-004",
+      "stage": "created",
+      "status": "draft",
+      "text": "All workflow artifacts for this feature reside under specs/001-transactions and the design involves no service or deployment.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: command output: Python 3.12.14, pytest 9.1.1, pytest.ini addopts=--verbose --cov-append --cov-report term --cov tinydb, tests/ and tinydb/ listings, smoke.py absent, git status clean except untracked .specify/ and specs/",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "c9eb92e6765217ada73de7aac045973c5397b840272a3d0a7c1c8cbda276d39c",
+          "source_id": "c9eb92e6765217ada73de7aac045973c5397b840272a3d0a7c1c8cbda276d39c",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "python3 --version or pytest --version output differs",
+        "pytest.ini lacks the quoted addopts"
+      ],
+      "id": "T1",
+      "kind": "requirement",
+      "source_ref": "plan.md Technical Context; spec Assumptions (existing runner)",
+      "stage": "created",
+      "status": "draft",
+      "text": "The plan's Technical Context matches the observed environment: Python 3.12.14, pytest 9.1.1, existing pytest.ini coverage config, flat root layout.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: placeholder scan over all plan artifacts found no unfilled template tokens (only a descriptive prose mention in research.md); plan.md line 63 records 'Gate result: PASS (5/5)'",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "8d1a30a75819dc46014d9ddf7ec8ef3ad21ec3a615fd652d53f8ec8b3bf40598",
+          "source_id": "8d1a30a75819dc46014d9ddf7ec8ef3ad21ec3a615fd652d53f8ec8b3bf40598",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "plan.md Constitution Check shows any FAIL or missing principle",
+        "plan.md retains template placeholders in the gate section"
+      ],
+      "id": "G1",
+      "kind": "requirement",
+      "source_ref": "constitution v1.0.0; plan.md Constitution Check",
+      "stage": "created",
+      "status": "draft",
+      "text": "Constitution Check passed 5/5 with no violations, so Complexity Tracking is not required and no gate blocks Phase 0/1 artifacts.",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

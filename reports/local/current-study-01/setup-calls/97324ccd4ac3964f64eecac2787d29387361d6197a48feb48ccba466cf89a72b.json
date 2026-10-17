@@ -1,0 +1,63 @@
+{
+  "budget_debit": 13420,
+  "ended_at": "2026-10-16T22:28:03.749236+00:00",
+  "max_output": 4096,
+  "original_sha256": "97324ccd4ac3964f64eecac2787d29387361d6197a48feb48ccba466cf89a72b",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 12786,
+  "preflight_seconds": 0.21800000010989606,
+  "removed_history_messages": 0,
+  "request_seconds": 6.156999999890104,
+  "request_sha256": "e8da56a42253e9e324f3320d4da03a12a146a998b26cc12b8d8037048d44ad9f",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"draft\",\"claims\":{\"schema_version\":\"1.0\",\"claims\":[{\"id\":\"R01\",\"text\":\"Create smoke.py with add(a,b) returning a+b\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"this milestone\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"milestone requirement R01\",\"uncertainty\":\"high\",\"alternatives\":[],\"assumptions\":[],\"confidence\":[],\"confidence_band\":[],\"dispositions\":[],\"domain\":[],\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"source_id\":\"tests/test_smoke.py\",\"direction\":\"supports\",\"description\":\"Unit tests confirm add function returns correct sum for integers and floats.\",\"ref\":\"tests/test_smoke.py\"}],\"metadata\":{},\"role\":\"\",\"severity\":\"\",\"headline\":\"\"},{\"id\":\"R02\",\"text\":\"Support negative integers, zero and floats\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"this milestone\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"milestone requirement R02\",\"uncertainty\":\"high\",\"alternatives\":[],\"assumptions\":[],\"confidence\":[],\"confidence_band\":[],\"dispositions\":[],\"domain\":[],\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"source_id\":\"tests/test_smoke.py\",\"direction\":\"supports\",\"description\":\"Unit tests confirm add handles negative integers, zero and floats.\",\"ref\":\"tests/test_smoke.py\"}],\"metadata\":{},\"role\":\"\",\"severity\":\"\",\"headline\":\"\"},{\"id\":\"R03\",\"text\":\"Add and run tests\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"this milestone\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"milestone requirement R03\",\"uncertainty\":\"high\",\"alternatives\":[],\"assumptions\":[],\"confidence\":[],\"confidence_band\":[],\"dispositions\":[],\"domain\":[],\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"source_id\":\"tests/test_smoke.py\",\"direction\":\"supports\",\"description\":\"Pytest run produced no failures, confirming tests are executed.\",\"ref\":\"tests/test_smoke.py\"}],\"metadata\":{},\"role\":\"\",\"severity\":\"\",\"headline\":\"\"}]} }",
+          "reasoning_content_sha256": "2d26a6866a6289e867ff281f8bb6f52162bc8fcb45088eb917c1ce97124af8fd",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792189683,
+    "id": "chatcmpl-VmDtf4Nykk6jdVTQGK9K4Stb1iemR5Jl",
+    "model": "gpt-oss-20b-Q5_K_M",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 12757,
+      "predicted_ms": 5954.268,
+      "predicted_n": 634,
+      "predicted_per_second": 106.31029708437711,
+      "predicted_per_token_ms": 9.406426540284361,
+      "prompt_ms": 64.403,
+      "prompt_n": 29,
+      "prompt_per_second": 450.28958278341065,
+      "prompt_per_token_ms": 2.220793103448276
+    },
+    "usage": {
+      "completion_tokens": 634,
+      "prompt_tokens": 12786,
+      "prompt_tokens_details": {
+        "cached_tokens": 12757
+      },
+      "total_tokens": 13420
+    }
+  },
+  "seconds": 6.156999999890104,
+  "source": "current-workflow-calibration-02/calls/call-0032.json",
+  "stage": 1,
+  "started_at": "2026-10-16T22:27:57.598421+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 634,
+    "prompt_tokens": 12786,
+    "prompt_tokens_details": {
+      "cached_tokens": 12757
+    },
+    "total_tokens": 13420
+  }
+}

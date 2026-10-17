@@ -1,0 +1,114 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md written (271 lines) capturing R01 as FR-002..FR-005",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "79b65879f74d96727800ed79db1070521d36d6af01cb6b351a1c28e3ae07fcdb",
+          "source_id": "79b65879f74d96727800ed79db1070521d36d6af01cb6b351a1c28e3ae07fcdb",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: grep confirms 10 FR entries and template section order in spec.md",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "9104c4d27544a0fe402728da5002eb48b6cb7365a08ddeef8c5670902fba89fc",
+          "source_id": "9104c4d27544a0fe402728da5002eb48b6cb7365a08ddeef8c5670902fba89fc",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "A valid batch returns a non-insert ID or wrong order; empty input returns non-empty; a malformed op (unknown op, non-mapping document, non-positive doc_id) does not raise ValueError."
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R01; spec FR-002..FR-005",
+      "stage": "created",
+      "status": "draft",
+      "text": "apply(operations) accepts a list of operation dicts (insert {'op':'insert','document':dict} or remove {'op':'remove','doc_id':positive int}), returns the list of inserted document IDs in order (removes add nothing), returns [] for empty input, and raises ValueError for unknown/malformed operations.",
+      "uncertainty": "high"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md written capturing R02 as FR-006..FR-008 (atomicity, missing-ID error, handle reflection)",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "79b65879f74d96727800ed79db1070521d36d6af01cb6b351a1c28e3ae07fcdb",
+          "source_id": "79b65879f74d96727800ed79db1070521d36d6af01cb6b351a1c28e3ae07fcdb",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: grep confirms Functional Requirements section present with 10 FR entries",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "9104c4d27544a0fe402728da5002eb48b6cb7365a08ddeef8c5670902fba89fc",
+          "source_id": "9104c4d27544a0fe402728da5002eb48b6cb7365a08ddeef8c5670902fba89fc",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "A batch that fails at operation k leaves earlier inserts/removes applied (partial state); a missing-ID remove does not error; a pre-acquired handle shows stale state after success or rollback."
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R02; spec FR-006..FR-008",
+      "stage": "created",
+      "status": "draft",
+      "text": "Batch application is atomic: operations are validated and applied sequentially, and on any error the complete pre-batch default-table data is restored; a remove targeting a missing ID is an error; previously acquired db.table('_default') handles reflect both success and rollback.",
+      "uncertainty": "high"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md written capturing R03 as FR-009..FR-010 (ordinary-API coexistence and no-aliasing/deep-copy semantics)",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "79b65879f74d96727800ed79db1070521d36d6af01cb6b351a1c28e3ae07fcdb",
+          "source_id": "79b65879f74d96727800ed79db1070521d36d6af01cb6b351a1c28e3ae07fcdb",
+          "source_quality": "model"
+        },
+        {
+          "description": "Unverified model assertion: feature.json and feature directory tree confirm spec.md and checklist artifacts persisted",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "4f2059de5fe56bce5732a1e8285b17393a07b0d2138e29e6fac235ececac0492",
+          "source_id": "4f2059de5fe56bce5732a1e8285b17393a07b0d2138e29e6fac235ececac0492",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "An ordinary read/write behaves differently with a BatchWriter present; a preexisting document becomes unreadable; mutating the caller's operation dict or returned nested data after apply changes the stored document."
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R03; spec FR-009..FR-010",
+      "stage": "created",
+      "status": "draft",
+      "text": "Ordinary TinyDB reads/writes and preexisting documents continue to work with a BatchWriter in use; inserted and returned nested data must not alias the caller's input; mutating an operation after apply cannot mutate the database.",
+      "uncertainty": "high"
+    }
+  ],
+  "schema_version": "1.0"
+}

@@ -1,0 +1,62 @@
+{
+  "budget_debit": 30157,
+  "ended_at": "2026-10-17T08:24:43.769618+00:00",
+  "max_output": 4096,
+  "original_sha256": "ab194967507e3cccbfeb16ee85609728777d79fedc10d4d0a8b4062fbcb871d0",
+  "phase": "plan",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 27833,
+  "preflight_seconds": 0.15699999989010394,
+  "removed_history_messages": 0,
+  "request_seconds": 120.70300000021234,
+  "request_sha256": "54dfd8765d98bf08125d0a6fd5297832f71d17424648ddcaa64082b0722ed7da",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && cat > specs/001-transactions/data-model.md <<'DM_EOF'\\n# Phase 1 Data Model: Atomic Batch Transactions for TinyDB\\n\\n**Feature**: 001-transactions | **Date**: 2026-10-17\\n\\n## Entities\\n\\n### Operation\\nA single unit of batch work (spec \u00a7Key Entities).\\n\\n| Field | Type | Required | Validation |\\n|-------|------|----------|------------|\\n| `op` | `str` | yes | exactly `'insert'` or `'remove'` |\\n| `document` | `Mapping` (dict) | for `op='insert'` | must be a Mapping; `bool` rejected; nested structures allowed |\\n| `doc_id` | `int` | for `op='remove'` | must be `int` (not `bool`) and `> 0` |\\n\\n- Entry must be a `dict`; otherwise `ValueError`.\\n- Extra keys are ignored (research R4).\\n- State: immutable input \u2014 the writer never mutates the caller's operation dict (R03).\\n\\n### Batch\\nAn ordered `list[Operation]`.\\n\\n- Empty list is valid \u2192 `apply([])` returns `[]`, no state change.\\n- Applied as a unit: all effects persist, or none do (R02).\\n- Output: `list[int]` of inserted document IDs in submission order; removes contribute nothing.\\n\\n### Document\\nA JSON-like mapping stored in the default table, identified by a positive integer ID.\\n\\n- ID assignment: done by the existing `Table` machinery (`_get_next_id`), **not** by the writer; IDs are never caller-chosen (spec \u00a7Assumptions).\\n- Nested dicts/lists are stored as deep copies (R03; research R3).\\n- Read back through the Table API as fresh `Document` objects \u2014 no aliasing with storage or caller data.\\n\\n### Default table (scope boundary)\\n\\n- The single table the writer touches, accessed via `db.table('_default')`.\\n- Raw shape in storage: `dict[str, dict[int, Mapping]]` under the `'_default'` key of the whole-database state `dict[str, dict[str, Any]]` (observed `Storage.read/write` signatures).\\n- **Snapshot**: `deepcopy` of the raw `'_default'` table dict taken before any mutation; the only state the writer keeps between the start and end of a batch.\\n- Other tables: never read, written, or snapshotted.\\n\\n## Relationships\\n\\n- `BatchWriter 1\u2500\u2500N Operation` (one batch = ordered list).\\n- `Operation 1\u2500\u25001 Document` (insert) or `Operation 1\u2500\u25001 doc_id` (remove).\\n- `Document N\u2500\u25001 Default table`.\\n- `BatchWriter 1\u2500\u25001 TinyDB` (wraps; does not own storage lifetime).\\n- `Default table 1\u2500\u25001 Storage` (shared with all Table handles; the rollback path writes through it).\\n\\n## Validation Rules (from spec FR-004, FR-006)\\n\\n1. Non-dict entry \u2192 `ValueError`.\\n2. `op` not in `{'insert','remove'}` \u2192 `ValueError`.\\n3. `insert` without `document`, or `document` not a Mapping (or is `bool`) \u2192 `ValueError`.\\n4. `remove` without `doc_id`, or `doc_id` not a positive `int` (bools rejected) \u2192 `ValueError`.\\n5. `remove` whose `doc_id` is not present in the table at apply time \u2192 `ValueError` (R02).\\n\\n## State Transitions (per `apply` call)\\n\\n```\\n IDLE --validate ok--> SNAPSHOT_TAKEN --apply op i ok--> SNAPSHOT_TAKEN (i+1)\\n SNAPSHOT_TAKEN --all ops ok--> COMMITTED (storage holds new state; return inserted IDs)\\n SNAPSHOT_TAKEN --any error--> ROLLBACK (storage restored to snapshot; cache cleared; ValueError raised)\\n IDLE --validation error--> ROLLBACK_NOOP (no mutation happened; ValueError raised)\\n```\\n\\n- COMMITTED: inserted IDs returned in order; table `_next_id` left as the Table set it (subsequent inserts continue the sequence).\\n- ROLLBACK: default-table data byte-identical to pre-batch state; `table._next_id = None` so the next insert re-derives from the restored max ID (research R1); `clear_cache()` called so cached queries refresh.\\nDM_EOF\\nmkdir -p specs/001-transactions/contracts && cat > specs/001-transactions/contracts/batch-writer.md <<'CT_EOF'\\n# Contract: `tinydb.journal.BatchWriter`\\n\\n**Feature**: 001-transactions | **Date**: 2026-10-17\\n**Status**: normative for the implementation phase; `acceptance_public.py` is the public gate.\\n\\n## Public API\\n\\n```python\\nclass BatchWriter:\\n    def __init__(self, db: TinyDB) -> None: ...\\n    def apply(self, operations: list[dict]) -> list[int]: ...\\n```\\n\\n- Import path: `from tinydb.journal import BatchWriter` (fixed by `acceptance_public.py`).\\n- `db`: any `TinyDB` instance; the writer only uses `db.table('_default')` and the table's storage. It does not create, open, or close storage.\\n- Only the default table is affected.\\n\\n## `apply(operations)` contract\\n\\n**Precondition**: `operations` is a `list` (or sequence) of operation dicts per [data-model.md](../data-model.md) \u00a7Operation. If it is not list-like, behavior is unspecified (implementation may raise `TypeError`); the acceptance contract only defines list inputs.\\n\\n**Behavior**:\\n1. Validate every operation up front (rules V1\u2013V4 in data-model.md). On violation: raise `ValueError`; no table mutation has occurred.\\n2. Snapshot the default table (deep copy of raw table data).\\n3. Apply operations sequentially:\\n   - `insert`: insert a **deep copy** of `document`; record the returned ID.\\n   - `remove`: if `str(doc_id)` is not in the current table data \u2192 `ValueError` (rule V5); otherwise remove it.\\n4. On success: return the list of inserted IDs, in submission order (removes add nothing). Empty input returns `[]`.\\n5. On any error during steps 2\u20133: restore the snapshot to the default table via the table's storage, clear the default table's query cache, reset its ID cursor, and raise `ValueError` (re-raised if it was already a `ValueError`; other exception types are wrapped in `ValueError` only if they stem from the batch \u2014 implementation detail, not part of the public contract).\\n\\n**Postconditions**:\\n- Success: default table contains all inserted documents (nested data deep-copied) and all removed documents are gone; other tables untouched; previously acquired `db.table('_default')` handles observe the new state.\\n- Failure: default table is **complete**ly identical to its pre-batch state (data and ID-sequencing behavior); previously acquired handles observe the restored state; `ValueError` raised.\\n- Invariant (both): the caller's `operations` list and its dicts are never mutated; stored data never aliases caller data; returned IDs are plain immutable `int`s.\\n\\n**Errors**:\\n\\n| Condition | Exception |\\n|-----------|-----------|\\n| Non-dict operation entry | `ValueError` |\\n| Unknown/missing `op` | `ValueError` |\\n| Missing/non-Mapping/bool `document` | `ValueError` |\\n| Missing/non-int/bool/non-positive `doc_id` | `ValueError` |\\n| `remove` of a missing `doc_id` | `ValueError` |\\n\\n## Non-goals (explicit)\\n\\n- No cross-table transactions; no caller-chosen IDs; no context-manager; no partial-commit; no changes to any existing TinyDB public API.\\n\\n## Test Mapping (own tests, `tests/test_journal.py`)\\n\\n| ID | Requirement | Test scenario |\\n|----|-------------|---------------|\\n| T01 | R01 | empty batch \u2192 `[]`, table unchanged |\\n| T02 | R01 | two inserts \u2192 returns `[1, 2]`, both present |\\n| T03 | R01 | mixed insert/remove \u2192 only insert IDs returned, in order |\\n| T04 | R01 | each malformed op (non-dict, bad op, missing document, non-dict document, missing doc_id, bool doc_id, zero/negative doc_id, float doc_id) \u2192 `ValueError` |\\n| T05 | R02 | insert then remove-missing \u2192 `ValueError`, table equals pre-batch snapshot |\\n| T06 | R02 | remove-existing then remove-missing \u2192 `ValueError`, removed doc restored |\\n| T07 | R02 | pre-acquired `db.table('_default')` handle reflects success and rollback (incl. after `search()` cache use) |\\n| T08 | R02 | after rollback, next insert continues correct ID sequence (no ID reuse/collision) |\\n| T09 | R03 | ordinary `db.insert`/`db.all`/`db.get` before/after batches still work; pre-existing docs intact |\\n| T10 | R03 | nested dict/list: mutating caller's operation after `apply` does not change DB; mutating a returned/stored doc does not change the operation or DB |\\n| T11 | R01/R02 | batch with duplicate removes of the same ID \u2192 second remove is a missing-ID error \u2192 rollback |\\n| T12 | R02 | rollback restores even when other tables exist (other tables untouched) |\\n\\nPublic gate: `acceptance_public.py` (`test_public_basic`, `test_public_atomic`) must pass unmodified.\\nCT_EOF\\necho WROTE_DATA_MODEL_AND_CONTRACT; wc -l specs/001-transactions/data-model.md specs/001-transactions/contracts/batch-writer.md\"}",
+          "reasoning_sha256": "61ab68980f823bcaa7445f36d42114dc29a0515d29882fc1348b86a60eddcb92",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792225483,
+    "id": "chatcmpl-6zeZhYb6h34uIomBuvF2a2u0tpB50Z0r",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 25402,
+      "predicted_ms": 117725.362,
+      "predicted_n": 2324,
+      "predicted_per_second": 19.7323665906417,
+      "predicted_per_token_ms": 50.67815841584158,
+      "prompt_ms": 2900.036,
+      "prompt_n": 2431,
+      "prompt_per_second": 838.2654560150288,
+      "prompt_per_token_ms": 1.1929395310571782
+    },
+    "usage": {
+      "completion_tokens": 2324,
+      "prompt_tokens": 27833,
+      "prompt_tokens_details": {
+        "cached_tokens": 25402
+      },
+      "total_tokens": 30157
+    }
+  },
+  "seconds": 120.70300000021234,
+  "stage": 1,
+  "started_at": "2026-10-17T08:22:43.059924+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2324,
+    "prompt_tokens": 27833,
+    "prompt_tokens_details": {
+      "cached_tokens": 25402
+    },
+    "total_tokens": 30157
+  }
+}

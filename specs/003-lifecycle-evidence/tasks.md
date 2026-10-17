@@ -14,18 +14,20 @@ scored efficacy campaign are separate from this implementation validation.
 
 User-requested evidence completion:
 
-- [ ] Pass full current-version free-local workflow and injected-repair calibration.
+- [x] Pass full current-version free-local workflow and injected-repair calibration.
 - [x] Pass current independent grader checks for both projects/all stages.
 - [x] Verify native context-selection equivalence under the candidate template.
 - [x] Pass near-context latency calibration for the selected candidate model.
-- [ ] Finish12trajectories/36dependent checkpoints and bound independent grades.
-- [ ] Export false-completion statistics, quality/rework/tokens and every setup cost.
-- [x] Verify actual AEE machine evidence:49tests,6/6 narrow observations above
+- [x] Finish12trajectories/36dependent checkpoints and bind all grading records;
+      disclose24ungraded collection errors rather than invent complete test results.
+- [x] Export false-completion statistics, quality/rework/tokens and every setup cost.
+- [x] Verify actual AEE machine evidence:51 tests, 7/7 narrow observations above
       threshold, zero evidence-verification findings; Evaluator consumes one actual
       AEE result and human acceptance is not invented.
-- [ ] Update README with fresh measured results and interpretation; final full suite,
-      pin/evidence checks and ready PR with green Ubuntu CI.
+- [x] Update README with measured results, collection/exposure limits and interpretation;
+      run final local tests and pin/evidence checks. PR readiness and exact-head CI
+      are verified in GitHub after the result commit, not inferred from local tests.
 
-Measured outcome: 360 offline tests passed. One readiness call used 102 measured
-tokens at $0 API spend. Fresh comparative lifecycle efficacy remains unrun and is
-not represented by these synthetic tests or the readiness call.
+Measured outcome: 362 offline tests passed. One readiness call used 102 measured
+tokens at $0 API spend. The fresh attempt completed; its 24 structured collection failures,6/48assessment
+coverage and 0-inference repairs prevent a completed-workflow efficacy conclusion.

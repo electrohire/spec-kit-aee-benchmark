@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28782,
+  "ended_at": "2026-10-17T16:58:32.204482+00:00",
+  "max_output": 4096,
+  "original_sha256": "989fab85e657f31fb155f1526369409e143bfb11bac8b0a2ba569762ea2d366c",
+  "phase": "specify",
+  "preflight_http_requests": 12,
+  "preflight_input_tokens": 28270,
+  "preflight_seconds": 0.8130000000819564,
+  "removed_history_messages": 4,
+  "request_seconds": 26.45299999997951,
+  "request_sha256": "6c1a45b3553fa74a43eddd37c46f688d4ee0f81e38978b3e3b972315d1caed32",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"python3 - <<'PYEOF'\\np='/testbed/specs/001-transactions/spec.md'\\ns=open(p).read()\\nanchor='''- **SC-008**: A generator passed as tags is consumed exactly once in 100% of\\n  cases (verified with an instrumented generator), and repeated `get`/`put`\\n  cycles (>= 10 per key) produce 100% detached copies for nested list/dict\\n  values (mutation of any returned object never changes stored state).\\n'''\\nassert anchor in s\\nnew=anchor+'''- **SC-009**: With a controllable timer, 100% of TTL boundary cases behave\\n  exactly as specified: an entry with `ttl=T` is live at every instant before\\n  `timer_at_put + T` and expired at exactly that instant (inclusive\\n  boundary); `ttl=0` entries are unobservable in 100% of cases; 100% of\\n  invalid TTL inputs (negative, `bool`, non-numeric, non-finite) raise\\n  `ValueError` and leave all observable state (entries, tags, recency,\\n  capacity, length) unchanged.\\n- **SC-010**: In 100% of mixed sequences (puts with/without TTL, gets,\\n  replacements, invalidations, resizes, evictions) the expired-entry purge is\\n  invisible to surviving entries: their relative recency is unchanged by\\n  purges, `len` never counts expired entries, invalidation counts never\\n  include expired entries, and `get` of a missing or expired key raises\\n  `KeyError` in 100% of cases; callers that never use `timer`/`ttl` observe\\n  behavior identical to the pre-milestone-3 contract in 100% of cases.\\n'''\\ns=s.replace(anchor,new,1)\\nopen(p,'w').write(s)\\nprint('ok SC-009/SC-010 added')\\nPYEOF\"}",
+          "reasoning_sha256": "b99c32da4d6446a174376362689d4329b5d472161fa6b60088c4ff80d0473fa4",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792256312,
+    "id": "chatcmpl-9IjKWmecWpohjoqy6eT2aw7pa4of7YsM",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 27498,
+      "predicted_ms": 25057.016,
+      "predicted_n": 512,
+      "predicted_per_second": 20.393489791442047,
+      "predicted_per_token_ms": 49.03525636007828,
+      "prompt_ms": 1278.146,
+      "prompt_n": 772,
+      "prompt_per_second": 603.9998560414851,
+      "prompt_per_token_ms": 1.6556295336787563
+    },
+    "usage": {
+      "completion_tokens": 512,
+      "prompt_tokens": 28270,
+      "prompt_tokens_details": {
+        "cached_tokens": 27498
+      },
+      "total_tokens": 28782
+    }
+  },
+  "seconds": 26.45299999997951,
+  "stage": 3,
+  "started_at": "2026-10-17T16:58:05.752578+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 512,
+    "prompt_tokens": 28270,
+    "prompt_tokens_details": {
+      "cached_tokens": 27498
+    },
+    "total_tokens": 28782
+  }
+}

@@ -1,30 +1,36 @@
-# Resume the ElectroHire benchmark
+# Resume the benchmark
 
-## Current continuation — 2026-10-16
+## Current continuation — 2026-10-17
 
-Branch `feat/longitudinal-hallucination-economics`: engine1.5.3, Specify1.2.1,
-AEE1.5.2, evaluator1.1.2. Published identities and actual installation checked;
-see `docs/current-tooling.md` and Spec003. README leads with historical measured
-results and interpretation. No evidence currently establishes reduced
-hallucination or long-term financial savings. The lifecycle importer adds
-artifact-bound claim/cost analysis; its synthetic tests are not efficacy results.
-CI stays Ubuntu-only per user instruction. The final compatible dependency lock
-passed360tests, pin checks and recorded actual AEE/Evaluator checks. Focused
-validation passed49tests with6/6 narrow machine observations verified and one
-actual AEE result composed; no human acceptance was invented. The free local
-`qwen3.8-27b` workflow calibration04 is active; latency probes passed with480-second
-request timeout. `artifacts/current-pipeline-01.json` is authoritative: a gated
-runner waits for calibration, then replays actual AEE, scores12trajectories/
-36dependent checkpoints and exports all retained setup work. Do not start a
-duplicate generation process. Earlier GPT and Qwen failures remain setup costs.
-No comparative conclusion is available until that study completes. No paid inference, releases,
-PR merges or article publication are authorized.
+Branch `feat/longitudinal-hallucination-economics`, PR18. Engine 1.5.3,
+Specify 1.2.1, extension 1.5.2, evaluator 1.1.2; compatible 106-package lock.
+Current-study-01 completed 12 trajectories / 36 checkpoints, independent grading
+attempts and export; no inference process should be restarted. Read
+reports/local/current-study-01/analysis.md and post-run-audit.json first.
+Baseline accepted 9/12 hidden checkpoints and delivered 2/4 final projects.
+Structured arms accepted 0 and delivered 0; all 24 are UNGRADED collection errors
+(22 missing modules, 2 import-time NameErrors), not complete failing test suites.
+Neither structured workflow completed; AEE reached 6/48 planned checkpoints,
+all specification. All 52 public repair records made 0 model calls after budgets
+expired. This is not proof of completed-workflow efficacy or financial savings.
+1,131 scored calls retain one HTTP500/unknown usage; 174 setup calls retain 3 unknowns.
+Raw requests/native reasoning stay local; public hashes preserve provenance.
 
-The September "running" statements below are historical handoff text. This
-checkout has no current Study02 status artifact: do not assert it completed or
-relabel it as a latest-version result. Check actual host/state before duplicating
-it. Fresh efficacy work needs a separate freeze and full workflow/grader preflight.
-Prior failed work remains counted.
+Calibration04 passed 83 calls / all 7 phases / 4 actual AEE checks/injected repair.
+Four-checkpoint dependency replay matched with anchored ledger 1..4. 362 offline tests and the focused 51-test/7-observation AEE audit passed.
+Final exact-head Ubuntu CI must pass on PR18 before it is marked ready. CI stays Ubuntu-only. No paid inference, PR merge, release,
+email or article publication authorized. Finish review/README/validation,
+commit/push results and mark PR18 ready only when complete and green.
+
+After ALL benchmarking/evidence is complete, the user authorized cross-linked
+feature request issues in engine/AEE extension/evaluator for scoped preflight,
+fresh trusted execution evidence, enforceable requirement/test links and
+status-aware context handoff. Audit existing functionality and issues first;
+create requests, not implementations. Detailed current state/requirements:
+C:/Users/trist/Development/ElectroHire/electrohire-aee-release/benchmark-work-checkpoint.json.
+
+The September sections below are historical; do not duplicate older campaigns
+or relabel their freezes as current results. Preserve all earlier failures.
 
 ## Active expanded comparison — 2026-09-17
 

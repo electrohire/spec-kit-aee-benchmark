@@ -10,7 +10,7 @@ CURRENT_START="<!-- current-results:start -->"
 CURRENT_END="<!-- current-results:end -->"
 
 
-def current_table(report):
+def current_table(report,audit=None):
     text="\n\n### Current-version staged comparison\n\n"
     text+="| Metric | Agent alone | Spec Kit (adapted) | Spec Kit + AEE (adapted) |\n|---|---:|---:|---:|\n"
     arms=("baseline","spec_kit","spec_kit_aee")
@@ -19,12 +19,18 @@ def current_table(report):
     claims=[report["completion_opportunities"][a] for a in arms]
     text+="| Final-stage projects delivered | "+" | ".join(f"{v['final_stage_accepted']}/{v['project_trajectories']}" for v in delivery)+" |\n"
     text+="| Hidden checkpoints accepted | "+" | ".join(f"{v['accepted_milestones']}/{v['scheduled_milestones']}" for v in values)+" |\n"
+    text+="| Checkpoints without complete test inventory | "+" | ".join(str(v['ungraded_milestones']) for v in values)+" |\n"
+    if audit:
+        text+="| Completed milestone workflows | "+" | ".join(f"{audit['workflow_exposure'][a]['completed_workflows']}/12" for a in arms)+" |\n"
+        text+="| Actual AEE assessments / planned | n/a | n/a | "+str(audit['aee_assessments'])+"/48 |\n"
     text+="| All scored tokens | "+" | ".join(f"{v['total_tokens']:,}" if v['total_tokens'] is not None else f"≥{v['known_tokens_lower_bound']:,} (incomplete)" for v in values)+" |\n"
     text+="| Unknown token calls | "+" | ".join(str(v['unknown_token_calls']) for v in values)+" |\n"
     text+="| Tokens per delivered project | "+" | ".join(f"{v['all_call_tokens_per_delivered_project']:,.0f}" if v['all_call_tokens_per_delivered_project'] is not None else "undefined/unknown" for v in delivery)+" |\n"
     text+="| False completion / graded positive declarations | "+" | ".join(f"{v['false_completion']}/{v['positive']-v['ungraded_positive']}" for v in claims)+" |\n"
     text+="| Unknown completion declarations | "+" | ".join(str(v['unknown']) for v in claims)+" |\n"
     text+="| Source-changing public repair rounds | "+" | ".join(str(v['source_changing_repairs']) for v in values)+" |\n\n"
+    if audit:
+        text+="**Treatment exposure:** neither structured arm completed a milestone workflow within the fixed 40-minute budgets. AEE was reached at only 6/48 planned checkpoints, all after specification. All 24 structured checkpoints failed test collection: 22 snapshots lack the implementation module; two contain a module that raises `NameError` during import. They remain **ungraded**, not completed failing test inventories. The small successful arithmetic calibration did not establish that full project workflows fit the milestone budget. All 52 public-repair records made zero model calls after their budgets ran out; there is no observed repair efficacy here. These are outcomes of attempted policies under these constraints, not a completed AEE workflow efficacy comparison. A false-completion rate of 0/0 is undefined, not zero hallucinations.\n\n"
     combined=report["delivered_projects"]["spec_kit_aee"]["final_stage_accepted"]
     baseline=report["delivered_projects"]["baseline"]["final_stage_accepted"]
     structured=report["delivered_projects"]["spec_kit"]["final_stage_accepted"]
@@ -62,7 +68,8 @@ def main():
     before,rest=updated.split(CURRENT_START)
     _,after=rest.split(CURRENT_END)
     report=ROOT/"reports/local/current-study-01/lifecycle-report.json"
-    current=current_table(json.loads(report.read_text())) if report.exists() else "\n\nFresh current-version comparative evidence is pending successful workflow calibration and the complete scored study. Focused machine validation is recorded separately; it is not an efficacy result.\n\n"
+    audit=ROOT/"reports/local/current-study-01/post-run-audit.json"
+    current=current_table(json.loads(report.read_text()),json.loads(audit.read_text()) if audit.exists() else None) if report.exists() else "\n\nFresh current-version comparative evidence is pending successful workflow calibration and the complete scored study. Focused machine validation is recorded separately; it is not an efficacy result.\n\n"
     updated=before+CURRENT_START+current+CURRENT_END+after
     if args.check:
         if updated != text:

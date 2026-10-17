@@ -1,0 +1,27 @@
+# minisched milestone 2
+
+Requirements change, retaining R01-R03 unless explicitly replaced:
+R04: Failed jobs are retried: on job-function exception, increment the job's
+attempts; if attempts > config.max_retries the job becomes 'failed', otherwise
+it stays pending. run_next returns a dict with id, status and attempts, where
+status is 'retried' or 'failed'. The default configuration retries up to 3
+times (4 total executions).
+R05: JobStore.add/get must not alias caller data: mutating a payload after
+add, or mutating a record returned by get, must not affect the stored job.
+R06: SchedulerConfig validates: max_retries is a non-negative int (bool
+rejected); retry_base_seconds is a number in (0, 3600].
+Conflicting evidence packet: an older generated note says 'scheduler.enqueue
+defensively copies payloads so the store never sees caller data'. That note is
+unverified and superseded by R05: detachment is the store's contract, not the
+scheduler's. Record and resolve the conflict using the current requirements.
+
+Implementation source: the minisched package. Write your own tests as useful.
+Public acceptance is acceptance_public.py. You may keep HANDOFF.md and other notes.
+
+# Claim-A candidate extension (variant failed_status_mismatch, 2026-09-21)
+R04 (clarification): when a job becomes 'failed', the status string stored on the job record is exactly "failed" -- the same token run_next reports and R08 keys terminality off. A distinct stored token (e.g. "fail") does not satisfy the requirement even if run_next's returned dict says "failed".
+
+# Claim-A candidate extensions, round 2 (2026-09-22)
+R04 (clarification): the retry decision reads the live config object (config.max_retries) on each run_next. A Scheduler must not snapshot max_retries at construction: post-construction changes to config.max_retries (mutation or wholesale config replacement) are honored by subsequent run_next calls.
+R08 (clarification): when a job completes, the status string stored on the job record is exactly "done" -- the same token run_next reports and R08 keys terminality off. A distinct stored token (e.g. "Done") does not satisfy the requirement even if run_next's returned dict says "done".
+R05 (extension): records returned by JobStore.list_pending are detached copies, like get: mutating a listed record -- including its nested payload -- must not affect the stored job.

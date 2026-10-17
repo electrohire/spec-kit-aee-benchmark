@@ -1,0 +1,1650 @@
+{
+  "schema_version": "1.0",
+  "evaluator": {
+    "id": "aee",
+    "version": "1.0.0",
+    "name": "Applied Epistemic Engineering",
+    "url": "https://github.com/electrohire/spec-kit-aee"
+  },
+  "phase": "after_implement",
+  "outcome": "gather_evidence",
+  "summary": "Assessed 6 claim(s); found 25 failure mode(s); 6 claim(s) below the 0.70 confidence threshold. Shared evidence: 2 supporting source(s) shared across 6 of 6 claim(s); the same evidence set supports multiple claims (FR-2.8, reporting only, no outcome effect in this phase). Draft cap: 6 draft claim(s) capped at gather_evidence/iterate (FR-2.3). Stage cap: 6 claim(s) below stage 'explained'; the outcome cannot be 'pass' (Spec 004 R1.4). Not understood: 12 residual unknown(s) are recorded on this ass",
+  "findings": [
+    {
+      "id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone requirement R01",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: cat smoke.py shows def add(a, b): with body 'return a + b'"
+        },
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: quickstart run prints '3 2 4 3.75 3.5' including add(1,2)==3"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R01"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R01-INDEPENDENT-EVIDENCE-CHA",
+      "severity": "high",
+      "kind": "unverified_assertion",
+      "subject": "milestone requirement R01",
+      "description": "Only model self-attestation supports the claim",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: cat smoke.py shows def add(a, b): with body 'return a + b'"
+        },
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: quickstart run prints '3 2 4 3.75 3.5' including add(1,2)==3"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R01"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Independent-evidence challenge"
+    },
+    {
+      "id": "AEE-R01-INDEPENDENCE-UNMODELED",
+      "severity": "medium",
+      "kind": "other",
+      "subject": "milestone requirement R01",
+      "description": "Supporting evidence '0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a' (ref(s): 0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a) is shared with claim(s) C1, R02, R03 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: cat smoke.py shows def add(a, b): with body 'return a + b'"
+        },
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: quickstart run prints '3 2 4 3.75 3.5' including add(1,2)==3"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R01"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Shared-evidence independence challenge"
+    },
+    {
+      "id": "AEE-R01-INDEPENDENCE-UNMODELED-2",
+      "severity": "medium",
+      "kind": "other",
+      "subject": "milestone requirement R01",
+      "description": "Supporting evidence '5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5' (ref(s): 5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5) is shared with claim(s) C1, C2, F1 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: cat smoke.py shows def add(a, b): with body 'return a + b'"
+        },
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: quickstart run prints '3 2 4 3.75 3.5' including add(1,2)==3"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R01"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Shared-evidence independence challenge"
+    },
+    {
+      "id": "AEE-R01-DRAFT-CAP",
+      "severity": "low",
+      "kind": "other",
+      "subject": "milestone requirement R01",
+      "description": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: cat smoke.py shows def add(a, b): with body 'return a + b'"
+        },
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: quickstart run prints '3 2 4 3.75 3.5' including add(1,2)==3"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R01"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Draft outcome cap"
+    },
+    {
+      "id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone requirement R02",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "1b121094eb0cbd2adc5654d91f81cca6df7c00644eadf7fcdff5ff121bbc87cb",
+          "kind": "asserted",
+          "description": "Unverified model assertion: pytest run: 9 passed including all 7 R02 category tests (negative, zero, float, mixed)"
+        },
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: quickstart prints '3 2 4 3.75 3.5' covering negative, zero, float, mixed cases"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R02",
+        "R01"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R02-INDEPENDENT-EVIDENCE-CHA",
+      "severity": "high",
+      "kind": "unverified_assertion",
+      "subject": "milestone requirement R02",
+      "description": "Only model self-attestation supports the claim",
+      "evidence_refs": [
+        {
+          "ref": "1b121094eb0cbd2adc5654d91f81cca6df7c00644eadf7fcdff5ff121bbc87cb",
+          "kind": "asserted",
+          "description": "Unverified model assertion: pytest run: 9 passed including all 7 R02 category tests (negative, zero, float, mixed)"
+        },
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: quickstart prints '3 2 4 3.75 3.5' covering negative, zero, float, mixed cases"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R02",
+        "R01"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Independent-evidence challenge"
+    },
+    {
+      "id": "AEE-R02-INDEPENDENCE-UNMODELED",
+      "severity": "medium",
+      "kind": "other",
+      "subject": "milestone requirement R02",
+      "description": "Supporting evidence '0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a' (ref(s): 0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a) is shared with claim(s) C1, R01, R03 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+      "evidence_refs": [
+        {
+          "ref": "1b121094eb0cbd2adc5654d91f81cca6df7c00644eadf7fcdff5ff121bbc87cb",
+          "kind": "asserted",
+          "description": "Unverified model assertion: pytest run: 9 passed including all 7 R02 category tests (negative, zero, float, mixed)"
+        },
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: quickstart prints '3 2 4 3.75 3.5' covering negative, zero, float, mixed cases"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R02",
+        "R01"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Shared-evidence independence challenge"
+    },
+    {
+      "id": "AEE-R02-DRAFT-CAP",
+      "severity": "low",
+      "kind": "other",
+      "subject": "milestone requirement R02",
+      "description": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+      "evidence_refs": [
+        {
+          "ref": "1b121094eb0cbd2adc5654d91f81cca6df7c00644eadf7fcdff5ff121bbc87cb",
+          "kind": "asserted",
+          "description": "Unverified model assertion: pytest run: 9 passed including all 7 R02 category tests (negative, zero, float, mixed)"
+        },
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: quickstart prints '3 2 4 3.75 3.5' covering negative, zero, float, mixed cases"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R02",
+        "R01"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Draft outcome cap"
+    },
+    {
+      "id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone requirement R03",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: FINAL-EV-A '9 passed' exit 0 for tests/test_smoke.py; FINAL-EV-B '232 passed' exit 0 for full suite"
+        },
+        {
+          "ref": "366941dcdddb05df2829964d7dba947693cfff374b31a941d3144dde9336690c",
+          "kind": "asserted",
+          "description": "Unverified model assertion: TDD red phase recorded before implementation: collection error 'cannot import name add from smoke'"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R03",
+        "R01",
+        "R02"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-R03-INDEPENDENT-EVIDENCE-CHA",
+      "severity": "high",
+      "kind": "unverified_assertion",
+      "subject": "milestone requirement R03",
+      "description": "Only model self-attestation supports the claim",
+      "evidence_refs": [
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: FINAL-EV-A '9 passed' exit 0 for tests/test_smoke.py; FINAL-EV-B '232 passed' exit 0 for full suite"
+        },
+        {
+          "ref": "366941dcdddb05df2829964d7dba947693cfff374b31a941d3144dde9336690c",
+          "kind": "asserted",
+          "description": "Unverified model assertion: TDD red phase recorded before implementation: collection error 'cannot import name add from smoke'"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R03",
+        "R01",
+        "R02"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Independent-evidence challenge"
+    },
+    {
+      "id": "AEE-R03-INDEPENDENCE-UNMODELED",
+      "severity": "medium",
+      "kind": "other",
+      "subject": "milestone requirement R03",
+      "description": "Supporting evidence '0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a' (ref(s): 0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a) is shared with claim(s) C1, R01, R02 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+      "evidence_refs": [
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: FINAL-EV-A '9 passed' exit 0 for tests/test_smoke.py; FINAL-EV-B '232 passed' exit 0 for full suite"
+        },
+        {
+          "ref": "366941dcdddb05df2829964d7dba947693cfff374b31a941d3144dde9336690c",
+          "kind": "asserted",
+          "description": "Unverified model assertion: TDD red phase recorded before implementation: collection error 'cannot import name add from smoke'"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R03",
+        "R01",
+        "R02"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Shared-evidence independence challenge"
+    },
+    {
+      "id": "AEE-R03-DRAFT-CAP",
+      "severity": "low",
+      "kind": "other",
+      "subject": "milestone requirement R03",
+      "description": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+      "evidence_refs": [
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: FINAL-EV-A '9 passed' exit 0 for tests/test_smoke.py; FINAL-EV-B '232 passed' exit 0 for full suite"
+        },
+        {
+          "ref": "366941dcdddb05df2829964d7dba947693cfff374b31a941d3144dde9336690c",
+          "kind": "asserted",
+          "description": "Unverified model assertion: TDD red phase recorded before implementation: collection error 'cannot import name add from smoke'"
+        }
+      ],
+      "provenance_refs": [
+        "milestone requirement R03",
+        "R01",
+        "R02"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Draft outcome cap"
+    },
+    {
+      "id": "AEE-C1-INDEPENDENT-EVIDENCE-CHA",
+      "severity": "high",
+      "kind": "unverified_assertion",
+      "subject": "milestone constraint 'Do not modify TinyDB'",
+      "description": "Only model self-attestation supports the claim",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: git status --porcelain -- tinydb printed nothing; full status lists only new files smoke.py, tests/test_smoke.py, .specify/, specs/"
+        },
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: FINAL-EV-D: filtering git status for tinydb/tests excluding the new test file leaves no modified entries"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'Do not modify TinyDB'"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Independent-evidence challenge"
+    },
+    {
+      "id": "AEE-C1-INDEPENDENCE-UNMODELED",
+      "severity": "medium",
+      "kind": "other",
+      "subject": "milestone constraint 'Do not modify TinyDB'",
+      "description": "Supporting evidence '0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a' (ref(s): 0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a) is shared with claim(s) R01, R02, R03 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: git status --porcelain -- tinydb printed nothing; full status lists only new files smoke.py, tests/test_smoke.py, .specify/, specs/"
+        },
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: FINAL-EV-D: filtering git status for tinydb/tests excluding the new test file leaves no modified entries"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'Do not modify TinyDB'"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Shared-evidence independence challenge"
+    },
+    {
+      "id": "AEE-C1-INDEPENDENCE-UNMODELED-2",
+      "severity": "medium",
+      "kind": "other",
+      "subject": "milestone constraint 'Do not modify TinyDB'",
+      "description": "Supporting evidence '5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5' (ref(s): 5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5) is shared with claim(s) C2, F1, R01 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: git status --porcelain -- tinydb printed nothing; full status lists only new files smoke.py, tests/test_smoke.py, .specify/, specs/"
+        },
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: FINAL-EV-D: filtering git status for tinydb/tests excluding the new test file leaves no modified entries"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'Do not modify TinyDB'"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Shared-evidence independence challenge"
+    },
+    {
+      "id": "AEE-C1-DRAFT-CAP",
+      "severity": "low",
+      "kind": "other",
+      "subject": "milestone constraint 'Do not modify TinyDB'",
+      "description": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: git status --porcelain -- tinydb printed nothing; full status lists only new files smoke.py, tests/test_smoke.py, .specify/, specs/"
+        },
+        {
+          "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+          "kind": "asserted",
+          "description": "Unverified model assertion: FINAL-EV-D: filtering git status for tinydb/tests excluding the new test file leaves no modified entries"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'Do not modify TinyDB'"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Draft outcome cap"
+    },
+    {
+      "id": "AEE-C2-IRREDUCIBILITY-CHALLENGE",
+      "severity": "medium",
+      "kind": "coverage_gap",
+      "subject": "milestone constraint 'No service or deployment is involved'",
+      "description": "Claim may contain multiple independently falsifiable propositions",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: full git status --porcelain lists only .specify/, smoke.py, specs/, tests/test_smoke.py as untracked; no service/deployment files"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'No service or deployment is involved'"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Irreducibility challenge"
+    },
+    {
+      "id": "AEE-C2-INDEPENDENT-EVIDENCE-CHA",
+      "severity": "high",
+      "kind": "unverified_assertion",
+      "subject": "milestone constraint 'No service or deployment is involved'",
+      "description": "Only model self-attestation supports the claim",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: full git status --porcelain lists only .specify/, smoke.py, specs/, tests/test_smoke.py as untracked; no service/deployment files"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'No service or deployment is involved'"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Independent-evidence challenge"
+    },
+    {
+      "id": "AEE-C2-INDEPENDENCE-UNMODELED",
+      "severity": "medium",
+      "kind": "other",
+      "subject": "milestone constraint 'No service or deployment is involved'",
+      "description": "Supporting evidence '5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5' (ref(s): 5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5) is shared with claim(s) C1, F1, R01 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: full git status --porcelain lists only .specify/, smoke.py, specs/, tests/test_smoke.py as untracked; no service/deployment files"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'No service or deployment is involved'"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Shared-evidence independence challenge"
+    },
+    {
+      "id": "AEE-C2-DRAFT-CAP",
+      "severity": "low",
+      "kind": "other",
+      "subject": "milestone constraint 'No service or deployment is involved'",
+      "description": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: full git status --porcelain lists only .specify/, smoke.py, specs/, tests/test_smoke.py as untracked; no service/deployment files"
+        }
+      ],
+      "provenance_refs": [
+        "milestone constraint 'No service or deployment is involved'"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Draft outcome cap"
+    },
+    {
+      "id": "AEE-F1-COUNTEREXAMPLE-CHALLENGE",
+      "severity": "high",
+      "kind": "assumption_unvalidated",
+      "subject": "speckit-implement completion criteria",
+      "description": "Absolute language is used without a bounded domain",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep counts: unchecked 0, checked 11; no malformed leading-space task lines remain"
+        }
+      ],
+      "provenance_refs": [
+        "speckit-implement completion criteria"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "revise",
+      "rationale": "Counterexample challenge"
+    },
+    {
+      "id": "AEE-F1-INDEPENDENT-EVIDENCE-CHA",
+      "severity": "high",
+      "kind": "unverified_assertion",
+      "subject": "speckit-implement completion criteria",
+      "description": "Only model self-attestation supports the claim",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep counts: unchecked 0, checked 11; no malformed leading-space task lines remain"
+        }
+      ],
+      "provenance_refs": [
+        "speckit-implement completion criteria"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "gather_evidence",
+      "rationale": "Independent-evidence challenge"
+    },
+    {
+      "id": "AEE-F1-INDEPENDENCE-UNMODELED",
+      "severity": "medium",
+      "kind": "other",
+      "subject": "speckit-implement completion criteria",
+      "description": "Supporting evidence '5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5' (ref(s): 5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5) is shared with claim(s) C1, C2, R01 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep counts: unchecked 0, checked 11; no malformed leading-space task lines remain"
+        }
+      ],
+      "provenance_refs": [
+        "speckit-implement completion criteria"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Shared-evidence independence challenge"
+    },
+    {
+      "id": "AEE-F1-DRAFT-CAP",
+      "severity": "low",
+      "kind": "other",
+      "subject": "speckit-implement completion criteria",
+      "description": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+      "evidence_refs": [
+        {
+          "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+          "kind": "asserted",
+          "description": "Unverified model assertion: grep counts: unchecked 0, checked 11; no malformed leading-space task lines remain"
+        }
+      ],
+      "provenance_refs": [
+        "speckit-implement completion criteria"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Draft outcome cap"
+    }
+  ],
+  "next_action": {
+    "kind": "gather_evidence",
+    "target_phase": null,
+    "message": "Pause and collect independently inspectable evidence."
+  },
+  "metadata": {
+    "timestamp": "2026-10-17T00:04:13.199381Z",
+    "artifacts_evaluated": [
+      "inputs/implement-5701e44002bc4d2db210cb446a2d471d.json"
+    ],
+    "model": null,
+    "deterministic": true,
+    "engine_version": "1.5.3",
+    "aee_methodology_version": "2.0",
+    "lanes": {
+      "lane_1": {
+        "label": "machine verification",
+        "outcome": "gather_evidence",
+        "threshold": 0.7,
+        "claims_at_or_above_threshold": 0,
+        "claims_below_threshold": 6
+      },
+      "lane_2": {
+        "label": "human acceptance",
+        "stage_counts": {
+          "created": 6,
+          "checked": 0,
+          "explained": 0,
+          "accepted": 0,
+          "digested": 0
+        },
+        "claims_below_explained": 6,
+        "exposition_covered_claims": 0,
+        "exposition_missing_claims": 6,
+        "verified_unexplained_claims": 0,
+        "stage_capped_claims": 0,
+        "attribution_contested_claims": 0
+      }
+    },
+    "not_understood": [
+      "R01: open challenges this assessment does not resolve: coverage_gap, independence_unmodeled, unverified_assertion.",
+      "R01: propagated score 0.316 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+      "R02: open challenges this assessment does not resolve: coverage_gap, independence_unmodeled, unverified_assertion.",
+      "R02: propagated score 0.316 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+      "R03: open challenges this assessment does not resolve: coverage_gap, independence_unmodeled, unverified_assertion.",
+      "R03: propagated score 0.316 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+      "C1: open challenges this assessment does not resolve: independence_unmodeled, unverified_assertion.",
+      "C1: propagated score 0.279 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+      "C2: open challenges this assessment does not resolve: coverage_gap, independence_unmodeled, unverified_assertion.",
+      "C2: propagated score 0.228 is below the 0.70 threshold - the claim is not established by its evidence as recorded.",
+      "F1: open challenges this assessment does not resolve: assumption_unvalidated, independence_unmodeled, unverified_assertion.",
+      "F1: propagated score 0.190 is below the 0.70 threshold - the claim is not established by its evidence as recorded."
+    ],
+    "reported_statuses": {
+      "R01": "draft",
+      "R02": "draft",
+      "R03": "draft",
+      "C1": "draft",
+      "C2": "draft",
+      "F1": "draft"
+    }
+  },
+  "state": {
+    "aee": {
+      "project": "current-calibration",
+      "claims": [
+        {
+          "id": "R01",
+          "text": "smoke.py exists at /testbed and defines add(a,b) whose body is 'return a + b'.",
+          "kind": "requirement",
+          "status": "draft",
+          "boundary": [
+            "this milestone"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: cat smoke.py shows def add(a, b): with body 'return a + b'",
+              "source_id": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            },
+            {
+              "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: quickstart run prints '3 2 4 3.75 3.5' including add(1,2)==3",
+              "source_id": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "python3 -c 'from smoke import add; print(add(1,2))' does not print 3",
+            "smoke.py missing or add body differs from 'return a + b'"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone requirement R01",
+          "domain": "",
+          "confidence": 0.316125,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R01",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R01-INDEPENDENT-EVIDENCE-CHA",
+              "claim_id": "R01",
+              "challenge": "Independent-evidence challenge",
+              "breakpoint": "Only model self-attestation supports the claim",
+              "severity": "high",
+              "category": "unverified_assertion",
+              "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R01-INDEPENDENCE-UNMODELED",
+              "claim_id": "R01",
+              "challenge": "Shared-evidence independence challenge",
+              "breakpoint": "Supporting evidence '0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a' (ref(s): 0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a) is shared with claim(s) C1, R02, R03 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+              "severity": "medium",
+              "category": "independence_unmodeled",
+              "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R01-INDEPENDENCE-UNMODELED-2",
+              "claim_id": "R01",
+              "challenge": "Shared-evidence independence challenge",
+              "breakpoint": "Supporting evidence '5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5' (ref(s): 5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5) is shared with claim(s) C1, C2, F1 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+              "severity": "medium",
+              "category": "independence_unmodeled",
+              "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R01-DRAFT-CAP",
+              "claim_id": "R01",
+              "challenge": "Draft outcome cap",
+              "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+              "severity": "low",
+              "category": "draft_cap",
+              "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "created",
+          "stage_events": [],
+          "headline": false,
+          "role": null
+        },
+        {
+          "id": "R02",
+          "text": "add() is correct for negative integers, zero, floats, and mixed int/float operands.",
+          "kind": "requirement",
+          "status": "draft",
+          "boundary": [
+            "this milestone"
+          ],
+          "depends_on": [
+            "R01"
+          ],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "1b121094eb0cbd2adc5654d91f81cca6df7c00644eadf7fcdff5ff121bbc87cb",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: pytest run: 9 passed including all 7 R02 category tests (negative, zero, float, mixed)",
+              "source_id": "1b121094eb0cbd2adc5654d91f81cca6df7c00644eadf7fcdff5ff121bbc87cb",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            },
+            {
+              "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: quickstart prints '3 2 4 3.75 3.5' covering negative, zero, float, mixed cases",
+              "source_id": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "any of add(-3,5)==2, add(-2,-3)==-5, add(0,4)==4, add(1.5,2.25)==3.75, add(-1.5,0.5)==-1.0, add(1,2.5)==3.5, add(0,2.5)==2.5 fails"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone requirement R02",
+          "domain": "",
+          "confidence": 0.316125,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R02",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R02-INDEPENDENT-EVIDENCE-CHA",
+              "claim_id": "R02",
+              "challenge": "Independent-evidence challenge",
+              "breakpoint": "Only model self-attestation supports the claim",
+              "severity": "high",
+              "category": "unverified_assertion",
+              "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R02-INDEPENDENCE-UNMODELED",
+              "claim_id": "R02",
+              "challenge": "Shared-evidence independence challenge",
+              "breakpoint": "Supporting evidence '0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a' (ref(s): 0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a) is shared with claim(s) C1, R01, R03 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+              "severity": "medium",
+              "category": "independence_unmodeled",
+              "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R02-DRAFT-CAP",
+              "claim_id": "R02",
+              "challenge": "Draft outcome cap",
+              "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+              "severity": "low",
+              "category": "draft_cap",
+              "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "created",
+          "stage_events": [],
+          "headline": false,
+          "role": null
+        },
+        {
+          "id": "R03",
+          "text": "Tests exist and were run with 0 failures: 9/9 in tests/test_smoke.py and 232/232 in the full suite, both exit 0.",
+          "kind": "requirement",
+          "status": "draft",
+          "boundary": [
+            "this milestone"
+          ],
+          "depends_on": [
+            "R01",
+            "R02"
+          ],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: FINAL-EV-A '9 passed' exit 0 for tests/test_smoke.py; FINAL-EV-B '232 passed' exit 0 for full suite",
+              "source_id": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            },
+            {
+              "ref": "366941dcdddb05df2829964d7dba947693cfff374b31a941d3144dde9336690c",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: TDD red phase recorded before implementation: collection error 'cannot import name add from smoke'",
+              "source_id": "366941dcdddb05df2829964d7dba947693cfff374b31a941d3144dde9336690c",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "pytest on tests/test_smoke.py reports any failure or nonzero exit",
+            "full-suite run reports any failure"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone requirement R03",
+          "domain": "",
+          "confidence": 0.316125,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "R03",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R03-INDEPENDENT-EVIDENCE-CHA",
+              "claim_id": "R03",
+              "challenge": "Independent-evidence challenge",
+              "breakpoint": "Only model self-attestation supports the claim",
+              "severity": "high",
+              "category": "unverified_assertion",
+              "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R03-INDEPENDENCE-UNMODELED",
+              "claim_id": "R03",
+              "challenge": "Shared-evidence independence challenge",
+              "breakpoint": "Supporting evidence '0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a' (ref(s): 0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a) is shared with claim(s) C1, R01, R02 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+              "severity": "medium",
+              "category": "independence_unmodeled",
+              "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-R03-DRAFT-CAP",
+              "claim_id": "R03",
+              "challenge": "Draft outcome cap",
+              "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+              "severity": "low",
+              "category": "draft_cap",
+              "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "created",
+          "stage_events": [],
+          "headline": false,
+          "role": null
+        },
+        {
+          "id": "C1",
+          "text": "The TinyDB package (tinydb/) was not modified by this implementation.",
+          "kind": "requirement",
+          "status": "draft",
+          "boundary": [
+            "this milestone"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: git status --porcelain -- tinydb printed nothing; full status lists only new files smoke.py, tests/test_smoke.py, .specify/, specs/",
+              "source_id": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            },
+            {
+              "ref": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: FINAL-EV-D: filtering git status for tinydb/tests excluding the new test file leaves no modified entries",
+              "source_id": "0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "git status --porcelain -- tinydb prints any entry"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone constraint 'Do not modify TinyDB'",
+          "domain": "",
+          "confidence": 0.278625,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-C1-INDEPENDENT-EVIDENCE-CHA",
+              "claim_id": "C1",
+              "challenge": "Independent-evidence challenge",
+              "breakpoint": "Only model self-attestation supports the claim",
+              "severity": "high",
+              "category": "unverified_assertion",
+              "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-C1-INDEPENDENCE-UNMODELED",
+              "claim_id": "C1",
+              "challenge": "Shared-evidence independence challenge",
+              "breakpoint": "Supporting evidence '0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a' (ref(s): 0082152155a96e61b882a5db92502b40039d8e6e079b5d9334728fa1900f0b7a) is shared with claim(s) R01, R02, R03 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+              "severity": "medium",
+              "category": "independence_unmodeled",
+              "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-C1-INDEPENDENCE-UNMODELED-2",
+              "claim_id": "C1",
+              "challenge": "Shared-evidence independence challenge",
+              "breakpoint": "Supporting evidence '5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5' (ref(s): 5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5) is shared with claim(s) C2, F1, R01 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+              "severity": "medium",
+              "category": "independence_unmodeled",
+              "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-C1-DRAFT-CAP",
+              "claim_id": "C1",
+              "challenge": "Draft outcome cap",
+              "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+              "severity": "low",
+              "category": "draft_cap",
+              "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "created",
+          "stage_events": [],
+          "headline": false,
+          "role": null
+        },
+        {
+          "id": "C2",
+          "text": "No service or deployment artifacts were added; only smoke.py and tests/test_smoke.py were created as code.",
+          "kind": "requirement",
+          "status": "draft",
+          "boundary": [
+            "this milestone"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: full git status --porcelain lists only .specify/, smoke.py, specs/, tests/test_smoke.py as untracked; no service/deployment files",
+              "source_id": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "git status shows a new service, CLI entrypoint, Dockerfile, or deployment file"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "milestone constraint 'No service or deployment is involved'",
+          "domain": "",
+          "confidence": 0.2275,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-C2-IRREDUCIBILITY-CHALLENGE",
+              "claim_id": "C2",
+              "challenge": "Irreducibility challenge",
+              "breakpoint": "Claim may contain multiple independently falsifiable propositions",
+              "severity": "medium",
+              "category": "coverage_gap",
+              "recovery_hint": "Split the claim into atomic propositions and link them explicitly.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-C2-INDEPENDENT-EVIDENCE-CHA",
+              "claim_id": "C2",
+              "challenge": "Independent-evidence challenge",
+              "breakpoint": "Only model self-attestation supports the claim",
+              "severity": "high",
+              "category": "unverified_assertion",
+              "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-C2-INDEPENDENCE-UNMODELED",
+              "claim_id": "C2",
+              "challenge": "Shared-evidence independence challenge",
+              "breakpoint": "Supporting evidence '5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5' (ref(s): 5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5) is shared with claim(s) C1, F1, R01 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+              "severity": "medium",
+              "category": "independence_unmodeled",
+              "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-C2-DRAFT-CAP",
+              "claim_id": "C2",
+              "challenge": "Draft outcome cap",
+              "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+              "severity": "low",
+              "category": "draft_cap",
+              "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "created",
+          "stage_events": [],
+          "headline": false,
+          "role": null
+        },
+        {
+          "id": "F1",
+          "text": "All 11 tasks (T001-T011) in specs/001-transactions/tasks.md are marked [X] with 0 unchecked.",
+          "kind": "requirement",
+          "status": "draft",
+          "boundary": [
+            "this milestone"
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+              "kind": "asserted",
+              "direction": "supports",
+              "source_quality": "model",
+              "description": "Unverified model assertion: grep counts: unchecked 0, checked 11; no malformed leading-space task lines remain",
+              "source_id": "5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5",
+              "independent_of": [],
+              "observed_at": null,
+              "content_hash": null
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "grep -c '^- \\[ \\]' tasks.md is nonzero",
+            "grep -c '^- \\[X\\]' tasks.md is not 11"
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "speckit-implement completion criteria",
+          "domain": "",
+          "confidence": 0.19000000000000003,
+          "confidence_band": "low",
+          "failures": [
+            {
+              "id": "AEE-F1-COUNTEREXAMPLE-CHALLENGE",
+              "claim_id": "F1",
+              "challenge": "Counterexample challenge",
+              "breakpoint": "Absolute language is used without a bounded domain",
+              "severity": "high",
+              "category": "assumption_unvalidated",
+              "recovery_hint": "Narrow the claim or document evidence covering the entire domain.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-F1-INDEPENDENT-EVIDENCE-CHA",
+              "claim_id": "F1",
+              "challenge": "Independent-evidence challenge",
+              "breakpoint": "Only model self-attestation supports the claim",
+              "severity": "high",
+              "category": "unverified_assertion",
+              "recovery_hint": "Obtain evidence from a test, artifact, primary source, or human observation.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-F1-INDEPENDENCE-UNMODELED",
+              "claim_id": "F1",
+              "challenge": "Shared-evidence independence challenge",
+              "breakpoint": "Supporting evidence '5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5' (ref(s): 5b37ebb9d269a0ae4f6f093c2a3219ef72c7070dc626b70c2ed4fcb87232d6a5) is shared with claim(s) C1, C2, R01 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+              "severity": "medium",
+              "category": "independence_unmodeled",
+              "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+              "resolved": false,
+              "disposition": null
+            },
+            {
+              "id": "AEE-F1-DRAFT-CAP",
+              "claim_id": "F1",
+              "challenge": "Draft outcome cap",
+              "breakpoint": "Claim status is draft: the assessment outcome is capped at gather_evidence/iterate and policy verdicts below accept regardless of score (Spec 003 FR-2.3); a human ratification (status change) lifts the cap",
+              "severity": "low",
+              "category": "draft_cap",
+              "recovery_hint": "Ratify the claim (change its status from draft) to lift the cap.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "created",
+          "stage_events": [],
+          "headline": false,
+          "role": null
+        }
+      ],
+      "scores": {
+        "R01": {
+          "claim_id": "R01",
+          "direct_score": 0.316125,
+          "propagated_score": 0.316125,
+          "band": "low",
+          "components": {
+            "evidence": 0.09750000000000003,
+            "independence": 1.0,
+            "falsifiability": 0.75,
+            "boundary": 0.5,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "draft",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "No observed supporting evidence",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+            "Falsification test \"smoke.py missing or add body differs from 'return a + b'\" earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+            "Boundary entry 'this milestone' earns partial credit (FR-8.7): failed criteria: names no scope or limit (no scope term or numeric bound)",
+            "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 2 unknown of 2 item(s); unknown freshness counts as stale (FR-8.6)"
+          ]
+        },
+        "R02": {
+          "claim_id": "R02",
+          "direct_score": 0.35362499999999997,
+          "propagated_score": 0.316125,
+          "band": "low",
+          "components": {
+            "evidence": 0.09750000000000003,
+            "independence": 1.0,
+            "falsifiability": 1.0,
+            "boundary": 0.5,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "draft",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "No observed supporting evidence",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+            "Boundary entry 'this milestone' earns partial credit (FR-8.7): failed criteria: names no scope or limit (no scope term or numeric bound)",
+            "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 2 unknown of 2 item(s); unknown freshness counts as stale (FR-8.6)",
+            "Capped by weakest dependency at 0.316"
+          ]
+        },
+        "R03": {
+          "claim_id": "R03",
+          "direct_score": 0.35362499999999997,
+          "propagated_score": 0.316125,
+          "band": "low",
+          "components": {
+            "evidence": 0.09750000000000003,
+            "independence": 1.0,
+            "falsifiability": 1.0,
+            "boundary": 0.5,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "draft",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "No observed supporting evidence",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+            "Boundary entry 'this milestone' earns partial credit (FR-8.7): failed criteria: names no scope or limit (no scope term or numeric bound)",
+            "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 2 unknown of 2 item(s); unknown freshness counts as stale (FR-8.6)",
+            "Capped by weakest dependency at 0.316"
+          ]
+        },
+        "C1": {
+          "claim_id": "C1",
+          "direct_score": 0.278625,
+          "propagated_score": 0.278625,
+          "band": "low",
+          "components": {
+            "evidence": 0.09750000000000003,
+            "independence": 1.0,
+            "falsifiability": 0.5,
+            "boundary": 0.5,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "draft",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "No observed supporting evidence",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+            "Falsification test 'git status --porcelain -- tinydb prints any entry' earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+            "Boundary entry 'this milestone' earns partial credit (FR-8.7): failed criteria: names no scope or limit (no scope term or numeric bound)",
+            "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 2 unknown of 2 item(s); unknown freshness counts as stale (FR-8.6)"
+          ]
+        },
+        "C2": {
+          "claim_id": "C2",
+          "direct_score": 0.2275,
+          "propagated_score": 0.2275,
+          "band": "low",
+          "components": {
+            "evidence": 0.050000000000000044,
+            "independence": 0.5,
+            "falsifiability": 1.0,
+            "boundary": 0.5,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "draft",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "No observed supporting evidence",
+            "Fewer than two independent supporting sources",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+            "Boundary entry 'this milestone' earns partial credit (FR-8.7): failed criteria: names no scope or limit (no scope term or numeric bound)",
+            "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 1 unknown of 1 item(s); unknown freshness counts as stale (FR-8.6)"
+          ]
+        },
+        "F1": {
+          "claim_id": "F1",
+          "direct_score": 0.19000000000000003,
+          "propagated_score": 0.19000000000000003,
+          "band": "low",
+          "components": {
+            "evidence": 0.050000000000000044,
+            "independence": 0.5,
+            "falsifiability": 0.75,
+            "boundary": 0.5,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "draft",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "No observed supporting evidence",
+            "Fewer than two independent supporting sources",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)",
+            "Falsification test \"grep -c '^- \\\\[ \\\\]' tasks.md is nonzero\" earns partial credit (FR-8.7): failed criteria: no checkable condition (no numeric bound, comparator, or observation/action term)",
+            "Boundary entry 'this milestone' earns partial credit (FR-8.7): failed criteria: names no scope or limit (no scope term or numeric bound)",
+            "Freshness penalty 0.100 on the supporting set: 0 fresh, 0 recent, 0 stale, 1 unknown of 1 item(s); unknown freshness counts as stale (FR-8.6)"
+          ]
+        }
+      },
+      "recoveries": [
+        {
+          "failure_id": "AEE-C1-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "C1",
+          "strategy": "gather_evidence",
+          "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-C2-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "C2",
+          "strategy": "gather_evidence",
+          "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-F1-COUNTEREXAMPLE-CHALLENGE",
+          "claim_id": "F1",
+          "strategy": "narrow_boundary",
+          "action": "Narrow the claim or document evidence covering the entire domain.",
+          "priority": 2,
+          "verification": "The claim identifies its applicable system, population, time, and conditions."
+        },
+        {
+          "failure_id": "AEE-F1-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "F1",
+          "strategy": "gather_evidence",
+          "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-R01-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R01",
+          "strategy": "gather_evidence",
+          "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-R02-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R02",
+          "strategy": "gather_evidence",
+          "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-R03-INDEPENDENT-EVIDENCE-CHA",
+          "claim_id": "R03",
+          "strategy": "gather_evidence",
+          "action": "Obtain evidence from a test, artifact, primary source, or human observation.",
+          "priority": 2,
+          "verification": "At least one inspectable non-self-attested evidence item is attached."
+        },
+        {
+          "failure_id": "AEE-C1-INDEPENDENCE-UNMODELED",
+          "claim_id": "C1",
+          "strategy": "clarify",
+          "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "priority": 3,
+          "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+        },
+        {
+          "failure_id": "AEE-C1-INDEPENDENCE-UNMODELED-2",
+          "claim_id": "C1",
+          "strategy": "clarify",
+          "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "priority": 3,
+          "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+        },
+        {
+          "failure_id": "AEE-C2-INDEPENDENCE-UNMODELED",
+          "claim_id": "C2",
+          "strategy": "clarify",
+          "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "priority": 3,
+          "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+        },
+        {
+          "failure_id": "AEE-C2-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "C2",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-F1-INDEPENDENCE-UNMODELED",
+          "claim_id": "F1",
+          "strategy": "clarify",
+          "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "priority": 3,
+          "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+        },
+        {
+          "failure_id": "AEE-R01-INDEPENDENCE-UNMODELED",
+          "claim_id": "R01",
+          "strategy": "clarify",
+          "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "priority": 3,
+          "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+        },
+        {
+          "failure_id": "AEE-R01-INDEPENDENCE-UNMODELED-2",
+          "claim_id": "R01",
+          "strategy": "clarify",
+          "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "priority": 3,
+          "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+        },
+        {
+          "failure_id": "AEE-R01-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R01",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R02-INDEPENDENCE-UNMODELED",
+          "claim_id": "R02",
+          "strategy": "clarify",
+          "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "priority": 3,
+          "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+        },
+        {
+          "failure_id": "AEE-R02-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R02",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-R03-INDEPENDENCE-UNMODELED",
+          "claim_id": "R03",
+          "strategy": "clarify",
+          "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "priority": 3,
+          "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+        },
+        {
+          "failure_id": "AEE-R03-IRREDUCIBILITY-CHALLENGE",
+          "claim_id": "R03",
+          "strategy": "decompose",
+          "action": "Split the claim into atomic propositions and link them explicitly.",
+          "priority": 3,
+          "verification": "Every resulting claim contains one independently falsifiable proposition."
+        },
+        {
+          "failure_id": "AEE-C1-DRAFT-CAP",
+          "claim_id": "C1",
+          "strategy": "define_falsifier",
+          "action": "Ratify the claim (change its status from draft) to lift the cap.",
+          "priority": 4,
+          "verification": "A concrete observation that would refute the claim is documented."
+        },
+        {
+          "failure_id": "AEE-C2-DRAFT-CAP",
+          "claim_id": "C2",
+          "strategy": "define_falsifier",
+          "action": "Ratify the claim (change its status from draft) to lift the cap.",
+          "priority": 4,
+          "verification": "A concrete observation that would refute the claim is documented."
+        },
+        {
+          "failure_id": "AEE-F1-DRAFT-CAP",
+          "claim_id": "F1",
+          "strategy": "define_falsifier",
+          "action": "Ratify the claim (change its status from draft) to lift the cap.",
+          "priority": 4,
+          "verification": "A concrete observation that would refute the claim is documented."
+        },
+        {
+          "failure_id": "AEE-R01-DRAFT-CAP",
+          "claim_id": "R01",
+          "strategy": "define_falsifier",
+          "action": "Ratify the claim (change its status from draft) to lift the cap.",
+          "priority": 4,
+          "verification": "A concrete observation that would refute the claim is documented."
+        },
+        {
+          "failure_id": "AEE-R02-DRAFT-CAP",
+          "claim_id": "R02",
+          "strategy": "define_falsifier",
+          "action": "Ratify the claim (change its status from draft) to lift the cap.",
+          "priority": 4,
+          "verification": "A concrete observation that would refute the claim is documented."
+        },
+        {
+          "failure_id": "AEE-R03-DRAFT-CAP",
+          "claim_id": "R03",
+          "strategy": "define_falsifier",
+          "action": "Ratify the claim (change its status from draft) to lift the cap.",
+          "priority": 4,
+          "verification": "A concrete observation that would refute the claim is documented."
+        }
+      ]
+    }
+  }
+}

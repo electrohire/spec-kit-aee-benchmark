@@ -1,0 +1,62 @@
+{
+  "budget_debit": 26856,
+  "ended_at": "2026-10-17T10:02:34.845719+00:00",
+  "max_output": 4096,
+  "original_sha256": "2961227fc5fcd54e685affedaeab5fb4054ca9dc34f872fa581edca7bbbd8f2c",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 25080,
+  "preflight_seconds": 0.5,
+  "removed_history_messages": 0,
+  "request_seconds": 90.125,
+  "request_sha256": "80f4cc62dbb2c249f6c3370c9300b61e8d8b17ed5278298f88628c9c33a7c7f8",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && python - <<'EOF'\\nimport tempfile, os\\nfrom tinydb import TinyDB, where\\nfrom tinydb.storages import MemoryStorage, JSONStorage\\nfrom tinydb.journal import BatchWriter\\n\\n# insert then remove the same doc within one batch\\ndb = TinyDB(storage=MemoryStorage)\\nw = BatchWriter(db)\\nids = w.apply([{'op': 'insert', 'document': {'x': 1}}, {'op': 'remove', 'doc_id': 1}])\\nassert ids == [1] and len(db) == 0, (ids, len(db))\\nprint('same-batch insert+remove OK')\\n\\n# two writers on same db\\ndb2 = TinyDB(storage=MemoryStorage)\\nw1, w2 = BatchWriter(db2), BatchWriter(db2)\\nassert w1.apply([{'op': 'insert', 'document': {'x': 1}}]) == [1]\\nassert w2.apply([{'op': 'insert', 'document': {'x': 2}}]) == [2]\\nassert [d['x'] for d in db2.all()] == [1, 2]\\nprint('two writers OK')\\n\\n# JSON file storage round trip\\ntmp = tempfile.mkdtemp()\\npath = os.path.join(tmp, 'd.json')\\ndb3 = TinyDB(path, storage=JSONStorage)\\nwb = BatchWriter(db3)\\nassert wb.apply([{'op': 'insert', 'document': {'x': [1, {'y': 2}]}}]) == [1]\\nassert wb.apply([{'op': 'remove', 'doc_id': 1}]) == []\\ntry:\\n    wb.apply([{'op': 'insert', 'document': {'x': 1}}, {'op': 'remove', 'doc_id': 7}])\\n    raise SystemExit('should have raised')\\nexcept ValueError:\\n    pass\\nassert len(db3) == 0\\ndb3.close()\\nprint('json storage OK')\\n\\n# Document instance as input document (Mapping)\\ndb4 = TinyDB(storage=MemoryStorage)\\nwb4 = BatchWriter(db4)\\nfrom tinydb.table import Document\\nd = Document({'x': 1}, 5)\\ntry:\\n    wb4.apply([{'op': 'insert', 'document': d}])\\n    print('Document accepted, ids:', [x.doc_id for x in db4.all()])\\nexcept Exception as e:\\n    print('Document rejected:', type(e).__name__, e)\\n\\n# empty dict document\\ndb5 = TinyDB(storage=MemoryStorage)\\nwb5 = BatchWriter(db5)\\nassert wb5.apply([{'op': 'insert', 'document': {}}]) == [1]\\nprint('empty doc OK')\\n\\n# non-JSON data raises but rolls back\\ndb6 = TinyDB(storage=MemoryStorage)\\nwb6 = BatchWriter(db6)\\ndb6.insert({'x': 1})\\ntry:\\n    wb6.apply([{'op': 'insert', 'document': {'s': {1, 2}}}, {'op': 'remove', 'doc_id': 9}])\\nexcept ValueError:\\n    pass\\nassert [d['x'] for d in db6.all()] == [1]\\nprint('rollback on later op OK')\\nEOF\"}",
+          "reasoning_sha256": "976c5d16445c1ecc2c3f8850301ed4a11e9ab9e04d393ab28c67eed5dd7f2181",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792231354,
+    "id": "chatcmpl-D6E1Xo3vja8vBSmqDQ78ritK3arK8q4r",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 24831,
+      "predicted_ms": 88903.039,
+      "predicted_n": 1776,
+      "predicted_per_second": 19.96557170559715,
+      "predicted_per_token_ms": 50.08621915492958,
+      "prompt_ms": 1027.571,
+      "prompt_n": 249,
+      "prompt_per_second": 242.31902223787944,
+      "prompt_per_token_ms": 4.126791164658634
+    },
+    "usage": {
+      "completion_tokens": 1776,
+      "prompt_tokens": 25080,
+      "prompt_tokens_details": {
+        "cached_tokens": 24831
+      },
+      "total_tokens": 26856
+    }
+  },
+  "seconds": 90.125,
+  "stage": 1,
+  "started_at": "2026-10-17T10:01:04.712931+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1776,
+    "prompt_tokens": 25080,
+    "prompt_tokens_details": {
+      "cached_tokens": 24831
+    },
+    "total_tokens": 26856
+  }
+}

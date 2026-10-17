@@ -1,0 +1,62 @@
+{
+  "budget_debit": 26328,
+  "ended_at": "2026-10-17T13:41:17.490449+00:00",
+  "max_output": 4096,
+  "original_sha256": "4583a48cc183b91cd031bb8e77ec2785a86ae68fafd0173dfbd9f3ae9a34b263",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 23521,
+  "preflight_seconds": 0.1720000000204891,
+  "removed_history_messages": 0,
+  "request_seconds": 138.43699999991804,
+  "request_sha256": "c7f1124787206248b1692be3c479c19f48d547765a8acfb2370f821215561691",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cat > /testbed/tests/test_tagged_m3.py <<'PYEOF'\\nimport pytest\\n\\nfrom cachetools.tagged import TaggedCache\\n\\n\\nclass FakeTimer:\\n    def __init__(self, now=0.0):\\n        self.now = now\\n\\n    def __call__(self):\\n        return self.now\\n\\n    def advance(self, dt):\\n        self.now += dt\\n\\n\\n# ---------------- R07: timer and ttl ----------------\\n\\ndef test_constructor_accepts_timer_keyword():\\n    t = FakeTimer()\\n    c = TaggedCache(4, timer=t)\\n    assert c.timer is t\\n\\n\\ndef test_default_timer_is_monotonic():\\n    import time\\n    c = TaggedCache(1)\\n    assert c.timer is time.monotonic\\n\\n\\ndef test_ttl_none_means_no_expiry():\\n    t = FakeTimer()\\n    c = TaggedCache(4, timer=t)\\n    c.put('a', 1, [], ttl=None)\\n    t.advance(10_000)\\n    assert c.get('a') == 1\\n\\n\\ndef test_ttl_zero_is_immediately_expired():\\n    t = FakeTimer()\\n    c = TaggedCache(4, timer=t)\\n    c.put('a', 1, ['x'], ttl=0)\\n    assert len(c) == 0\\n    assert 'a' not in c\\n    with pytest.raises(KeyError):\\n        c.get('a')\\n    assert c.invalidate('x') == 0\\n\\n\\ndef test_expiry_at_exact_boundary_is_expired():\\n    t = FakeTimer(10.0)\\n    c = TaggedCache(4, timer=t)\\n    c.put('a', 1, [], ttl=5)\\n    t.now = 14.999999\\n    assert len(c) == 1\\n    t.now = 15.0  # exact boundary: now >= expiry\\n    assert len(c) == 0\\n    with pytest.raises(KeyError):\\n        c.get('a')\\n\\n\\ndef test_ttl_int_and_float_accepted():\\n    t = FakeTimer()\\n    c = TaggedCache(4, timer=t)\\n    c.put('a', 1, [], ttl=2)\\n    c.put('b', 2, [], ttl=1.5)\\n    t.advance(1.5)\\n    assert 'b' not in c and 'a' in c\\n\\n\\ndef test_invalid_ttl_rejected_before_mutation():\\n    t = FakeTimer()\\n    c = TaggedCache(4, timer=t)\\n    c.put('a', 1, ['old'])\\n    for bad in (True, False, -1, -0.5, float('inf'), float('-inf'),\\n                float('nan'), '10', None + 0 if False else [1], object()):\\n        with pytest.raises(ValueError):\\n            c.put('a', 2, ['new'], ttl=bad)\\n    # old value, tags, and expiry untouched\\n    assert c.get('a') == 1\\n    assert c.invalidate('old') == 1\\n    # invalid ttl on a fresh key changes nothing\\n    with pytest.raises(ValueError):\\n        c.put('b', 3, [], ttl=-1)\\n    assert 'b' not in c and len(c) == 0\\n\\n\\ndef test_bool_ttl_rejected():\\n    c = TaggedCache(2, timer=FakeTimer())\\n    with pytest.raises(ValueError):\\n        c.put('a', 1, ttl=True)\\n    with pytest.raises(ValueError):\\n        c.put('a', 1, ttl=False)\\n    assert len(c) == 0\\n\\n\\ndef test_overwrite_replaces_prior_expiry():\\n    t = FakeTimer(0.0)\\n    c = TaggedCache(4, timer=t)\\n    c.put('a', 1, [], ttl=5)\\n    t.advance(3)\\n    c.put('a', 2, [], ttl=10)  # new expiry at 3+10=13\\n    t.advance(9)  # now=12: old expiry 5 long past, new still valid\\n    assert c.get('a') == 2\\n    t.advance(1)  # now=13: exact boundary of new expiry\\n    assert 'a' not in c\\n\\n\\ndef test_overwrite_with_ttl_none_clears_expiry():\\n    t = FakeTimer(0.0)\\n    c = TaggedCache(4, timer=t)\\n    c.put('a', 1, [], ttl=5)\\n    t.advance(6)\\n    c.put('a', 2, [])  # now immortal\\n    assert c.get('a') == 2\\n\\n\\n# ---------------- R08: lazy expiry semantics ----------------\\n\\ndef test_len_drops_expired_without_touching_recency():\\n    t = FakeTimer(0.0)\\n    c = TaggedCache(4, timer=t)\\n    c.put('a', 1, [])\\n    c.put('b', 2, [], ttl=1)\\n    c.put('c', 3, [])\\n    t.advance(1)  # b expired at boundary\\n    assert len(c) == 2\\n    # recency of a, c untouched: eviction order is a then c\\n    c.put('d', 4, [])  # evicts a\\n    assert 'a' not in c and 'b' not in c\\n    c.put('e', 5, [])  # evicts c\\n    assert 'c' not in c and 'd' in c and 'e' in c\\n\\n\\ndef test_put_drops_expired_before_eviction():\\n    t = FakeTimer(0.0)\\n    c = TaggedCache(2, timer=t)\\n    c.put('a', 1, [], ttl=1)\\n    c.put('b', 2, [])\\n    t.advance(2)  # a expired\\n    c.put('c', 3, [])  # capacity 2: a already gone, so only b evicted\\n    assert 'a' not in c and 'b' not in c\\n    assert 'c' in c and len(c) == 1\\n\\n\\ndef test_resize_drops_expired_without_touching_recency():\\n    t = FakeTimer(0.0)\\n    c = TaggedCache(4, timer=t)\\n    c.put('a', 1, [], ttl=1)\\n    c.put('b', 2, [])\\n    c.put('c', 3, [])\\n    t.advance(2)  # a expired\\n    c.resize(2)  # evicts b (LRU of survivors), keeps c\\n    assert 'a' not in c and 'b' not in c and 'c' in c\\n    assert len(c) == 1\\n\\n\\ndef test_invalidation_counts_only_live_entries():\\n    t = FakeTimer(0.0)\\n    c = TaggedCache(8, timer=t)\\n    c.put('a', 1, ['x'], ttl=1)\\n    c.put('b', 2, ['x'])\\n    t.advance(2)\\n    assert c.invalidate('x') == 1\\n    assert len(c) == 0\\n    assert c.invalidate('x') == 0\\n\\n\\ndef test_invalidate_many_drops_expired_first():\\n    t = FakeTimer(0.0)\\n    c = TaggedCache(8, timer=t)\\n    c.put('a', 1, ['x'], ttl=1)\\n    c.put('b', 2, ['x', 'y'])\\n    t.advance(2)\\n    assert c.invalidate_many(['x']) == 1\\n    assert c.invalidate_many(['x', 'y'], mode='all') == 0\\n\\n\\ndef test_missing_and_expired_get_raise_keyerror():\\n    t = FakeTimer()\\n    c = TaggedCache(2, timer=t)\\n    with pytest.raises(KeyError):\\n        c.get('nope')\\n    c.put('a', 1, [], ttl=1)\\n    t.advance(1)\\n    with pytest.raises(KeyError):\\n        c.get('a')\\n    with pytest.raises(KeyError):\\n        c['a']\\n\\n\\ndef test_expired_entry_reuse_leaves_no_stale_state():\\n    t = FakeTimer(0.0)\\n    c = TaggedCache(2, timer=t)\\n    c.put('a', 1, ['t'], ttl=1)\\n    t.advance(2)\\n    # reusing the key must not resurrect the old membership\\n    c.put('a', 2, [])\\n    assert c.invalidate('t') == 0\\n    assert c.get('a') == 2\\n    c.put('b', 3, [])  # evicts a\\n    assert 'a' not in c\\n    assert c.invalidate('t') == 0\\n\\n\\ndef test_resize_preserves_absolute_expiry():\\n    \\\"\\\"\\\"R05 clarification: surviving entries keep absolute expiry.\\\"\\\"\\\"\\n    t = FakeTimer(0.0)\\n    c = TaggedCache(4, timer=t)\\n    c.put('a', 1, [], ttl=10)\\n    c.put('b', 2, [], ttl=10)\\n    t.advance(5)\\n    c.resize(3)  # shrink; a expires at absolute t=10, not recomputed\\n    t.advance(5)  # now=10: exact boundary\\n    assert 'a' not in c and 'b' not in c\\n\\n\\ndef test_resize_does_not_drop_or_recompute_expiry():\\n    t = FakeTimer(0.0)\\n    c = TaggedCache(2, timer=t)\\n    c.put('a', 1, [], ttl=100)\\n    c.put('b', 2, [], ttl=100)\\n    t.advance(50)\\n    c.resize(3)  # grow: no eviction, expiry untouched\\n    t.advance(49)  # now=99: still live\\n    assert len(c) == 2\\n    t.advance(1)  # now=100: exact boundary, both expired\\n    assert len(c) == 0\\n\\n\\ndef test_existing_callers_retain_previous_behavior():\\n    c = TaggedCache(2)\\n    c.put('a', 1, ['x'])\\n    c.put('b', 2, ['x'])\\n    assert c.get('a') == 1 and c.get('b') == 2\\n    assert c.invalidate('x') == 2\\n    assert len(c) == 0\\n\\n\\ndef test_put_refreshes_recency_with_expiry_mixed():\\n    t = FakeTimer(0.0)\\n    c = TaggedCache(2, timer=t)\\n    c.put('a', 1, [])\\n    c.put('b', 2, [], ttl=1)\\n    c.put('a', 10, [])  # a -> MRU\\n    t.advance(2)  # b expired\\n    c.put('c', 3, [])  # evicts ... a is MRU, b already gone -> len was 1\\n    assert 'a' in c and 'c' in c and len(c) == 2\\n\\n\\ndef test_get_refresh_recency_preserved_across_expiry():\\n    t = FakeTimer(0.0)\\n    c = TaggedCache(2, timer=t)\\n    c.put('a', 1, [])\\n    c.put('b', 2, [])\\n    c.get('a')  # a -> MRU\\n    c.put('c', 3, [], ttl=1)\\n    t.advance(2)  # c expired\\n    c.put('d', 4, [])  # evicts b, not a\\n    assert 'a' in c and 'b' not in c and 'c' not in c and 'd' in c\\nPYEOF\\ncd /testbed && PYTHONPATH=src:. python -m pytest tests/test_tagged_m3.py -q 2>&1 | tail -15\"}",
+          "reasoning_sha256": "c2452c301a30c4699c876ddc724365b06d216d217e1cfeed387faa5020ab0a34",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792244477,
+    "id": "chatcmpl-jSCBRU4lU7IJpX2ik4qGdBsXe5soyzfK",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 23479,
+      "predicted_ms": 137765.035,
+      "predicted_n": 2807,
+      "predicted_per_second": 20.368012827057314,
+      "predicted_per_token_ms": 49.09659123307199,
+      "prompt_ms": 570.351,
+      "prompt_n": 42,
+      "prompt_per_second": 73.63886448870959,
+      "prompt_per_token_ms": 13.579785714285714
+    },
+    "usage": {
+      "completion_tokens": 2807,
+      "prompt_tokens": 23521,
+      "prompt_tokens_details": {
+        "cached_tokens": 23479
+      },
+      "total_tokens": 26328
+    }
+  },
+  "seconds": 138.43699999991804,
+  "stage": 3,
+  "started_at": "2026-10-17T13:38:59.043526+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2807,
+    "prompt_tokens": 23521,
+    "prompt_tokens_details": {
+      "cached_tokens": 23479
+    },
+    "total_tokens": 26328
+  }
+}

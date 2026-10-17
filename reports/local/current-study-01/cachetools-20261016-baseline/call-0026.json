@@ -1,0 +1,62 @@
+{
+  "budget_debit": 21373,
+  "ended_at": "2026-10-17T13:06:08.910885+00:00",
+  "max_output": 4096,
+  "original_sha256": "fbb2bd85503ece5db84ab7f912ac3a1d2d664c61b9a5b726f37bbaf49d98192e",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 20196,
+  "preflight_seconds": 0.20399999991059303,
+  "removed_history_messages": 0,
+  "request_seconds": 56.85899999993853,
+  "request_sha256": "c895e0cecaeef9c93697b8f827497a26776782b472662fadd1196843eafa305e",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c \\\"from cachetools.tagged import TaggedCache; c=TaggedCache(1); c.put('a',1,['t']); c.put('a',2,['u']); assert c.get('a')==2 and c.invalidate('t')==0 and c.invalidate('u')==1 and len(c)==0; c=TaggedCache(2); c.put('a',1,['t']); c.put('b',2,[]); c.put('c',3,[]); assert c.invalidate('t')==0; c.put('a',4,['t']); assert c.invalidate('t')==1; print('ok')\\\"\"}",
+          "reasoning_sha256": "d7ec1dc49fc9b512baf0a0b62dd85a9fddc3a174e48fde7fde1dc8f31333773c",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792242368,
+    "id": "chatcmpl-RT8mjmFnlJKdKOzHJhbbFOUYgeKRGmFK",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 20149,
+      "predicted_ms": 56223.738,
+      "predicted_n": 1177,
+      "predicted_per_second": 20.916432130499757,
+      "predicted_per_token_ms": 47.809301020408164,
+      "prompt_ms": 460.816,
+      "prompt_n": 47,
+      "prompt_per_second": 101.99298635464048,
+      "prompt_per_token_ms": 9.804595744680851
+    },
+    "usage": {
+      "completion_tokens": 1177,
+      "prompt_tokens": 20196,
+      "prompt_tokens_details": {
+        "cached_tokens": 20149
+      },
+      "total_tokens": 21373
+    }
+  },
+  "seconds": 56.85899999993853,
+  "stage": 1,
+  "started_at": "2026-10-17T13:05:12.052881+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1177,
+    "prompt_tokens": 20196,
+    "prompt_tokens_details": {
+      "cached_tokens": 20149
+    },
+    "total_tokens": 21373
+  }
+}

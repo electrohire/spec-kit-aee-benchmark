@@ -1,0 +1,62 @@
+{
+  "budget_debit": 22813,
+  "ended_at": "2026-10-17T02:29:14.227302+00:00",
+  "max_output": 4096,
+  "original_sha256": "9edc44de349ff22be14a74d7dfcdf09f22f99e7b4422114d34f20de07149ac5a",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 22311,
+  "preflight_seconds": 0.125,
+  "removed_history_messages": 0,
+  "request_seconds": 26.218000000109896,
+  "request_sha256": "4ab52259dc77ce249924ed0d92dff9ed587000c6f568318dbd5b7687fbdafccc",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "Both modes work. Now test resize and run the full suite:\n\n{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -c \\\"\\nfrom cachetools.tagged import TaggedCache\\n# shrink evicts LRU, preserves survivors + order\\nc = TaggedCache(4)\\nfor i in 'abcd': c.put(i, i, ['t'])\\nc.get('a')  # a MRU, order: b c d a\\nc.resize(2)  # evicts b, c\\nassert len(c) == 2 and 'a' in c and 'd' in c and 'b' not in c and 'c' not in c\\nassert c.maxsize == 2\\n# LRU order preserved: d is LRU, a is MRU\\nc.put('e', 'e')  # evicts d\\nassert 'd' not in c and 'a' in c and 'e' in c\\n# tag memberships pruned for evicted\\nassert c.invalidate('t') == 2  # a and e... wait e has no tags\\nprint('t count', c.invalidate('t'))\\n# grow does not evict\\nc2 = TaggedCache(2)\\nc2.put('a',1); c2.put('b',2)\\nc2.resize(5)\\nassert len(c2) == 2 and c2.maxsize == 5\\n# failed resize preserves state\\nc3 = TaggedCache(2)\\nc3.put('a',1,['x'])\\ntry:\\n    c3.resize(0)\\nexcept ValueError: pass\\nassert c3.maxsize == 2 and c3.get('a') == 1 and c3.invalidate('x') == 1\\ntry:\\n    c3.resize(True)\\nexcept ValueError: pass\\nassert c3.maxsize == 2\\ntry:\\n    c3.resize(2.5)\\nexcept ValueError: pass\\nassert c3.maxsize == 2\\n# resize to same size no-op\\nassert c3.resize(2) is None\\nprint('resize OK')\\n\\\" && PYTHONPATH=src:. python -m pytest tests/ acceptance_public.py -q 2>&1 | tail -2\"}",
+          "reasoning_sha256": "edf52798eba55ec16540e3f6fa4e2bcd2a0f5e0f9f747ee8017fb373479c6bdc",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792204154,
+    "id": "chatcmpl-AkPoASk6OLnjo4ERBEWQpq5hYCryhNv6",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 20994,
+      "predicted_ms": 24256.86,
+      "predicted_n": 502,
+      "predicted_per_second": 20.653951088475587,
+      "predicted_per_token_ms": 48.416886227544914,
+      "prompt_ms": 1821.584,
+      "prompt_n": 1317,
+      "prompt_per_second": 722.9971277745084,
+      "prompt_per_token_ms": 1.3831313591495824
+    },
+    "usage": {
+      "completion_tokens": 502,
+      "prompt_tokens": 22311,
+      "prompt_tokens_details": {
+        "cached_tokens": 20994
+      },
+      "total_tokens": 22813
+    }
+  },
+  "seconds": 26.218000000109896,
+  "stage": 2,
+  "started_at": "2026-10-17T02:28:48.006415+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 502,
+    "prompt_tokens": 22311,
+    "prompt_tokens_details": {
+      "cached_tokens": 20994
+    },
+    "total_tokens": 22813
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "budget_debit": 29402,
+  "ended_at": "2026-10-17T11:38:42.402150+00:00",
+  "max_output": 4096,
+  "original_sha256": "6d0195791fe1f65ce54cc342bc7a52b3871f9a019c6a08cc48b89bbc4fdb6c72",
+  "phase": "plan",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 28637,
+  "preflight_seconds": 0.9680000001098961,
+  "removed_history_messages": 2,
+  "request_seconds": 68.60900000017136,
+  "request_sha256": "ea2033a7d8eb8015cfeeda5df08db8a6ac0927f54bed4e599964e17d87a09c84",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && mkdir -p specs/001-transactions/contracts && cat > specs/001-transactions/contracts/batch-writer.md <<'EOF'\\n# Contract: tinydb.journal.BatchWriter\\n\\nFeature: `specs/001-transactions/spec.md` | Date: 2026-10-17\\n\\nThis is the only new public surface for the feature. Everything else is\\nunchanged (Constitution I).\\n\\n## Module\\n\\n`tinydb/journal.py`, exporting `BatchWriter`.\\n\\n## Constructor\\n\\n```python\\nBatchWriter(db: TinyDB) -> BatchWriter\\n```\\n\\n- Binds the writer to the supplied `TinyDB` instance and its default table\\n  (`db.table(db.default_table_name)`).\\n- Performs no writes and no schema changes; construction is side-effect free.\\n- Does not alter `db`'s ordinary APIs (reads/writes on `db` or any table handle\\n  behave exactly as before).\\n\\n## Method: apply\\n\\n```python\\napply(operations: list[dict]) -> list[int]\\n```\\n\\n### Inputs\\n\\n- `operations`: a list; each element MUST be a dict of exactly one of the two\\n  valid shapes (see data-model.md): `{'op': 'insert', 'document': dict}` or\\n  `{'op': 'remove', 'doc_id': int > 0}`. Extra keys are ignored (A5).\\n\\n### Outputs\\n\\n- On success: a plain `list[int]` containing the IDs of the inserted documents,\\n  in insertion order. Removes contribute nothing. Empty input -> `[]`.\\n\\n### Errors\\n\\n- `ValueError` for any of:\\n  - `operations` is not a list, or an element is not a dict;\\n  - `op` missing or not in `{'insert', 'remove'}`;\\n  - insert: `document` missing or not a `Mapping`;\\n  - remove: `doc_id` missing, not an `int` (bool excluded), or `<= 0`;\\n  - remove: `doc_id` absent from the table when the operation's turn arrives\\n    (R02: missing-ID remove is an error).\\n- On `ValueError` the default table is restored to its complete pre-batch state\\n  (contents, IDs, order) and the error propagates to the caller.\\n\\n### Atomicity and visibility\\n\\n- The batch is all-or-nothing: either every operation took effect (one storage\\n  write) or the pre-batch state is fully restored (one storage write).\\n- Previously acquired `db.table('_default')` handles reflect both outcomes on\\n  their next read without re-acquisition.\\n- Only the default table is modified; other tables in the storage are carried\\n  through unchanged.\\n\\n### Aliasing\\n\\n- Stored documents are deep copies of the caller's input; mutating a caller\\n  document or operation after `apply` returns cannot mutate stored data (R03).\\n- The return value contains IDs only.\\n\\n## Non-goals (out of contract)\\n\\n- No multi-table batches, no update op, no persistence format change, no\\n  threading/locking guarantees, no context-manager or async API.\\nEOF\\ngrep -c 'apply' specs/001-transactions/contracts/batch-writer.md && echo CONTRACT_OK\"}",
+          "reasoning_sha256": "96e8d92cd9e1962ea57259d63ee1ee01fc44323196e24d10639711b627cd189d",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792237122,
+    "id": "chatcmpl-CpobYaJy8TQVxVJIlidw4q1DcYa0NA9D",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 2661,
+      "predicted_ms": 37943.509,
+      "predicted_n": 765,
+      "predicted_per_second": 20.135196246609663,
+      "predicted_per_token_ms": 49.66427879581152,
+      "prompt_ms": 21739.392,
+      "prompt_n": 25976,
+      "prompt_per_second": 1194.8816231843098,
+      "prompt_per_token_ms": 0.8369029873729597
+    },
+    "usage": {
+      "completion_tokens": 765,
+      "prompt_tokens": 28637,
+      "prompt_tokens_details": {
+        "cached_tokens": 2661
+      },
+      "total_tokens": 29402
+    }
+  },
+  "seconds": 68.60900000017136,
+  "stage": 1,
+  "started_at": "2026-10-17T11:37:33.775607+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 765,
+    "prompt_tokens": 28637,
+    "prompt_tokens_details": {
+      "cached_tokens": 2661
+    },
+    "total_tokens": 29402
+  }
+}

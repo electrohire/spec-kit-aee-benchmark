@@ -1,0 +1,62 @@
+{
+  "budget_debit": 20680,
+  "ended_at": "2026-10-17T13:05:11.803807+00:00",
+  "max_output": 4096,
+  "original_sha256": "a9a285751a8aa23da57b8331049f4fb4fec09716b1db4ed504a54222b274106c",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 20153,
+  "preflight_seconds": 0.1720000000204891,
+  "removed_history_messages": 0,
+  "request_seconds": 25.156999999890104,
+  "request_sha256": "931ad7943884c6c9c134ea13b96ecac4b3afd537bdcae061553f816fcc39819a",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && cat > HANDOFF.md << 'EOF'\\n# cachetools milestone 1 \u2014 TaggedCache handoff\\n\\n## What was built\\n- `src/cachetools/tagged.py`: `TaggedCache(maxsize)` backed by `LRUCache` (via a\n  private `_TaggedLRUCache` subclass whose `popitem()` reports evictions so tag\n  memberships/tags are cleaned on eviction \u2014 no stale memberships survive).\n- `put(key, value, tags=())`: validates tags first (bare str rejected, non-str\n  entries rejected, non-iterable rejected -> ValueError; dedup preserving order),\n  validates hashability, deep-copies the value, replaces tag memberships on\n  overwrite, and refreshes LRU recency on overwrite (Claim-A extension: put\n  refreshes recency; get also refreshes recency).\n- `get(key)`: KeyError on miss, returns detached deep copy, refreshes recency.\n- `invalidate(tag)`: non-string tag -> ValueError; removes exactly live entries\n  carrying the tag, returns count.\n- `maxsize`: positive int, bool excluded -> ValueError. Values cost 1 slot each.\n- Mapping conveniences: `__getitem__`, `__delitem__`, `pop(key, default=...)`,\n  `clear`, `__len__`, `__contains__`, `maxsize`/`currsize` properties, `__repr__`.\n- Existing `cachetools` APIs untouched (upstream tests unmodified, all pass).\n\n## Tests\n- `tests/test_tagged.py` (own tests): 23 tests covering R01/R02/R03 + extension.\n- `acceptance_public.py`: 2 public tests pass.\n- Full suite: `PYTHONPATH=src:. python -m pytest tests/ -q` -> 237 passed.\n\n## Notes / assumptions\n- Invalid replacement input (bad tags) raises ValueError before any state\n  change; unhashable keys raise TypeError before any state change.\n- Eviction bookkeeping is exact; reuse of an evicted key never sees stale tags.\nEOF\\nPYTHONPATH=src:. python -m pytest tests/ acceptance_public.py -q 2>&1 | tail -3\"}",
+          "reasoning_sha256": "dca913c98cbd24de3ae816d91d6c4bf0bb95d872e6a655bc51dee704603f1e9b",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792242311,
+    "id": "chatcmpl-qcTEU3XTqZrbdT1GeVbh4WjjR7Mh48ox",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 20111,
+      "predicted_ms": 24691.43,
+      "predicted_n": 527,
+      "predicted_per_second": 21.302937901936016,
+      "predicted_per_token_ms": 46.941882129277566,
+      "prompt_ms": 392.628,
+      "prompt_n": 42,
+      "prompt_per_second": 106.97148445857148,
+      "prompt_per_token_ms": 9.348285714285714
+    },
+    "usage": {
+      "completion_tokens": 527,
+      "prompt_tokens": 20153,
+      "prompt_tokens_details": {
+        "cached_tokens": 20111
+      },
+      "total_tokens": 20680
+    }
+  },
+  "seconds": 25.156999999890104,
+  "stage": 1,
+  "started_at": "2026-10-17T13:04:46.648986+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 527,
+    "prompt_tokens": 20153,
+    "prompt_tokens_details": {
+      "cached_tokens": 20111
+    },
+    "total_tokens": 20680
+  }
+}

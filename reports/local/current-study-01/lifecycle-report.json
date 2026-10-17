@@ -1,0 +1,295 @@
+{
+  "aee_process": {
+    "baseline": {
+      "assessment_errors": 0,
+      "assessment_invocations": 0,
+      "evidence_rework_rounds": 0,
+      "findings_by_severity": {},
+      "note": "Process observations, not independently adjudicated hallucinations or code defects. No finding-to-final-claim detector join was measured.",
+      "verdicts": {}
+    },
+    "spec_kit": {
+      "assessment_errors": 0,
+      "assessment_invocations": 0,
+      "evidence_rework_rounds": 0,
+      "findings_by_severity": {},
+      "note": "Process observations, not independently adjudicated hallucinations or code defects. No finding-to-final-claim detector join was measured.",
+      "verdicts": {}
+    },
+    "spec_kit_aee": {
+      "assessment_errors": 0,
+      "assessment_invocations": 6,
+      "evidence_rework_rounds": 0,
+      "findings_by_severity": {
+        "high": 22,
+        "low": 34,
+        "medium": 60
+      },
+      "note": "Process observations, not independently adjudicated hallucinations or code defects. No finding-to-final-claim detector join was measured.",
+      "verdicts": {
+        "gather_evidence": 4,
+        "iterate": 2
+      }
+    }
+  },
+  "arms": {
+    "baseline": {
+      "accepted_milestones": 9,
+      "api_cost_usd": "0",
+      "by_phase": {
+        "solve": {
+          "calls": 391,
+          "known_tokens_lower_bound": 7748458
+        }
+      },
+      "claims": 9,
+      "completion_scored_claims": 9,
+      "contradicted_claims": 1,
+      "detector": {
+        "fn": 0,
+        "fp": 0,
+        "precision": null,
+        "recall": null,
+        "tn": 0,
+        "tp": 0
+      },
+      "detector_scored_claims": 0,
+      "failed_calls": 11,
+      "false_completion_claims": 1,
+      "known_api_cost_usd": "0",
+      "known_tokens_lower_bound": 7748458,
+      "observed_milestones": 12,
+      "physical_calls": 391,
+      "regressions": [],
+      "scenario_cost_usd": "3.4073767",
+      "scheduled_milestones": 12,
+      "source_changing_repairs": 0,
+      "tokens_per_accepted_milestone": 860939.7777777778,
+      "total_tokens": 7748458,
+      "truth_scored_claims": 9,
+      "ungraded_milestones": 0,
+      "unknown_api_cost_calls": 0,
+      "unknown_token_calls": 0,
+      "unknown_truth_claims": 0,
+      "unobserved_milestones": 0
+    },
+    "spec_kit": {
+      "accepted_milestones": 0,
+      "api_cost_usd": "0",
+      "by_phase": {
+        "constitution": {
+          "calls": 46,
+          "known_tokens_lower_bound": 339033
+        },
+        "plan": {
+          "calls": 124,
+          "known_tokens_lower_bound": 3181597
+        },
+        "specify": {
+          "calls": 207,
+          "known_tokens_lower_bound": 4577095
+        },
+        "tasks": {
+          "calls": 14,
+          "known_tokens_lower_bound": 413845
+        }
+      },
+      "claims": 0,
+      "completion_scored_claims": 0,
+      "contradicted_claims": 0,
+      "detector": {
+        "fn": 0,
+        "fp": 0,
+        "precision": null,
+        "recall": null,
+        "tn": 0,
+        "tp": 0
+      },
+      "detector_scored_claims": 0,
+      "failed_calls": 43,
+      "false_completion_claims": 0,
+      "known_api_cost_usd": "0",
+      "known_tokens_lower_bound": 8511570,
+      "observed_milestones": 12,
+      "physical_calls": 391,
+      "regressions": [],
+      "scenario_cost_usd": null,
+      "scheduled_milestones": 12,
+      "source_changing_repairs": 0,
+      "tokens_per_accepted_milestone": null,
+      "total_tokens": null,
+      "truth_scored_claims": 0,
+      "ungraded_milestones": 12,
+      "unknown_api_cost_calls": 0,
+      "unknown_token_calls": 1,
+      "unknown_truth_claims": 0,
+      "unobserved_milestones": 0
+    },
+    "spec_kit_aee": {
+      "accepted_milestones": 0,
+      "api_cost_usd": "0",
+      "by_phase": {
+        "constitution": {
+          "calls": 43,
+          "known_tokens_lower_bound": 303316
+        },
+        "plan": {
+          "calls": 78,
+          "known_tokens_lower_bound": 2213010
+        },
+        "specify": {
+          "calls": 228,
+          "known_tokens_lower_bound": 5310781
+        }
+      },
+      "claims": 0,
+      "completion_scored_claims": 0,
+      "contradicted_claims": 0,
+      "detector": {
+        "fn": 0,
+        "fp": 0,
+        "precision": null,
+        "recall": null,
+        "tn": 0,
+        "tp": 0
+      },
+      "detector_scored_claims": 0,
+      "failed_calls": 34,
+      "false_completion_claims": 0,
+      "known_api_cost_usd": "0",
+      "known_tokens_lower_bound": 7827107,
+      "observed_milestones": 12,
+      "physical_calls": 349,
+      "regressions": [],
+      "scenario_cost_usd": "4.5915077",
+      "scheduled_milestones": 12,
+      "source_changing_repairs": 0,
+      "tokens_per_accepted_milestone": null,
+      "total_tokens": 7827107,
+      "truth_scored_claims": 0,
+      "ungraded_milestones": 12,
+      "unknown_api_cost_calls": 0,
+      "unknown_token_calls": 0,
+      "unknown_truth_claims": 0,
+      "unobserved_milestones": 0
+    }
+  },
+  "campaign_id": "current-study-01",
+  "caution": "Descriptive evidence, not causal proof or truth certification. API spend excludes hardware, energy and human labor; scenarios are hypothetical.",
+  "completion_opportunities": {
+    "baseline": {
+      "false_completion": 1,
+      "false_completion_rate": 0.1111111111111111,
+      "negative": 0,
+      "positive": 9,
+      "ungraded_positive": 0,
+      "unknown": 3
+    },
+    "spec_kit": {
+      "false_completion": 0,
+      "false_completion_rate": null,
+      "negative": 0,
+      "positive": 0,
+      "ungraded_positive": 0,
+      "unknown": 12
+    },
+    "spec_kit_aee": {
+      "false_completion": 0,
+      "false_completion_rate": null,
+      "negative": 0,
+      "positive": 0,
+      "ungraded_positive": 0,
+      "unknown": 12
+    }
+  },
+  "completion_recovery": {
+    "baseline": {
+      "code_recovered": 0,
+      "final_declaration_unknown": 0,
+      "persisting_false_completion": 1,
+      "positive_withdrawn_but_code_fails": 0,
+      "primary_false_completion": 1,
+      "ungraded_final": 0
+    },
+    "spec_kit": {
+      "code_recovered": 0,
+      "final_declaration_unknown": 0,
+      "persisting_false_completion": 0,
+      "positive_withdrawn_but_code_fails": 0,
+      "primary_false_completion": 0,
+      "ungraded_final": 0
+    },
+    "spec_kit_aee": {
+      "code_recovered": 0,
+      "final_declaration_unknown": 0,
+      "persisting_false_completion": 0,
+      "positive_withdrawn_but_code_fails": 0,
+      "primary_false_completion": 0,
+      "ungraded_final": 0
+    }
+  },
+  "delivered_projects": {
+    "baseline": {
+      "all_call_tokens_per_delivered_project": 3874229.0,
+      "blocked_milestones": 0,
+      "final_stage_accepted": 2,
+      "project_trajectories": 4,
+      "scenario_cost_per_delivered_project": "1.70368835"
+    },
+    "spec_kit": {
+      "all_call_tokens_per_delivered_project": null,
+      "blocked_milestones": 0,
+      "final_stage_accepted": 0,
+      "project_trajectories": 4,
+      "scenario_cost_per_delivered_project": null
+    },
+    "spec_kit_aee": {
+      "all_call_tokens_per_delivered_project": null,
+      "blocked_milestones": 0,
+      "final_stage_accepted": 0,
+      "project_trajectories": 4,
+      "scenario_cost_per_delivered_project": null
+    }
+  },
+  "paired_trajectories": [
+    {
+      "arms": {
+        "baseline": true,
+        "spec_kit": null,
+        "spec_kit_aee": null
+      },
+      "project": "cachetools",
+      "seed": 20261016
+    },
+    {
+      "arms": {
+        "baseline": true,
+        "spec_kit": null,
+        "spec_kit_aee": null
+      },
+      "project": "cachetools",
+      "seed": 20261017
+    },
+    {
+      "arms": {
+        "baseline": false,
+        "spec_kit": null,
+        "spec_kit_aee": null
+      },
+      "project": "tinydb",
+      "seed": 20261016
+    },
+    {
+      "arms": {
+        "baseline": false,
+        "spec_kit": null,
+        "spec_kit_aee": null
+      },
+      "project": "tinydb",
+      "seed": 20261017
+    }
+  ],
+  "scenario_note": "Illustrative USD/million token sensitivity calculation, not a provider quote, bill, GPU/energy/human cost or a claim that hosted inference has the same behavior.",
+  "schema": "lifecycle-report-v1",
+  "scope": "2 convenience-selected projects \u00d7 2 seeds \u00d7 three arms; 36 dependent checkpoints. Not a production lifetime or causal superiority claim."
+}

@@ -1,0 +1,62 @@
+{
+  "budget_debit": 27775,
+  "ended_at": "2026-10-17T03:11:37.136050+00:00",
+  "max_output": 4096,
+  "original_sha256": "45d32efce0c65bbda24dc8c618fec166d356ebbfe6dca4ad4d392c0c3fd2e291",
+  "phase": "solve",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 27134,
+  "preflight_seconds": 0.9530000002123415,
+  "removed_history_messages": 6,
+  "request_seconds": 32.109999999869615,
+  "request_sha256": "91115e60d8742a507465797a33399961a9d14072cbe6bcc140600cf0394237e8",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "All tests pass. Let me update HANDOFF.md and finish.\n\n{\"action\":\"shell\",\"command\":\"cd /testbed && cat > HANDOFF.md <<'EOF'\\n# cachetools.tagged handoff\\n\\n## Status: MILESTONE 3 COMPLETE (R01-R08)\\n\\nImplementation: src/cachetools/tagged.py (TaggedCache built on cachetools.LRUCache).\\n\\n### Design\\n- _TaggedLRUCache(LRUCache): records evicted keys in _evicted; _resize() evicts LRU on shrink, never on grow.\\n- TaggedCache state: __cache (LRU), __expiry {key: abs_expiry|None}, __tags {tag: set(keys)}, __key_tags {key: set(tags)}.\\n- put(key, value, tags=(), ttl=None): validates tags + ttl BEFORE any mutation; deep-copies value; replaces old tags/expiry; refreshes LRU recency on overwrite. ttl None = immortal; else expiry = timer()+ttl (finite nonnegative int/float, bool excluded; nan/inf/negative -> ValueError). ttl=0 immediately expired.\\n- get: purges expired first, returns detached deepcopy, KeyError on missing/expired, refreshes recency.\\n- invalidate(tag) / invalidate_many(tags, mode='any'|'all'): purge first; empty tag set -> 0; invalid mode/tags -> ValueError before mutation; returns distinct keys removed; all-mode = intersection, any-mode = union.\\n- resize(maxsize): validates positive non-bool int first (failed resize preserves ALL state); purge expired first; shrink evicts LRU, grow no-op; survivors keep values/tags/LRU order AND absolute expiry (not recomputed, not dropped).\\n- __purge_expired: removes entries where now >= expiry (exact boundary = expired) WITHOUT touching recency of survivors; runs before get/put/len/resize/invalidate/pop. Failing timer -> no purge.\\n- Constructor: TaggedCache(maxsize, timer=None); timer defaults to time.monotonic. Existing callers without timer/ttl retain previous behavior.\\n\\n### Verification (all run, all passing)\\n- tests/ (upstream, unmodified): 313 passed\\n- tests/test_tagged.py + acceptance_public.py: 101 passed\\n- /tmp/test_ttl_extra.py (my own R07/R08 edge tests: boundary expiry, ttl=0, invalid ttl before mutation, overwrite replaces expiry, resize preserves absolute expiry, purge-before-put/len/resize/invalidate recency neutrality, tag cleanup after expiry, key reuse after expiry): 20 passed\\n\\n### Notes\\n- Superseded design note ('empty all-tags matches every key; resizing may flush') is WRONG per R04/R05: empty tags remove zero; resize never flushes.\\n- Upstream tests untouched.\nEOF\necho done\"}",
+          "reasoning_sha256": "9ee290eb510fd48e813cd1f05760187011a85df2814bb35180a7b13ec6538868",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792206697,
+    "id": "chatcmpl-EwfI5I4z2FtzdfwQyIXZYFzmgI2adpeD",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 27092,
+      "predicted_ms": 31528.544,
+      "predicted_n": 641,
+      "predicted_per_second": 20.299066141462163,
+      "predicted_per_token_ms": 49.26335,
+      "prompt_ms": 399.631,
+      "prompt_n": 42,
+      "prompt_per_second": 105.09695193816297,
+      "prompt_per_token_ms": 9.515023809523809
+    },
+    "usage": {
+      "completion_tokens": 641,
+      "prompt_tokens": 27134,
+      "prompt_tokens_details": {
+        "cached_tokens": 27092
+      },
+      "total_tokens": 27775
+    }
+  },
+  "seconds": 32.109999999869615,
+  "stage": 3,
+  "started_at": "2026-10-17T03:11:05.019582+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 641,
+    "prompt_tokens": 27134,
+    "prompt_tokens_details": {
+      "cached_tokens": 27092
+    },
+    "total_tokens": 27775
+  }
+}

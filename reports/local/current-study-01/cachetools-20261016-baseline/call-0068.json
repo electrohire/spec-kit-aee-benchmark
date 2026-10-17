@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28872,
+  "ended_at": "2026-10-17T13:43:26.087657+00:00",
+  "max_output": 4096,
+  "original_sha256": "4551d938bc5446478b6140f060f21ecf94fc70d286a9fe7164bf6d0948a9602c",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 28663,
+  "preflight_seconds": 0.23499999986961484,
+  "removed_history_messages": 0,
+  "request_seconds": 11.187999999849126,
+  "request_sha256": "404fa12ae8db9127ae7b21bbe67ae608bf22b077300b5b92cbbb58ca05389e88",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python -m pytest tests/test_tagged_m3.py::test_len_drops_expired_without_touching_recency -q 2>&1 | head -30\"}",
+          "reasoning_sha256": "571f64080f360b591a61a92ccfbf3315331e323a8c3b800ca9a3a77c8fa335ee",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792244606,
+    "id": "chatcmpl-lxu7EHwTO5z0qVvUg7b96dc788XgIJDd",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 28251,
+      "predicted_ms": 10132.523,
+      "predicted_n": 209,
+      "predicted_per_second": 20.527957350799994,
+      "predicted_per_token_ms": 48.714052884615384,
+      "prompt_ms": 898.62,
+      "prompt_n": 412,
+      "prompt_per_second": 458.4807816429636,
+      "prompt_per_token_ms": 2.181116504854369
+    },
+    "usage": {
+      "completion_tokens": 209,
+      "prompt_tokens": 28663,
+      "prompt_tokens_details": {
+        "cached_tokens": 28251
+      },
+      "total_tokens": 28872
+    }
+  },
+  "seconds": 11.187999999849126,
+  "stage": 3,
+  "started_at": "2026-10-17T13:43:14.882234+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 209,
+    "prompt_tokens": 28663,
+    "prompt_tokens_details": {
+      "cached_tokens": 28251
+    },
+    "total_tokens": 28872
+  }
+}

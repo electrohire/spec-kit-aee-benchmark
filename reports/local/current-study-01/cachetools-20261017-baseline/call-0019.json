@@ -1,0 +1,62 @@
+{
+  "budget_debit": 17628,
+  "ended_at": "2026-10-17T02:24:29.995076+00:00",
+  "max_output": 4096,
+  "original_sha256": "d30ad732e86cea3f0cd7b872b03842ed95e1fc486a79fdf74a349dd52af9ad00",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 17308,
+  "preflight_seconds": 0.21800000010989606,
+  "removed_history_messages": 0,
+  "request_seconds": 15.843999999808148,
+  "request_sha256": "1be43dd838866ca42f91715412b60993205db43a37797cccfea49ca27b1a12d9",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"done\",\"summary\":\"Implemented src/cachetools/tagged.py: TaggedCache(maxsize) backed by a private _TaggedLRUCache(LRUCache) (1 slot per value). put validates/dedupes tags before any state change (bare string, nonstring entries, non-iterables -> ValueError; generators OK), deep-copies values on input, replaces old tag memberships on overwrite and refreshes LRU recency (Claim-A extension). get returns a detached deep copy, raises KeyError on miss, refreshes recency. invalidate(tag) removes exactly live tagged entries and returns the count. LRU evictions are recorded via a popitem override and pruned from tag maps, so evicted keys leave no stale memberships on reuse. maxsize must be a positive int excluding bool. Added tests/test_tagged.py (45 tests covering R01/R02/R02-extension/R03) plus HANDOFF.md. Verified: acceptance_public.py 2 passed, upstream tests/ 217 passed unchanged, total 262 passed.\",\"completion_asserted\":true}",
+          "reasoning_sha256": "1bd2c828b117d3bb218f1f54781172ad7dd617f7c4eaab54c6019d2d2df71d61",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792203869,
+    "id": "chatcmpl-Qb1DroTDdRN0bwIlKeOuK5UyAh0ODtGu",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 16568,
+      "predicted_ms": 14451.357,
+      "predicted_n": 320,
+      "predicted_per_second": 22.074051592525187,
+      "predicted_per_token_ms": 45.30205956112852,
+      "prompt_ms": 1315.926,
+      "prompt_n": 740,
+      "prompt_per_second": 562.3416514302477,
+      "prompt_per_token_ms": 1.7782783783783782
+    },
+    "usage": {
+      "completion_tokens": 320,
+      "prompt_tokens": 17308,
+      "prompt_tokens_details": {
+        "cached_tokens": 16568
+      },
+      "total_tokens": 17628
+    }
+  },
+  "seconds": 15.843999999808148,
+  "stage": 1,
+  "started_at": "2026-10-17T02:24:14.144857+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 320,
+    "prompt_tokens": 17308,
+    "prompt_tokens_details": {
+      "cached_tokens": 16568
+    },
+    "total_tokens": 17628
+  }
+}

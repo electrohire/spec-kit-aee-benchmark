@@ -1,0 +1,62 @@
+{
+  "budget_debit": 13531,
+  "ended_at": "2026-10-17T14:03:05.621366+00:00",
+  "max_output": 4096,
+  "original_sha256": "7ac9d02195802fdacef433d0fa91c8ab9afea9b58cd6f50b6414a60e4f63dca5",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 13294,
+  "preflight_seconds": 0.125,
+  "removed_history_messages": 0,
+  "request_seconds": 11.436999999918044,
+  "request_sha256": "4f305a83a066b47d29bf7434ebca6297e5253edbdea250067bfce72fc022536b",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && python .specify/scripts/python/resolve_template.py spec-template > /tmp/spec_template.txt 2>/tmp/spec_err.txt; echo \"exit=$?\"; head -c 300 /tmp/spec_err.txt; wc -c /tmp/spec_template.txt; python .specify/scripts/python/resolve_template.py checklist-template > /tmp/checklist_template.txt 2>/tmp/checklist_err.txt; echo \"exit=$?\"; head -c 300 /tmp/checklist_err.txt; wc -c /tmp/checklist_template.txt\"}",
+          "reasoning_sha256": "d821c5896258d8f4aadc2e871944d0084e9f4fc8d02f256b92c2140241ff81a2",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792245785,
+    "id": "chatcmpl-gmShym0NdYf8MorQi3lfx5PsVpPvjf6v",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 12958,
+      "predicted_ms": 10578.259,
+      "predicted_n": 237,
+      "predicted_per_second": 22.309909409478443,
+      "predicted_per_token_ms": 44.823131355932205,
+      "prompt_ms": 808.569,
+      "prompt_n": 336,
+      "prompt_per_second": 415.5489512954367,
+      "prompt_per_token_ms": 2.406455357142857
+    },
+    "usage": {
+      "completion_tokens": 237,
+      "prompt_tokens": 13294,
+      "prompt_tokens_details": {
+        "cached_tokens": 12958
+      },
+      "total_tokens": 13531
+    }
+  },
+  "seconds": 11.436999999918044,
+  "stage": 1,
+  "started_at": "2026-10-17T14:02:54.171778+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 237,
+    "prompt_tokens": 13294,
+    "prompt_tokens_details": {
+      "cached_tokens": 12958
+    },
+    "total_tokens": 13531
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "budget_debit": 26475,
+  "ended_at": "2026-10-17T00:48:32.791074+00:00",
+  "max_output": 4096,
+  "original_sha256": "3d83bdbaf6aef43edf5e54b808fd7880c13fc30c7240c9125d17b5cecb8f839a",
+  "phase": "plan",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 23628,
+  "preflight_seconds": 0.21899999980814755,
+  "removed_history_messages": 0,
+  "request_seconds": 145.4220000000205,
+  "request_sha256": "b55206dcfd6d4b844db0b3be1514be0085a57ee44a6709c7df1bd60097945d5a",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && mkdir -p specs/001-transactions/contracts && python3 - <<'PYEOF'\\ndata_model = \\\"\\\"\\\"# Data Model: TaggedCache\\n\\n**Feature**: 001-transactions | **Date**: 2026-10-17\\n\\n## Entities\\n\\n### Entry (logical)\\n\\n| Attribute | Type | Notes |\\n|---|---|---|\\n| key | hashable | Any hashable object; identity/equality per Python hashing. |\\n| value | deepcopy-able | Stored as `deepcopy(value)`; returned as `deepcopy(stored)`. Costs exactly 1 capacity slot. |\\n| tags | frozenset[str] | Deduplicated; empty set allowed. Never contains a bare string's characters. |\\n| recency | position in LRU order | Implicit; most-recently-used is evicted last. Refreshed by `get` hit and by `put` (insert AND overwrite \u2014 Claim-A extension, adopted per research.md R5). |\\n\\n### Tag (logical)\\n\\n- A `str` label shared by zero or more live entries.\\n- Value-compared; no normalization (case/whitespace-sensitive).\\n- A tag with no live entries holds no state (its index set is empty or\\n  absent).\\n\\n### Capacity\\n\\n- `maxsize`: positive `int`, `bool` excluded. Validated in `__init__`.\\n- Each live entry costs 1 slot regardless of value size.\\n\\n## Storage layout (implementation-facing, from research.md R1/R2)\\n\\n```\\nTaggedCache\\n\u251c\u2500\u2500 _cache: LRUCache(maxsize)          # bounded LRU storage (existing class)\\n\u251c\u2500\u2500 _key_tags: dict[key, frozenset]    # key -> its tags (live entries only)\\n\u2514\u2500\u2500 _tag_keys: dict[str, set[key]]     # tag -> live keys carrying it\\n```\\n\\n## Invariants (all MUST hold after every public call)\\n\\n1. `set(self._key_tags) == set(self._cache)` \u2014 indexes cover exactly the\\n   live entries.\\n2. For every live key: `self._key_tags[key]` equals the deduplicated tags\\n   from the last successful `put` for that key.\\n3. For every tag `t`: `self._tag_keys[t]` (if present) equals\\n   `{k for k in live keys if t in self._key_tags[k]}`; empty sets are\\n   removed so no tag lingers with zero members.\\n4. `len(cache) == len(self._cache)` \u2014 counts live entries only.\\n5. `invalidate(t)` returns `len(self._tag_keys.get(t, ()))` and removes\\n   exactly those keys.\\n6. No operation mutates state before all validation succeeds (R01/R03\\n   atomicity).\\n\\n## State transitions\\n\\n| Operation | Transition |\\n|---|---|\\n| `put(k, v, tags)` new key | add entry (deepcopy v, frozenset tags); if over capacity, evict LRU entry(s) via `_remove` (cleans both indexes + LRU order). |\\n| `put(k, v, tags)` existing key | drop k's old tag memberships; store new deepcopy; register new tags; k moves to MRU (LRUCache `__setitem__` semantics; Claim-A). |\\n| `put` invalid tags | no transition; `ValueError` raised before mutation. |\\n| `get(k)` hit | return deepcopy; k moves to MRU. |\\n| `get(k)` miss | `KeyError`; no state change. |\\n| `invalidate(t)` | remove all keys in `self._tag_keys[t]` via `_remove`; return count; drop t's index entry. |\\n| LRU eviction (internal, during put) | evicted key removed via `_remove` \u2014 index cleanup identical to explicit delete, so no stale memberships (R02). |\\n| `__init__` invalid maxsize | no object state; `ValueError`. |\\n\\n## Validation rules (input -> error)\\n\\n| Input | Rule | Error |\\n|---|---|---|\\n| `maxsize` | `isinstance(int)`, not `bool`, `> 0` | `ValueError` |\\n| `tags` is `str` | bare string rejected before iteration | `ValueError` |\\n| `tags` not iterable | finite iterable required | `ValueError` |\\n| tag element not `str` | per-element type check | `ValueError` |\\n| key unhashable | dict key requirement | `TypeError` (standard Python; not part of R01-R03 error contract) |\\n\\\"\\\"\\\"\\n\\ncontract = \\\"\\\"\\\"# Contract: TaggedCache Public API\\n\\n**Feature**: 001-transactions | **Date**: 2026-10-17\\n\\nThis is the complete public surface added by this feature. It is\\nadditive: nothing in `cachetools`'s existing public API changes.\\n\\n## Module\\n\\n`cachetools.tagged` (file `src/cachetools/tagged.py`).\\n\\nExported name: `TaggedCache`.\\n\\n## Constructor\\n\\n```python\\nTaggedCache(maxsize: int) -> TaggedCache\\n```\\n\\n- `maxsize` MUST be a positive `int`; `bool` is excluded.\\n- Violation -> `ValueError` (no object usable afterward; nothing else\\n  is affected).\\n\\n## Methods\\n\\n### `put(key, value, tags=()) -> None`\\n\\n- `key`: any hashable object.\\n- `value`: any `copy.deepcopy`-able object. Stored as a deep copy; later\\n  mutation of the caller's object does not affect the cache.\\n- `tags`: finite iterable of `str`; deduplicated. Default `()`.\\n  - Bare `str` -> `ValueError`.\\n  - Non-iterable -> `ValueError`.\\n  - Non-`str` element -> `ValueError`.\\n  - All validation happens BEFORE any state change; on `ValueError` the\\n    previous value, tags, and recency of an existing key are unchanged.\\n- New key: inserts. Existing key: replaces value/tags; old tag\\n  memberships are removed; the key becomes most-recently-used (Claim-A\\n  extension, adopted).\\n- Inserting beyond capacity evicts least-recently-used entries; evicted\\n  entries' tag memberships are removed.\\n\\n### `get(key) -> value`\\n\\n- Hit: returns a **detached deep copy** of the stored value; the entry\\n  becomes most-recently-used.\\n- Miss: raises `KeyError`.\\n- No default argument (spec fixes the two-argument behavior; a miss is an\\n  error, not a fallback).\\n\\n### `invalidate(tag: str) -> int`\\n\\n- Removes exactly the currently cached entries carrying `tag`.\\n- Returns the number of entries removed (0 if none).\\n- Unknown/empty tag -> returns 0, no state change.\\n\\n### Dunder / mapping-adjacent behavior\\n\\n- `len(cache) -> int`: number of live entries.\\n- `key in cache -> bool`: membership test (no recency side effect).\\n- `iter(cache)`: iterates live keys (no recency side effect).\\n- `repr(cache)`: implementation detail; no contract beyond being a\\n  string.\\n\\n## Error contract summary\\n\\n| Trigger | Exception |\\n|---|---|\\n| invalid `maxsize` (non-int, bool, <= 0) | `ValueError` |\\n| `tags` bare string | `ValueError` |\\n| `tags` non-iterable | `ValueError` |\\n| non-string tag element | `ValueError` |\\n| `get` missing key | `KeyError` |\\n| unhashable key | `TypeError` (Python standard) |\\n\\n## Non-goals (explicitly out of contract)\\n\\n- No `pop`, `clear`, `__setitem__`/`__delitem__` mapping protocol on\\n  TaggedCache itself (not required by R01-R03; keep surface minimal).\\n- No TTL, no persistence, no thread-safety guarantees beyond what the\\n  underlying dict/LRUCache already provide.\\n- No tag normalization; no tag query API beyond `invalidate`.\\n\\\"\\\"\\\"\\n\\nquickstart = \\\"\\\"\\\"# Quickstart / Validation Guide: TaggedCache\\n\\n**Feature**: 001-transactions | **Date**: 2026-10-17\\n\\nRun from repository root `/testbed`. All commands below are the\\nacceptance evidence for this feature (Constitution Principle III).\\n\\n## Prerequisites\\n\\n- Python 3 with the package importable from `src` (repo already supports\\n  `PYTHONPATH=src:.`).\\n- pytest available (used by `acceptance_public.py` and the new test\\n  file).\\n\\n## Validation scenarios\\n\\n### 1. Public acceptance suite (gate)\\n\\n```bash\\nPYTHONPATH=src:. python -m pytest acceptance_public.py -v\\n```\\nExpected: 2 passed (`test_public_basic`, `test_public_replacement`).\\n\\n### 2. New self-authored tests (R01-R03 + Claim-A)\\n\\n```bash\\nPYTHONPATH=src:. python -m pytest tests/test_tagged.py -v\\n```\\nExpected: all pass. The file MUST cover at minimum:\\n- put/get round-trip + deep-copy detachment in both directions (R01)\\n- KeyError on miss (R01)\\n- tag dedup; bare-string rejection; non-string element rejection with\\n  state unchanged (R01)\\n- invalidate exact removal + return count; replacement drops old tags\\n  (R02)\\n- eviction leaves no stale tag memberships on key reuse (R02)\\n- get refreshes recency (R02)\\n- len counts live entries (R02)\\n- maxsize validation incl. bool exclusion (R03)\\n- invalid replacement leaves value/tags/recency unchanged (R03)\\n- overwrite-put refreshes recency (Claim-A extension)\\n\\n### 3. Regression gate: upstream tests unmodified and green\\n\\n```bash\\ngit status --porcelain tests/ acceptance_public.py src/cachetools/__init__.py\\ngit diff --stat tests/ acceptance_public.py\\nPYTHONPATH=src:. python -m pytest tests/ -q\\n```\\nExpected: no diff for `tests/` and `acceptance_public.py`; the only new\\nfile under `src/cachetools/` is `tagged.py`; full upstream suite passes.\\n\\n### 4. Smoke script (manual, optional)\\n\\n```bash\\nPYTHONPATH=src:. python - <<'EOF'\\nfrom cachetools.tagged import TaggedCache\\nc = TaggedCache(2)\\nc.put('a', {'x': [1]}, ['t1', 't1', 't2'])\\nc.put('b', 2, ['t2'])\\nassert c.get('a') == {'x': [1]}\\nassert c.invalidate('t2') == 2 and len(c) == 0\\ntry:\\n    c.put('k', 1, 'bare')\\nexcept ValueError:\\n    pass\\nelse:\\n    raise SystemExit('bare string must be rejected')\\ntry:\\n    TaggedCache(True)\\nexcept ValueError:\\n    pass\\nelse:\\n    raise SystemExit('bool maxsize must be rejected')\\nprint('smoke OK')\\nEOF\\n```\\nExpected: prints `smoke OK`.\\n\\n## Exit criteria for the feature\\n\\n- Scenarios 1-3 all pass with observed output recorded in the phase\\n  completion report.\\n- No file outside `src/cachetools/tagged.py`, `tests/test_tagged.py`,\\n  `specs/001-transactions/`, and notes (`HANDOFF.md`) is modified.\\n\\\"\\\"\\\"\\nopen(\\\"specs/001-transactions/data-model.md\\\",\\\"w\\\").write(data_model)\\nopen(\\\"specs/001-transactions/contracts/tagged-cache-api.md\\\",\\\"w\\\").write(contract)\\nopen(\\\"specs/001-transactions/quickstart.md\\\",\\\"w\\\").write(quickstart)\\nprint(\\\"data-model:\\\", data_model.count(chr(10)), \\\"contract:\\\", contract.count(chr(10)), \\\"quickstart:\\\", quickstart.count(chr(10)))\\nPYEOF\\necho ===; ls -R specs/001-transactions/\"}",
+          "reasoning_sha256": "2734b2be7041bd0651df92f00c5363ec3b13eb963ecd6a55d0903bdd5265ab07",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792198112,
+    "id": "chatcmpl-ZGOb8zMord7AAABDlHdhYElKzYxI6DFP",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 21382,
+      "predicted_ms": 142831.137,
+      "predicted_n": 2847,
+      "predicted_per_second": 19.925627281115883,
+      "predicted_per_token_ms": 50.18662579058327,
+      "prompt_ms": 2497.345,
+      "prompt_n": 2246,
+      "prompt_per_second": 899.3551151322706,
+      "prompt_per_token_ms": 1.1119078361531611
+    },
+    "usage": {
+      "completion_tokens": 2847,
+      "prompt_tokens": 23628,
+      "prompt_tokens_details": {
+        "cached_tokens": 21382
+      },
+      "total_tokens": 26475
+    }
+  },
+  "seconds": 145.4220000000205,
+  "stage": 1,
+  "started_at": "2026-10-17T00:46:07.364794+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2847,
+    "prompt_tokens": 23628,
+    "prompt_tokens_details": {
+      "cached_tokens": 21382
+    },
+    "total_tokens": 26475
+  }
+}

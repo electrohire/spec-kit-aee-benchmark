@@ -1,0 +1,62 @@
+{
+  "budget_debit": 22901,
+  "ended_at": "2026-10-17T04:38:07.632701+00:00",
+  "max_output": 4096,
+  "original_sha256": "2a2eeb7e380adbd091adfa1ef65f0b7d8a6d8595c14bdd6e38906b01ca81bacc",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 22814,
+  "preflight_seconds": 0.125,
+  "removed_history_messages": 0,
+  "request_seconds": 5.141000000061467,
+  "request_sha256": "d5cd2ec8d47e42f9c46c8be4bdcda0703d40f79aa981c8f01daaab833f156ad7",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"awk 'NR>119' /testbed/src/cachetools/tagged.py; echo ===; grep -n \"timer\\|ttl\\|monotonic\\|expire\" /testbed/src/cachetools/tagged.py | head\"}",
+          "reasoning_sha256": "122a1a5a0e3e3d563d2a66f62b5510906f95e58370b923befb0178b79572ac0c",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792211887,
+    "id": "chatcmpl-6KoYhgWMbtJnEnVlTIEGo17kE5rgNwSp",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 22483,
+      "predicted_ms": 4011.283,
+      "predicted_n": 87,
+      "predicted_per_second": 21.439524461375573,
+      "predicted_per_token_ms": 46.64282558139535,
+      "prompt_ms": 1011.089,
+      "prompt_n": 331,
+      "prompt_per_second": 327.36979632851313,
+      "prompt_per_token_ms": 3.0546495468277945
+    },
+    "usage": {
+      "completion_tokens": 87,
+      "prompt_tokens": 22814,
+      "prompt_tokens_details": {
+        "cached_tokens": 22483
+      },
+      "total_tokens": 22901
+    }
+  },
+  "seconds": 5.141000000061467,
+  "stage": 3,
+  "started_at": "2026-10-17T04:38:02.490171+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 87,
+    "prompt_tokens": 22814,
+    "prompt_tokens_details": {
+      "cached_tokens": 22483
+    },
+    "total_tokens": 22901
+  }
+}

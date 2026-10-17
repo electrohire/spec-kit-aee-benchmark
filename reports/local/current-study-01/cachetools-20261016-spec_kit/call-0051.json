@@ -1,0 +1,62 @@
+{
+  "budget_debit": 30009,
+  "ended_at": "2026-10-17T01:29:54.130632+00:00",
+  "max_output": 4096,
+  "original_sha256": "486a2e244eb9620cc343349775a23c41bc8c2103b7961ce149427c41a6cb18cb",
+  "phase": "plan",
+  "preflight_http_requests": 16,
+  "preflight_input_tokens": 28246,
+  "preflight_seconds": 1.3120000001508743,
+  "removed_history_messages": 36,
+  "request_seconds": 112.0319999998901,
+  "request_sha256": "8b96d1ca2dd9a96bf32e54246d75ee9de08e3d4bbbc3020afd47e92fdf905669",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && python3 - <<'PYEOF'\\n# data-model.md updates\\np=\\\"specs/001-transactions/data-model.md\\\"\\ns=open(p).read()\\nold=\\\"\\\"\\\"| Operation | Transition |\\n|---|---|\\n| `put(k, v, tags)` new key | add entry (deepcopy v, frozenset tags); if over capacity, evict LRU entry(s) via `_remove` (cleans both indexes + LRU order). |\\n| `put(k, v, tags)` existing key | drop k's old tag memberships; store new deepcopy; register new tags; k moves to MRU (LRUCache `__setitem__` semantics; Claim-A). |\\n| `put` invalid tags | no transition; `ValueError` raised before mutation. |\\n| `get(k)` hit | return deepcopy; k moves to MRU. |\\n| `get(k)` miss | `KeyError`; no state change. |\\n| `invalidate(t)` | remove all keys in `self._tag_keys[t]` via `_remove`; return count; drop t's index entry. |\\n| LRU eviction (internal, during put) | evicted key removed via `_remove` \u2014 index cleanup identical to explicit delete, so no stale memberships (R02). |\\n| `__init__` invalid maxsize | no object state; `ValueError`. |\\\"\\\"\\\"\\nnew=\\\"\\\"\\\"| Operation | Transition |\\n|---|---|\\n| `put(k, v, tags)` new key | add entry (deepcopy v, frozenset tags); if over capacity, evict LRU entry(s) via `_remove` (cleans both indexes + LRU order). |\\n| `put(k, v, tags)` existing key | drop k's old tag memberships; store new deepcopy; register new tags; k moves to MRU (LRUCache `__setitem__` semantics; Claim-A). |\\n| `put` invalid tags | no transition; `ValueError` raised before mutation. |\\n| `get(k)` hit | return deepcopy; k moves to MRU. |\\n| `get(k)` miss | `KeyError`; no state change. |\\n| `invalidate(t)` | remove all keys in `self._tag_keys[t]` via `_remove`; return count; drop t's index entry. |\\n| `invalidate_many(tags, mode)` | validate mode+tags first; matched = union (any) or intersection (all) of tag sets; empty tag set -> 0 removed in both modes; remove matched keys via `_remove`; return distinct count. |\\n| `invalidate_many` invalid mode/tags | no transition; `ValueError` before mutation. |\\n| `resize(n)` valid, shrinking | evict LRU entries via `popitem()` + `_remove` until `len <= n`; update capacity attribute; survivors keep order/state. |\\n| `resize(n)` valid, growing | update capacity attribute only; no eviction. |\\n| `resize(n)` invalid | no transition; `ValueError`; entries/tags/order/capacity unchanged. |\\n| LRU eviction (internal, during put) | evicted key removed via `_remove` \u2014 index cleanup identical to explicit delete, so no stale memberships (R02). |\\n| `__init__` invalid maxsize | no object state; `ValueError`. |\\\"\\\"\\\"\\nassert old in s\\ns=s.replace(old,new,1)\\nold2=\\\"\\\"\\\"| `maxsize` | `isinstance(int)`, not `bool`, `> 0` | `ValueError` |\\\"\\\"\\\"\\nnew2=\\\"\\\"\\\"| `maxsize` (init) | `isinstance(int)`, not `bool`, `> 0` | `ValueError` |\\n| `resize` capacity | same rule as init `maxsize` | `ValueError` |\\n| `invalidate_many` mode | must be `'any'` or `'all'` | `ValueError` |\\n| `invalidate_many` tags | same rules as `put` tags | `ValueError` |\\\"\\\"\\\"\\nassert old2 in s\\ns=s.replace(old2,new2,1)\\nold3=\\\"\\\"\\\"5. `invalidate(t)` returns `len(self._tag_keys.get(t, ()))` and removes\\n   exactly those keys.\\\"\\\"\\\"\\nnew3=\\\"\\\"\\\"5. `invalidate(t)` returns `len(self._tag_keys.get(t, ()))` and removes\\n   exactly those keys.\\n7. After any successful `resize(n)`: `maxsize == n`, surviving entries\\n   are exactly those not evicted, their LRU order is unchanged, and no\\n   tag index references an evicted or removed key.\\n8. `invalidate_many` with an empty requested tag set removes zero\\n   entries in both modes (supersedes old design note).\\\"\\\"\\\"\\nassert old3 in s\\ns=s.replace(old3,new3,1)\\nopen(p,\\\"w\\\").write(s)\\nprint(\\\"data-model.md lines:\\\", s.count(chr(10)))\\n\\n# contracts update\\ncp=\\\"specs/001-transactions/contracts/tagged-cache-api.md\\\"\\nc=open(cp).read()\\nanchor=\\\"\\\"\\\"### Dunder / mapping-adjacent behavior\\\"\\\"\\\"\\nadd=\\\"\\\"\\\"### `invalidate_many(tags, mode='any') -> int`\\n\\n- `tags`: same rules as `put` tags (finite iterable of `str`, dedup,\\n  generators consumed once, bare string rejected).\\n- `mode`: `'any'` (default) removes entries carrying at least one\\n  requested tag; `'all'` removes entries carrying every requested tag.\\n- Empty requested tag collection removes zero entries in either mode.\\n- Returns the number of distinct removed keys.\\n- Invalid `mode` or invalid `tags` -> `ValueError` before any mutation.\\n- For a single tag, behavior is identical to `invalidate(tag)`.\\n\\n### `resize(maxsize) -> None`\\n\\n- Validates capacity with the constructor rule (positive `int`, `bool`\\n  excluded) BEFORE any change; violation -> `ValueError` with all state\\n  (entries, tags, recency order, current capacity) unchanged.\\n- Shrinking evicts least-recently-used entries until the cache fits;\\n  growing evicts nothing.\\n- Surviving entries keep their LRU order and stored state (no\\n  re-copying, no reordering).\\n\\n### `maxsize` (property) -> int\\n\\n- Reports the current capacity (after any successful `resize`).\\n\\n### Dunder / mapping-adjacent behavior\\\"\\\"\\\"\\nc=c.replace(anchor,add,1)\\nanchor2=\\\"\\\"\\\"| `get` missing key | `KeyError` |\\n| unhashable key | `TypeError` (Python standard) |\\\"\\\"\\\"\\nanchor2b=\\\"\\\"\\\"| `get` missing key | `KeyError` |\\n| invalid `invalidate_many` mode or tags | `ValueError` |\\n| invalid `resize` capacity | `ValueError` |\\n| unhashable key | `TypeError` (Python standard) |\\\"\\\"\\\"\\nassert anchor2 in c\\nc=c.replace(anchor2,anchor2b,1)\\nanchor3=\\\"\\\"\\\"- No tag normalization; no tag query API beyond `invalidate`.\\\"\\\"\\\"\\nanchor3b=\\\"\\\"\\\"- No tag normalization; no tag query API beyond `invalidate` /\\n  `invalidate_many`.\\n- No TTL/expiry (not in the frozen requirement set; see spec.md\\n  Assumptions for the Claim-A round-2 clarification).\\\"\\\"\\\"\\nassert anchor3 in c\\nc=c.replace(anchor3,anchor3b,1)\\nopen(cp,\\\"w\\\").write(c)\\nprint(\\\"contract lines:\\\", c.count(chr(10)))\\nPYEOF\"}",
+          "reasoning_sha256": "dec6b81a0d6564455f998b1a75598511de915501ca469e6dcd00757ea9f75c3b",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792200594,
+    "id": "chatcmpl-fJaLajmXbExwNxOTuz9F13nD3viSDQwr",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 3097,
+      "predicted_ms": 88923.428,
+      "predicted_n": 1763,
+      "predicted_per_second": 19.814800661980776,
+      "predicted_per_token_ms": 50.4673257661748,
+      "prompt_ms": 20707.619,
+      "prompt_n": 25149,
+      "prompt_per_second": 1214.480525259809,
+      "prompt_per_token_ms": 0.8233973120203586
+    },
+    "usage": {
+      "completion_tokens": 1763,
+      "prompt_tokens": 28246,
+      "prompt_tokens_details": {
+        "cached_tokens": 3097
+      },
+      "total_tokens": 30009
+    }
+  },
+  "seconds": 112.0319999998901,
+  "stage": 2,
+  "started_at": "2026-10-17T01:28:02.095478+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1763,
+    "prompt_tokens": 28246,
+    "prompt_tokens_details": {
+      "cached_tokens": 3097
+    },
+    "total_tokens": 30009
+  }
+}

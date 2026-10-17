@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28471,
+  "ended_at": "2026-10-17T13:51:07.945585+00:00",
+  "max_output": 4096,
+  "original_sha256": "824f93eeef6d9382ba59e4490250c7cf88dc29573564f8f95cbe3c1a722a7205",
+  "phase": "solve",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 27255,
+  "preflight_seconds": 1.0310000001918525,
+  "removed_history_messages": 10,
+  "request_seconds": 60.78099999995902,
+  "request_sha256": "cc125a4b37a7422f1136c8809d9abe696f2dbf2e36bd52b71b9c27f4a199adef",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && PYTHONPATH=src:. python - <<'PYEOF'\\nimport time\\nfrom cachetools.tagged import TaggedCache\\n\\nclass T:\\n    def __init__(self, n=0.0): self.n = n\\n    def __call__(self): return self.n\\n\\nt = T()\\nc = TaggedCache(3, timer=t)\\n\\n# ttl=0 with tags: no stale membership\\ntry: c.put('a', 1, ['x'], ttl=0)\\nexcept Exception as e: print('UNEXPECTED', e)\\nassert c.invalidate('x') == 0 and len(c) == 0\\n\\n# generator tags consumed once on put\\ncalls = []\\ng = (calls.append(x) or x for x in ('p', 'p', 'q'))\\nc.put('k', [1, {'a': 2}], g)\\nassert calls == ['p', 'q'], calls\\n\\n# generator tags in invalidate_many consumed once\\ncalls2 = []\\ng2 = (calls2.append(x) or x for x in ('p', 'q'))\\nassert c.invalidate_many(g2) == 1\\nassert calls2 == ['p', 'q']\\n\\n# 'in' and pop on expired key\\nt.n = 0\\nc.put('e', 1, [], ttl=1)\\nt.n = 1\\nassert 'e' not in c\\ntry: c.pop('e'); print('FAIL pop expired')\\nexcept KeyError: pass\\n\\n# failed resize leaves expiry state intact\\nt.n = 0\\nc2 = TaggedCache(2, timer=t)\\nc2.put('a', 1, [], ttl=5)\\ntry: c2.resize(True); print('FAIL resize bool')\\nexcept ValueError: pass\\nt.n = 5\\nassert len(c2) == 0  # still expired at boundary\\n\\n# timer called once per op (no double expiry sweep)\\ncount = {'n': 0}\\ndef counting():\\n    count['n'] += 1\\n    return 10.0\\nc3 = TaggedCache(2, timer=counting)\\nc3.put('a', 1, [], ttl=100)\\nc3.put('b', 2, [])\\nassert count['n'] == 2, count\\nc3.get('a')\\nassert count['n'] == 3, count\\nlen(c3)\\nassert count['n'] == 4, count\\n\\n# resize keeps internal LRU capacity in sync\\nfor i in range(5):\\n    c3.resize(1 + i)\\nassert c3.maxsize == 5\\nc3.put('c', 3, [])\\nc3.put('d', 4, [])\\nassert len(c3) == 4\\n\\n# default timer works with real time\\nc4 = TaggedCache(2)\\nc4.put('x', 1, ttl=0.05)\\ntime.sleep(0.06)\\ntry: c4.get('x'); print('FAIL real ttl')\\nexcept KeyError: pass\\n\\n# clear\\n c4.put('y', 2, ['t'])\\nc4.clear()\\nassert len(c4) == 0 and c4.invalidate('t') == 0\\n\\n# repr\\nr = repr(c3)\\nassert 'TaggedCache' in r, r\\n\\n# timer property\\nassert c3.timer is counting\\n\\nprint('ALL EDGE CHECKS PASSED')\\nPYEOF\"}",
+          "reasoning_sha256": "a098822220f9bbb92c390a78e2f3aac37f675ca6ccb06a8472d506484106b8e9",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792245067,
+    "id": "chatcmpl-PTmaUOAB3WIHSLaoMO5UFx5xPmVQ5re8",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 27213,
+      "predicted_ms": 60306.843,
+      "predicted_n": 1216,
+      "predicted_per_second": 20.14696740136107,
+      "predicted_per_token_ms": 49.635261728395065,
+      "prompt_ms": 353.587,
+      "prompt_n": 42,
+      "prompt_per_second": 118.78264755208761,
+      "prompt_per_token_ms": 8.418738095238094
+    },
+    "usage": {
+      "completion_tokens": 1216,
+      "prompt_tokens": 27255,
+      "prompt_tokens_details": {
+        "cached_tokens": 27213
+      },
+      "total_tokens": 28471
+    }
+  },
+  "seconds": 60.78099999995902,
+  "stage": 3,
+  "started_at": "2026-10-17T13:50:07.150710+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1216,
+    "prompt_tokens": 27255,
+    "prompt_tokens_details": {
+      "cached_tokens": 27213
+    },
+    "total_tokens": 28471
+  }
+}

@@ -53,14 +53,14 @@ The free loopback readiness probe in `reports/feasibility/local-20261016` return
 the expected model identity: 73 input +29 output tokens, $0 API spend. Missing
 reasoning-token detail is not imputed. Readiness is not complete-context throughput,
 treatment adherence or efficacy evidence. No shared service settings or credentials
-were changed. The new lifecycle importer is an analysis interface; a fresh scored
-longitudinal study remains gated on complete workflow calibration. Native
+were changed. The new lifecycle importer is an analysis interface; the fresh scored
+study is complete; see [results and exposure limits](../reports/local/current-study-01/analysis.md). Native
 near-context probes for the selected `qwen3.8-27b` candidate passed, producing a
 480-second timeout by the preregistered twice-observed-latency rule. Earlier
 failed candidate calibrations remain setup costs, not scored comparisons.
 
-The [focused actual AEE audit](../reports/aee-validation/current-20261016-03/summary.json)
-verified six of six narrow machine observations against real test output, with
+The [focused actual AEE audit](../reports/aee-validation/current-20261017-04/summary.json)
+verified seven of seven narrow machine observations against real test output, with
 zero evidence findings and exactly one AEE result consumed by Evaluator. The
 overall `iterate` verdict explicitly preserves missing human acceptance. It is
 neither efficacy evidence nor a claim of perfect confidence.

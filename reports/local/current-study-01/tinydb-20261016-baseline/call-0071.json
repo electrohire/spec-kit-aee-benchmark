@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28318,
+  "ended_at": "2026-10-17T07:26:55.130878+00:00",
+  "max_output": 4096,
+  "original_sha256": "16caadad2f526fa3d7a61ab64f15b16ac2658d64fef094dd2c040a3639dd8d36",
+  "phase": "solve",
+  "preflight_http_requests": 16,
+  "preflight_input_tokens": 28228,
+  "preflight_seconds": 1.4059999999590218,
+  "removed_history_messages": 46,
+  "request_seconds": 27.844000000040978,
+  "request_sha256": "1a146791a5a1196b36281b8fbf6f7a7fe6f51ecfda32a85c02139edcf856809c",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && python -m pytest -o addopts= -q 2>&1 | tail -3 && python -m pytest -o addopts= acceptance_public.py -q 2>&1 | tail -2 && git status --short\"}",
+          "reasoning_sha256": "95bab2804aa4bd2450686930d753a311b627097ea2322602c0982d2cc8b476b2",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792222015,
+    "id": "chatcmpl-BPSpXDTMu1PIEejmqzU9jCOlKulCtKxC",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 318,
+      "predicted_ms": 4164.582,
+      "predicted_n": 90,
+      "predicted_per_second": 21.370692184713853,
+      "predicted_per_token_ms": 46.793056179775284,
+      "prompt_ms": 22713.764,
+      "prompt_n": 27910,
+      "prompt_per_second": 1228.7703614425157,
+      "prompt_per_token_ms": 0.8138217126477965
+    },
+    "usage": {
+      "completion_tokens": 90,
+      "prompt_tokens": 28228,
+      "prompt_tokens_details": {
+        "cached_tokens": 318
+      },
+      "total_tokens": 28318
+    }
+  },
+  "seconds": 27.844000000040978,
+  "stage": 2,
+  "started_at": "2026-10-17T07:26:27.283534+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 90,
+    "prompt_tokens": 28228,
+    "prompt_tokens_details": {
+      "cached_tokens": 318
+    },
+    "total_tokens": 28318
+  }
+}

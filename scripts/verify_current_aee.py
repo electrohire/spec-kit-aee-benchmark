@@ -12,7 +12,8 @@ from benchmark_runner.store import write_json, utc
 
 ROOT=Path(__file__).resolve().parents[1]
 FILES=("test_lifecycle.py","test_local_provider.py","test_assessment_contract.py",
-       "test_current_local.py","test_report_current.py","test_project_assessment.py")
+       "test_current_local.py","test_report_current.py","test_project_assessment.py",
+       "test_current_report_audit.py")
 
 
 def main():

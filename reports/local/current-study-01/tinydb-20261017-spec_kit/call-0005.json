@@ -1,0 +1,63 @@
+{
+  "budget_debit": 10670,
+  "ended_at": "2026-10-17T11:16:36.377039+00:00",
+  "error": "RuntimeError: output_limit:length",
+  "max_output": 4096,
+  "original_sha256": "cbc6734bf14be7543b1b29520ebced8f2f464358ed959845f8eefa8231d3d37a",
+  "phase": "constitution",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 6574,
+  "preflight_seconds": 0.09399999980814755,
+  "removed_history_messages": 0,
+  "request_seconds": 184.125,
+  "request_sha256": "5daee3eab8477a50836df2caa14d2682d2bfe9d2e3f89359c36ed6fd0d16b80f",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "length",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && python3 -c \\\"\\nimport base64, sys\\npayload = sys.argv[1]\\nopen('.specify/memory/constitution.md','w').write(base64.b64decode(payload).decode('utf-8'))\\nprint('written', len(base64.b64decode(payload)), 'bytes')\\n\\\" Cj4tPiBTeW5jIEltcGFjdCBSZXBvcnQgKHRlbXBvcmFyeSBzY3JhdGNoO3JlbW92ZSBiZWZvcmUgY29tbWl0KQoqKlZlcnNpb24gY2hhbmdlOioqICh1bnJhdGlmZWQgdGVtcGxhdGUpIOKGkiAxCi4wLjAKKipNb2RpZmllZCBwcmluY2lwbGVzOioqIG5vbmUgKGZpcnN0IHJhdGlmaWNhdGlvbjsgYWxsIGZpdmUgcHJpbmNpcGxlcyBhZGRlZCkKKipBZGRlZCBzZWN0aW9uczsqKiBDb3JlIFByaW5jaXBsZXM7IFNjb3BlIGFuZCBDaGFuZ2UgQ29uc3RyYWludHM7IERldmVsb3BtZW50IFdvcmtmbG93OyBHb3Zlcm5hbmNlCioqUmVtb3ZlZCBzZWN0aW9uczsqKiBub25lCioqRGVmZXJyZWQgSVRFTVM6Kiogbm9uZQo8LS0KIiB0aW55ZGIiIENvbnN0aXR1dGlvbgoKIyMgQ29yZSBQcmluY2lwbGVzCgojIyMgSS4gUHJlc2VydmUgRXhpc3RpbmcgUHVibGljIEFQSSBCZWhhdmlvciBOb24tTmVnb3RpYWJsZQoKQWxsIG5ldyBjb2RlIE1VU1QgYmUgYWRkaXRpdmU6IGl0IE1VU1QgcmVxdWlyZSBhIHN1cHBsaWVkIGluc3RhbmNlIG9yIHN0YXRlIGFuZCBtdXN0IG5vdApubW9kaWZ5IHRoZSBvY2N1cGFuY3ksIHNpZ25hdHVyZXMsIG9yIG9yZGluYXJ5IG1ldGhvZHMgb2YgdGhlIHdyYXBwZWQgTGl0ZXJhbCBvYmplY3RzLgoKUmF0aW9uYWxlOiBleGlzdGluZyBjb25zdW1lcnMgYW5kIHVwc3RyZWFtIHRlc3RzIHJlbHkgb24gdGhvc2UgY29udHJhY3RzLCBzbyBleHBvc2VyIGJyZWFraW5nIGNoYW5nZXMgYXJlIG91dCBvZiBzY29wZS4gQ29tcGxpYW5jZSBpcyB2ZXJpZmllZCBieSBydW5uaW5nIHRoZSBleGlzdGluZyB0ZXN0IHN1aXRlIHVuc2NoYW5nZWQuCgojIyMgSUkuIFRlc3RhYmxlIEFjY2VwdGFuY2UgQ3JpdGVyaWEKClJlcXVpcmVtZW50cyBhbmQgZmVhdHVyZSBiZWhhdmlvciBNVVNUIGJlIHN0YXRlZCBhcyB0ZXN0YWJsZSBhY2NlcHRhbmNlIGNyaXRlcmlhOiBvYnNlcnZhYmxlIGlucHV0cywgZXhwZWN0ZWQgb3V0cHV0cywgYW5kIGVycm9yIGJlaGF2aW9yIHRoYXQgYSB0ZXN0IGNhbiBhc3NlcnQuIFZhbHVlLWZyZWUgZGVzY3JpcHRpb25zIGFyZSBub3QgYWNjZXB0ZWQgYXMgcmVxdWlyZW1lbnRzLgoKUmF0aW9uYWxlOiBhY2NlcHRhbmNlIGlzIGRlY2lkZWQgYnkgY29tbWFuZC1yZXN1bHRpbmcgZXZpZGVuY2UgKHVucm9uIG9yIGZhaWwgYXNzZXJ0aW9ucyksIG5vdCBieSBjb252ZXJzYXRpb24uIFB1YmxpYyBhY2NlcHRhbmNlIGZvciB0aGlzIHJlcG9zaXRvcnkgaXMgYWNjZXB0YW5jZV9wdWJsaWMucHkuCgojIyMgSUkuIE9ic2VydmVkIEV2aWRlbmNlIFZlcnN1cyBVbnZlcmlmaWVkIEFzc2VydGlvbnMKClN0YXRlbWVudHMgYWJvdXQgc3lzdGVtIGJlaGF2aW9yIE1VU1QgYmUgbGFibGVkIGVpdGhlciBhcyBvYnNlcnZlZCBldmlkZW5jZSAod2l0aCB0aGUgY29tbWFuZCBhbmQgcmVzdWx0IHRoYXQgcHJvZHVjZWQgaXQpIG9yIGFzIGFuIHVudmVyaWZpZWQgYXNzZXJ0aW9uLgoKUmF0aW9uYWxlOiBjbGFpbWluZyB0aGF0IHRlc3RzIHBhc3zDqSBvciB0aGF0IGFzIGZlYXR1cmUgd29yazM6IHJlcXVpcmVzIGNvbW1hbmQgbGV2ZWwgZXZpZGVuY2UuIFVudmVyaWZpZWQgYXNzZXJ0aW9ucyBtdXN0IGJlIG5hbWVkIGFzIHN1Y2ggaW4gbm90ZXMuCgojIyMgIVIgU2ltcGxlIFNjb3BlZCBJbXBsZW1lbnRhdGlvbnMKCkltcGxlbWVudGF0aW9ucyBNVVNUIGJlIHRoZSBzbWFsbGVzdIGNvdXJzZSB0aGF0IHNhdGlzZmllcyB0aGUgc3RhdGVkIHJlcXVpcmVtZW50cyBhbmQgTUVTVCBvbmx5IHRvdWNoIHRoZSBmaWxlcyBhbmQgYmVoaYXZpb3JzIGluIHNjb3BlLiBBbnkgYWRkZWQgY29tcGxleGl0eSBtdXN0IGJlIGp1c3RpZmllZCBieSBhIHN0YXRlZCByZXF1aXJlbWVudC4KClJhdGlvbmFsZTogc21hbGwgY2hhbmdlcyBhcmUgcmV2aWV3YWJsZSwgcmVncmVzc2lvbiBzY29wZSBpcyBsaW1pdGVkLCBhbmQgZGVmZXJyZWQgd29yayByZW1haW5zIGV4cGxpY2l0IGluc3RlYWQgb2YgaW1wbGljaXQuCgojIyMgVi4gRG9jdW1lbnQgQXNzdW1wdGlvbnMgYW5kIFJlZ3Jlc3Npb25zCgpVbnJlc29sdmVkIGFzc3VtcHRpb25zLCBvcGVuIHF1ZXN0aW9ucywgYW5kIG9ic2VydmVkIG9yIHN1c3BlY3RlZCByZWdyZXNzaW9ucyBNVVNUIGJlIHdyaXR0ZW4gZG93biBpbiBwZXJzaXN0ZW50IG5vdGVzIChlLmcuIEhBTkRPRkYubWQpIHdpdGggdGhlIGV2aWRlbmNlIHRoYXQgbGVkIHRvIHRoZW0uIFVucmVzb3ZlZCBpdGVtcyBtdXN0IG5vdCBiZSBzaWxlbnRseSBkcm9wZWQuCgpSYXRpb25hbGU6IGxhdGVyIHBoYXNlcyBzdGFydCBmcm9tIHRoZSBsaXN0ZWQgZ2FwcyBpbnN0ZWFkIG9mIHJlZGVyYXZpbmcgYXNzdW1wdGlvbnMuCgojIyBTY29wZSBhbmQgQ2hhbmdlIENvbnN0cmFpbnRzCgotIE5ldyBmdW5jdGlvbmFsaXR5IG11c3QgYmUgYWRkZWQgYXMgbmV3IG1vZHVsZXMvY2xhc3NlcyB3aXRoIGV4cGxpY2l0IGZpbGUgbG9jYXRpb25zIChtaWxlc3RvbmUgMTogdGlueWRiL2pvdXJuYWwucHkpOyBleGlzdGluZyBtb2R1bGUgY29udGVudCBtdXN0IG5vdCBiZSByZXdyaXR0ZW4uCi0gVXBzdHJlYW0gdGVzdHMgKHQgZnN0cy8pIGFuZCBhY2NlcHRhbmNlX3B1YmxpYy5weSBtdXN0IG5vdCBiZSBtb2RpZmllZC4KLSBDYWxsZXItc3VwcGxpZWQgZGF0YSBtdXN0IG5vdCBhbGlhcyBzdG9yZWQgZGF0YTsgc3RvcmVkIGRhdGEgbXVzdCBzdXJ2aXZlIG11dGF0aW9uIG9mIHRoZSBjYWxsZXIncyBpbnB1dC4KLSBEZWZlcnJlZCB3b3JrIGlzIG5hbWVkIGluIG5vdGVzIHJhdGhlciB0aGFuIHN0YXJ0ZWQgb3IgaW1wbGllZC4KCiMjIERldmVsb3BtZW50IFdvcmtmbG93CgotIFBoYXNlcyBydW4gaW4gb3JkZXI6IGNvbnN0aXR1dGlvbiB8IHNwZWNpZnkgfCBwbGFuIHwgdGFza3MgfCBpbXBsZW1lbnQgKyB2ZXJpZnkuCkRlZmVyIHBoYXNlcyBtdXN0IG5vdCBleGVjdXRlIHdvcmsgc2NvcGVkIHRvIGxhdGVyIHBoYXNlcy4KLSBFdmVyeSBjb21wbGV0aW9uIGNsYWltIHJlcXVpcmVzIGNvbW1hbmQtbGV2ZWwgZXZpZGVuY2UgKGV4aXQgY29kZSwgb3V0cHV0KS4KLSBIZWFkbGluZyBub3RlcyBhcmUga2VwdCBwZXJzaXN0ZW50IGFjcm9zcyBwaGFzZXMgKGhhbmRvZmYubWQpLgoKIyMgR292ZXJhbmNlCgpUaGlzIGNvbnN",
+          "reasoning_sha256": "e9ee48d030577daf50f1efb4ab8907009e610e8a8fd69ef29009baf162dee6ce",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792235796,
+    "id": "chatcmpl-V4a8Q0Po9zD0dypV1U1FKii42iitESDk",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 6529,
+      "predicted_ms": 183766.266,
+      "predicted_n": 4096,
+      "predicted_per_second": 22.283741674328844,
+      "predicted_per_token_ms": 44.87576703296703,
+      "prompt_ms": 310.94,
+      "prompt_n": 45,
+      "prompt_per_second": 144.7224544928282,
+      "prompt_per_token_ms": 6.909777777777777
+    },
+    "usage": {
+      "completion_tokens": 4096,
+      "prompt_tokens": 6574,
+      "prompt_tokens_details": {
+        "cached_tokens": 6529
+      },
+      "total_tokens": 10670
+    }
+  },
+  "seconds": 184.125,
+  "stage": 1,
+  "started_at": "2026-10-17T11:13:32.246672+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 4096,
+    "prompt_tokens": 6574,
+    "prompt_tokens_details": {
+      "cached_tokens": 6529
+    },
+    "total_tokens": 10670
+  }
+}

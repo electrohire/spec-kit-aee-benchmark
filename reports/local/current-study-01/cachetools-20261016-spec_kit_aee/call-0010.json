@@ -1,0 +1,62 @@
+{
+  "budget_debit": 12932,
+  "ended_at": "2026-10-17T15:44:10.571710+00:00",
+  "max_output": 4096,
+  "original_sha256": "be12355d4349bd104b747f7e9eee6c5891716657c41a1890be54aa135f1375ae",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 11812,
+  "preflight_seconds": 0.0940000000409782,
+  "removed_history_messages": 0,
+  "request_seconds": 67.13999999989755,
+  "request_sha256": "c809a43e0c5d3adde716c728e2ea0f76f86d5c6a1349152db1bfe50e9f67dbd7",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && ls -la specs/001-transactions 2>/dev/null; echo ---; ls .specify/memory; echo ---; cat .specify/init-options.json 2>/dev/null || echo no-init-options; echo ---; cat .specify/feature.json 2>/dev/null || echo no-feature-json; echo ---; head -60 .specify/templates/spec-template.md\"}",
+          "reasoning_sha256": "712ad4cf926740d5b3753578cc50f06026101c06947fa025d298565aed6573e8",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792251850,
+    "id": "chatcmpl-fMCytNfuYD3eUXhHkaZuyrczPfTjNjpd",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 50414.953,
+      "predicted_n": 1120,
+      "predicted_per_second": 22.19579575924627,
+      "predicted_per_token_ms": 45.05357730116175,
+      "prompt_ms": 10172.58,
+      "prompt_n": 11812,
+      "prompt_per_second": 1161.160688832135,
+      "prompt_per_token_ms": 0.8612072468675923
+    },
+    "usage": {
+      "completion_tokens": 1120,
+      "prompt_tokens": 11812,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 12932
+    }
+  },
+  "seconds": 67.13999999989755,
+  "stage": 1,
+  "started_at": "2026-10-17T15:43:03.426800+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1120,
+    "prompt_tokens": 11812,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 12932
+  }
+}

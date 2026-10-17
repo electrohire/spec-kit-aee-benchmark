@@ -1,0 +1,62 @@
+{
+  "budget_debit": 23491,
+  "ended_at": "2026-10-17T00:46:06.912564+00:00",
+  "max_output": 4096,
+  "original_sha256": "31dedc984e4b1a1dfcf543dcd0f5da41a43ce984c583edc07397e9a4a70fd068",
+  "phase": "plan",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 21386,
+  "preflight_seconds": 0.14000000013038516,
+  "removed_history_messages": 0,
+  "request_seconds": 106.56299999984913,
+  "request_sha256": "01cb8e04e7a98c2a72cdfacff4e7f7cf7f457dd935d2f794af1ec3329df2ca88",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && python3 - <<'PYEOF'\\nresearch = \\\"\\\"\\\"# Phase 0 Research: TaggedCache\\n\\n**Feature**: 001-transactions | **Date**: 2026-10-17\\n\\n## R1. How to reuse LRUCache for bounded storage\\n\\n- **Decision**: Compose. `TaggedCache.__init__` creates\\n  `self._cache = LRUCache(maxsize)` and drives it through its public\\n  mapping protocol (`self._cache[key] = value`, `self._cache[key]`,\\n  `del self._cache[key]`, `key in self._cache`, `len(self._cache)`,\\n  `iter(self._cache)`). No subclassing, no access to name-mangled\\n  internals (`_LRUCache__order`).\\n- **Rationale**: The milestone mandates using the existing `LRUCache`;\\n  composition via the public protocol is the least-coupled reuse. It\\n  inherits for free: one-slot-per-value sizing (`getsizeof` default 1),\\n  LRU eviction on overflow, recency update on set AND on get (observed\\n  in `LRUCache.__setitem__`/`__getitem__`, `src/cachetools/__init__.py`\\n  lines 210-218), and order cleanup on delete/eviction (lines 220-231).\\n- **Alternatives considered**:\\n  1. Subclass `LRUCache` and override `__setitem__`/`__delitem__` \u2014\\n     rejected: couples TaggedCache to internal layout, and TaggedCache\\n     must NOT behave like a mapping of raw values (its `get` returns\\n     deep copies and raises `KeyError` via a dedicated method, not\\n     `__getitem__` semantics).\\n  2. Reimplement LRU with `OrderedDict` inside tagged.py \u2014 rejected:\\n     duplicates existing code (Constitution Principle IV) and risks\\n     divergent eviction behavior.\\n\\n## R2. Tag index design\\n\\n- **Decision**: Two indexes kept in lockstep with the LRU cache:\\n  - `self._key_tags: dict[key, frozenset[str]]` \u2014 tags of each live key.\\n  - `self._tag_keys: dict[str, set[key]]` \u2014 live keys per tag.\\n  Both are updated in the same code path as the LRU cache mutation, and\\n  every removal path (explicit delete, `invalidate`, LRU eviction) goes\\n  through one internal `_remove(key)` helper that cleans both indexes.\\n- **Rationale**: O(1) lookup for `key in cache`, O(k) `invalidate(tag)`\\n  (k = removed entries), and a single choke point guarantees no stale\\n  memberships survive eviction or replacement (R02).\\n- **Alternatives considered**:\\n  1. Store tags *inside* the value wrapped in the LRU cache \u2014 rejected:\\n     would leak tag data through any value access and break the\\n     deep-copy-only value contract.\\n  2. Single `tag -> set[key]` index only, derive key tags by scanning \u2014\\n     rejected: O(tags) per replacement/eviction; two indexes keep every\\n     operation O(1) or O(removed).\\n\\n## R3. Validation order and atomicity\\n\\n- **Decision**: In `put`, validate `tags` FIRST (bare string check, then\\n  finite iteration with per-entry `isinstance(tag, str)` check, then\\n  dedup into a frozenset). Only after validation succeeds does any state\\n  change happen: (a) if the key exists, remove its old tag memberships\\n  via `_remove`-style index cleanup, (b) `self._cache[key] = deepcopy(value)`,\\n  (c) register new tag memberships. `maxsize` is validated in\\n  `__init__` before the LRU cache is created.\\n- **Rationale**: R01/R03 require invalid input to leave existing state\\n  (value, tags, recency) byte-identical. Validating before mutation is\\n  the only way to guarantee that without rollback logic.\\n- **Alternatives considered**: mutate-then-rollback on error \u2014 rejected:\\n  more code, and a failed `deepcopy` mid-mutation would need unwinding.\\n\\n## R4. maxsize validation rule (R03)\\n\\n- **Decision**: Raise `ValueError` unless\\n  `isinstance(maxsize, int) and not isinstance(maxsize, bool) and\\n  maxsize > 0`. Booleans are explicitly excluded (`True`/`False` are\\n  `int` subclasses in Python). Zero and negatives are rejected. Floats\\n  and other non-ints are rejected.\\n- **Rationale**: Matches \\\"positive integer, excluding bool\\\" exactly.\\n  `LRUCache`/`Cache` do not validate `maxsize` themselves (observed:\\n  `Cache.__init__` stores it as-is), so TaggedCache owns this check.\\n- **Alternatives considered**: delegate to `LRUCache` \u2014 rejected: it has\\n  no validation to delegate to.\\n\\n## R5. Claim-A open item: put recency refresh on overwrite\\n\\n- **Decision**: Adopt the Claim-A extension behavior \u2014 overwriting an\\n  existing key via `put` refreshes its LRU recency (key becomes\\n  most-recently-used). No code decision is needed to implement it: the\\n  chosen composition (R1) calls `self._cache[key] = value` for both\\n  insert and replace, and `LRUCache.__setitem__` already moves the key\\n  to the MRU end (observed, lines 216-218 + `__update`). The extension\\n  is therefore satisfied by construction and is recorded as adopted\\n  behavior, tested explicitly.\\n- **Rationale**: The candidate extension text states the behavior\\n  positively (\\\"overwriting an existing key via put refreshes its LRU\\n  recency, making it the most-recently-used entry\\\"). The base spec's\\n  R02 already requires `get` to refresh recency and requires replacement\\n  to update value/tags; adding put-refresh is the only reading that\\n  keeps one consistent LRU policy (any access or write touches\\n  recency). The variant name `put_no_recency_refresh` is the label of\\n  the candidate *family*; the extension text is the operative\\n  requirement and it specifies refresh. If a hidden acceptance test\\n  expected the opposite, it would contradict the written extension\\n  text; the written text wins (Constitution Principle II: explicit,\\n  testable criteria govern).\\n- **Alternatives considered**: no-refresh on put (key keeps its old\\n  recency position on replace) \u2014 rejected: contradicts the extension\\n  text and would require deliberately NOT using `LRUCache.__setitem__`\\n  semantics (e.g., pop + reinsert at old position), adding complexity\\n  for no stated benefit.\\n- **Risk note (Principle V)**: recorded here and in data-model.md so\\n  later phases test it explicitly (overwrite then overfill; the\\n  overwritten key must survive as MRU).\\n\\n## R6. Deep-copy semantics\\n\\n- **Decision**: Use stdlib `copy.deepcopy` on input (store\\n  `deepcopy(value)`) and on output (return `deepcopy(stored)`).\\n- **Rationale**: \\\"Detached deep copy\\\" and \\\"values are copied on input\\\"\\n  (R01) are exactly `deepcopy` semantics for arbitrary hashable-keyed\\n  values; stdlib, no dependencies. Values need not be hashable or\\n  picklable, only deepcopy-able.\\n- **Alternatives considered**: `copy.copy` (shallow) \u2014 rejected: nested\\n  mutable structures would still alias. `pickle` round-trip \u2014 rejected:\\n  requires picklable values; `deepcopy` is the standard-library norm.\\n\\n## R7. Tag input handling details\\n\\n- **Decision**: `tags` default is `()`. A `str` (or `bytes`? no \u2014\\n  strings only per spec) passed directly is rejected with `ValueError`\\n  BEFORE iteration (prevents treating `\\\"ab\\\"` as tags `\\\"a\\\"`, `\\\"b\\\"`).\\n  Any other argument is iterated once; each element must be `str` or\\n  `ValueError` is raised. Iteration happens in a try/except so a\\n  non-iterable (e.g., an int) also yields `ValueError` (\\\"tags must be a\\n  finite iterable of strings\\\"). Dedup via `frozenset(validated_tags)`. An\\n  empty iterable is valid (entry stored with no tags).\\n- **Rationale**: Covers every R01 validation clause with one code path;\\n  all rejection happens before state mutation (R3).\\n- **Alternatives considered**: accept `str` as a single tag \u2014 rejected:\\n  spec explicitly says reject a bare string.\\n\\n## Open items\\n\\nNone remaining. R5's risk note is a tracked test requirement, not an\\nunresolved question.\\n\\\"\\\"\\\"\\nopen(\\\"specs/001-transactions/research.md\\\",\\\"w\\\").write(research)\\nprint(\\\"research.md lines:\\\", research.count(chr(10)))\\nPYEOF\\necho ok\"}",
+          "reasoning_sha256": "2f17d2956068d3b007b59486be1543ef456cad08ff1995b6349de72682453e91",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792197966,
+    "id": "chatcmpl-Yzd4RwlotRq0iuVHUUbmfFPX5HZETYJY",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 19317,
+      "predicted_ms": 103990.428,
+      "predicted_n": 2105,
+      "predicted_per_second": 20.23263141103718,
+      "predicted_per_token_ms": 49.425108365019014,
+      "prompt_ms": 2477.603,
+      "prompt_n": 2069,
+      "prompt_per_second": 835.0813265886422,
+      "prompt_per_token_ms": 1.1974881585306911
+    },
+    "usage": {
+      "completion_tokens": 2105,
+      "prompt_tokens": 21386,
+      "prompt_tokens_details": {
+        "cached_tokens": 19317
+      },
+      "total_tokens": 23491
+    }
+  },
+  "seconds": 106.56299999984913,
+  "stage": 1,
+  "started_at": "2026-10-17T00:44:20.349606+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2105,
+    "prompt_tokens": 21386,
+    "prompt_tokens_details": {
+      "cached_tokens": 19317
+    },
+    "total_tokens": 23491
+  }
+}
