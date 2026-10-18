@@ -32,11 +32,12 @@ ARMS = ['baseline', 'spec_kit', 'spec_kit_aee']
 COMMON = '''You are a capable software engineering agent in an isolated real repository.
 Return exactly one JSON action: {"action":"shell","command":"..."} or
 {"action":"write_file","path":"relative/file.py","content":"literal complete file content"} or
-{"action":"done","summary":"implemented and actually verified work"}.
+{"action":"done","summary":"what this phase actually completed and what remains"}.
 Use write_file for creating/replacing files; its content is literal UTF-8,
 not shell/Python source to quote again. Use shell to inspect source, make targeted
 edits and run tests. Incomplete shell syntax is rejected before execution; no
 content is repaired. Reserve actions for writing and checking phase deliverables.
+Phase-control notices and controller diagnostics are not verification evidence.
 No internet or human assistance.
 Do not modify upstream tests or acceptance_public.py. You may add your own tests.
 Preserve previous active requirements. The latest requirement text overrides older
@@ -54,6 +55,15 @@ CONFIG = dict(context=32768, max_output=4096, primary_calls=160, repair_calls=8,
 
 PHASE_LIMITS={'constitution':32,'specify':32,'plan':32,'tasks':32,'implement':32,'converge':16,'final_implement':16}
 PHASE_ARTIFACTS={'constitution':'.specify/memory/constitution.md','specify':'specs/001-transactions/spec.md','plan':'specs/001-transactions/plan.md','tasks':'specs/001-transactions/tasks.md'}
+PHASE_CONTROL_PREFIX='[BENCHMARK_PHASE_CONTROL:'
+
+
+def phase_control(phase,stage,text):
+    return dict(role='user',content=f'{PHASE_CONTROL_PREFIX}{stage}:{phase}]\n'+text)
+
+
+def is_phase_control(message):
+    return message['role']=='user' and message['content'].startswith(PHASE_CONTROL_PREFIX)
 
 
 def phase_artifact_check(path):
@@ -213,7 +223,7 @@ class Session:
         self.provider.requires_claims=claims
         messages=[dict(role='system',content=COMMON+'\nCURRENT PHASE: '+phase+'\n'+instructions+('\n'+CLAIMS if claims else '')),
                   dict(role='user',content=spec)] + list(self.history)
-        messages.append(dict(role='user',content=f'Begin the current {phase} phase now. You have at most {limit} actions in this phase, including done. Complete its requested deliverable, then return done.'))
+        messages.append(phase_control(phase,stage,f'Begin the current {phase} phase now. You have at most {limit} actions in this phase, including done. Complete its requested deliverable, then return done.'))
         done=None;errors=[];start=len(self.provider.calls)
         # Structural termination and staged deliverables apply to claim-bearing
         # phases only. Measured diagnostics show models ignore final-call nudges
@@ -230,22 +240,36 @@ class Session:
                 if required:
                     check=self.box.execute(phase_artifact_check(required))
                     state='present_basic_check_only' if not check['exit_code'] else 'missing_or_scaffold'
-                    self.store.append('phase_progress',dict(phase=phase,stage=stage,step=step,artifact=required,state=state,**check))
+                    data=dict(phase=phase,stage=stage,step=step,artifact=required,state=state,**check)
+                    ref=self.store.artifact(canonical(data))
+                    self.store.append('phase_progress',dict(**data,observation_ref=ref))
+                    messages.append(dict(role='user',content=json.dumps(dict(
+                        observation_type='phase_artifact_observation',phase=phase,stage=stage,
+                        artifact=required,state=state,semantic_validation=False,
+                        diagnostic_ref=ref,evidence_eligibility='controller diagnostic only'))))
                     status=f' Host artifact observation: {required}={state}; this is not semantic validation.'
-                messages.append(dict(role='user',content=(
+                messages.append(phase_control(phase,stage,(
                     f'PHASE PROGRESS: {phase}; {limit-step} actions remain, including done. '
                     'Exploration alone does not complete this phase. Write the required '
                     'deliverables with write_file, inspect their actual contents, and report '
                     'unresolved work honestly. No extra actions will be granted.'+status)))
             if step==limit-1 and claims:
-                messages.append(dict(role='user',content='FINAL STEP: this is the last allocated action for this phase. Only a done action is accepted now. Return {"action":"done","summary":"...","claims":{"schema_version":"1.0","claims":[...]}} with your best current claims object'+(' (finalize your recorded mid-phase draft)' if draft_claims else '')+'. Shell actions are no longer available: any other action ends the phase and the harness records an honest terminal done.'))
+                messages.append(phase_control(phase,stage,'FINAL STEP: this is the last allocated action for this phase. Only a done action is accepted now. Return {"action":"done","summary":"...","claims":{"schema_version":"1.0","claims":[...]}} with your best current claims object'+(' (finalize your recorded mid-phase draft)' if draft_claims else '')+'. Shell actions are no longer available: any other action ends the phase and the harness records an honest terminal done.'))
             elif step==limit-1:
-                messages.append(dict(role='user',content='This is the last allocated action for this phase. Return done now with an honest summary of completed and unresolved work. Do not perform another shell action.'))
+                messages.append(phase_control(phase,stage,'This is the last allocated action for this phase. Return done now with an honest summary of completed and unresolved work. Do not perform another shell action.'))
             elif draft_step is not None and step==draft_step:
-                messages.append(dict(role='user',content='MID-PHASE CHECKPOINT (action %d of %d). Return a draft claims object now: {"action":"draft","claims":{"schema_version":"1.0","claims":[...]}} with your current best hypothesis claims; they may be refined later, and you may also return done if finished. Shell exploration may continue afterwards, but this step does not accept shell actions.' % (step+1,limit)))
+                messages.append(phase_control(phase,stage,'MID-PHASE CHECKPOINT (action %d of %d). Return a draft claims object now: {"action":"draft","claims":{"schema_version":"1.0","claims":[...]}} with your current best hypothesis claims; they may be refined later, and you may also return done if finished. Shell exploration may continue afterwards, but this step does not accept shell actions.' % (step+1,limit)))
             elif step==limit-2:
-                messages.append(dict(role='user',content='Two actions remain in this phase. Finish the requested artifact/check now and use done to report its actual state; preserve unresolved issues.'))
+                messages.append(phase_control(phase,stage,'Two actions remain in this phase. Finish the requested artifact/check now and use done to report its actual state; preserve unresolved issues.'))
             try:
+                expected=f'{PHASE_CONTROL_PREFIX}{stage}:{phase}]\n'
+                stale=[hashlib.sha256(m['content'].encode()).hexdigest() for m in messages
+                       if is_phase_control(m) and not m['content'].startswith(expected)]
+                if stale:
+                    if self.watchdog:
+                        self.watchdog.stop('stale phase control in active request',phase=phase,stage=stage,
+                                           stale_control_sha256=stale)
+                    raise RuntimeIntervention('stale phase control in active request')
                 text=self.provider.query(messages,phase,stage,deadline)
                 action=json.loads(text)
                 if not isinstance(action,dict):raise ValueError('Action must be an object')
@@ -274,7 +298,10 @@ class Session:
                     for c in bundle['claims']:Claim.from_dict(c)
                     draft_claims=bundle
                     if self.watchdog:self.watchdog.success()
-                    messages.append(dict(role='user',content='Draft claims recorded (%d claim(s)). Continue exploration or refinement; your final done must still include the complete claims object.' % len(bundle['claims'])))
+                    messages.append(dict(role='user',content=json.dumps(dict(
+                        observation_type='draft_claim_receipt',phase=phase,stage=stage,
+                        claims=len(bundle['claims']),truth_status='unassessed'))))
+                    messages.append(phase_control(phase,stage,'Continue exploration or refinement; your final done must still include the complete claims object.'))
                     continue
                 if action.get('action')=='done':
                     if claims:
@@ -303,10 +330,17 @@ class Session:
                 errors.append(type(exc).__name__+': '+str(exc))
                 if self.watchdog:self.watchdog.error(exc,phase,stage)
                 if 'server_not_idle' in str(exc) or isinstance(exc,TimeoutError) or 'token_cap' in str(exc):break
-                messages.append(dict(role='user',content='Last action/request failed: '+errors[-1]+'. Correct the action; do not invent evidence.'))
-        self.history=messages[2:]
+                data=dict(observation_type='action_error',phase=phase,stage=stage,error=errors[-1])
+                ref=self.store.artifact(canonical(data))
+                self.store.append('action_errors',dict(**data,observation_ref=ref))
+                messages.append(dict(role='user',content=json.dumps(dict(**data,
+                    diagnostic_ref=ref,evidence_eligibility='controller diagnostic only'))))
+                messages.append(phase_control(phase,stage,'Correct the action; do not invent evidence.'))
+        retired=[m for m in messages[2:] if is_phase_control(m)]
+        self.history=[m for m in messages[2:] if not is_phase_control(m)]
         # Bound history promptly as well as by measured tokenization on next call.
-        self.store.append('history',dict(phase=phase,stage=stage,messages=len(self.history)))
+        self.store.append('history',dict(phase=phase,stage=stage,messages=len(self.history),
+            retired_controls=len(retired),retired_control_sha256=[hashlib.sha256(m['content'].encode()).hexdigest() for m in retired]))
         return dict(phase=phase,done=done,completed=done is not None,errors=errors,calls=len(self.provider.calls)-start)
 
     @staticmethod

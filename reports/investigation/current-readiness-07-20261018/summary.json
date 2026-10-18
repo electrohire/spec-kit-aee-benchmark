@@ -1,0 +1,44 @@
+{
+  "preparation": 7,
+  "scored_started": false,
+  "completed_readiness_cases": 0,
+  "calls": 81,
+  "known_native_tokens": 1798706,
+  "unknown_usage": 0,
+  "result_sha256": "7239828a88fb9de0bb018fd3d1b87f8a7d30aee871cb30423a45602acf64e3ce",
+  "first_tasks_request": {
+    "path": "artifacts/current-representative-07/tinydb-spec_kit_aee/calls/call-0049.json",
+    "sha256": "0f1c3905b8e3295977d2c7bf2f741647521dcca1cb81f5ab1e417f3a6b32f261",
+    "stale_controls": [
+      {
+        "message_index": 14,
+        "excerpt": "PHASE PROGRESS: plan; 8 actions remain, including done. Exploration alone does not complete this phase. Write the required deliverables with write_file, inspect their actual contents, and report unresolved work honestly. No extra actions will be granted. Host artifact observation"
+      },
+      {
+        "message_index": 27,
+        "excerpt": "Two actions remain in this phase. Finish the requested artifact/check now and use done to report its actual state; preserve unresolved issues."
+      },
+      {
+        "message_index": 30,
+        "excerpt": "FINAL STEP: this is the last allocated action for this phase. Only a done action is accepted now. Return {\"action\":\"done\",\"summary\":\"...\",\"claims\":{\"schema_version\":\"1.0\",\"claims\":[...]}} with your best current claims object (finalize your recorded mid-phase draft). Shell actions"
+      }
+    ]
+  },
+  "offline_control_hygiene_regression": {
+    "before_stale_plan_controls": 2,
+    "after_stale_plan_controls": 0,
+    "inference_calls": 0
+  },
+  "retained_source_sha256": "e65e9e83d04ebdf084ae851075d16df6f6c14dfc4885b94b6d3c5a6ff6993464",
+  "alert": {
+    "status": "intervention_required",
+    "reason": "phase did not complete; downstream execution withheld",
+    "stage": 1,
+    "phase": "tasks",
+    "calls": 32,
+    "errors": [
+      "ValueError: Required phase artifact missing or scaffold: specs/001-transactions/tasks.md"
+    ],
+    "policy": "stop; retain evidence; no retry, budget extension or treatment change"
+  }
+}

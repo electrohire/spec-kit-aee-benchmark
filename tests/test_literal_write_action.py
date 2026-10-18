@@ -160,7 +160,7 @@ def test_phase_progress_observes_artifact_without_extra_model_calls(tmp_path):
     class Provider:
         def __init__(self):self.calls=[];self.messages=[]
         def query(self,messages,*args):
-            self.messages.extend(m['content'] for m in messages if m['content'].startswith('PHASE PROGRESS:'))
+            self.messages.extend(m['content'] for m in messages if 'PHASE PROGRESS:' in m['content'])
             action=actions[len(self.calls)];self.calls.append({});return json.dumps(action)
     class Box:
         present=False

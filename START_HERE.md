@@ -1,5 +1,18 @@
 # Resume the benchmark
 
+## Readiness07 stopped — phase-control history correction
+
+07 stopped before scoring at missing tasks.md after81calls/1,798,706known tokens,
+0unknown. Planning completed; malformed shell commands were blocked, and the final
+handoff admitted incomplete work. The tasks request also retained old planning
+final-step/budget instructions. See reports/investigation/current-readiness-07-20261018.
+The prospective candidate tags host controls by phase/stage, retires those
+instructions at handoff, preserves actual claims/observations/errors as data and
+stops before inference on foreign controls. Diagnostics are not solver verification
+evidence. The common done example is phase-neutral. No caps/grading changes or
+causal efficacy claim. Merge exact-green, then use entirely fresh preparation08
+and current transport/context/timing proofs. Never resume07/reuse its cases.
+
 ## Readiness06 intervention — prospective shell preflight
 
 Pipeline06 stopped before scoring: the first combined case exhausted planning

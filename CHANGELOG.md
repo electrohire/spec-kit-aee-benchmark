@@ -2,6 +2,11 @@
 
 ## Unreleased — authorized corrected study02, 2026-10-18
 
+- Retain readiness07's81calls/1,798,706native tokens and missing-task intervention.
+  Retire phase-scoped host imperatives while keeping structured observations,
+  errors and model claims; reject stale controls before another model request.
+  Use a phase-neutral completion example. No budget, model or grader change.
+
 - Retain readiness06 failure and all45calls/913,153native tokens. Parse shell
   actions before executing any prefix, including rejecting unterminated-heredoc
   warnings; report observed phase artifact state at bounded progress checkpoints.

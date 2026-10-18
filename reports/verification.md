@@ -1,5 +1,24 @@
 # Requirement-to-evidence matrix
 
+The current phase-history audit is reports/aee-validation/current-20261018-phase-history-01:
+100focusedcases,7boundedobservations,0evidencefindings,1actualAEE/Evaluatoriterate.
+Full local suite462passed. These are offline harness checks, not successful model
+readiness, complete product coverage or human acceptance. Earlier audits remain
+historical observations of their own scoped executions.
+
+## Readiness07 stopped — phase-control history correction
+
+07 stopped before scoring at missing tasks.md after81calls/1,798,706known tokens,
+0unknown. Planning completed; malformed shell commands were blocked, and the final
+handoff admitted incomplete work. The tasks request also retained old planning
+final-step/budget instructions. See reports/investigation/current-readiness-07-20261018.
+The prospective candidate tags host controls by phase/stage, retires those
+instructions at handoff, preserves actual claims/observations/errors as data and
+stops before inference on foreign controls. Diagnostics are not solver verification
+evidence. The common done example is phase-neutral. No caps/grading changes or
+causal efficacy claim. Merge exact-green, then use entirely fresh preparation08
+and current transport/context/timing proofs. Never resume07/reuse its cases.
+
 ## Shell preflight validation
 
 Recorded audit reports/aee-validation/current-20261018-literal-write-04 contains
