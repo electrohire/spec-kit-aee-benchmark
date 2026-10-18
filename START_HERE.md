@@ -1,5 +1,16 @@
 # Resume the benchmark
 
+## Current status: study02 infrastructure stop
+
+Pipeline09 ended at 2026-10-18T22:21:19Z, intervention_required. No model generation
+is active. Read [the incident report](reports/investigation/current-study-02-infrastructure-stop-20261018/README.md) before any recovery. Preserve the
+192 generation calls,348 input freeze, all preparation costs and partial rows.
+HTTP 500 preceded an ENOSPC write error; current host capacity and new diagnostics
+pass, so cause remains unresolved. No final grading/export or completed comparison
+exists. Do not silently resume, retry or weaken guards/caps. A fresh campaign
+requires a concrete infrastructure diagnosis and prospective admission.
+
+
 ## Prospective scored admission: model failures are outcomes
 
 The user directed scoring to start after readiness08 completed the full TinyDB
@@ -150,7 +161,7 @@ Structured arms accepted 0 and delivered 0; all 24 are UNGRADED collection error
 Neither structured workflow completed; AEE reached 6/48 planned checkpoints,
 all specification. All 52 public repair records made 0 model calls after budgets
 expired. This is not proof of completed-workflow efficacy or financial savings.
-1,131 scored calls retain one HTTP500/unknown usage; 174 setup calls retain 3 unknowns.
+1,131 scored calls retain one HTTP 500/unknown usage; 174 setup calls retain 3 unknowns.
 Raw requests/native reasoning stay local; public hashes preserve provenance.
 
 Calibration04 passed 83 calls / all 7 phases / 4 actual AEE checks/injected repair.

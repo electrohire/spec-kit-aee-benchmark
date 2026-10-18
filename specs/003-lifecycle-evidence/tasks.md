@@ -57,3 +57,15 @@ coverage and 0-inference repairs prevent a completed-workflow efficacy conclusio
   phase/stage identity before inference and keep diagnostics ineligible as solver evidence.
 - Retain81calls/1,798,706native tokens and the honest incomplete handoff. A fresh
   candidate still needs all six readiness cases; no success is inferred here.
+
+
+### Study02 infrastructure interruption (2026-10-18)
+
+- [x] Retain pipeline09 HTTP 500/ENOSPC stop; verify348frozen hashes and7stream chains.
+- [x] Record192 generation calls/4,172,224 native tokens separately from unaggregated setup costs.
+- [x] Report5 persisted rows versus36 scheduled checkpoints and no final grading/export.
+- [ ] Diagnose the storage/service failure before a fresh prospective campaign.
+- [ ] Complete valid full scoring, independent grading/accounting and paired insights.
+
+The2 dependent Cachetools rows remain unattempted/0 calls; TinyDB stage1 public
+verification is a bounded observation, not accepted delivery. No implicit retry.
