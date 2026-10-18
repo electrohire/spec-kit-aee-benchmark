@@ -11,6 +11,10 @@ and runtime safeguards are documented; original observations and costs remain vi
 
 ## Results and interpretation
 
+A corrected study is being prepared under a [new prospective protocol](benchmarks/current_local/PROTOCOL-v2.md).
+It requires six representative project/workflow/repair cases before scoring;
+the retained study01 figures below have not been replaced by hoped-for results.
+
 <!-- current-results:start -->
 
 ### Current-version staged comparison

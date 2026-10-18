@@ -1,5 +1,24 @@
 # Resume the benchmark
 
+## Authorized corrected rerun — 2026-10-18
+
+The user authorized merging all related green PRs and a fresh study rerun. PR18
+merged as6748b8c; the three product repositories have no open PRs at this check.
+Read benchmarks/current_local/PROTOCOL-v2.md. Study02 uses a new freeze and
+representative project×treatment readiness; study01 remains unchanged. The
+native JSON transport probes passed all three actions with retained local calls.
+No paid inference, service configuration changes or external publication.
+
+Run only one scripts/run_corrected_study.py pipeline with a new status path.
+It waits for the existing context03/latency02 preparation, then runs independent
+controls, all six real project readiness cases, four-checkpoint dependency replay,
+new scored generation and export. It stops on any failure without retry/resume.
+Do not launch duplicate inference while preparation or the pipeline is active.
+Read the durable checkpoint and artifacts/current-pipeline-02.json before acting.
+The historical no-merge language below is superseded by the latest explicit user
+authorization, recorded in constitution1.4.0. Never infer readiness/scoring passed
+from a process merely starting. Results must retain failures and unknown costs.
+
 ## Current continuation — 2026-10-17
 
 **2026-10-18 investigation supersedes the efficacy framing below:** read

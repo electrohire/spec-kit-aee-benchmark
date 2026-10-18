@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased — authorized corrected study02, 2026-10-18
+
+- Use the same native JSON action grammar and per-request non-thinking mode for
+  all treatments, with8192 output tokens and prospectively declared equal ceilings.
+- Require all six isolated representative project×treatment workflows, actual AEE
+  checkpoint exposure, public verification and exercised injected repair before
+  a fresh scored freeze. Bind readiness artifacts/configuration/controller hashes.
+- Add one serial preparation→readiness→replay→scoring→export supervisor that stops
+  on intervention without retries, retaining earlier preparation and scored costs.
+- Record the user's authorization to merge related green PRs and rerun; no release
+  or external article/email publication is authorized.
+
 ## Unreleased — study validity investigation, 2026-10-18
 
 - Identify the 120-minute functional calibration / 40-minute scored-budget mismatch

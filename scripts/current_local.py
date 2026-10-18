@@ -25,6 +25,8 @@ from long_horizon import PHASE_GOALS, skill
 from context_window import select_context
 from benchmark_runner.project_assessment import assess_project
 from runtime_checks import validate_capacity, RuntimeWatchdog
+from action_protocol import ACTION_RESPONSE_FORMAT
+from readiness_gate import validate_representative
 
 _grade_impl = runner.grade
 
@@ -32,11 +34,12 @@ ROOT = Path(__file__).resolve().parents[1]
 MODEL = "qwen3.8-27b"
 WEIGHTS = Path("C:/Models/qwen3.8-27b.gguf")
 URL = "http://127.0.0.1:8081"
-SEEDS = [20261016, 20261017]
+SEEDS = [20261018, 20261019]
 CONFIG = {**runner.CONFIG, "seeds": SEEDS, "model": MODEL, "url": URL,
           "paid_calls_permitted": False, "physical_call_timeout": 180,
-          "stage_seconds": 2400, "primary_calls": 160, "context": 32768,
-          "max_output": 4096, "token_cap": 18000000,
+          "stage_seconds": 14400, "primary_calls": 208, "context": 32768,
+          "max_output": 8192, "token_cap": 24000000, "enable_thinking": False,
+          "study_id": "current-study-02", "action_protocol": "native-json-schema-v1",
           "claim_rubric": "Final explicit all-requirements completion declarations only; missing/ambiguous = unknown. Independently grade exact submitted snapshot. AEE findings are not truth labels.",
           "scenario_prices_per_million":{"input":"1","cached_input":"0.10","output":"4"},
           "scenario_note":"Illustrative USD/million token sensitivity calculation, not a provider quote, bill, GPU/energy/human cost or a claim that hosted inference has the same behavior."}
@@ -99,7 +102,7 @@ def freeze(out, purpose):
         for path in (ROOT/folder).rglob("*"):
             if path.is_file() and not {"__pycache__", ".runtime", "assessments", "ledger", "results"}.intersection(path.parts):
                 hashes[path.relative_to(ROOT).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
-    for name in ("uv.lock", "manifests/versions.json"):
+    for name in ("uv.lock", "manifests/versions.json", "benchmarks/current_local/PROTOCOL-v2.md"):
         hashes[name] = hashlib.sha256((ROOT/name).read_bytes()).hexdigest()
     with WEIGHTS.open("rb") as handle:
         weight_sha = hashlib.file_digest(handle, "sha256").hexdigest()
@@ -181,7 +184,7 @@ def context_calibration(out):
                     dict(role="user",content="Preserve the fixed prefix.")]
         messages += [dict(role="user" if i%2==0 else "assistant", content="Neutral calibration words alpha beta gamma delta. "*128) for i in range(n)]
         def measure(items):
-            prompt = http("/apply-template", dict(messages=items))["prompt"]
+            prompt = http("/apply-template", dict(messages=items,chat_template_kwargs={'enable_thinking':CONFIG['enable_thinking']}))["prompt"]
             return len(http("/tokenize",dict(content=prompt,add_special=False))["tokens"])
         linear = list(messages)
         counts = []
@@ -207,14 +210,15 @@ def context_calibration(out):
 
 
 def latency(out):
-    freeze(out,"unscored near-context latency: at most2calls,4096output tokens/call,600seconds/call,zero paid inference")
+    freeze(out,"unscored near-context latency: at most2calls,8192output tokens/call,600seconds/call,zero paid inference")
     filler = "Neutral calibration alpha beta gamma delta 0123456789.\n"*2500
-    while len(http("/tokenize",dict(content=filler,add_special=False))["tokens"]) > 26000:
+    while len(http("/tokenize",dict(content=filler,add_special=False))["tokens"]) > CONFIG['context']-CONFIG['max_output']-1024:
         filler = filler[:int(len(filler)*.94)]
     calls = []
     for i in range(2):
-        request = dict(model=MODEL,messages=[dict(role="user",content=filler+"\nReturn a JSON list containing integers 1 through 10000; continue to the output limit.")],
-                       max_tokens=4096,temperature=.6,seed=SEEDS[0],cache_prompt=False)
+        request = dict(model=MODEL,messages=[dict(role="user",content=filler+'\nReturn action done with a summary string containing integers 1 through 10000, space separated; continue to the output limit.')],
+                       max_tokens=CONFIG['max_output'],temperature=.6,seed=SEEDS[0],cache_prompt=False,
+                       response_format=ACTION_RESPONSE_FORMAT,chat_template_kwargs={'enable_thinking':CONFIG['enable_thinking']})
         start=time.monotonic()
         row=dict(started_at=utc(),request=request,usage=None,unknown_reason="pending")
         path=out/f"call-{i:04}.json";write_json(path,row,exclusive=True)
@@ -290,9 +294,16 @@ def run(out, preflight):
     if not json.loads(workflow.read_text())["passed"]:
         raise ValueError("full workflow calibration has not passed")
     validate_workflow_budget(workflow.parent, CONFIG['stage_seconds'])
+    validate_representative(preflight/'representative',CONFIG,runner.PROJECTS,runner.ARMS)
+    transport=json.loads((preflight/'transport/result.json').read_text())
+    transport_freeze=json.loads((preflight/'transport/freeze.json').read_text())
+    if (not transport.get('passed') or transport.get('physical_calls')!=3
+        or {v['action'] for v in transport.get('checks',[])}!={'shell','done','draft'}
+        or transport_freeze['hashes'].get('scripts/action_protocol.py')!=hashlib.sha256((ROOT/'scripts/action_protocol.py').read_bytes()).hexdigest()):
+        raise ValueError('native action transport readiness missing or changed')
     workflow_freeze=json.loads((preflight/"workflow/freeze.json").read_text())
     calibrated=workflow_freeze["config"]
-    for key in ("model","url","context","max_output","temperature","top_p","top_k"):
+    for key in ("model","url","context","max_output","temperature","top_p","top_k","enable_thinking","stage_seconds","primary_calls"):
         if calibrated[key]!=CONFIG[key]:raise ValueError("model/config differs from successful workflow calibration")
     for path in (preflight/"context/result.json",preflight/"latency/calibration.json"):
         value=json.loads(path.read_text())
@@ -324,9 +335,10 @@ def run(out, preflight):
     # compare the exact ASTs of every shared treatment/provider component.
     for filename,names in {
         "scripts/current_local.py":{"http","Provider","calibrate"},
-        "scripts/repeated_local.py":{"Provider","Session","do_assessment","compact_assessment","tests_for","ProjectSandbox"},
+        "scripts/repeated_local.py":{"Provider","Session","do_assessment","compact_assessment","tests_for","ProjectSandbox","phase_plan","phase_instructions"},
         "scripts/long_horizon.py":{"Sandbox","skill"},
         "scripts/runtime_checks.py":{"RuntimeIntervention","RuntimeWatchdog","validate_capacity"},
+        "scripts/readiness_gate.py":{"validate_representative"},
         "scripts/local_feasibility.py":{"NoRedirect"},
         "src/benchmark_runner/workflow.py":{"assess","grounded_claims"},
         "src/benchmark_runner/project_assessment.py":{"assess_project"},
@@ -339,6 +351,7 @@ def run(out, preflight):
         "scripts/current_local.py":{"MODEL","WEIGHTS","URL","SEEDS","CONFIG"},
         "scripts/long_horizon.py":{"CLAIMS","PHASE_GOALS"},
         "scripts/repeated_local.py":{"COMMON"},
+        "scripts/action_protocol.py":{"ACTION_RESPONSE_FORMAT"},
     }.items():
         before=_bindings((frozen/filename).read_text(encoding="utf-8"),names)
         if set(before)!=names or before!=_bindings((ROOT/filename).read_text(encoding="utf-8"),names):
@@ -366,7 +379,9 @@ def run(out, preflight):
     CONFIG["persistent_project_ledger"]=True
     CONFIG["block_on_assessment"]=True
     runner.assess=assess_project
-    extras=[Path(__file__).resolve(),ROOT/"scripts/local_feasibility.py",ROOT/"scripts/report_current.py",ROOT/"scripts/report_repeated.py",ROOT/"scripts/complete_current_study.py",ROOT/"benchmarks/current_local/PROTOCOL.md"]
+    extras=[Path(__file__).resolve(),ROOT/"scripts/local_feasibility.py",ROOT/"scripts/report_current.py",ROOT/"scripts/report_repeated.py",ROOT/"scripts/complete_current_study.py",ROOT/"benchmarks/current_local/PROTOCOL-v2.md",ROOT/'scripts/readiness_gate.py',ROOT/'scripts/representative_readiness.py']
+    extras.extend(p for p in (preflight/'representative').rglob('*.json') if p.name in ('result.json','freeze.json'))
+    extras.extend((preflight/'transport/result.json',preflight/'transport/freeze.json'))
     extras.extend((replay_file,ROOT/"scripts/replay_current_dependencies.py"))
     extras.extend((image_audit,ROOT/"scripts/audit_current_image.py"))
     runner.campaign(out,preflight/"grade",timeout,

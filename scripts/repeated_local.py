@@ -18,6 +18,7 @@ from long_horizon import Sandbox, CLAIMS, skill, PHASE_GOALS
 from report_long_horizon import source_digest
 from context_window import select_context
 from runtime_checks import RuntimeWatchdog, RuntimeIntervention, validate_capacity
+from action_protocol import ACTION_RESPONSE_FORMAT
 
 ROOT = Path(__file__).resolve().parents[1]
 TASK = ROOT / 'benchmarks/repeated_local'
@@ -45,6 +46,22 @@ CONFIG = dict(context=32768, max_output=4096, primary_calls=160, repair_calls=8,
               seeds=SEEDS, temperature=0.6, top_p=0.95, top_k=20,
               history='first-fitting oldest two-message cutoff by calibrated binary search; explicit stage3 reset',
               unknown_policy='retain null native usage; reserve input+max_output; wait for idle slot; continue within cap')
+
+PHASE_LIMITS={'constitution':32,'specify':32,'plan':32,'tasks':32,'implement':32,'converge':16,'final_implement':16}
+
+
+def phase_plan(arm,stage):
+    return ['solve'] if arm=='baseline' else (['constitution'] if stage==1 else [])+['specify','plan','tasks','implement','converge','final_implement']
+
+
+def phase_instructions(project,arm,phase,spec,completion_contract):
+    goal=('Implement the active milestone; plan and keep notes as useful; run public and upstream tests. Finish with done.'
+          if arm=='baseline' else PHASE_GOALS[phase].replace('/testbed/tinydb','/testbed/'+PROJECTS[project]['package']))
+    text=goal
+    if arm!='baseline':
+        text=(ROOT/'prompts/adapter.md').read_text().replace('/workflow','/testbed')+'\n'+skill(phase).replace('$ARGUMENTS',goal+'\n'+spec)+'\n'+goal+'\nUse SPECIFY_FEATURE_DIRECTORY=/testbed/specs/001-transactions. Keep documents concise and evidence explicit.'
+    if phase in ('solve','final_implement'):text+='\n'+completion_contract
+    return text
 
 
 def reservation(call):
@@ -122,7 +139,7 @@ class Provider:
             if remaining<=0:raise TimeoutError('context_preflight_exhausted_phase_budget')
             probe_timeout=min(30,remaining)
             preflight['http_requests']+=1
-            prompt=local_json('/apply-template',dict(messages=selected,chat_template_kwargs={'enable_thinking':True}),timeout=probe_timeout)['prompt']
+            prompt=local_json('/apply-template',dict(messages=selected,chat_template_kwargs={'enable_thinking':CONFIG.get('enable_thinking',True)}),timeout=probe_timeout)['prompt']
             remaining=deadline-time.monotonic()-self.timeout
             if remaining<=0:raise TimeoutError('context_preflight_exhausted_phase_budget')
             preflight['http_requests']+=1
@@ -142,8 +159,8 @@ class Provider:
         if remaining<self.timeout: raise TimeoutError('insufficient_request_time_reservation')
         request=dict(model='long-coder',messages=chosen,temperature=0.6,top_p=0.95,top_k=20,min_p=0.0,
                      presence_penalty=0.0,repeat_penalty=1.0,seed=self.seed,max_tokens=CONFIG['max_output'],
-                     cache_prompt=bool(self.calls),response_format={'type':'json_object'},
-                     chat_template_kwargs={'enable_thinking':True})
+                     cache_prompt=bool(self.calls),response_format=ACTION_RESPONSE_FORMAT,
+                     chat_template_kwargs={'enable_thinking':CONFIG.get('enable_thinking',True)})
         record=dict(stage=stage,phase=phase,started_at=utc(),request=request,usage=None,unknown_reason='pending',
                     preflight_input_tokens=count,max_output=CONFIG['max_output'],removed_history_messages=removed,
                     preflight_http_requests=preflight['http_requests'],preflight_seconds=preflight['seconds'])
@@ -376,6 +393,7 @@ def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=N
     hashes['scripts/calibrate_repeated_workflow.py']=digest(ROOT/'scripts/calibrate_repeated_workflow.py')
     hashes['scripts/context_window.py']=digest(ROOT/'scripts/context_window.py')
     hashes['scripts/runtime_checks.py']=digest(ROOT/'scripts/runtime_checks.py')
+    hashes['scripts/action_protocol.py']=digest(ROOT/'scripts/action_protocol.py')
     hashes['scripts/calibrate_context_selection.py']=digest(ROOT/'scripts/calibrate_context_selection.py')
     hashes[str(context_preflight.relative_to(ROOT))]=digest(context_preflight)
     for item in (*extra_sources,workflow_preflight,latency_preflight):
@@ -409,7 +427,7 @@ def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=N
                     row['handoff_record']=handoff
                     subprocess.run(['docker','restart',box.name],check=True,capture_output=True,timeout=30)
                     session.history=[]
-                phases=['solve'] if arm=='baseline' else (['constitution'] if stage==1 else [])+['specify','plan','tasks','implement','converge','final_implement']
+                phases=phase_plan(arm,stage)
                 for phase_index,phase in enumerate(phases):
                     # Keep at least one physical-call reservation for every later
                     # phase and each public repair round. These limits are frozen.
@@ -417,16 +435,10 @@ def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=N
                     session.watchdog.deadline(phase_deadline,timeout,phase,stage)
                     left=CONFIG['primary_calls']-(len(provider.calls)-start)
                     if left<=0:session.watchdog.stop('primary call budget exhausted before phase',phase=phase,stage=stage)
-                    goal='Implement the active milestone; plan and keep notes as useful; run public and upstream tests. Finish with done.' if arm=='baseline' else PHASE_GOALS[phase].replace('/testbed/tinydb','/testbed/'+PROJECTS[project]['package'])
-                    instructions=goal
-                    if arm!='baseline':
-                        instructions=(ROOT/'prompts/adapter.md').read_text().replace('/workflow','/testbed')+'\n'+skill(phase).replace('$ARGUMENTS',goal+'\n'+spec)+'\n'+goal+'\nUse SPECIFY_FEATURE_DIRECTORY=/testbed/specs/001-transactions. Keep documents concise and evidence explicit.'
-                    if phase in ('solve','final_implement'):
-                        instructions+='\n'+completion_contract
-                    limits={'constitution':32,'specify':32,'plan':32,'tasks':32,'implement':32,'converge':16,'final_implement':16}
+                    instructions=phase_instructions(project,arm,phase,spec,completion_contract)
                     need_claims=arm=='spec_kit_aee' and phase in ('specify','plan','tasks','implement')
                     phase_before=folder/f'stage{stage}-{phase}-before.tar';box.snapshot(phase_before)
-                    phase_row=session.phase(phase,instructions,spec,stage,min(left,limits.get(phase,left)),phase_deadline,need_claims)
+                    phase_row=session.phase(phase,instructions,spec,stage,min(left,PHASE_LIMITS.get(phase,left)),phase_deadline,need_claims)
                     phase_after=folder/f'stage{stage}-{phase}-after.tar';box.snapshot(phase_after)
                     phase_row.update(source_changed=source_digest(phase_before)!=source_digest(phase_after),source_before=phase_before.relative_to(out).as_posix(),source_after=phase_after.relative_to(out).as_posix())
                     row['phases'].append(phase_row)
