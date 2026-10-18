@@ -1,5 +1,23 @@
 # Resume the benchmark
 
+## Current literal-write repair —2026-10-18
+
+Pipeline05 stopped before scoring on an unchanged-action loop in the third
+readiness case. TinyDB+AEE and cachetools+AEE both passed full readiness; these
+unscored observations do not establish comparative efficacy. The SpecKit-only
+solver repeatedly emitted valid JSON containing an incomplete Python heredoc.
+Read reports/investigation/current-readiness-05-20261018/README.md. Retain all305
+calls/6,359,610known native tokens and the stopped source snapshot.
+
+Native action protocolv3 adds a literal write_file tool equally to all arms. No
+runtime guard or budget is weakened. A new candidate needs a new preparation ID,
+four actual transport probes including isolated write/readback, new latency for
+the changed grammar, and all six fresh cases. Do not resume05 or reuse its cases.
+The launcher now requires explicit --latency, --context and --transport folders;
+there are no implicit stale calibration defaults. Merge exact-green first, then
+freeze/calibrate the unchanged source. Source/product releases remain held while
+the baseline is incomplete. Earlier paragraphs below describe retained history.
+
 ## Current admission repair — 2026-10-18
 
 Pipeline04 stopped before scoring on three missing-claims handoffs. Its runtime

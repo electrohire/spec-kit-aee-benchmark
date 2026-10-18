@@ -93,6 +93,7 @@ def test_successful_child_exit_cannot_bypass_missing_readiness_artifacts(tmp_pat
     import run_corrected_study as supervisor
     from types import SimpleNamespace
     monkeypatch.setattr(supervisor,'ROOT',tmp_path)
+    monkeypatch.setattr(supervisor.current,'validate_action_readiness',lambda *a,**k:None)
     commands=[]
     def child(argv,**kwargs):
         commands.append(argv)
@@ -105,6 +106,19 @@ def test_successful_child_exit_cannot_bypass_missing_readiness_artifacts(tmp_pat
         supervisor.execute(status,tmp_path/'latency',tmp_path/'context',tmp_path/'transport')
     assert len(commands)==3 and not any('scripts/current_local.py' in c and 'run' in c for c in commands)
     assert json.loads(status.read_text())['stage']=='intervention_required'
+
+
+def test_stale_action_calibration_stops_before_any_child(tmp_path,monkeypatch):
+    import run_corrected_study as supervisor
+    monkeypatch.setattr(supervisor,'ROOT',tmp_path)
+    monkeypatch.setattr(supervisor.subprocess,'run',lambda *a,**k:pytest.fail('no child before grammar validation'))
+    for name,file in (('latency','calibration.json'),('context','result.json'),('transport','result.json')):
+        folder=tmp_path/name;folder.mkdir();(folder/file).write_text(json.dumps(dict(passed=True)))
+    def reject(*a,**k):raise ValueError('stale grammar')
+    monkeypatch.setattr(supervisor.current,'validate_action_readiness',reject)
+    with pytest.raises(ValueError,match='stale grammar'):
+        supervisor.execute(tmp_path/'status.json',tmp_path/'latency',tmp_path/'context',tmp_path/'transport',6)
+    assert json.loads((tmp_path/'status.json').read_text())['commands']==[]
 
 
 @pytest.mark.parametrize('name',['current-grade-calibration-03','current-image-audit-03.json'])

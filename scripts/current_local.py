@@ -39,7 +39,7 @@ CONFIG = {**runner.CONFIG, "seeds": SEEDS, "model": MODEL, "url": URL,
           "paid_calls_permitted": False, "physical_call_timeout": 180,
           "stage_seconds": 14400, "primary_calls": 208, "context": 32768,
           "max_output": 8192, "token_cap": 24000000, "enable_thinking": False,
-          "study_id": "current-study-02", "action_protocol": "native-json-schema-v2",
+          "study_id": "current-study-02", "action_protocol": "native-json-schema-v3",
           "claim_rubric": "Final explicit all-requirements completion declarations only; missing/ambiguous = unknown. Independently grade exact submitted snapshot. AEE findings are not truth labels.",
           "scenario_prices_per_million":{"input":"1","cached_input":"0.10","output":"4"},
           "scenario_note":"Illustrative USD/million token sensitivity calculation, not a provider quote, bill, GPU/energy/human cost or a claim that hosted inference has the same behavior."}
@@ -286,6 +286,34 @@ def validate_workflow_budget(folder, stage_seconds):
     return elapsed
 
 
+def validate_action_readiness(preflight, *, transport_folder=None, latency_folder=None):
+    """Reject stale grammar timing/probes even when the model and caps match."""
+    transport_folder=transport_folder or preflight/'transport'
+    latency_folder=latency_folder or preflight/'latency'
+    transport=json.loads((transport_folder/'result.json').read_text())
+    transport_freeze=json.loads((transport_folder/'freeze.json').read_text())
+    if (not transport.get('passed') or transport.get('physical_calls')!=4
+        or {v['action'] for v in transport.get('checks',[])}!={'shell','write_file','done','draft'}
+        or not all(v.get('strict_claims_loaded') is True for v in transport.get('checks',[]) if v['action'] in ('done','draft'))
+        or transport_freeze['hashes'].get('scripts/action_protocol.py')!=hashlib.sha256((ROOT/'scripts/action_protocol.py').read_bytes()).hexdigest()):
+        raise ValueError('native action transport readiness missing or changed')
+    literal=next(v for v in transport['checks'] if v['action']=='write_file')
+    if (literal.get('literal_write_verified') is not True
+        or literal.get('literal_write_sha256')!=hashlib.sha256((transport_folder/'literal-write.json').read_bytes()).hexdigest()):
+        raise ValueError('literal sandbox write/readback proof missing or changed')
+    latency=json.loads((latency_folder/'calibration.json').read_text())
+    freeze=json.loads((latency_folder/'freeze.json').read_text())
+    if not latency.get('passed') or freeze['config'].get('action_protocol')!=CONFIG['action_protocol'] or len(latency.get('records',[]))!=2:
+        raise ValueError('fresh grammar latency calibration required')
+    for index,receipt in enumerate(latency['records']):
+        path=latency_folder/f'call-{index:04}.json'
+        call=json.loads(path.read_text())
+        if (hashlib.sha256(path.read_bytes()).hexdigest()!=receipt['original_sha256']
+            or call['request']['response_format']!=ACTION_RESPONSE_FORMAT
+            or call.get('usage') is None or call.get('error')):
+            raise ValueError('latency action grammar/usage/receipt differs from current candidate')
+
+
 def run(out, preflight):
     if preflight is None:raise ValueError("explicit preflight directory required")
     out=out.resolve()
@@ -295,13 +323,7 @@ def run(out, preflight):
         raise ValueError("full workflow calibration has not passed")
     validate_workflow_budget(workflow.parent, CONFIG['stage_seconds'])
     validate_representative(preflight/'representative',CONFIG,runner.PROJECTS,runner.ARMS)
-    transport=json.loads((preflight/'transport/result.json').read_text())
-    transport_freeze=json.loads((preflight/'transport/freeze.json').read_text())
-    if (not transport.get('passed') or transport.get('physical_calls')!=3
-        or {v['action'] for v in transport.get('checks',[])}!={'shell','done','draft'}
-        or not all(v.get('strict_claims_loaded') is True for v in transport.get('checks',[]) if v['action'] in ('done','draft'))
-        or transport_freeze['hashes'].get('scripts/action_protocol.py')!=hashlib.sha256((ROOT/'scripts/action_protocol.py').read_bytes()).hexdigest()):
-        raise ValueError('native action transport readiness missing or changed')
+    validate_action_readiness(preflight)
     workflow_freeze=json.loads((preflight/"workflow/freeze.json").read_text())
     calibrated=workflow_freeze["config"]
     for key in ("model","url","context","max_output","temperature","top_p","top_k","enable_thinking","stage_seconds","primary_calls"):
@@ -339,7 +361,7 @@ def run(out, preflight):
         "scripts/repeated_local.py":{"Provider","Session","do_assessment","compact_assessment","tests_for","ProjectSandbox","phase_plan","phase_instructions"},
         "scripts/long_horizon.py":{"Sandbox","skill"},
         "scripts/runtime_checks.py":{"RuntimeIntervention","RuntimeWatchdog","validate_capacity"},
-        "scripts/action_protocol.py":{"action_response_format"},
+        "scripts/action_protocol.py":{"action_response_format","action_command"},
         "scripts/readiness_gate.py":{"validate_representative"},
         "scripts/local_feasibility.py":{"NoRedirect"},
         "src/benchmark_runner/workflow.py":{"assess","grounded_claims"},

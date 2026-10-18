@@ -2,6 +2,7 @@
 import argparse
 import json
 import time
+import hashlib
 
 import current_local as current
 from aee.model import Claim
@@ -13,17 +14,18 @@ def main():
     parser.add_argument('output',type=current.Path)
     args=parser.parse_args()
     current.setup()
-    current.freeze(args.output,'unscored native action transport; at most three local calls; no tool execution')
+    current.freeze(args.output,'unscored native action transport; at most four local calls; literal write checked in isolated sandbox')
     result=dict(passed=False,checks=[],paid_calls=False)
     provider=current.Provider(args.output/'calls',current.SEEDS[0],600)
     fixtures=[
         ('shell','Return a shell action whose command prints hello. Do not execute it.'),
+        ('write_file','Return write_file with path transport-literal.txt and content exactly equal to this JSON string: '+json.dumps('**Input**: User description: "quoted"\nit\'s literal; $(touch NEVER) `no`\nUnicode: λ\n')),
         ('done','Return done with completion_asserted null and a complete claim bundle. Use the claim below unchanged; no tests have run.'),
         ('draft','Return draft with a complete claim bundle. Use the claim below unchanged; no tests have run.'),
     ]
     try:
         for action,prompt in fixtures:
-            provider.requires_claims=action!='shell'
+            provider.requires_claims=action in ('done','draft')
             if provider.requires_claims:
                 prompt+='\n'+json.dumps(dict(schema_version='1.0',claims=[dict(id='R01',text='An unverified bounded requirement',kind='requirement',status='draft',stage='created',boundary=['transport fixture only'],depends_on=[],conflicts_with=[],falsification_tests=['actual implementation violates the requirement'],source_ref='transport fixture R01',uncertainty='insufficient_evidence',evidence=[])]))
             if any(s.get('is_processing') for s in current.http('/slots')):
@@ -32,6 +34,18 @@ def main():
             value=json.loads(text)
             if value['action']!=action:raise ValueError('wrong fixture action')
             if action=='shell' and not isinstance(value.get('command'),str):raise ValueError('missing command')
+            if action=='write_file':
+                from action_protocol import action_command
+                expected='**Input**: User description: "quoted"\nit\'s literal; $(touch NEVER) `no`\nUnicode: λ\n'
+                if value.get('path')!='transport-literal.txt' or value.get('content')!=expected:
+                    raise ValueError('literal file fixture differs')
+                with current.runner.ProjectSandbox('tinydb') as box:
+                    result_write=box.execute(action_command(value))
+                    observed=box.execute('cat transport-literal.txt')
+                    if result_write['exit_code'] or observed['exit_code'] or observed['stdout']!=expected:
+                        raise ValueError('literal sandbox write did not roundtrip')
+                    write_json(args.output/'literal-write.json',dict(write=result_write,readback=observed,
+                        expected_sha256=hashlib.sha256(expected.encode()).hexdigest()))
             if action=='done' and ('completion_asserted' not in value or value['completion_asserted'] is not None):raise ValueError('missing explicit unknown')
             if provider.requires_claims:
                 if not value.get('claims',{}).get('claims'):raise ValueError('empty claims')
@@ -39,7 +53,10 @@ def main():
                     claim=Claim.from_dict(item)
                     if claim.status.value!='draft' or claim.stage.value!='created' or claim.evidence:
                         raise ValueError('transport fixture promoted unverified claims')
-            result['checks'].append(dict(action=action,valid_json=True,strict_claims_loaded=provider.requires_claims,native_usage=provider.calls[-1]['usage']))
+            check=dict(action=action,valid_json=True,strict_claims_loaded=provider.requires_claims,native_usage=provider.calls[-1]['usage'])
+            if action=='write_file':
+                check.update(literal_write_verified=True,literal_write_sha256=hashlib.sha256((args.output/'literal-write.json').read_bytes()).hexdigest())
+            result['checks'].append(check)
         result['passed']=True
     except Exception as exc:
         result['error']=repr(exc)

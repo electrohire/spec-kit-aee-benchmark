@@ -1,5 +1,13 @@
 # Tasks
 
+## Prospective readiness05 repair
+
+- [x] Retain stopped preparation/calls and diagnose identical incomplete heredocs without changing scored history.
+- [x] Add the same bounded literal write_file action to every treatment; preserve budgets, grading and intervention thresholds.
+- [x] Verify quoting/Unicode/confinement/repetition and stale grammar admission with actual offline process evidence and AEE/Evaluator.
+- [ ] Pass final exact-head Ubuntu CI and merge the correction before freezing new candidate source.
+- [ ] Complete fresh four-action native transport, grammar-matched latency, six fresh project/treatment workflows and scored export under an unused preparation ID.
+
 - [x] Refresh pinned controller tooling and solver skill snapshots.
 - [x] Implement verified lifecycle report and CLI.
 - [x] Test false completion, fabricated references, unknowns, retries, regressions,
