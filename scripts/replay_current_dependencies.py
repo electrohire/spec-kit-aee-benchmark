@@ -27,9 +27,14 @@ def semantic(value):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("workflow",type=Path);parser.add_argument("output",type=Path)
+    parser.add_argument("--admission",type=Path)
     args=parser.parse_args()
     source=json.loads((args.workflow/"result.json").read_text())
-    if not source["passed"] or len(source["assessments"])!=4:
+    if args.admission:
+        from model_outcomes import validate_admission
+        from current_local import CONFIG
+        validate_admission(args.workflow,args.admission,CONFIG)
+    if (not args.admission and not source["passed"]) or len(source["assessments"])!=4:
         raise ValueError("successful full workflow calibration required")
     if {r['phase'] for r in source['assessments']}!={'specify','plan','tasks','implement'}:
         raise ValueError("required actual assessment checkpoints missing")

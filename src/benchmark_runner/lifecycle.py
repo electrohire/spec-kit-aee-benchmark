@@ -101,6 +101,8 @@ def summarize(document, root):
         key = tuple(row[k] for k in ("project", "seed", "arm", "stage"))
         if key not in expected or key in rows:
             raise ValueError("unscheduled or duplicate milestone")
+        if "workflow_completed" in row:
+            _bool(row["workflow_completed"])
         cases = _grade(root, row)
         for ref in row.get("tool_artifacts", []):
             artifact(root, ref)
@@ -142,7 +144,7 @@ def summarize(document, root):
         # Cached inputs and reasoning are subsets, never additional tokens.
         unknown = len(calls) - len(known)
         api_unknown = sum(c.get("api_cost_usd") is None for c in calls)
-        accepted = sum(x["cases"] is not None and all(x["cases"].values()) for x in selected)
+        accepted = sum(x["row"].get("workflow_completed", True) and x["cases"] is not None and all(x["cases"].values()) for x in selected)
         confusion = Counter()
         for claim in labels:
             if claim["supported"] is not None and claim["flagged"] is not None:
@@ -189,7 +191,7 @@ def summarize(document, root):
             keys = sorted(k for k in expected if k[:3] == (project, seed, arm))
             values = [rows.get(k) for k in keys]
             known_grades = bool(keys) and all(v is not None and v["cases"] is not None for v in values)
-            pair["arms"][arm] = all(all(v["cases"].values()) for v in values) if known_grades else None
+            pair["arms"][arm] = all(v["row"].get("workflow_completed", True) and all(v["cases"].values()) for v in values) if known_grades else None
         result["paired_trajectories"].append(pair)
     return result
 

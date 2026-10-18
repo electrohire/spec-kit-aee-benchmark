@@ -138,3 +138,17 @@ def test_cli_cannot_overwrite_markdown_or_input(tmp_path):
     assert main(["lifecycle-report", str(source), str(tmp_path/"report.json")]) == 2
     assert not (tmp_path/"report.json").exists()
     assert (tmp_path/"report.md").read_text() == "existing evidence"
+
+
+def test_interrupted_passing_code_is_not_completed_delivery(tmp_path):
+    doc = campaign(tmp_path)
+    for row in doc["milestones"]:
+        if row["stage"] == 1:
+            row.update(workflow_completed=False, execution_status="runtime_interrupted", claims=[])
+    report = summarize(doc, tmp_path)
+    for value in report["arms"].values():
+        assert value["accepted_milestones"] == 0
+        assert value["tokens_per_accepted_milestone"] is None
+        assert value["total_tokens"] == 240
+        assert value["completion_scored_claims"] == 1
+    assert report["paired_trajectories"][0]["arms"] == dict.fromkeys(ARMS, False)

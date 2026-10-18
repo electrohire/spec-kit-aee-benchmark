@@ -8,7 +8,7 @@ from pathlib import Path
 
 from benchmark_runner.lifecycle import summarize, markdown
 from benchmark_runner.store import write_json
-from report_repeated import export, summarize_study, manifest
+from report_repeated import export, summarize_study, manifest, workflow_completed
 
 
 def sha(path):
@@ -110,6 +110,10 @@ def build(raw, dest):
         doc["milestones"].append(dict(project=project,seed=seed,arm=arm,stage=stage,
             source_sha256=sha(source),expected_case_ids=expected_ids,grade=grade_ref,calls=calls,
             source_changing_repairs=sum(r["source_changed"] for r in row["repairs"]),claims=claims))
+    if freeze.get("intervention_policy")=="model-outcomes-v1":
+        for milestone,row in zip(doc["milestones"],rows):
+            milestone["workflow_completed"]=workflow_completed(row)
+            milestone["execution_status"]=row.get("status","completed")
     write_json(dest/"lifecycle-evidence.json",doc)
     report=summarize(doc,dest)
     report["completion_opportunities"]=opportunities
@@ -130,7 +134,7 @@ def build(raw, dest):
     report["delivered_projects"]={}
     for arm,value in report["arms"].items():
         final_rows=[r for r in rows if r["arm"]==arm and r["stage"]==3]
-        delivered=sum(r["hidden_final"]["passed"] for r in final_rows)
+        delivered=sum(r["hidden_final"]["passed"] and (workflow_completed(r) if freeze.get("intervention_policy")=="model-outcomes-v1" else True) for r in final_rows)
         report["delivered_projects"][arm]=dict(project_trajectories=len(final_rows),final_stage_accepted=delivered,
             all_call_tokens_per_delivered_project=value["total_tokens"]/delivered if delivered and value["total_tokens"] is not None else None,
             scenario_cost_per_delivered_project=str(Decimal(value["scenario_cost_usd"])/delivered) if delivered and value["scenario_cost_usd"] is not None else None,

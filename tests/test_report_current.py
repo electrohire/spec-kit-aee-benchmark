@@ -85,3 +85,25 @@ def test_setup_retains_unknown_failures_without_double_counting_copies(tmp_path)
     assert report["by_model"]["local"]["unknown_token_calls"]==1
     assert report["by_model"]["local"]["known_tokens_lower_bound"]==20
     assert report["by_model"]["local"]["total_tokens"] is None
+
+
+def test_interrupted_and_unattempted_passing_snapshots_are_not_deliveries(tmp_path):
+    raw,dest,rows = fixture(tmp_path)
+    freeze=json.loads((raw/"freeze.json").read_text())
+    freeze["intervention_policy"]="model-outcomes-v1"
+    (raw/"freeze.json").write_text(json.dumps(freeze))
+    for row in rows:
+        row.update(runtime_intervention={"reason":"synthetic model loop"},
+                   status="runtime_interrupted" if row["stage"]==1 else "not_attempted_dependent",
+                   completion_asserted=None)
+        for key in ("hidden_primary","hidden_final"):
+            row[key].update(passed=True,exit_code=0,cases=[dict(file="suite",name="test_known",passed=True,failures=[])])
+    (raw/"results.json").write_text(json.dumps(rows))
+    build(raw,dest)
+    report=json.loads((dest/"lifecycle-report.json").read_text())
+    evidence=json.loads((dest/"lifecycle-evidence.json").read_text())
+    assert all(not r["workflow_completed"] for r in evidence["milestones"])
+    assert evidence["milestones"][-1]["execution_status"]=="not_attempted_dependent"
+    assert all(v["accepted_milestones"]==0 for v in report["arms"].values())
+    assert all(v["final_stage_accepted"]==0 and v["all_call_tokens_per_delivered_project"] is None for v in report["delivered_projects"].values())
+    assert all(v["positive"]==0 and v["unknown"]==3 for v in report["completion_opportunities"].values())
