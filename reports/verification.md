@@ -1,5 +1,25 @@
 # Requirement-to-evidence matrix
 
+## Literal-write correction —2026-10-18
+
+Readiness05 stopped before scoring on repeated incomplete heredoc commands;
+reports/investigation/current-readiness-05-20261018/README.md records the diagnosis
+and retained costs. The prospective common write_file tool preserves literal
+UTF-8, confines paths, records the original action and actual receipt, and leaves
+budgets/grading/runtime guards unchanged. Fresh transport and latency are required;
+admission rejects stale grammar even before readiness child processes start.
+
+The recorded offline run reports/offline/2026-10-18T162644.964067-0000 passed442
+tests and executed actual AEE/Evaluator assessments at all four workflow phases.
+Two final confinement/argument-boundary tests were then added. The focused audit
+reports/aee-validation/current-20261018-literal-write-02/summary.json passed82
+tests and recorded six narrow observations with zero evidence findings, one
+actual composed evaluator result and iterate for unresolved human acceptance.
+The first80-case audit is retained as an earlier source snapshot. These are
+offline observations, not native transport, full GPU readiness, coverage or
+efficacy claims. Exact-head Ubuntu CI verifies the final complete suite before
+merge; fresh candidate calibration follows that merge.
+
 ## Corrected study02 admission
 
 [Protocol v2](../benchmarks/current_local/PROTOCOL-v2.md) defines a new prospective

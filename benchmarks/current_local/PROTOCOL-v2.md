@@ -1,5 +1,25 @@
 # Corrected local study02 — prospective, 2026-10-18
 
+## Native action protocolv3 preparation amendment
+
+Readiness05 stopped before scoring on an identical-action loop while the model
+wrote an incomplete shell/Python heredoc. Preserve every call and result; see
+reports/investigation/current-readiness-05-20261018/README.md. The common action
+grammar now additionally permits write_file with a canonical relative path and
+literal UTF-8 content, bounded to64KiB. A fixed sandbox writer receives base64
+data arguments, refuses symlink/traversal escapes, and returns path/bytes/SHA256.
+The original action and actual command/output are recorded. This is an equal
+tool capability for all arms, not AEE functionality or evidence of correctness.
+
+Four new transport calls cover shell, literal write/readback, done and draft;
+claim terminals still require engine-loadable nonempty bundles. The changed
+ordinary grammar requires fresh near-context latency, not latency02 reuse. New
+unscored readiness must start from six fresh isolated cases under a new ID.
+All time/token/call ceilings, model/seeds, grading, unknown-cost retention and
+runtime intervention thresholds remain unchanged. Identical repeated writes
+still stop. No model content is silently repaired. The v2-only text below is
+historical where superseded by this prospective amendment.
+
 The user authorized merging the completed PRs and rerunning the study. This is a
 new run/freeze; study01 and every failed preparation remain unchanged. No paid
 inference, service configuration changes, model substitution or external publication.

@@ -18,7 +18,7 @@ from long_horizon import Sandbox, CLAIMS, skill, PHASE_GOALS
 from report_long_horizon import source_digest
 from context_window import select_context
 from runtime_checks import RuntimeWatchdog, RuntimeIntervention, validate_capacity
-from action_protocol import action_response_format
+from action_protocol import action_response_format, action_command
 
 ROOT = Path(__file__).resolve().parents[1]
 TASK = ROOT / 'benchmarks/repeated_local'
@@ -31,8 +31,11 @@ SEEDS = [20260918, 20260919]
 ARMS = ['baseline', 'spec_kit', 'spec_kit_aee']
 COMMON = '''You are a capable software engineering agent in an isolated real repository.
 Return exactly one JSON action: {"action":"shell","command":"..."} or
+{"action":"write_file","path":"relative/file.py","content":"literal complete file content"} or
 {"action":"done","summary":"implemented and actually verified work"}.
-Use shell to inspect/edit source and run tests. No internet or human assistance.
+Prefer write_file for creating/replacing files; its content is literal UTF-8,
+not shell/Python source to quote again. Use shell to inspect source, make targeted
+edits and run tests. No internet or human assistance.
 Do not modify upstream tests or acceptance_public.py. You may add your own tests.
 Preserve previous active requirements. The latest requirement text overrides older
 asserted design notes. You may keep persistent HANDOFF.md and any other notes.
@@ -266,12 +269,12 @@ class Session:
                     done=action
                     if self.watchdog:self.watchdog.success()
                     break
-                if action.get('action')!='shell' or not isinstance(action.get('command'),str):raise ValueError('Expected shell command or done')
-                result=self.box.execute(action['command'],60);self.tools+=1
-                ref=self.store.artifact(canonical(dict(command=action['command'],**result)))
+                command=action_command(action)
+                result=self.box.execute(command,60);self.tools+=1
+                ref=self.store.artifact(canonical(dict(action=action,command=command,**result)))
                 self.store.append('tools',dict(attempt_id=self.identity,timestamp=utc(),artifact=ref,exit_code=result['exit_code']))
                 if self.watchdog:
-                    self.watchdog.tool(action['command'],result,phase,stage)
+                    self.watchdog.tool(command,result,phase,stage)
                     self.watchdog.success()
                 observation=dict(exit_code=result['exit_code'],stdout=result['stdout'][-6000:],stderr=result['stderr'][-2000:],evidence_ref=ref['path'],source_id=ref['sha256'])
                 messages.append(dict(role='user',content=json.dumps(observation)))

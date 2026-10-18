@@ -2,6 +2,13 @@
 
 ## Unreleased — authorized corrected study02, 2026-10-18
 
+- Preserve readiness05's305calls and the stopped identical-action loop. Add a
+  shared native literal write_file action to avoid nested shell/Python heredoc
+  quoting, with confined bounded UTF-8 data and retained original actions/receipts.
+  The three-action loop guard, budgets and grading remain unchanged. A new
+  preparation requires four actual probes and fresh grammar-bound latency;
+  stale probes/timing are rejected before readiness or scored generation.
+
 - Require typed nonempty claim bundles on claim-phase done/draft native actions;
   retain strict engine/evidence validation and runtime interruption. Transport02
   exercised actual engine loading; representative04's missing-claim failure and

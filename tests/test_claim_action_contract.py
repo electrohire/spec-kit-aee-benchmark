@@ -50,11 +50,11 @@ def test_shell_is_available_without_claims_and_cannot_omit_command():
         with pytest.raises(jsonschema.ValidationError):jsonschema.validate(bad,schema)
 
 
-def test_nonclaim_schema_matches_both_measured_latency_requests():
+def test_nonclaim_schema_requires_fresh_latency_for_changed_protocol():
     root=Path(__file__).resolve().parents[1]
     assert action_response_format(False)==ACTION_RESPONSE_FORMAT
     for path in (root/'artifacts/current-latency-calibration-02').glob('call-*.json'):
-        assert json.loads(path.read_text())['request']['response_format']==action_response_format(False)
+        assert json.loads(path.read_text())['request']['response_format']!=action_response_format(False)
     value=action_response_format(False);value['type']='mutated'
     assert ACTION_RESPONSE_FORMAT['type']=='json_schema'
 

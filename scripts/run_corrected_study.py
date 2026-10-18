@@ -48,6 +48,7 @@ def execute(status,latency,context,transport,preparation_id=2):
             time.sleep(5)
         for path in (latency/'calibration.json',context/'result.json',transport/'result.json'):
             if not json.loads(path.read_text()).get('passed'):raise ValueError('preparation failed: '+str(path))
+        current.validate_action_readiness(ROOT,transport_folder=transport,latency_folder=latency)
         command('independent-grade-controls',['scripts/current_local.py','grade-calibration',grade],1800)
         command('image-isolation',['scripts/audit_current_image.py',image],120)
         command('representative-readiness',['scripts/representative_readiness.py',representative,'--latency',latency/'calibration.json'],6*current.CONFIG['stage_seconds']+1800)
@@ -81,8 +82,11 @@ def execute(status,latency,context,transport,preparation_id=2):
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--status',type=Path,required=True)
     parser.add_argument('--preparation-id',type=int,required=True)
+    parser.add_argument('--latency',type=Path,required=True)
+    parser.add_argument('--context',type=Path,required=True)
+    parser.add_argument('--transport',type=Path,required=True)
     args=parser.parse_args()
-    execute(args.status,ROOT/'artifacts/current-latency-calibration-02',ROOT/'artifacts/current-context-calibration-03',ROOT/'artifacts/current-action-transport-02',args.preparation_id)
+    execute(args.status,args.latency.resolve(),args.context.resolve(),args.transport.resolve(),args.preparation_id)
 
 
 if __name__=='__main__':main()
