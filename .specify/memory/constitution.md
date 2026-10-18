@@ -56,8 +56,10 @@ timing/cap checks and all six project×treatment representative readiness cases,
 including actual implementation, public verification and exercised injected repair.
 Keep runtime interventions active and preserve prior failures/costs. A stopped
 scored attempt cannot be resumed with changed code/settings. This authorization
-does not require a favorable result and does not authorize implementing the
-separately filed product feature requests during the benchmark refresh.
+does not require a favorable result. The user's subsequent instruction authorizes
+implementing the linked product feature requests in isolated product branches and
+environments while preserving the baseline's installed releases. A matched after
+study follows valid baseline completion and measured feature validation.
 Apply constitution, specification, plan, tasks, implementation and convergence
 in sequence. Run AEE explicitly after specification, plan, tasks and implementation;
 compose Evaluator results and record routing. Optional hook registration is not
@@ -68,4 +70,4 @@ Amend through a reviewed commit with rationale and semantic version increment.
 Every PR MUST report compliance and deviations. The provided implementation brief
 defines scope; this constitution constrains evidence and execution, not user intent.
 
-**Version**: 1.4.0 | **Ratified**: 2026-09-17 | **Last Amended**: 2026-10-18
+**Version**: 1.4.1 | **Ratified**: 2026-09-17 | **Last Amended**: 2026-10-18

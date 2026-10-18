@@ -65,6 +65,7 @@ def execute(status,latency,context,transport,preparation_id=2):
         setups=[transport,latency,*sorted(p for p in representative.iterdir() if p.is_dir()),
                 ROOT/'reports/feasibility/local-20261016',ROOT/'reports/feasibility/qwen38-readiness-20261016',
                 *sorted(ROOT.glob('artifacts/current-workflow-calibration-*')),
+                *sorted(p for p in ROOT.glob('artifacts/current-representative-*/*') if (p/'calls').is_dir()),
                 *sorted(ROOT.glob('artifacts/current-action-transport-*')),
                 *sorted(ROOT.glob('artifacts/current-latency-calibration-*'))]
         for path in setups:
@@ -81,7 +82,7 @@ def main():
     parser=argparse.ArgumentParser();parser.add_argument('--status',type=Path,required=True)
     parser.add_argument('--preparation-id',type=int,required=True)
     args=parser.parse_args()
-    execute(args.status,ROOT/'artifacts/current-latency-calibration-02',ROOT/'artifacts/current-context-calibration-03',ROOT/'artifacts/current-action-transport-01',args.preparation_id)
+    execute(args.status,ROOT/'artifacts/current-latency-calibration-02',ROOT/'artifacts/current-context-calibration-03',ROOT/'artifacts/current-action-transport-02',args.preparation_id)
 
 
 if __name__=='__main__':main()

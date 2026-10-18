@@ -39,7 +39,7 @@ CONFIG = {**runner.CONFIG, "seeds": SEEDS, "model": MODEL, "url": URL,
           "paid_calls_permitted": False, "physical_call_timeout": 180,
           "stage_seconds": 14400, "primary_calls": 208, "context": 32768,
           "max_output": 8192, "token_cap": 24000000, "enable_thinking": False,
-          "study_id": "current-study-02", "action_protocol": "native-json-schema-v1",
+          "study_id": "current-study-02", "action_protocol": "native-json-schema-v2",
           "claim_rubric": "Final explicit all-requirements completion declarations only; missing/ambiguous = unknown. Independently grade exact submitted snapshot. AEE findings are not truth labels.",
           "scenario_prices_per_million":{"input":"1","cached_input":"0.10","output":"4"},
           "scenario_note":"Illustrative USD/million token sensitivity calculation, not a provider quote, bill, GPU/energy/human cost or a claim that hosted inference has the same behavior."}
@@ -299,6 +299,7 @@ def run(out, preflight):
     transport_freeze=json.loads((preflight/'transport/freeze.json').read_text())
     if (not transport.get('passed') or transport.get('physical_calls')!=3
         or {v['action'] for v in transport.get('checks',[])}!={'shell','done','draft'}
+        or not all(v.get('strict_claims_loaded') is True for v in transport.get('checks',[]) if v['action'] in ('done','draft'))
         or transport_freeze['hashes'].get('scripts/action_protocol.py')!=hashlib.sha256((ROOT/'scripts/action_protocol.py').read_bytes()).hexdigest()):
         raise ValueError('native action transport readiness missing or changed')
     workflow_freeze=json.loads((preflight/"workflow/freeze.json").read_text())
@@ -338,6 +339,7 @@ def run(out, preflight):
         "scripts/repeated_local.py":{"Provider","Session","do_assessment","compact_assessment","tests_for","ProjectSandbox","phase_plan","phase_instructions"},
         "scripts/long_horizon.py":{"Sandbox","skill"},
         "scripts/runtime_checks.py":{"RuntimeIntervention","RuntimeWatchdog","validate_capacity"},
+        "scripts/action_protocol.py":{"action_response_format"},
         "scripts/readiness_gate.py":{"validate_representative"},
         "scripts/local_feasibility.py":{"NoRedirect"},
         "src/benchmark_runner/workflow.py":{"assess","grounded_claims"},

@@ -18,7 +18,7 @@ from long_horizon import Sandbox, CLAIMS, skill, PHASE_GOALS
 from report_long_horizon import source_digest
 from context_window import select_context
 from runtime_checks import RuntimeWatchdog, RuntimeIntervention, validate_capacity
-from action_protocol import ACTION_RESPONSE_FORMAT
+from action_protocol import action_response_format
 
 ROOT = Path(__file__).resolve().parents[1]
 TASK = ROOT / 'benchmarks/repeated_local'
@@ -159,7 +159,7 @@ class Provider:
         if remaining<self.timeout: raise TimeoutError('insufficient_request_time_reservation')
         request=dict(model='long-coder',messages=chosen,temperature=0.6,top_p=0.95,top_k=20,min_p=0.0,
                      presence_penalty=0.0,repeat_penalty=1.0,seed=self.seed,max_tokens=CONFIG['max_output'],
-                     cache_prompt=bool(self.calls),response_format=ACTION_RESPONSE_FORMAT,
+                     cache_prompt=bool(self.calls),response_format=action_response_format(getattr(self,'requires_claims',False)),
                      chat_template_kwargs={'enable_thinking':CONFIG.get('enable_thinking',True)})
         record=dict(stage=stage,phase=phase,started_at=utc(),request=request,usage=None,unknown_reason='pending',
                     preflight_input_tokens=count,max_output=CONFIG['max_output'],removed_history_messages=removed,
@@ -200,6 +200,7 @@ class Session:
         self.history=[];self.tools=0
         self.watchdog=None
     def phase(self,phase,instructions,spec,stage,limit,deadline,claims=False):
+        self.provider.requires_claims=claims
         messages=[dict(role='system',content=COMMON+'\nCURRENT PHASE: '+phase+'\n'+instructions+('\n'+CLAIMS if claims else '')),
                   dict(role='user',content=spec)] + list(self.history)
         messages.append(dict(role='user',content=f'Begin the current {phase} phase now. You have at most {limit} actions in this phase, including done. Complete its requested deliverable, then return done.'))

@@ -14,7 +14,7 @@ ROOT=Path(__file__).resolve().parents[1]
 FILES=("test_lifecycle.py","test_local_provider.py","test_assessment_contract.py",
        "test_current_local.py","test_report_current.py","test_project_assessment.py",
        "test_current_report_audit.py","test_study_investigation.py","test_runtime_checks.py",
-       "test_representative_readiness.py")
+       "test_representative_readiness.py","test_claim_action_contract.py")
 
 
 def main():
