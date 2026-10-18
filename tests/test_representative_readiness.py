@@ -74,3 +74,34 @@ def test_same_phase_instructions_used_for_readiness_and_scoring():
     text=runner.phase_instructions('cachetools','spec_kit','implement','fixture requirements','fixture completion')
     assert '/testbed/src/cachetools' in text and 'fixture requirements' in text
     assert runner.phase_plan('baseline',1)==['solve']
+
+
+def test_corrected_supervisor_stops_before_children_on_failed_preparation(tmp_path,monkeypatch):
+    import run_corrected_study as supervisor
+    monkeypatch.setattr(supervisor,'ROOT',tmp_path)
+    monkeypatch.setattr(supervisor.subprocess,'run',lambda *a,**k:pytest.fail('no child/model command allowed'))
+    for name,file in (('latency','calibration.json'),('context','result.json'),('transport','result.json')):
+        folder=tmp_path/name;folder.mkdir();(folder/file).write_text(json.dumps(dict(passed=name!='transport')))
+    status=tmp_path/'status.json'
+    with pytest.raises(ValueError,match='preparation failed'):
+        supervisor.execute(status,tmp_path/'latency',tmp_path/'context',tmp_path/'transport')
+    state=json.loads(status.read_text())
+    assert state['stage']=='intervention_required' and not state['complete'] and state['commands']==[]
+
+
+def test_successful_child_exit_cannot_bypass_missing_readiness_artifacts(tmp_path,monkeypatch):
+    import run_corrected_study as supervisor
+    from types import SimpleNamespace
+    monkeypatch.setattr(supervisor,'ROOT',tmp_path)
+    commands=[]
+    def child(argv,**kwargs):
+        commands.append(argv)
+        return SimpleNamespace(returncode=0)
+    monkeypatch.setattr(supervisor.subprocess,'run',child)
+    for name,file in (('latency','calibration.json'),('context','result.json'),('transport','result.json')):
+        folder=tmp_path/name;folder.mkdir();(folder/file).write_text(json.dumps(dict(passed=True)))
+    status=tmp_path/'status.json'
+    with pytest.raises(FileNotFoundError):
+        supervisor.execute(status,tmp_path/'latency',tmp_path/'context',tmp_path/'transport')
+    assert len(commands)==3 and not any('scripts/current_local.py' in c and 'run' in c for c in commands)
+    assert json.loads(status.read_text())['stage']=='intervention_required'
