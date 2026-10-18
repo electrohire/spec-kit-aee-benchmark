@@ -1,29 +1,31 @@
 """Native actions, with explicit claim-bearing phase contracts.
 
-The ordinary grammar stays identical to the measured latency request. The claim
+Every tool branch requires its actual arguments before generation. The claim
 grammar constrains shape, never truth: strict engine loading and evidence checks
 still run on every returned claim. Empty evidence and draft statuses remain valid.
 """
 import copy
 import base64
-import json
 import shlex
 from pathlib import PurePosixPath, PureWindowsPath
 
 MAX_WRITE_BYTES = 64 * 1024
-ACTION_RESPONSE_FORMAT = {
-    'type': 'json_schema',
-    'json_schema': {'name': 'benchmark_action', 'strict': True, 'schema': {
-        'type': 'object', 'properties': {
-            'action': {'type': 'string', 'enum': ['shell', 'write_file', 'done', 'draft']},
-            'command': {'type': 'string'}, 'summary': {'type': 'string'},
-            'path': {'type': 'string'}, 'content': {'type': 'string', 'maxLength': MAX_WRITE_BYTES},
-            'completion_asserted': {'type': ['boolean', 'null']},
-            'claims': {'type': 'object', 'additionalProperties': True},
-            'artifacts': {'type': 'array', 'items': {'type': 'string'}},
-        }, 'required': ['action'], 'additionalProperties': False,
-    }},
-}
+SHELL_SCHEMA = {'type':'object','properties':{
+    'action':{'const':'shell'},'command':{'type':'string','minLength':1}},
+    'required':['action','command'],'additionalProperties':False}
+WRITE_SCHEMA = {'type':'object','properties':{
+    'action':{'const':'write_file'},'path':{'type':'string','minLength':1},
+    'content':{'type':'string','maxLength':MAX_WRITE_BYTES}},
+    'required':['action','path','content'],'additionalProperties':False}
+TERMINAL_SCHEMA = {'type':'object','properties':{
+    'action':{'type':'string','enum':['done','draft']},'summary':{'type':'string'},
+    'completion_asserted':{'type':['boolean','null']},
+    'claims':{'type':'object','additionalProperties':True},
+    'artifacts':{'type':'array','items':{'type':'string'}}},
+    'required':['action'],'additionalProperties':False}
+ACTION_RESPONSE_FORMAT = {'type':'json_schema','json_schema':{
+    'name':'benchmark_action','strict':True,
+    'schema':{'oneOf':[SHELL_SCHEMA,WRITE_SCHEMA,TERMINAL_SCHEMA]}}}
 
 
 def action_response_format(requires_claims=False):
@@ -47,21 +49,12 @@ def action_response_format(requires_claims=False):
             'type': 'object', 'properties': fields, 'required': list(fields),
             'additionalProperties': False}},
     }, 'required': ['schema_version', 'claims'], 'additionalProperties': False}
-    schema = copy.deepcopy(ACTION_RESPONSE_FORMAT['json_schema']['schema'])
-    terminal = copy.deepcopy(schema)
-    terminal['properties']['action'] = {'type': 'string', 'enum': ['done', 'draft']}
+    terminal = copy.deepcopy(TERMINAL_SCHEMA)
     terminal['properties']['claims'] = bundle
     terminal['required'] = ['action', 'claims']
-    shell = {'type': 'object', 'properties': {
-        'action': {'const': 'shell'}, 'command': {'type': 'string', 'minLength': 1}},
-        'required': ['action', 'command'], 'additionalProperties': False}
     return {'type': 'json_schema', 'json_schema': {
         'name': 'benchmark_claim_action', 'strict': True,
-        'schema': {'oneOf': [shell, {
-            'type': 'object', 'properties': {'action': {'const': 'write_file'},
-                'path': {'type': 'string', 'minLength': 1},
-                'content': {'type': 'string', 'maxLength': MAX_WRITE_BYTES}},
-            'required': ['action', 'path', 'content'], 'additionalProperties': False}, terminal]}}}
+        'schema': {'oneOf': [copy.deepcopy(SHELL_SCHEMA),copy.deepcopy(WRITE_SCHEMA),terminal]}}}
 
 
 _WRITE_SCRIPT = '''import base64,hashlib,json,sys

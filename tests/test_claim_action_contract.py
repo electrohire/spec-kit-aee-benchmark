@@ -43,8 +43,9 @@ def test_malformed_claims_rejected_before_inference(field,value):
                             action_response_format(True)['json_schema']['schema'])
 
 
-def test_shell_is_available_without_claims_and_cannot_omit_command():
-    schema=action_response_format(True)['json_schema']['schema']
+@pytest.mark.parametrize('claims',[True,False])
+def test_shell_is_available_without_claims_and_cannot_omit_command(claims):
+    schema=action_response_format(claims)['json_schema']['schema']
     jsonschema.validate(dict(action='shell',command='python -m pytest -q'),schema)
     for bad in (dict(action='shell'),dict(action='shell',command=''),dict(action='tool_call')):
         with pytest.raises(jsonschema.ValidationError):jsonschema.validate(bad,schema)

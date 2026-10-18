@@ -55,10 +55,11 @@ def test_shell_compatibility_and_unsupported_actions():
 def test_native_schema_allows_literal_write_in_every_phase(claims):
     schema=action_response_format(claims)['json_schema']['schema']
     jsonschema.validate(dict(action='write_file',path='source.py',content='literal'),schema)
-    if claims:
-        for missing in ('content','path'):
-            action=dict(action='write_file',path='source.py',content='literal');del action[missing]
-            with pytest.raises(jsonschema.ValidationError):jsonschema.validate(action,schema)
+    for missing in ('content','path'):
+        action=dict(action='write_file',path='source.py',content='literal');del action[missing]
+        with pytest.raises(jsonschema.ValidationError):jsonschema.validate(action,schema)
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(dict(action='write_file',path='source.py',summary='not actual file content'),schema)
 
 
 def test_repeated_writes_still_trigger_unchanged_guard(tmp_path):

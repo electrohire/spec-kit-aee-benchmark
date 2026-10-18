@@ -2,6 +2,11 @@
 
 ## Unreleased — authorized corrected study02, 2026-10-18
 
+- Protocolv4 requires shell command and write_file path/content directly in both
+  native phase grammars. Fresh transport03 caught v3's optional content field
+  before execution; retain its two calls/221known tokens. No retry or scoring
+  success is inferred. A new frozen candidate and complete probes remain required.
+
 - Preserve readiness05's305calls and the stopped identical-action loop. Add a
   shared native literal write_file action to avoid nested shell/Python heredoc
   quoting, with confined bounded UTF-8 data and retained original actions/receipts.

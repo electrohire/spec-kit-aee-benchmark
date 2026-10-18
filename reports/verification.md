@@ -1,5 +1,20 @@
 # Requirement-to-evidence matrix
 
+## Required native tool arguments —protocolv4
+
+Fresh transport03 stopped before a write when ordinary v3 permitted a summary
+instead of required content. Its two calls/221known native tokens are retained;
+see reports/investigation/current-action-transport-03-20261018/README.md.
+Both ordinary and claim-bearing native grammars now require the exact tool fields
+in disjoint branches. The unchanged host checks still reject malformed actions.
+
+The current focused audit
+reports/aee-validation/current-20261018-literal-write-03/summary.json records83
+passing local cases, six narrow machine observations, zero evidence findings and
+one actual AEE/Evaluator result, iterate. Historical audits01/02 remain valid
+observations of their own recorded executions, not the current source snapshot.
+Fresh native transport/latency/readiness and efficacy remain unestablished.
+
 ## Literal-write correction —2026-10-18
 
 Readiness05 stopped before scoring on repeated incomplete heredoc commands;
