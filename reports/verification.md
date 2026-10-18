@@ -1,5 +1,19 @@
 # Requirement-to-evidence matrix
 
+## Corrected study02 admission
+
+[Protocol v2](../benchmarks/current_local/PROTOCOL-v2.md) defines a new prospective
+freeze. [Admission/supervisor tests](../tests/test_representative_readiness.py)
+reject incomplete coverage, zero implementation calls, unexercised repairs,
+budget/configuration/controller drift, role/order mismatches and altered evidence.
+They also prove child exit0 cannot bypass absent readiness artifacts and failed
+preparation cannot launch child/model commands.
+[Actual AEE validation](aee-validation/current-20261018-rerun-02/summary.json)
+records79 passing local tests and10 narrow machine observations with no evidence
+findings; it preserves unrecorded human acceptance. Representative GPU readiness
+and scored study02 are separate, still-required empirical evidence, not implied
+by these offline checks.
+
 ## 2026-10-18 harness validity and runtime intervention
 
 The [investigation](investigation/current-study-01-20261018/README.md) recomputes

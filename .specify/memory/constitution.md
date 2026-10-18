@@ -33,7 +33,9 @@ grading MUST run separately after solver completion. The tutorial is illustrativ
 ## Experiment Constraints
 Use the 20-task, three-repeat, three-arm pilot. The combined treatment cannot
 isolate Evaluator from AEE. Publish no private source material or credentials.
-No LinkedIn posting, leaderboard submission or PR merge is authorized.
+No LinkedIn posting, leaderboard submission, email publication or product release
+is authorized. On 2026-10-18 the user authorized merging related green PRs and
+rerunning the study under a fresh, validated prospective freeze.
 The user-authorized GPU handoff also permits a separately frozen free-local
 Exercism exploration. It MUST NOT be presented as execution of that pilot or
 full Spec Kit integration. Report document adaptation, convenience selection,
@@ -48,6 +50,14 @@ version 1.1.0; this amendment records scope and does not rewrite that historical
 The user now authorizes a fresh two-project/two-seed staged comparison and a separate identical-start repair diagnostic with clean controls. Calibrate full workflows and runtime limits before freezing. Unknown native usage remains null, but conservative maximum-call reservations may enforce budgets without terminating every later stage. Preserve previous failed runs; do not update the email or article based on hoped-for improvements.
 
 ## Development Workflow
+
+The 2026-10-18 corrected study must first pass native action transport, matched
+timing/cap checks and all six project×treatment representative readiness cases,
+including actual implementation, public verification and exercised injected repair.
+Keep runtime interventions active and preserve prior failures/costs. A stopped
+scored attempt cannot be resumed with changed code/settings. This authorization
+does not require a favorable result and does not authorize implementing the
+separately filed product feature requests during the benchmark refresh.
 Apply constitution, specification, plan, tasks, implementation and convergence
 in sequence. Run AEE explicitly after specification, plan, tasks and implementation;
 compose Evaluator results and record routing. Optional hook registration is not
@@ -58,4 +68,4 @@ Amend through a reviewed commit with rationale and semantic version increment.
 Every PR MUST report compliance and deviations. The provided implementation brief
 defines scope; this constitution constrains evidence and execution, not user intent.
 
-**Version**: 1.3.0 | **Ratified**: 2026-09-17 | **Last Amended**: 2026-09-17
+**Version**: 1.4.0 | **Ratified**: 2026-09-17 | **Last Amended**: 2026-10-18
