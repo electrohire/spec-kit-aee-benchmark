@@ -48,3 +48,12 @@ coverage and 0-inference repairs prevent a completed-workflow efficacy conclusio
 - Observe basic artifact state at half/three-quarter phase slices; preserve the unchanged physical call limit and final semantic limitations.
 - Focused actual AEE/Evaluator audit literal-write-04:92tests,6observations,0evidence findings,1composed result,iterate. Human acceptance remains unrecorded.
 - Full Ubuntu CI, exact-green merge and fresh all-six-case readiness still required before scoring. No result/savings claim is completed here.
+
+
+### Phase-control hygiene (readiness07 investigation)
+
+- Reproduce prior-phase budget/final-step controls in the retained tasks request.
+- Tag/retire host phase controls, keep data/claims/errors with provenance, enforce
+  phase/stage identity before inference and keep diagnostics ineligible as solver evidence.
+- Retain81calls/1,798,706native tokens and the honest incomplete handoff. A fresh
+  candidate still needs all six readiness cases; no success is inferred here.
