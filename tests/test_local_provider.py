@@ -72,6 +72,13 @@ def test_check_local_server_rejects_wrong_checkpoint(monkeypatch):
         check_local_server()
 
 
+def test_router_can_list_selected_model_after_other_models(monkeypatch):
+    monkeypatch.setenv("LOCAL_MODEL_NAME", "qwen3-8b-local")
+    monkeypatch.setattr("urllib.request.urlopen", _route(
+        {"data": [{"id": "other"}, {"id": "qwen3-8b-local"}]}, {}))
+    assert check_local_server() == "qwen3-8b-local"
+
+
 def test_check_local_server_fail_closed_when_down(monkeypatch):
     monkeypatch.setenv("LOCAL_MODEL_NAME", "qwen3-8b-local")
     def fail(*a, **k):
@@ -108,6 +115,28 @@ def test_query_zero_cost_and_openai_params_omitted(monkeypatch):
     assert event["provider"] == "local"
     assert event["price_snapshot_id"] == "local-inference"
     validate_call(event)  # schema accepts the local cost basis
+
+
+def test_local_identity_must_match_frozen_config(monkeypatch):
+    monkeypatch.setenv("LOCAL_MODEL_NAME", "unfrozen-model")
+    store = FakeStore()
+    with pytest.raises(ValueError, match="frozen configuration"):
+        LocalProvider(CFG, store, Budget(store, "100", "25"), IDENTITY)
+    assert store.log == []
+
+
+def test_wrong_response_model_rejected_but_native_usage_retained(monkeypatch):
+    from benchmark_runner.provider import ProviderError
+    monkeypatch.setenv("LOCAL_MODEL_NAME", CFG["model"])
+    monkeypatch.setattr("urllib.request.urlopen", _route(
+        {"data": [{"id": CFG["model"]}]}, _chat_payload("wrong-model")))
+    store = FakeStore()
+    provider = LocalProvider(CFG, store, Budget(store, "100", "25"), IDENTITY)
+    with pytest.raises(ProviderError):
+        provider.query([{"role":"user", "content":"hi"}], "repair", 30)
+    event = store.events("calls")[0]
+    assert event["input_tokens"] == 10 and event["output_tokens"] == 2
+    assert event["error"] == "ModelIdentityMismatch"
     budget_events = [e for k, e in store.log if k == "budget"]
     assert [e["status"] for e in budget_events] == ["reserved", "settled"]
     assert all(Decimal(e["amount"]) == 0 for e in budget_events)

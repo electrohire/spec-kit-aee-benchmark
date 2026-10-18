@@ -1,0 +1,62 @@
+{
+  "budget_debit": 10053,
+  "ended_at": "2026-10-17T02:15:24.201660+00:00",
+  "max_output": 4096,
+  "original_sha256": "821c6c95877253873ebf06422e8012250bbd5dceca52c6ad9e7dbdd4c7652f9b",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 8287,
+  "preflight_seconds": 0.14000000013038516,
+  "removed_history_messages": 0,
+  "request_seconds": 81.09400000004098,
+  "request_sha256": "49aad230459f8b08a88f16c82dff947e4416ade547afd75694e3fe3d90b16257",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cat > /testbed/src/cachetools/tagged.py << 'EOF'\\n\\\"\\\"\\\"Tagged cache built on top of :class:`~cachetools.LRUCache`.\\n\\nProvides :class:`TaggedCache`, a bounded LRU cache whose entries carry a\\nfinite set of string tags.  Entries can be looked up by key (returning a\\ndetached deep copy) or removed in bulk by tag via :meth:`TaggedCache.invalidate`.\\n\\\"\\\"\\\"\\n\\nimport collections\\nimport copy\\n\\nfrom . import LRUCache\\n\\n_SENTINEL = object()\\n\\n\\ndef _normalize_tags(tags):\\n    \\\"\\\"\\\"Validate *tags* and return a tuple of the unique string tags.\\n\\n    Raises ``ValueError`` if *tags* is a bare string or contains a non-string\\n    entry.  The iterable is fully consumed (and must be finite) before any\\n    mutation of the cache is allowed to happen.\\n    \\\"\\\"\\\"\\n    if isinstance(tags, (str, bytes)):\\n        raise ValueError(\\\"tags must be an iterable of strings, not %r\\\" % type(tags).__name__)\\n    try:\\n        iterator = iter(tags)\\n    except TypeError:\\n        raise ValueError(\\\"tags must be an iterable of strings, got %r\\\" % type(tags).__name__)\\n    seen = set()\\n    result = []\\n    for tag in iterator:\\n        if not isinstance(tag, str):\\n            raise ValueError(\\\"tags must be an iterable of strings, got %r\\\" % (tag,))\\n        if tag not in seen:\\n            seen.add(tag)\\n            result.append(tag)\\n    return tuple(result)\\n\\n\\nclass _TaggedLRUCache(LRUCache):\\n    \\\"\\\"\\\"LRUCache that records evicted keys so tag memberships can be pruned.\\\"\\\"\\\"\\n\\n    def __init__(self, maxsize):\\n        LRUCache.__init__(self, maxsize)\\n        self._evicted = []\\n\\n    def popitem(self):\\n        key, value = LRUCache.popitem(self)\\n        self._evicted.append(key)\\n        return (key, value)\\n\\n\\nclass TaggedCache:\\n    \\\"\\\"\\\"A bounded LRU cache with per-entry string tags.\\n\\n    Values are deep-copied on input and on retrieval, so callers can never\\n    observe or mutate the stored state through a returned reference.  Each\\n    value costs exactly one capacity slot regardless of its size.\\n\\n    \\\"\\\"\\\"\\n\\n    def __init__(self, maxsize):\\n        if isinstance(maxsize, bool) or not isinstance(maxsize, int) or maxsize < 1:\\n            raise ValueError(\\\"maxsize must be a positive integer, got %r\\\" % (maxsize,))\\n        self.__maxsize = maxsize\\n        self.__cache = _TaggedLRUCache(maxsize)\\n        # tag -> set of keys currently carrying that tag\\n        self.__tags = collections.defaultdict(set)\\n\\n    @property\\n    def maxsize(self):\\n        \\\"\\\"\\\"The maximum number of entries the cache can hold.\\\"\\\"\\\"\\n        return self.__maxsize\\n\\n    def __len__(self):\\n        \\\"\\\"\\\"Number of live entries currently cached.\\\"\\\"\\\"\\n        return len(self.__cache)\\n\\n    def __contains__(self, key):\\n        return key in self.__cache\\n\\n    def put(self, key, value, tags=()):\\n        \\\"\\\"\\\"Insert or replace *key* with a deep copy of *value*.\\n\\n        *tags* must be a finite iterable of strings; a bare string is\\n        rejected.  Duplicates are ignored.  If the key already exists, its\\n        old tag memberships are replaced and its LRU recency is refreshed.\\n\\n        \\\"\\\"\\\"\\n        # Validate and normalize tags before touching any state, so that an\\n        # invalid replacement leaves the old value/tags/recency unchanged.\\n        new_tags = _normalize_tags(tags)\\n        cache = self.__cache\\n        evicted = cache._evicted\\n        if key in cache:\\n            # drop old tag memberships before storing the new value\\n            for tag in self.__tags.get(key, ()):\\n                self.__tags[tag].discard(key)\\n            # prune now-empty tag buckets\\n            for tag in list(self.__tags):\\n                if not self.__tags[tag]:\\n                    del self.__tags[tag]\\n            cache[key] = copy.deepcopy(value)\\n        else:\\n            if len(cache) == cache.maxsize:\\n                # insertion will evict exactly the least-recently-used key\\n                evicted.clear()\\n                cache[key] = copy.deepcopy(value)\\n                for old_key in evicted:\\n                    self.__forget(old_key)\\n            else:\\n                cache[key] = copy.deepcopy(value)\\n        for tag in new_tags:\\n            self.__tags[tag].add(key)\\n\\n    def __forget(self, key):\\n        for tag in self.__tags.get(key, ()):\\n            self.__tags[tag].discard(key)\\n        self.__tags.pop(key, None)\\n\\n    def get(self, key, default=_SENTINEL):\\n        \\\"\\\"\\\"Return a detached deep copy of the value stored under *key*.\\n\\n        Raises ``KeyError`` if *key* is not cached.  A successful lookup\\n        refreshes the entry's LRU recency.\\n\\n        \\\"\\\"\\\"\\n        if key not in self.__cache:\\n            if default is _SENTINEL:\\n                raise KeyError(key)\\n            return default\\n        value = self.__cache[key]  # refreshes LRU recency\\n        return copy.deepcopy(value)\\n\\n    def invalidate(self, tag):\\n        \\\"\\\"\\\"Remove every currently cached entry carrying *tag*.\\n\\n        Returns the number of entries removed.  Unknown tags remove nothing\\n        and return ``0``.\\n\\n        \\\"\\\"\\\"\\n        keys = set(self.__tags.get(tag, ()))\\n        if not keys:\\n            return 0\\n        for key in keys:\\n            del self.__cache[key]\\n        return len(keys)\\n\\n    def pop(self, key, default=_SENTINEL):\\n        \\\"\\\"\\\"Remove *key* and return a deep copy of its value.\\\"\\\"\\\"\\n        if key not in self.__cache:\\n            if default is _SENTINEL:\\n                raise KeyError(key)\\n            return default\\n        value = self.__cache[key]\\n        del self.__cache[key]\\n        return value\\n\\n    def clear(self):\\n        \\\"\\\"\\\"Remove all entries and tag memberships.\\\"\\\"\\\"\\n        self.__cache.clear()\\n        self.__tags.clear()\\n\\n    def __repr__(self):\\n        return \\\"%s(maxsize=%r, currsize=%r)\\\" % (\\n            type(self).__name__,\\n            self.__maxsize,\\n            len(self.__cache),\\n        )\\nEOF\\nPYTHONPATH=src:. python -c \\\"from cachetools.tagged import TaggedCache; c=TaggedCache(2); c.put('a',1,['x']); print(c.get('a'), c.invalidate('x'), len(c))\\\"\"}",
+          "reasoning_sha256": "bce58f39cdfa78e110b4558f9a17218b525e759aa39d44ca940aa000d0a87d81",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792203324,
+    "id": "chatcmpl-sjBzmlqB4xjwCvGKyP9oLikAlDVdgc6o",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 6572,
+      "predicted_ms": 79205.842,
+      "predicted_n": 1766,
+      "predicted_per_second": 22.283709830393573,
+      "predicted_per_token_ms": 44.87583116147309,
+      "prompt_ms": 1834.626,
+      "prompt_n": 1715,
+      "prompt_per_second": 934.7954296952076,
+      "prompt_per_token_ms": 1.0697527696793003
+    },
+    "usage": {
+      "completion_tokens": 1766,
+      "prompt_tokens": 8287,
+      "prompt_tokens_details": {
+        "cached_tokens": 6572
+      },
+      "total_tokens": 10053
+    }
+  },
+  "seconds": 81.09400000004098,
+  "stage": 1,
+  "started_at": "2026-10-17T02:14:03.104612+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1766,
+    "prompt_tokens": 8287,
+    "prompt_tokens_details": {
+      "cached_tokens": 6572
+    },
+    "total_tokens": 10053
+  }
+}

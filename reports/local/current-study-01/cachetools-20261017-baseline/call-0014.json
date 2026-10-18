@@ -1,0 +1,62 @@
+{
+  "budget_debit": 16683,
+  "ended_at": "2026-10-17T02:22:25.635361+00:00",
+  "max_output": 4096,
+  "original_sha256": "75bb3a3a0355bc376e6bb027b90640217162a3486dabc5592a2d2bc6096a5d33",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 12675,
+  "preflight_seconds": 0.10899999993853271,
+  "removed_history_messages": 0,
+  "request_seconds": 186.8279999999795,
+  "request_sha256": "ca28fe916496b6b8cbb5b03522caf8a8ccdc9d539503255c03b8afed86a5220b",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cat > /testbed/tests/test_tagged.py << 'EOF'\\nimport copy\\n\\nimport pytest\\n\\nfrom cachetools.tagged import TaggedCache\\n\\n\\nclass TestR01:\\n    def test_basic_put_get(self):\\n        c = TaggedCache(3)\\n        c.put('a', 1)\\n        assert c.get('a') == 1\\n        assert len(c) == 1\\n\\n    def test_get_missing_raises_keyerror(self):\\n        c = TaggedCache(3)\\n        with pytest.raises(KeyError):\\n            c.get('nope')\\n\\n    def test_get_missing_with_default(self):\\n        c = TaggedCache(3)\\n        assert c.get('nope', 'dflt') == 'dflt'\\n\\n    def test_value_copied_on_input(self):\\n        c = TaggedCache(3)\\n        v = {'k': [1, 2]}\\n        c.put('a', v)\\n        v['k'].append(3)\\n        assert c.get('a') == {'k': [1, 2]}\\n\\n    def test_value_copied_on_output(self):\\n        c = TaggedCache(3)\\n        c.put('a', {'k': [1, 2]})\\n        out = c.get('a')\\n        out['k'].append(3)\\n        out['new'] = True\\n        assert c.get('a') == {'k': [1, 2]}\\n\\n    def test_detachment(self):\\n        c = TaggedCache(3)\\n        c.put('a', {'k': [1]})\\n        a1 = c.get('a')\\n        a2 = c.get('a')\\n        assert a1 is not a2\\n        assert a1['k'] is not a2['k']\\n\\n    def test_tags_deduplicated(self):\\n        c = TaggedCache(3)\\n        c.put('a', 1, ['x', 'x', 'y', 'y'])\\n        assert c.invalidate('x') == 1\\n        assert len(c) == 0\\n\\n    def test_bare_string_tags_rejected(self):\\n        c = TaggedCache(3)\\n        c.put('a', 1, ['ok'])\\n        with pytest.raises(ValueError):\\n            c.put('b', 2, 'xy')\\n        # state unchanged\\n        assert 'b' not in c\\n        assert c.get('a') == 1\\n        assert c.invalidate('ok') == 1\\n\\n    def test_nonstring_tag_entry_rejected(self):\\n        c = TaggedCache(3)\\n        c.put('a', 1, ['ok'])\\n        with pytest.raises(ValueError):\\n            c.put('b', 2, ['ok', 5])\\n        assert 'b' not in c\\n        assert c.get('a') == 1\\n\\n    def test_noniterable_tags_rejected(self):\\n        c = TaggedCache(3)\\n        with pytest.raises(ValueError):\\n            c.put('a', 1, 42)\\n        assert len(c) == 0\\n\\n    def test_generator_tags_accepted(self):\\n        c = TaggedCache(3)\\n        c.put('a', 1, (t for t in ['x', 'x', 'y']))\\n        assert c.invalidate('y') == 1\\n\\n    def test_no_tags_default(self):\\n        c = TaggedCache(3)\\n        c.put('a', 1)\\n        assert c.get('a') == 1\\n        assert c.invalidate('whatever') == 0\\n\\n    def test_tuple_tags_accepted(self):\\n        c = TaggedCache(3)\\n        c.put('a', 1, ('x', 'y'))\\n        assert c.invalidate('x') == 1\\n\\n\\nclass TestR02:\\n    def test_invalidate_removes_exactly_tagged(self):\\n        c = TaggedCache(5)\\n        c.put('a', 1, ['x'])\\n        c.put('b', 2, ['x', 'y'])\\n        c.put('c', 3, ['y'])\\n        c.put('d', 4)\\n        assert c.invalidate('x') == 2\\n        assert len(c) == 2\\n        assert 'a' not in c and 'b' not in c\\n        assert c.get('c') == 3 and c.get('d') == 4\\n\\n    def test_invalidate_unknown_tag(self):\\n        c = TaggedCache(5)\\n        c.put('a', 1)\\n        assert c.invalidate('ghost') == 0\\n        assert c.get('a') == 1\\n\\n    def test_invalidate_twice(self):\\n        c = TaggedCache(5)\\n        c.put('a', 1, ['x'])\\n        assert c.invalidate('x') == 1\\n        assert c.invalidate('x') == 0\\n\\n    def test_replacement_removes_old_tags(self):\\n        c = TaggedCache(5)\\n        c.put('a', 1, ['old'])\\n        c.put('a', 2, ['new'])\\n        assert c.invalidate('old') == 0\\n        assert c.invalidate('new') == 1\\n        assert len(c) == 0\\n\\n    def test_replacement_with_fewer_tags(self):\\n        c = TaggedCache(5)\\n        c.put('a', 1, ['x', 'y'])\\n        c.put('a', 2, ['y'])\\n        assert c.invalidate('x') == 0\\n        assert c.invalidate('y') == 1\\n\\n    def test_replacement_with_no_tags(self):\\n        c = TaggedCache(5)\\n        c.put('a', 1, ['x'])\\n        c.put('a', 2)\\n        assert c.invalidate('x') == 0\\n        assert c.get('a') == 2\\n\\n    def test_eviction_no_stale_memberships(self):\\n        c = TaggedCache(2)\\n        c.put('a', 1, ['x'])\\n        c.put('b', 2, ['y'])\\n        c.put('c', 3)  # evicts 'a' (LRU)\\n        assert len(c) == 2\\n        assert c.invalidate('x') == 0  # no stale membership for evicted 'a'\\n        # reuse of the same key must not resurrect old tags\\n        c.put('a', 4, ['z'])\\n        assert c.invalidate('x') == 0\\n        assert c.invalidate('z') == 1\\n        assert len(c) == 1\\n\\n    def test_get_refreshes_recency(self):\\n        c = TaggedCache(2)\\n        c.put('a', 1)\\n        c.put('b', 2)\\n        c.get('a')  # 'a' becomes MRU, 'b' becomes LRU\\n        c.put('c', 3)  # evicts 'b'\\n        assert 'b' not in c\\n        assert c.get('a') == 1\\n        assert c.get('c') == 3\\n\\n    def test_len_counts_live_entries(self):\\n        c = TaggedCache(5)\\n        assert len(c) == 0\\n        c.put('a', 1)\\n        c.put('b', 2)\\n        assert len(c) == 2\\n        c.invalidate('a') if 'a' in c else None\\n        c.put('a', 1, ['t'])\\n        c.invalidate('t')\\n        assert len(c) == 1\\n\\n    def test_contains(self):\\n        c = TaggedCache(2)\\n        c.put('a', 1)\\n        assert 'a' in c\\n        assert 'b' not in c\\n\\n\\nclass TestR02Extension:\\n    def test_put_overwrite_refreshes_recency(self):\\n        c = TaggedCache(2)\\n        c.put('a', 1)\\n        c.put('b', 2)\\n        c.put('a', 10)  # overwrite makes 'a' MRU, 'b' LRU\\n        c.put('c', 3)  # evicts 'b'\\n        assert 'b' not in c\\n        assert c.get('a') == 10\\n        assert c.get('c') == 3\\n\\n    def test_put_overwrite_recency_vs_get(self):\\n        c = TaggedCache(2)\\n        c.put('a', 1)\\n        c.put('b', 2)\\n        c.put('a', 10)\\n        c.put('d', 4)  # evicts 'b'\\n        assert 'b' not in c and 'a' in c and 'd' in c\\n\\n\\nclass TestR03:\\n    def test_maxsize_positive_int_ok(self):\\n        assert TaggedCache(1).maxsize == 1\\n        assert TaggedCache(10).maxsize == 10\\n\\n    @pytest.mark.parametrize(\\\"bad\\\", [0, -1, -100, True, False, 1.5, \\\"2\\\", None, [1]])\\n    def test_maxsize_invalid(self, bad):\\n        with pytest.raises(ValueError):\\n            TaggedCache(bad)\\n\\n    def test_invalid_replacement_leaves_state_unchanged(self):\\n        c = TaggedCache(2)\\n        c.put('a', 1, ['x'])\\n        c.put('b', 2)  # 'b' is MRU now\\n        with pytest.raises(ValueError):\\n            c.put('a', 99, 'badtags')\\n        assert c.get('a') == 1\\n        assert c.invalidate('x') == 1  # old tag still there\\n        assert len(c) == 1\\n\\n    def test_invalid_replacement_preserves_recency(self):\\n        c = TaggedCache(2)\\n        c.put('a', 1)\\n        c.put('b', 2)  # 'b' MRU, 'a' LRU\\n        with pytest.raises(ValueError):\\n            c.put('a', 10, [1, 2])  # nonstring tag\\n        # 'a' must still be LRU\\n        c.put('c', 3)  # evicts 'a'\\n        assert 'a' not in c\\n        assert c.get('b') == 2\\n        assert c.get('c') == 3\\n\\n    def test_values_cost_one_slot(self):\\n        c = TaggedCache(2)\\n        c.put('big', [0] * 10000)\\n        c.put('small', 5)\\n        c.put('third', 6)  # evicts 'big'\\n        assert 'big' not in c\\n        assert c.get('small') == 5\\n        assert c.get('third') == 6\\n        assert len(c) == 2\\n\\n    def test_one_slot_capacity(self):\\n        c = TaggedCache(1)\\n        c.put('a', 1)\\n        c.put('b', 2)\\n        assert 'a' not in c\\n        assert c.get('b') == 2\\n\\n\\nclass TestMisc:\\n    def test_pop(self):\\n        c = TaggedCache(3)\\n        c.put('a', {'k': 1}, ['x'])\\n        assert c.pop('a') == {'k': 1}\\n        assert 'a' not in c\\n        assert c.invalidate('x') == 0\\n        with pytest.raises(KeyError):\\n            c.pop('a')\\n        assert c.pop('a', 'd') == 'd'\\n\\n    def test_clear(self):\\n        c = TaggedCache(3)\\n        c.put('a', 1, ['x'])\\n        c.put('b', 2, ['x'])\\n        c.clear()\\n        assert len(c) == 0\\n        assert c.invalidate('x') == 0\\n\\n    def test_repr(self):\\n        c = TaggedCache(2)\\n        c.put('a', 1)\\n        assert 'TaggedCache' in repr(c)\\n\\n    def test_existing_cachetools_apis_preserved(self):\\n        from cachetools import (\\n            Cache, FIFOCache, LFUCache, LRUCache, MRUCache, RRCache,\\n            TTLCache, TLRUCache, cached, cachedmethod,\\n        )\\n        lru = LRUCache(2)\\n        lru['x'] = 1\\n        assert lru['x'] == 1\\n\\n    def test_tagged_uses_lru_semantics(self):\\n        c = TaggedCache(3)\\n        for i in range(5):\\n            c.put('k%d' % i, i)\\n        assert len(c) == 3\\n        assert 'k0' not in c and 'k1' not in c\\n        assert c.get('k2') == 2\\nEOF\\ncd /testbed && PYTHONPATH=src:. python -m pytest tests/test_tagged.py -q 2>&1 | tail -6\"}",
+          "reasoning_sha256": "e3d943b2e737883c6f28cb58693321976652b4c7e279ad1c0e219407ae637c33",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792203745,
+    "id": "chatcmpl-1kvrb29jo5wXrNLHmd7Hnin6w0sshIIT",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 10848,
+      "predicted_ms": 184752.547,
+      "predicted_n": 4008,
+      "predicted_per_second": 21.688469604697794,
+      "predicted_per_token_ms": 46.10744871474919,
+      "prompt_ms": 2013.78,
+      "prompt_n": 1827,
+      "prompt_per_second": 907.2490540178172,
+      "prompt_per_token_ms": 1.102233169129721
+    },
+    "usage": {
+      "completion_tokens": 4008,
+      "prompt_tokens": 12675,
+      "prompt_tokens_details": {
+        "cached_tokens": 10848
+      },
+      "total_tokens": 16683
+    }
+  },
+  "seconds": 186.8279999999795,
+  "stage": 1,
+  "started_at": "2026-10-17T02:19:18.794921+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 4008,
+    "prompt_tokens": 12675,
+    "prompt_tokens_details": {
+      "cached_tokens": 10848
+    },
+    "total_tokens": 16683
+  }
+}

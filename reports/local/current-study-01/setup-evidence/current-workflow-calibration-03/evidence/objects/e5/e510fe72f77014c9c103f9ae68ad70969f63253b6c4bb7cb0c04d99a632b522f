@@ -1,0 +1,172 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md FR-001 and .specify/feature.json written under specs/001-transactions (4165-byte write confirmed)",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "8a9b48c4ad0091c91cf8afc74f855b31268b6736215d4a9a28dfd0d0f5dcc499",
+          "source_id": "8a9b48c4ad0091c91cf8afc74f855b31268b6736215d4a9a28dfd0d0f5dcc499",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "smoke.py does not exist, or add(2,3) does not return 5"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R01",
+      "stage": "created",
+      "status": "draft",
+      "text": "smoke.py is created exposing add(a,b) that returns a+b",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md FR-002 plus P2 user story and edge cases cover negatives, zero, and float sums",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "8a9b48c4ad0091c91cf8afc74f855b31268b6736215d4a9a28dfd0d0f5dcc499",
+          "source_id": "8a9b48c4ad0091c91cf8afc74f855b31268b6736215d4a9a28dfd0d0f5dcc499",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "add(-7,-2) != -9, or add(0,0) != 0, or add(1.5,2.25) != 3.75"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R02",
+      "stage": "created",
+      "status": "draft",
+      "text": "add(a,b) supports negative integers, zero, and floats",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01",
+        "R02"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md FR-003 and P3 user story require added, runnable, passing tests; SC-002 requires 0 failures",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "8a9b48c4ad0091c91cf8afc74f855b31268b6736215d4a9a28dfd0d0f5dcc499",
+          "source_id": "8a9b48c4ad0091c91cf8afc74f855b31268b6736215d4a9a28dfd0d0f5dcc499",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "no tests added, or the test suite run reports failures"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R03",
+      "stage": "created",
+      "status": "draft",
+      "text": "automated tests for add(a,b) are added and run",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md FR-004 encodes the no-TinyDB-modification constraint",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "8a9b48c4ad0091c91cf8afc74f855b31268b6736215d4a9a28dfd0d0f5dcc499",
+          "source_id": "8a9b48c4ad0091c91cf8afc74f855b31268b6736215d4a9a28dfd0d0f5dcc499",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "git diff shows changes under tinydb/ or tests/ belonging to upstream TinyDB"
+      ],
+      "id": "R04",
+      "kind": "requirement",
+      "source_ref": "milestone constraint: Do not modify TinyDB",
+      "stage": "created",
+      "status": "draft",
+      "text": "the upstream tinydb package and its tests are not modified",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: file listing shows only spec.md and checklists/requirements.md under specs/001-transactions plus .specify/feature.json",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "235362ecc5ea4bfd41af4d4c89ee739e5fd4b892b06434781f0c157eea8b2e5c",
+          "source_id": "235362ecc5ea4bfd41af4d4c89ee739e5fd4b892b06434781f0c157eea8b2e5c",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "workflow artifacts appear outside specs/001-transactions or become bloated/placeholder-only"
+      ],
+      "id": "R05",
+      "kind": "requirement",
+      "source_ref": "milestone constraint: Keep workflow artifacts concise",
+      "stage": "created",
+      "status": "draft",
+      "text": "workflow artifacts stay concise under specs/001-transactions",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md FR-006 and Assumptions exclude service/CLI/deployment",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "8a9b48c4ad0091c91cf8afc74f855b31268b6736215d4a9a28dfd0d0f5dcc499",
+          "source_id": "8a9b48c4ad0091c91cf8afc74f855b31268b6736215d4a9a28dfd0d0f5dcc499",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "a service, CLI, or deployment artifact is introduced"
+      ],
+      "id": "R06",
+      "kind": "requirement",
+      "source_ref": "milestone constraint: No service or deployment",
+      "stage": "created",
+      "status": "draft",
+      "text": "no service or deployment is in scope",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

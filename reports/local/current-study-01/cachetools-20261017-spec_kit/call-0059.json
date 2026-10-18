@@ -1,0 +1,62 @@
+{
+  "budget_debit": 27996,
+  "ended_at": "2026-10-17T15:01:41.177371+00:00",
+  "max_output": 4096,
+  "original_sha256": "85274972933095ba1855e05e8026855bea90f4965217ad8b914226886acbbac5",
+  "phase": "specify",
+  "preflight_http_requests": 16,
+  "preflight_input_tokens": 27099,
+  "preflight_seconds": 1.625,
+  "removed_history_messages": 48,
+  "request_seconds": 64.79700000002049,
+  "request_sha256": "147d8e08c2ab3d50c5c8ea3c4341f3e34e69671c95f43eec2c57b23846e7088d",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "<tool_call>\n{\"function=Bash}\n<parameter=command>\ncd /testbed && python - <<'PY'\np=\"specs/001-transactions/spec.md\"\ns=open(p).read()\nanchor=\"\\n---\\n\\n### Edge Cases\\n\"\nassert anchor in s\nstory='''\n---\n\n### User Story 4 - Bulk invalidation, capacity resizing, and generator tags (Priority: P2)\n\nA user removes many tagged entries at once with invalidate_many, choosing\nwhether an entry must carry any of the supplied tags or all of them. The user\ncan also change the cache capacity at runtime with resize: shrinking evicts\nthe least-recently-used entries while growing never evicts, and a failed\nresize leaves the cache exactly as it was. Tags may be supplied as\none-shot iterators such as generators, which the cache consumes exactly\nonce. Retrieved values stay fully detached across repeated gets and puts,\nincluding nested lists and dicts.\n\n**Why this priority**: Bulk invalidation and resizing extend the core\ntag/LRU value to real workloads; generator tags and repeated-get detachment\nclose correctness gaps in the core contract. They build directly on the\nP1/P2 foundation but are independently testable once that foundation exists.\n\n**Independent Test**: Fully testable by putting a small set of tagged\nentries, calling invalidate_many in both modes and checking the removed\ncounts and survivors; by resizing down and up and checking which entries\nsurvived, their order, and the reported maxsize; by passing a generator as\ntags and confirming it was consumed exactly once; and by mutating returned\nvalues across repeated gets and puts.\n\n**Acceptance Scenarios**:\n\n1. **Given** entries tagged (a), (b), and (a, b), **When**\n   invalidate_many([a, b]) with the default mode is called, **Then** all\n   three entries are removed and the return value is 3.\n2. **Given** entries tagged (a), (b), and (a, b), **When**\n   invalidate_many([a, b], mode=\"all\") is called, **Then** only the (a, b)\n   entry is removed and the return value is 1.\n3. **Given** any non-empty cache, **When** invalidate_many is called with an\n   empty tag collection (either mode), **Then** zero entries are removed and\n   no state changes.\n4. **Given** a cache of maxsize 3 with three entries, **When** resize(2) is\n   called, **Then** the least-recently-used entry is evicted, the two\n   survivors keep their relative recency order, and the reported maxsize is\n   2; when resize(5) is then called, **Then** no entry is evicted and the\n   reported maxsize is 5.\n5. **Given** a cache, **When** resize is called with an invalid value (zero,\n   negative, bool, non-integer), **Then** ValueError is raised and every\n   entry, its tags, its recency order, and the maxsize are unchanged.\n6. **Given** a put that receives a generator as tags, **When** the put\n   completes, **Then** the generator is fully consumed exactly once and the\n   entry carries exactly the tags it yielded (deduplicated); a failed put\n   consumes nothing further after its validation error.\n7. **Given** a stored nested value, **When** get is called repeatedly and\n   each returned copy is mutated (including nested lists and dicts), and\n   when the key is re-put with a mutated original, **Then** every returned\n   copy is detached and the stored content is never affected.\n\n---\n\n'''\ns=s.replace(anchor, story+anchor, 1)\nopen(p,\"w\").write(s)\nprint(\"story4 inserted\")\nPY\n</parameter>\n</function>\n</tool_call>",
+          "reasoning_sha256": "bd169ffd7fe8d5f2181b9e3312be74223f0e647a8945cc1e3c4737402db29cfe",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792249301,
+    "id": "chatcmpl-saIYWL55Cyij7c2Joa1wIurXecV8hwxv",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 6162,
+      "predicted_ms": 44579.484,
+      "predicted_n": 897,
+      "predicted_per_second": 20.098931607194018,
+      "predicted_per_token_ms": 49.75388839285714,
+      "prompt_ms": 17581.422,
+      "prompt_n": 20937,
+      "prompt_per_second": 1190.8593059196237,
+      "prompt_per_token_ms": 0.8397297607107035
+    },
+    "usage": {
+      "completion_tokens": 897,
+      "prompt_tokens": 27099,
+      "prompt_tokens_details": {
+        "cached_tokens": 6162
+      },
+      "total_tokens": 27996
+    }
+  },
+  "seconds": 64.79700000002049,
+  "stage": 2,
+  "started_at": "2026-10-17T15:00:36.373097+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 897,
+    "prompt_tokens": 27099,
+    "prompt_tokens_details": {
+      "cached_tokens": 6162
+    },
+    "total_tokens": 27996
+  }
+}

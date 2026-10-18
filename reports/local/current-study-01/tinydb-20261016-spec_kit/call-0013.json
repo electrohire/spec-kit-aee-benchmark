@@ -1,0 +1,62 @@
+{
+  "budget_debit": 14335,
+  "ended_at": "2026-10-17T08:13:44.854206+00:00",
+  "max_output": 4096,
+  "original_sha256": "190e4215a5c333c366e2b420f31b44da8a699b02e3576d573d54c77c637f712d",
+  "phase": "plan",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 13243,
+  "preflight_seconds": 0.125,
+  "removed_history_messages": 0,
+  "request_seconds": 61.468000000109896,
+  "request_sha256": "a2519601b6abc9df0cbd47e3d341062ccd657f8ba0d5507f83af60cf3cf58047",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && python3 .specify/scripts/python/setup_plan.py --json 2>&1 | head -c 2000; echo; echo ---; git branch --show-current 2>/dev/null; git status --short 2>/dev/null | head\"}",
+          "reasoning_sha256": "ed5a964148690f22077156b20609bbd89ab5d2cf9c2ed473eeaa875210198b27",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792224824,
+    "id": "chatcmpl-dOVhwl2cIrR0OJPP2iXVpIxkUshElFrg",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 49769.362,
+      "predicted_n": 1092,
+      "predicted_per_second": 21.92111685096546,
+      "predicted_per_token_ms": 45.61811365719524,
+      "prompt_ms": 10449.596,
+      "prompt_n": 13243,
+      "prompt_per_second": 1267.3217222943356,
+      "prompt_per_token_ms": 0.7890656195726043
+    },
+    "usage": {
+      "completion_tokens": 1092,
+      "prompt_tokens": 13243,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 14335
+    }
+  },
+  "seconds": 61.468000000109896,
+  "stage": 1,
+  "started_at": "2026-10-17T08:12:43.373322+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1092,
+    "prompt_tokens": 13243,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 14335
+  }
+}

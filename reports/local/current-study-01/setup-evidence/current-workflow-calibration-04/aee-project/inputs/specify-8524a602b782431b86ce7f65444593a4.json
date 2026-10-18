@@ -1,0 +1,149 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md written to specs/001-transactions/spec.md capturing FR-001/FR-002 with acceptance scenario add(1,2)=3",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "2886442db9637c66070ae0577aaea5a673d41e043cbfcb5cfe5e09cf8ce7bddb",
+          "source_id": "2886442db9637c66070ae0577aaea5a673d41e043cbfcb5cfe5e09cf8ce7bddb",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "add(1,2) does not return 3",
+        "smoke.py missing or add() absent"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R01; spec FR-001/FR-002",
+      "stage": "created",
+      "status": "draft",
+      "text": "A smoke.py utility provides add(a,b) that returns a+b for integer inputs (e.g., add(1,2)=3).",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md User Story 2 acceptance scenarios and FR-003..FR-005 define the supported input types with expected sums",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "2886442db9637c66070ae0577aaea5a673d41e043cbfcb5cfe5e09cf8ce7bddb",
+          "source_id": "2886442db9637c66070ae0577aaea5a673d41e043cbfcb5cfe5e09cf8ce7bddb",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "add(-3,5) != 2",
+        "add(0,4) != 4",
+        "add(1.5,2.25) != 3.75"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R02; spec FR-003..FR-005",
+      "stage": "created",
+      "status": "draft",
+      "text": "add() supports negative integers, zero, and floats, including mixed int/float pairs, returning correct sums (e.g., add(-3,5)=2, add(0,4)=4, add(1.5,2.25)=3.75).",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01",
+        "R02"
+      ],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md FR-006 and SC-002 require tests to exist and pass; execution itself is deferred to the implement phase",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "2886442db9637c66070ae0577aaea5a673d41e043cbfcb5cfe5e09cf8ce7bddb",
+          "source_id": "2886442db9637c66070ae0577aaea5a673d41e043cbfcb5cfe5e09cf8ce7bddb",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "test suite run shows failures or tests do not exist"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R03; spec FR-006, SC-002, User Story 3",
+      "stage": "created",
+      "status": "draft",
+      "text": "Automated tests for the addition behavior are added and executed with observed passing output (0 failures) via the existing test runner.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: spec.md FR-007 encodes the no-Modification constraint; no code was touched in the specify phase",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "2886442db9637c66070ae0577aaea5a673d41e043cbfcb5cfe5e09cf8ce7bddb",
+          "source_id": "2886442db9637c66070ae0577aaea5a673d41e043cbfcb5cfe5e09cf8ce7bddb",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "git diff shows changes under tinydb/ or tests/"
+      ],
+      "id": "C1",
+      "kind": "requirement",
+      "source_ref": "milestone constraint 'Do not modify TinyDB'; spec FR-007; constitution principle I",
+      "stage": "created",
+      "status": "draft",
+      "text": "The TinyDB package and its tests are not modified by this feature.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "Unverified model assertion: only spec.md and checklists/requirements.md created under specs/001-transactions; feature.json updated; section scan confirms the single concise spec structure",
+          "direction": "supports",
+          "kind": "asserted",
+          "ref": "293b03ca623472f133017af282efaab8f8438591ce1bb7ace4595ad2aa040b08",
+          "source_id": "293b03ca623472f133017af282efaab8f8438591ce1bb7ace4595ad2aa040b08",
+          "source_quality": "model"
+        }
+      ],
+      "falsification_tests": [
+        "artifacts created outside specs/001-transactions",
+        "spec mandates a service/deployment"
+      ],
+      "id": "C2",
+      "kind": "requirement",
+      "source_ref": "milestone constraints; spec SC-004 and Assumptions",
+      "stage": "created",
+      "status": "draft",
+      "text": "Workflow artifacts stay concise under specs/001-transactions; no service or deployment is involved.",
+      "uncertainty": "low"
+    }
+  ],
+  "schema_version": "1.0"
+}

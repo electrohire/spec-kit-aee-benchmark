@@ -1,0 +1,62 @@
+{
+  "budget_debit": 29093,
+  "ended_at": "2026-10-16T23:30:24.493609+00:00",
+  "max_output": 4096,
+  "original_sha256": "4603d406eea57c7532e69c7d19ff87c455324fb2fa5a6fb00341f5b97fda9b6d",
+  "phase": "plan",
+  "preflight_http_requests": 12,
+  "preflight_input_tokens": 27916,
+  "preflight_seconds": 1.2810000001918525,
+  "removed_history_messages": 4,
+  "request_seconds": 83.84399999980815,
+  "request_sha256": "480360fcbbd457daae32de96d36c848b140b93209269b87da937c77e25204d38",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && echo '=== placeholder scan (plan + artifacts) ===' && grep -nE 'NEEDS CLARIFICATION|\\\\[FEATURE\\\\]|\\\\[DATE\\\\]|\\\\[###-feature|\\\\[e\\\\.g\\\\.|Option [0-9]|REMOVE IF UNUSED|\\\\[Gates determined|\\\\[Gates|\\\\[Document the selected|\\\\[current need\\\\]|\\\\[specific problem\\\\]' specs/001-transactions/plan.md specs/001-transactions/research.md specs/001-transactions/data-model.md specs/001-transactions/quickstart.md specs/001-transactions/contracts/addition.md || echo 'CLEAN: no template placeholders remain' && echo '=== Constitution Check present ===' && grep -n 'Constitution Check' specs/001-transactions/plan.md && grep -n 'Gate result' specs/001-transactions/plan.md && echo '=== feature dir contents ===' && find specs/001-transactions -type f | sort\"}",
+          "reasoning_sha256": "c2df0150d2441e21a0190da2d24af81026ba153093edecd5da29d7ff2e562a6c",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792193424,
+    "id": "chatcmpl-fUOBlepMw5d10QNontmhJlffMsj8p5Sn",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 2684,
+      "predicted_ms": 59144.584,
+      "predicted_n": 1177,
+      "predicted_per_second": 19.88347741189624,
+      "predicted_per_token_ms": 50.29301360544218,
+      "prompt_ms": 21074.532,
+      "prompt_n": 25232,
+      "prompt_per_second": 1197.274511244188,
+      "prompt_per_token_ms": 0.8352303424223209
+    },
+    "usage": {
+      "completion_tokens": 1177,
+      "prompt_tokens": 27916,
+      "prompt_tokens_details": {
+        "cached_tokens": 2684
+      },
+      "total_tokens": 29093
+    }
+  },
+  "seconds": 83.84399999980815,
+  "stage": 1,
+  "started_at": "2026-10-16T23:29:00.642415+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1177,
+    "prompt_tokens": 27916,
+    "prompt_tokens_details": {
+      "cached_tokens": 2684
+    },
+    "total_tokens": 29093
+  }
+}

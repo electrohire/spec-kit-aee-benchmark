@@ -1,0 +1,62 @@
+{
+  "budget_debit": 16074,
+  "ended_at": "2026-10-17T09:52:46.110829+00:00",
+  "max_output": 4096,
+  "original_sha256": "dbd051335fb246156265e5816392604c94148156ea2682ae6ca7be9843de8caa",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 14986,
+  "preflight_seconds": 0.09399999980814755,
+  "removed_history_messages": 0,
+  "request_seconds": 50.625,
+  "request_sha256": "fab5237fd17a4236835c6fc8e607a4ab3162aaa363fe383d6c25805ada548180",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"grep -rn 'journal\\\\|BatchWriter' /testbed/tests/ 2>/dev/null | head; echo '==='; grep -rn '_next_id\\\\|clear_cache\\\\|query_cache' /testbed/tests/ 2>/dev/null | head\"}",
+          "reasoning_sha256": "9e5af158a99e481abc9da52d75581e1516c2e7a300b97ddb854d4f10ec803d45",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792230766,
+    "id": "chatcmpl-zYEzZrJ35GLaWmJujPkfGVJyMM9owMJh",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 14941,
+      "predicted_ms": 50079.283,
+      "predicted_n": 1088,
+      "predicted_per_second": 21.705582326328432,
+      "predicted_per_token_ms": 46.07109751609936,
+      "prompt_ms": 477.18,
+      "prompt_n": 45,
+      "prompt_per_second": 94.30403621274989,
+      "prompt_per_token_ms": 10.604000000000001
+    },
+    "usage": {
+      "completion_tokens": 1088,
+      "prompt_tokens": 14986,
+      "prompt_tokens_details": {
+        "cached_tokens": 14941
+      },
+      "total_tokens": 16074
+    }
+  },
+  "seconds": 50.625,
+  "stage": 1,
+  "started_at": "2026-10-17T09:51:55.489816+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1088,
+    "prompt_tokens": 14986,
+    "prompt_tokens_details": {
+      "cached_tokens": 14941
+    },
+    "total_tokens": 16074
+  }
+}

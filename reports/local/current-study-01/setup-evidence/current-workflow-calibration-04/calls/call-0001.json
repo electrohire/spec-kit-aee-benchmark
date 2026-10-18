@@ -1,0 +1,62 @@
+{
+  "budget_debit": 4270,
+  "ended_at": "2026-10-16T23:15:12.637248+00:00",
+  "max_output": 4096,
+  "original_sha256": "7b2464d0f0eebd43ce671d49290db97a8a2ff51daf6b6c53724a7d2c37e17766",
+  "phase": "constitution",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 4106,
+  "preflight_seconds": 0.10899999993853271,
+  "removed_history_messages": 0,
+  "request_seconds": 8.188000000081956,
+  "request_sha256": "de9d41201bf4062c20b73f4d7c6ae194af61277c9569e01e8f2728c993bf387d",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "No extensions.yml \u2014 skip hooks. Now check the memory dir and resolve the constitution template.\n\n{\"action\":\"shell\",\"command\":\"ls -la /testbed/.specify/memory /testbed/.specify/templates /testbed/.specify/scripts 2>/dev/null; echo '---'; ls /testbed/.specify/scripts/python 2>/dev/null; echo '---'; cat /testbed/.specify/memory/constitution.md 2>/dev/null || echo 'NO EXISTING CONSTITUTION'; echo '---'; ls /testbed/specs /testbed/specs/001-transactions 2>/dev/null\"}",
+          "reasoning_sha256": "c89fba00586693e42bc7f3dd219c76d85140ee6548ca750da35fb2357fec7f66",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792192512,
+    "id": "chatcmpl-dkQUMgmbjdxlL7X4FIbSdW4ZivedIDQC",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 3075,
+      "predicted_ms": 6864.63,
+      "predicted_n": 164,
+      "predicted_per_second": 23.74490686315213,
+      "predicted_per_token_ms": 42.11429447852761,
+      "prompt_ms": 1238.546,
+      "prompt_n": 1031,
+      "prompt_per_second": 832.4277015145178,
+      "prompt_per_token_ms": 1.2013055286129972
+    },
+    "usage": {
+      "completion_tokens": 164,
+      "prompt_tokens": 4106,
+      "prompt_tokens_details": {
+        "cached_tokens": 3075
+      },
+      "total_tokens": 4270
+    }
+  },
+  "seconds": 8.188000000081956,
+  "stage": 1,
+  "started_at": "2026-10-16T23:15:04.446098+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 164,
+    "prompt_tokens": 4106,
+    "prompt_tokens_details": {
+      "cached_tokens": 3075
+    },
+    "total_tokens": 4270
+  }
+}

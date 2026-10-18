@@ -1,0 +1,62 @@
+{
+  "budget_debit": 15716,
+  "ended_at": "2026-10-17T13:00:42.461732+00:00",
+  "max_output": 4096,
+  "original_sha256": "1889d7d7450abd61bb3d8c897f9e93420aed188761fe6e46974ce82ba883f0a6",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 14374,
+  "preflight_seconds": 0.1720000000204891,
+  "removed_history_messages": 0,
+  "request_seconds": 62.76600000006147,
+  "request_sha256": "3c6b621cbfc102025f78646471471777f895598bd10382ff6ac76ef4d3f25a5e",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && python - << 'EOF'\\np = 'tests/test_tagged.py'\\ns = open(p).read()\\nold = \\\"\\\"\\\"    assert c.get('a') == 1\\n    c.put('c', 3, [])  # evicts LRU entry 'a'\\\"\\\"\\\"\\nnew = \\\"\\\"\\\"    # peek without refreshing recency\\n    assert c._TaggedCache__data['a'] == 1\\n    assert c._TaggedCache__tags['a'] == ('old',)\\n    c.put('c', 3, [])  # evicts LRU entry 'a'\\\"\\\"\\\"\\nassert old in s\\ns = s.replace(old, new)\\nold2 = \\\"\\\"\\\"    c.put('a', 4, [])\\n    assert c.invalidate('t') == 1\\n    assert 'a' in c\\\"\\\"\\\"\\nnew2 = \\\"\\\"\\\"    c.put('a', 4, [])\\n    # reused key carries no stale 't' membership\\n    assert c.invalidate('t') == 0\\n    assert 'a' in c\\\"\\\"\\\"\\nassert old2 in s\\ns = s.replace(old2, new2)\\nopen(p, 'w').write(s)\\nprint('patched')\\nEOF\\nPYTHONPATH=src:. python -m pytest tests/test_tagged.py acceptance_public.py -q 2>&1 | tail -4\"}",
+          "reasoning_sha256": "2f800baca1ab93f1843686dd1f20f0ed8dd9e61959ede5c6743294ce5f99f1c3",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792242042,
+    "id": "chatcmpl-WnyByLbzMOIFyGLJRKxTYmjSvude3okO",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 14054,
+      "predicted_ms": 61758.272,
+      "predicted_n": 1342,
+      "predicted_per_second": 21.71369043486191,
+      "predicted_per_token_ms": 46.05389410887397,
+      "prompt_ms": 940.794,
+      "prompt_n": 320,
+      "prompt_per_second": 340.13822367064415,
+      "prompt_per_token_ms": 2.9399812499999998
+    },
+    "usage": {
+      "completion_tokens": 1342,
+      "prompt_tokens": 14374,
+      "prompt_tokens_details": {
+        "cached_tokens": 14054
+      },
+      "total_tokens": 15716
+    }
+  },
+  "seconds": 62.76600000006147,
+  "stage": 1,
+  "started_at": "2026-10-17T12:59:39.681409+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1342,
+    "prompt_tokens": 14374,
+    "prompt_tokens_details": {
+      "cached_tokens": 14054
+    },
+    "total_tokens": 15716
+  }
+}

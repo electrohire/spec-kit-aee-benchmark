@@ -1,0 +1,1 @@
+{"command": "cd /testbed && grep -n '_next_id\\|clear_cache\\|storage.write\\|def insert' acceptance_public.py | head; wc -l acceptance_public.py; echo ===; grep -rn 'journal\\|BatchWriter' acceptance_public.py | head -5", "exit_code": 0, "stderr": "", "stdout": "36 acceptance_public.py\n===\n4:from tinydb.journal import BatchWriter\n9:    return (db, BatchWriter(db))\n"}

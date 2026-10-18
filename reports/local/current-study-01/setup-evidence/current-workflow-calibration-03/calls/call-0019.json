@@ -1,0 +1,62 @@
+{
+  "budget_debit": 23913,
+  "ended_at": "2026-10-16T22:45:34.819928+00:00",
+  "max_output": 4096,
+  "original_sha256": "517c74d3f1b2e9773dc44459e9bb21a0cf2b15d1dce3e59745b5eeb06e2a9cf6",
+  "phase": "plan",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 23644,
+  "preflight_seconds": 0.2029999999795109,
+  "removed_history_messages": 0,
+  "request_seconds": 13.327999999979511,
+  "request_sha256": "5b64f138f3cfaf190e7c1a9b6918826621094fa1c5930b0a1078feb34cb3055a",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && python3 -c 'import pytest_cov; print(\\\"pytest-cov\\\", pytest_cov.__version__)' 2>&1; echo '---'; ls src 2>/dev/null || echo 'no src dir'; echo '---'; git ls-files tinydb | head -5; echo '---'; git diff --stat -- tinydb tests | tail -3; echo '(empty diff = untouched)'\"}",
+          "reasoning_sha256": "13581cfa24d1930ccfb6698ad4836bcf239ec30165bc2656816bd45bcb745842",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792190734,
+    "id": "chatcmpl-j1Esukw9eL736K97Oj0Oobt34mwLZY7E",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 23304,
+      "predicted_ms": 12477.231,
+      "predicted_n": 269,
+      "predicted_per_second": 21.479124655141835,
+      "predicted_per_token_ms": 46.55683208955224,
+      "prompt_ms": 732.84,
+      "prompt_n": 340,
+      "prompt_per_second": 463.9484744282517,
+      "prompt_per_token_ms": 2.1554117647058826
+    },
+    "usage": {
+      "completion_tokens": 269,
+      "prompt_tokens": 23644,
+      "prompt_tokens_details": {
+        "cached_tokens": 23304
+      },
+      "total_tokens": 23913
+    }
+  },
+  "seconds": 13.327999999979511,
+  "stage": 1,
+  "started_at": "2026-10-16T22:45:21.482366+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 269,
+    "prompt_tokens": 23644,
+    "prompt_tokens_details": {
+      "cached_tokens": 23304
+    },
+    "total_tokens": 23913
+  }
+}

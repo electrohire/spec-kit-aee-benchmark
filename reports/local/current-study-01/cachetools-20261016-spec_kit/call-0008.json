@@ -1,0 +1,62 @@
+{
+  "budget_debit": 9618,
+  "ended_at": "2026-10-17T00:30:14.687479+00:00",
+  "max_output": 4096,
+  "original_sha256": "caa43a3ccd367d53d0fa79777d5c78c81c4e2f087da04b79b4915908d16a751b",
+  "phase": "constitution",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 9186,
+  "preflight_seconds": 0.10900000017136335,
+  "removed_history_messages": 0,
+  "request_seconds": 19.54699999978766,
+  "request_sha256": "02074aa31e4c5ea5b8095e2ff5bd1492130a481982f317c41754fcd6750d21c7",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && wc -l .specify/memory/constitution.md && echo '=== HEAD ===' && head -20 .specify/memory/constitution.md && echo '=== TAIL ===' && tail -8 .specify/memory/constitution.md && echo '=== bracket check (should be only report lines 8-12) ===' && grep -nE '\\\\[[A-Z][A-Z0-9_]+\\\\]' .specify/memory/constitution.md\"}",
+          "reasoning_sha256": "2d646a8fa76545ca85ddd478f489878197e2bef6f5cfa83a1cd1d213eb809540",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792197014,
+    "id": "chatcmpl-47YgIRnLctLEdh2QXNjBQfsBwo7KvkAH",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 9144,
+      "predicted_ms": 19149.22,
+      "predicted_n": 432,
+      "predicted_per_second": 22.507444167438674,
+      "predicted_per_token_ms": 44.42974477958237,
+      "prompt_ms": 325.141,
+      "prompt_n": 42,
+      "prompt_per_second": 129.17472727216807,
+      "prompt_per_token_ms": 7.741452380952381
+    },
+    "usage": {
+      "completion_tokens": 432,
+      "prompt_tokens": 9186,
+      "prompt_tokens_details": {
+        "cached_tokens": 9144
+      },
+      "total_tokens": 9618
+    }
+  },
+  "seconds": 19.54699999978766,
+  "stage": 1,
+  "started_at": "2026-10-17T00:29:55.148808+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 432,
+    "prompt_tokens": 9186,
+    "prompt_tokens_details": {
+      "cached_tokens": 9144
+    },
+    "total_tokens": 9618
+  }
+}

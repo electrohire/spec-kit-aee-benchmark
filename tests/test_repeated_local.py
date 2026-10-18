@@ -26,11 +26,15 @@ def test_public_tests_exclude_withheld_requirements():
 
 def test_compact_assessment_retains_findings_and_recovery():
     value={'outcome':'iterate','findings':[{'id':'f','message':'conflict'}],
-           'next_action':{'kind':'repair'},'metadata':{'nested_copy':'large'}}
+           'next_action':{'kind':'repair'},'metadata':{'nested_copy':'large',
+               'lane_states':[{'lane_1':{'outcome':'iterate'},'lane_2':{'exposition_missing_claims':1},'not_understood':['human acceptance unrecorded']}],
+               'reported_statuses':{'aee':{'R01':'draft'}}}}
     compact=runner.compact_assessment(value)
     assert compact['findings']==value['findings']
     assert compact['next_action']==value['next_action']
-    assert 'metadata' not in compact
+    assert 'nested_copy' not in compact['metadata']
+    assert compact['metadata']['lane_states'][0]['not_understood']==['human acceptance unrecorded']
+    assert compact['metadata']['reported_statuses']['aee']['R01']=='draft'
 
 def test_failed_request_keeps_unknown_usage_but_allows_reserved_followup(tmp_path,monkeypatch):
     import time

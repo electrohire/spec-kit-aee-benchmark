@@ -1,0 +1,62 @@
+{
+  "budget_debit": 17969,
+  "ended_at": "2026-10-17T13:30:06.110301+00:00",
+  "max_output": 4096,
+  "original_sha256": "f1de8e0727d4c7659dc0d4f1627ea7e89ca99877c7e3f89d0453167105511313",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 16849,
+  "preflight_seconds": 0.14000000013038516,
+  "removed_history_messages": 0,
+  "request_seconds": 53.76599999982864,
+  "request_sha256": "d6cfd71e2fb8ea2b3e774649e0bd8e54f47e9a15856a17272c9132a40ddc5289",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && sed -n '175,246p' tests/test_tagged.py; echo ===M2TAIL; sed -n '150,200p' tests/test_tagged_m2.py; echo ===; grep -rn \\\"tagged\\\\|TaggedCache\\\" src/cachetools/__init__.py setup.cfg docs/ 2>/dev/null | head\"}",
+          "reasoning_sha256": "b32c576d5d3689917a8049578842f3b84578f129b1a4df08c6b7540d03e670fb",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792243806,
+    "id": "chatcmpl-Y9G7Qwxxc2mM3cU42bgbukoGuoqyvoJa",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 15522,
+      "predicted_ms": 51961.749,
+      "predicted_n": 1120,
+      "predicted_per_second": 21.535071885282385,
+      "predicted_per_token_ms": 46.43587935656837,
+      "prompt_ms": 1737.126,
+      "prompt_n": 1327,
+      "prompt_per_second": 763.905439213966,
+      "prompt_per_token_ms": 1.309062547098719
+    },
+    "usage": {
+      "completion_tokens": 1120,
+      "prompt_tokens": 16849,
+      "prompt_tokens_details": {
+        "cached_tokens": 15522
+      },
+      "total_tokens": 17969
+    }
+  },
+  "seconds": 53.76599999982864,
+  "stage": 3,
+  "started_at": "2026-10-17T13:29:12.350637+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1120,
+    "prompt_tokens": 16849,
+    "prompt_tokens_details": {
+      "cached_tokens": 15522
+    },
+    "total_tokens": 17969
+  }
+}

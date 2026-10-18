@@ -1,0 +1,62 @@
+{
+  "budget_debit": 30666,
+  "ended_at": "2026-10-17T09:09:13.610624+00:00",
+  "max_output": 4096,
+  "original_sha256": "ec179dc3231950b61c890cba1b1f6c5268b966a75165cc6b6ba759149bf254d8",
+  "phase": "plan",
+  "preflight_http_requests": 16,
+  "preflight_input_tokens": 28494,
+  "preflight_seconds": 1.3130000000819564,
+  "removed_history_messages": 84,
+  "request_seconds": 111.73399999993853,
+  "request_sha256": "93e4820a70107fad94b24020c3e9b197a7887836b4120467405d93cf35182964",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && python3 - <<'PYEOF'\\np = 'specs/001-transactions/research.md'\\ns = open(p).read()\\nanchor = '## Consolidated Open Questions'\\nassert anchor in s\\nnew = '''## R8. Preview semantics: zero side effects and no ID consumption (R05, R05b)\\n\\n- **Decision**: `preview(operations)` performs the **same structural validation and remove-target checks** as `apply` against a read-only view of the current table state, then simulates insert IDs locally (starting at the table's current next ID, incrementing per insert; removes only affect the simulated membership set). It never calls any Table mutation API, never writes storage, never touches `table._next_id`, and returns a **fresh list built inside the method** (R05b: no caching of returned lists; mutating a previously returned list cannot affect later results or internal state). On any validation or missing-remove error it raises `ValueError` after having done nothing.\\n- **Rationale**: R05 requires the returned IDs to equal what `apply` would produce while leaving *all* data and the next insertion ID unchanged, including on errors, and keeping existing table handles and query caches coherent. The only way `apply` and `preview` can agree on IDs is to derive both from the same rule: the table's next-ID rule (research R1/R2). Because `Table._get_next_id` advances its cursor as a side effect, preview must **not** call it; instead it computes `next = table._next_id if table._next_id is not None else (max(existing ids) + 1, or 1 if empty)` and simulates locally. `TinyDB.table()` returns the same cached `Table` instance (observed `database.py` lines 127-133), so there is exactly one `_query_cache` and one `_next_id` to keep coherent; preview touches neither.\\n- **Alternatives considered**: *Call `table._get_next_id()` in preview and reset the cursor afterwards* - rejected: a reset between the call and the reset could be observed by interleaved code, and it mutates state R05 forbids; *cache preview results* - rejected: R05b explicitly requires a new detached list per call and forbids any internal state affected by returned-list mutation.\\n\\n## R9. ID sequencing across successful batches and interleaved direct inserts (R05 clarification, R06)\\n\\n- **Decision**: After a **successful** `apply` that inserted K documents with IDs `i1..iK` (in order), the writer sets `table._next_id = iK + 1` (equivalently `max(pre_batch_max_id, iK) + 1`; since IDs are assigned contiguously from the current next ID, `iK + 1` suffices and is always >= the pre-batch max + 1). This value lives on the shared `Table` instance, so ordinary `db.insert` calls (which use `table._get_next_id()` and never reset `_next_id` for plain-dict documents - observed `table.py` lines 137-173) continue from it: no reuse, no rewind, even after removes. On **failure**, the writer restores the snapshot and sets `table._next_id = None`, so the next insert re-derives `max(restored ids) + 1` - exactly the pre-batch next ID; a failed batch therefore consumes nothing. The writer never caches its own copy of the next ID: it always reads the table's live state per call (R06: direct `db.insert` between calls is seen because both go through the same `Table._next_id` cursor and the same storage-backed table data).\\n- **Rationale**: R05-clarification requires the wrapper to advance its next-insertion-ID state on every successful batch and write that state back so subsequent inserts via `apply` **or** direct `db.insert` continue without reuse or rewind, even across removes. Storing the cursor on the shared `Table` is the \"write back to the underlying table\" mechanism: it is the table's own state, shared by all handles, and it survives because `Table.insert` (plain dict) does not reset it. The snapshot/restore of the raw table dict plus `_next_id = None` on rollback exactly reproduces pre-batch sequencing (research R1). No wrapper-local ID cache is needed or allowed (R06 forbids stale snapshots; a local cache would go stale after direct inserts).\\n- **Alternatives considered**: *Wrapper-local next-ID counter* - rejected: goes stale after direct `db.insert` (R06) and is not visible to ordinary inserts; *persist a custom key in the table data* - rejected: pollutes user-visible table contents and changes ordinary API behavior (Constitution I); *always reset `_next_id = None` after every batch* - rejected: after a batch containing removes, `max+1` would still be correct, but if a batch inserted then the max is the last inserted ID, so this also works - however keeping the exact cursor (`iK+1`) is strictly more precise and matches the clarification's \"advances ... on every successful batch\" wording; both avoid reuse. Chosen: set the exact cursor.\\n\\n## R10. Structural validation before commit (R04)\\n\\n- **Decision**: All operations are validated **structurally before any mutation or snapshot** (and before any remove-target check): (a) `operations` must be a `list` - non-list raises `ValueError`; (b) each entry must be a `dict`; (c) `op` must be exactly `'insert'` or `'remove'`; (d) for `insert`: keys must be exactly `{op, document}` (any other key - e.g. `doc_id` - is an unsupported field -> `ValueError`), `document` must be a `dict` (empty dict accepted; `bool` is not a dict so it is rejected; non-dict Mappings are rejected per R04's \"non-dict documents\"); (e) for `remove`: keys must be exactly `{op, doc_id}`, `doc_id` must be an `int` with `isinstance(doc_id, bool)` explicitly rejected and value `> 0`. Remove-target membership is checked during the sequential apply phase against the **current** table state (a batch `[remove 1, remove 1]` fails on the second remove).\\n- **Rationale**: R04 explicitly requires rejecting unsupported fields, non-list operations, and non-dict documents, rejecting `bool` doc_ids, and validating structurally before committing changes; it explicitly accepts empty dictionaries as documents. R04 **supersedes** the milestone-1 decision in research R4 that \"extra keys are ignored\" - the current requirement text wins (recorded conflict resolution). The `bool` check must precede the `int` check because `isinstance(True, int)` is `True`.\\n- **Alternatives considered**: *Keep ignoring extra keys (milestone-1 R4)* - rejected: directly contradicted by R04 \"raise ValueError for unsupported fields\"; *accept any `Mapping` as document* - rejected: R04 says \"non-dict documents\" are an error, so `dict` specifically is required.\\n\\n## R11. Query-cache coherence for preview and failed apply (R05)\\n\\n- **Decision**: Preview performs no writes, so no cache invalidation is needed. A failed `apply` restores the snapshot and calls `table.clear_cache()` (public API, observed `table.py` line 701) so any query results cached by pre-acquired handles before the batch are discarded and the next `search` re-reads the restored data. A successful `apply` also calls `clear_cache()` so handles never serve stale cached results for the new data.\\n- **Rationale**: R05 requires \"existing table handles and query caches must remain coherent\"; `Table.search` caches results in `_query_cache` (observed lines 251/281) and only `clear_cache()` empties it. Because `TinyDB.table()` returns one shared `Table` instance (observed `database.py`), clearing it covers every handle.\\n- **Alternatives considered**: *Bump a cache-generation counter* - not available in this Table version; *rely on LRU expiry* - unreliable and not \"coherent\" in the required sense.\\n\\n## R12. Conflict resolution: superseded note (recorded per task packet)\\n\\n- **Decision**: The older generated note \"preview may consume IDs and bool IDs are accepted\" is **unverified and superseded** by R04/R05. This plan and all artifacts enforce: preview consumes no IDs and mutates nothing (R8/R11); `bool` is rejected as a `doc_id` (R10). Any test or code relying on the older note must be deleted. The previously passing happy-path smoke is acknowledged as insufficient: it does not exercise preview purity, bool rejection, unsupported-field rejection, or sequencing across removes; dedicated tests T13-T20 (contract) cover each boundary.\\n- **Rationale**: The task packet explicitly marks the note unverified and superseded; the current requirement text is the sole authority (spec.md section \"Conflicting Evidence - Resolved\").\\n- **Alternatives considered**: None - the packet leaves no ambiguity.\\n\\n'''\\ns = s.replace(anchor, new + anchor, 1)\\nopen(p, 'w').write(s)\\nprint('research updated')\\nPYEOF\\ngrep -n \\\"^## R\\\" specs/001-transactions/research.md\"}",
+          "reasoning_sha256": "d4a5eb5ce2c807b11aad21ad2b47748ea5d26bfcb63bcbae3392312115707a2d",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792228153,
+    "id": "chatcmpl-htO85vld7Akh1hwm27RwslEhSAHRRTCr",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 27632,
+      "predicted_ms": 110065.302,
+      "predicted_n": 2172,
+      "predicted_per_second": 19.72465400585554,
+      "predicted_per_token_ms": 50.69797420543528,
+      "prompt_ms": 1559.614,
+      "prompt_n": 862,
+      "prompt_per_second": 552.7008605975581,
+      "prompt_per_token_ms": 1.8092969837587007
+    },
+    "usage": {
+      "completion_tokens": 2172,
+      "prompt_tokens": 28494,
+      "prompt_tokens_details": {
+        "cached_tokens": 27632
+      },
+      "total_tokens": 30666
+    }
+  },
+  "seconds": 111.73399999993853,
+  "stage": 2,
+  "started_at": "2026-10-17T09:07:21.880530+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2172,
+    "prompt_tokens": 28494,
+    "prompt_tokens_details": {
+      "cached_tokens": 27632
+    },
+    "total_tokens": 30666
+  }
+}

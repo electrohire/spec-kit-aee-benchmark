@@ -4,12 +4,16 @@ import os
 import subprocess
 import sys
 import time
+import argparse
 from pathlib import Path
 
 from benchmark_runner.store import Store, read_json, sha, utc, write_json
 from benchmark_runner.workflow import assess
 
 root = Path(__file__).resolve().parents[1]
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--claims", type=Path, default=root/"specs/001-benchmark/claims.json")
+args = parser.parse_args()
 run_id = utc().replace(":", "").replace("+", "-")
 store = Store(root/"reports"/"offline"/run_id)
 command = [sys.executable, "-m", "pytest", "-q"]
@@ -24,10 +28,10 @@ write_json(store.root/"tests.json", evidence, exclusive=True)
 if result.returncode:
     print(output.decode(errors="replace"))
     raise SystemExit(result.returncode)
-claims = read_json(root/"specs/001-benchmark/claims.json")
+claims = read_json(args.claims)
 outcomes = {}
 for phase in ("specify", "plan", "tasks", "implement"):
-    composed = assess(root, claims, phase, store)
+    composed = assess(root, claims, phase, store, run_id)
     outcomes[phase] = composed["outcome"]
     write_json(store.root/f"composed-{phase}.json", composed, exclusive=True)
 write_json(root/"reports/latest-offline.json", dict(run=store.root.relative_to(root).as_posix(),

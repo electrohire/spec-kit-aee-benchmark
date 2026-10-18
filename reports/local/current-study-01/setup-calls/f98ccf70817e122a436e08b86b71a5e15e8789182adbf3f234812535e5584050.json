@@ -1,0 +1,63 @@
+{
+  "budget_debit": 28213,
+  "ended_at": "2026-10-16T23:44:06.034078+00:00",
+  "max_output": 4096,
+  "original_sha256": "f98ccf70817e122a436e08b86b71a5e15e8789182adbf3f234812535e5584050",
+  "phase": "tasks",
+  "preflight_http_requests": 16,
+  "preflight_input_tokens": 28073,
+  "preflight_seconds": 1.452999999979511,
+  "removed_history_messages": 36,
+  "request_seconds": 7.765999999828637,
+  "request_sha256": "072b788edb90dfd8f6ea8a13a47165d2b7fdbb264451e4d234926cd9756154ce",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && echo '== EV4: R03 declared in tasks.md ==' && grep -n 'T009\\\\|T010\\\\|0 failures' specs/001-transactions/tasks.md | head -6\"}",
+          "reasoning_content_sha256": "106d62d1d4749cafab95c6ccfa327178561708a800ac6f2d61091eb5eadf67ce",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792194246,
+    "id": "chatcmpl-y1Nrb2WdkDQGwfOF2mjAjDqHYYQpEyQW",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 27482,
+      "predicted_ms": 6473.222,
+      "predicted_n": 140,
+      "predicted_per_second": 21.473077858290665,
+      "predicted_per_token_ms": 46.569942446043164,
+      "prompt_ms": 1220.435,
+      "prompt_n": 591,
+      "prompt_per_second": 484.25356532711703,
+      "prompt_per_token_ms": 2.0650338409475464
+    },
+    "usage": {
+      "completion_tokens": 140,
+      "prompt_tokens": 28073,
+      "prompt_tokens_details": {
+        "cached_tokens": 27482
+      },
+      "total_tokens": 28213
+    }
+  },
+  "seconds": 7.765999999828637,
+  "source": "current-workflow-calibration-04/calls/call-0038.json",
+  "stage": 1,
+  "started_at": "2026-10-16T23:43:58.258524+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 140,
+    "prompt_tokens": 28073,
+    "prompt_tokens_details": {
+      "cached_tokens": 27482
+    },
+    "total_tokens": 28213
+  }
+}

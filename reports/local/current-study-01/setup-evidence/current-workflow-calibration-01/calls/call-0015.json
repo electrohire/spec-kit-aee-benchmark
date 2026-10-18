@@ -1,0 +1,62 @@
+{
+  "budget_debit": 11876,
+  "ended_at": "2026-10-16T22:18:19.264035+00:00",
+  "max_output": 4096,
+  "original_sha256": "eb1f5578dcd80472c01e3e35e024a27d5a4451aaecb98cd690e8f3b71434b32d",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 11150,
+  "preflight_seconds": 0.1720000000204891,
+  "removed_history_messages": 0,
+  "request_seconds": 7.515000000130385,
+  "request_sha256": "b8b913f1d29e300a8c3289cfbf57d771cb45492265cab342b43ec30e7727a5ff",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cat <<'EOF' > specs/001-transactions/spec.md\\n# Smoke Add Feature\\n\\n## Short Name\\nsmoke-add\\n\\n## Description\\nThis feature provides a simple arithmetic utility that exposes an `add(a, b)` function returning the sum of the two operands. The function supports integers, negative integers, zero, and floating point numbers.\\n\\n## User Scenarios\\n1. **Developer use case** \u2013 A developer imports the `smoke` module and calls `add(1, 2)` expecting `3`.\\n2. **Testing use case** \u2013 Automated tests call `add(1.5, 2.5)` expecting `4.0`.\\n3. **Edge case** \u2013 Calling `add(-1, -2)` returns `-3`.\\n4. **Zero case** \u2013 Calling `add(0, 0)` returns `0`.\\n\\n## Functional Requirements\\n- **FR1**: Provide a module named `smoke` with a public function `add(a, b)`.\\n- **FR2**: The function must accept two numeric arguments (int or float).\\n- **FR3**: The function must return the mathematical sum of `a` and `b`.\\n- **FR4**: The implementation must be pure and side\u2011effect free.\\n\\n## Success Criteria\\n- **SC1**: `add(1, 2)` returns `3`.\\n- **SC2**: `add(1.5, 2.5)` returns `4.0`.\\n- **SC3**: `add(-1, -2)` returns `-3`.\\n- **SC4**: `add(0, 0)` returns `0`.\\n- **SC5**: All unit tests in `tests/test_smoke.py` pass.\\n\\n## Assumptions\\n- The repository contains a Python 3 environment.\\n- No external dependencies are required for this feature.\\n- The module is intended for local use, not as a public package.\\n\\n## Constraints\\n- The feature must not modify any existing files other than creating `smoke.py` and the test file.\\n- The feature must not alter `TinyDB` or any other existing functionality.\\n- The implementation must be straightforward and not introduce complex logic.\\nEOF\"}",
+          "reasoning_sha256": "cbee9dfbcff7365da8036e51717ee3a4699575b044b45a5edd6a485c770d0abf",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792189099,
+    "id": "chatcmpl-gjMQ8w2MauxTUhPH9elBYK8cShiqXO7N",
+    "model": "gpt-oss-20b-Q5_K_M",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 10536,
+      "predicted_ms": 7172.865,
+      "predicted_n": 726,
+      "predicted_per_second": 101.07537225362529,
+      "predicted_per_token_ms": 9.893606896551724,
+      "prompt_ms": 262.267,
+      "prompt_n": 614,
+      "prompt_per_second": 2341.1256467645567,
+      "prompt_per_token_ms": 0.4271449511400651
+    },
+    "usage": {
+      "completion_tokens": 726,
+      "prompt_tokens": 11150,
+      "prompt_tokens_details": {
+        "cached_tokens": 10536
+      },
+      "total_tokens": 11876
+    }
+  },
+  "seconds": 7.515000000130385,
+  "stage": 1,
+  "started_at": "2026-10-16T22:18:11.756608+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 726,
+    "prompt_tokens": 11150,
+    "prompt_tokens_details": {
+      "cached_tokens": 10536
+    },
+    "total_tokens": 11876
+  }
+}

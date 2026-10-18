@@ -1,0 +1,155 @@
+{
+  "claims": [
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "spec.md FR-001 and Assumptions record the additive-only constraint; no behavioral verification yet",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/a9/a94136d6a801eab8b20d952f302014b1b09e5cd45a489bbf975a4d3d7f58f78a",
+          "source_id": "a94136d6a801eab8b20d952f302014b1b09e5cd45a489bbf975a4d3d7f58f78a",
+          "source_quality": "primary"
+        }
+      ],
+      "falsification_tests": [
+        "any existing upstream test fails or is modified after adding TaggedCache",
+        "an existing public name is shadowed or renamed"
+      ],
+      "id": "R00",
+      "kind": "requirement",
+      "source_ref": "milestone requirement (preserve all existing cachetools APIs)",
+      "stage": "created",
+      "status": "draft",
+      "text": "The feature is additive: all existing cachetools public APIs are preserved behaviorally unchanged (new TaggedCache added without altering existing modules).",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [],
+      "evidence": [
+        {
+          "description": "spec.md FR-002/FR-003/FR-004 and User Story 1 scenarios capture the full R01 contract; no behavioral verification yet",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/a9/a94136d6a801eab8b20d952f302014b1b09e5cd45a489bbf975a4d3d7f58f78a",
+          "source_id": "a94136d6a801eab8b20d952f302014b1b09e5cd45a489bbf975a4d3d7f58f78a",
+          "source_quality": "primary"
+        }
+      ],
+      "falsification_tests": [
+        "get returns a live reference whose mutation changes the cached value",
+        "put(tags='ab') is accepted or mutates state before failing",
+        "put(tags=('a',1)) leaves old value/tags/recency changed",
+        "duplicate tags produce double membership affecting invalidate counts"
+      ],
+      "id": "R01",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R01",
+      "stage": "created",
+      "status": "draft",
+      "text": "put(key,value,tags=()) inserts/replaces an entry; get(key) returns a detached deep copy or raises KeyError for missing keys; values are deep-copied on input; keys are hashable; tags must be a finite iterable of strings and are deduplicated; a bare string as tags and non-string tag entries are rejected with ValueError before changing existing state.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [
+        {
+          "description": "spec.md FR-005/FR-006/FR-007/FR-008/FR-010 and User Story 2 scenarios capture the R02 lifecycle contract; no behavioral verification yet",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/a9/a94136d6a801eab8b20d952f302014b1b09e5cd45a489bbf975a4d3d7f58f78a",
+          "source_id": "a94136d6a801eab8b20d952f302014b1b09e5cd45a489bbf975a4d3d7f58f78a",
+          "source_quality": "primary"
+        }
+      ],
+      "falsification_tests": [
+        "invalidate(tag) returns a count but leaves matching entries cached",
+        "after eviction, invalidate still counts the evicted entry (stale membership)",
+        "len(cache) includes evicted entries",
+        "get on an old entry does not protect it from being the next eviction"
+      ],
+      "id": "R02",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R02",
+      "stage": "created",
+      "status": "draft",
+      "text": "invalidate(tag) removes exactly the currently cached entries carrying that tag and returns the number removed; replacing a key removes its old tag memberships; LRU eviction leaves no stale memberships affecting later reuse of the same key; get refreshes LRU recency; len(cache) counts live entries.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R01"
+      ],
+      "evidence": [
+        {
+          "description": "spec.md FR-011/FR-012/FR-013 and User Story 3 scenarios capture the R03 validation/capacity contract; no behavioral verification yet",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/a9/a94136d6a801eab8b20d952f302014b1b09e5cd45a489bbf975a4d3d7f58f78a",
+          "source_id": "a94136d6a801eab8b20d952f302014b1b09e5cd45a489bbf975a4d3d7f58f78a",
+          "source_quality": "primary"
+        }
+      ],
+      "falsification_tests": [
+        "TaggedCache(True) or TaggedCache(0) is accepted",
+        "an invalid put on a live entry changes its recency so it is evicted next",
+        "a large value occupies more than one capacity slot"
+      ],
+      "id": "R03",
+      "kind": "requirement",
+      "source_ref": "milestone requirement R03",
+      "stage": "created",
+      "status": "draft",
+      "text": "maxsize must be a positive integer excluding bool (zero, negative, non-integer, True/False rejected at construction); an invalid replacement leaves the old value, tags, and recency unchanged; every value costs exactly one capacity slot regardless of object size.",
+      "uncertainty": "low"
+    },
+    {
+      "boundary": [
+        "this milestone"
+      ],
+      "conflicts_with": [],
+      "depends_on": [
+        "R02"
+      ],
+      "evidence": [
+        {
+          "description": "spec.md FR-009 records the extension as active per latest-requirement-text rule; Assumptions documents the variant-label contradiction and the single-line removal path if the label is later confirmed authoritative; no behavioral verification yet",
+          "direction": "supports",
+          "kind": "observed",
+          "ref": "objects/a9/a94136d6a801eab8b20d952f302014b1b09e5cd45a489bbf975a4d3d7f58f78a",
+          "source_id": "a94136d6a801eab8b20d952f302014b1b09e5cd45a489bbf975a4d3d7f58f78a",
+          "source_quality": "primary"
+        }
+      ],
+      "falsification_tests": [
+        "after overwriting the least-recently-used key, the next put evicts that same key again (recency not refreshed)"
+      ],
+      "id": "R02-EXT",
+      "kind": "requirement",
+      "source_ref": "Claim-A candidate extension (variant put_no_recency_refresh, 2026-09-21)",
+      "stage": "created",
+      "status": "draft",
+      "text": "Claim-A extension: overwriting an existing key via put refreshes its LRU recency, making it the most-recently-used entry.",
+      "uncertainty": "high"
+    }
+  ],
+  "schema_version": "1.0"
+}

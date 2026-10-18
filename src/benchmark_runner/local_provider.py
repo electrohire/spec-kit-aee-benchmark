@@ -1,7 +1,7 @@
 """Local inference backend: an OpenAI-compatible server (llama.cpp) on the operator host.
 
 Selected when the frozen manifest config sets ``provider_backend: "local"``.
-Model identity comes from the environment, not the manifest::
+Model identity must match the frozen manifest and the local environment::
 
     LOCAL_MODEL_BASE_URL  default http://localhost:8080/v1
     LOCAL_MODEL_NAME      required; must match the model the server reports
@@ -90,20 +90,22 @@ def check_local_server(policy=None):
             f"local model server unreachable at {url}: {type(e).__name__}. "
             f"Start it with scripts/local-model-setup.sh (or your llama-server command) "
             f"and set LOCAL_MODEL_BASE_URL if it is not on localhost:8080") from e
-    reported = None
-    for entry in data.get("data") or []:
-        reported = entry.get("id")
-        break
-    if reported != expected:
+    reported = [entry.get("id") for entry in data.get("data") or []]
+    if expected not in reported:
         raise ValueError(
             f"local server reports model {reported!r} but LOCAL_MODEL_NAME={expected!r}; "
             f"refusing to run against the wrong checkpoint")
-    return reported
+    return expected
 
 
 class LocalProvider:
     def __init__(self, config, store, budget, identity):
         self.config, self.store, self.budget, self.identity = config, store, budget, identity
+        self.model, self.url = model_name(), base_url()
+        if config["model"] != self.model:
+            raise ValueError("local model differs from frozen configuration")
+        if config.get("local_base_url", self.url).rstrip("/") != self.url:
+            raise ValueError("local endpoint differs from frozen configuration")
         self.policy = transport_policy(config)
         check_local_server(self.policy)  # Fail before any reservation, never mid-campaign.
 
@@ -119,14 +121,14 @@ class LocalProvider:
         self.budget.reserve(call_id, self.identity["attempt_id"], Decimal(0))
         try:
             started, tick = utc(), time.monotonic()
-            payload = dict(model=model_name(), messages=messages,
+            payload = dict(model=self.model, messages=messages,
                            max_completion_tokens=cfg["max_output_tokens"])
             if cfg.get("temperature") is not None:
                 payload["temperature"] = cfg["temperature"]
             request_artifact = self.store.artifact(canonical(payload))
             response, request_id, error, response_artifact = {}, None, None, None
             try:
-                req = urllib.request.Request(base_url() + "/chat/completions",
+                req = urllib.request.Request(self.url + "/chat/completions",
                                              canonical(payload), _headers())
                 paced_wait(self.policy)  # The process-wide gap covers local traffic too.
                 with urllib.request.urlopen(req, timeout=timeout) as handle:
@@ -134,6 +136,8 @@ class LocalProvider:
                     response = json.loads(handle.read().decode())
                 response_artifact = self.store.artifact(canonical(response))
                 usage = native_usage(response)
+                if response.get("model") != self.model:
+                    error = "ModelIdentityMismatch"
             except (urllib.error.URLError, TimeoutError, KeyError, ValueError) as e:
                 error = type(e).__name__  # Never log headers or raw error bodies.
                 usage = {**{k: None for k in TOKEN_FIELDS}, "unknown_reason": error}
@@ -141,7 +145,7 @@ class LocalProvider:
             message = (response.get("choices") or [{}])[0].get("message") or {}
             text, reasoning_fallback, think_stripped = _extract_text(message)
             event = {**self.identity, "call_id": call_id, "request_id": request_id,
-                     "phase": phase, "provider": "local", "model": model_name(),
+                     "phase": phase, "provider": "local", "model": self.model,
                      "response_model": response.get("model"), "started_at": started, "ended_at": utc(),
                      "duration_seconds": time.monotonic()-tick, **usage,
                      "price_snapshot_id": "local-inference", "cost_basis": "local_inference",

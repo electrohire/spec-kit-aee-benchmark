@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28701,
+  "ended_at": "2026-10-17T11:42:58.468727+00:00",
+  "max_output": 4096,
+  "original_sha256": "77fc38fe00615036e374d5dc1f08b0db3cd0b69cdbcfa83fc4291fea4c0cfea1",
+  "phase": "plan",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 28517,
+  "preflight_seconds": 1.0160000000614673,
+  "removed_history_messages": 14,
+  "request_seconds": 31.796000000089407,
+  "request_sha256": "fd52965b842f5372cdc0dfcd16839ed60ce6fd8b6d37e6d821af2f538f973a98",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && find specs/001-transactions -type f | sort && echo '---' && for f in specs/001-transactions/plan.md specs/001-transactions/research.md specs/001-transactions/data-model.md specs/001-transactions/quickstart.md specs/001-transactions/contracts/batch-writer.md; do printf '%s: %s lines, %s bytes\\\\n' \\\"$f\\\" \\\"$(wc -l < $f)\\\" \\\"$(wc -c < $f)\\\"; done\"}",
+          "reasoning_sha256": "1097e02ace65fdba8a5edbb878c23b55be84d8adce404510713acc16efefa40a",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792237378,
+    "id": "chatcmpl-fS5c6Cqt0sx1KL3oTTNThpI8VaoklLsF",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 2661,
+      "predicted_ms": 8617.242,
+      "predicted_n": 184,
+      "predicted_per_second": 21.236493068199778,
+      "predicted_per_token_ms": 47.08875409836066,
+      "prompt_ms": 21257.79,
+      "prompt_n": 25856,
+      "prompt_per_second": 1216.3070573187524,
+      "prompt_per_token_ms": 0.8221608137376238
+    },
+    "usage": {
+      "completion_tokens": 184,
+      "prompt_tokens": 28517,
+      "prompt_tokens_details": {
+        "cached_tokens": 2661
+      },
+      "total_tokens": 28701
+    }
+  },
+  "seconds": 31.796000000089407,
+  "stage": 1,
+  "started_at": "2026-10-17T11:42:26.680227+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 184,
+    "prompt_tokens": 28517,
+    "prompt_tokens_details": {
+      "cached_tokens": 2661
+    },
+    "total_tokens": 28701
+  }
+}

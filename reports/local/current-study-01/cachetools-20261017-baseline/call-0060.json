@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28528,
+  "ended_at": "2026-10-17T02:55:04.637835+00:00",
+  "max_output": 4096,
+  "original_sha256": "1da992494a49b27740a556d334c1f45f63b038ccbff32f91b13e9b5b346b862b",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 25364,
+  "preflight_seconds": 0.14099999982863665,
+  "removed_history_messages": 0,
+  "request_seconds": 160.96900000004098,
+  "request_sha256": "b01a3dc23716424381991311ab2d6ba64cb8a108cded848721174c31830f2695",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "All 101 pass. Now let me write my own comprehensive tests for R07/R08 and the R05 expiry-preservation clarification.\n\n{\"action\":\"shell\",\"command\":\"cat > /testbed/tests/test_tagged_ttl_own.py <<'PYEOF'\\n\\\"\\\"\\\"Own tests for R07/R08 (TTL) and the R05 expiry-preservation clarification.\\\"\\\"\\\"\\n\\nimport time\\n\\nimport pytest\\n\\nfrom cachetools.tagged import TaggedCache\\n\\n\\nclass FakeClock:\\n    def __init__(self, now=0.0):\\n        self.now = now\\n\\n    def __call__(self):\\n        return self.now\\n\\n\\nclass TestR07:\\n    def test_default_timer_is_monotonic(self):\\n        c = TaggedCache(3)\\n        assert c._TaggedCache__timer is time.monotonic\\n\\n    def test_custom_timer_stored(self):\\n        clock = FakeClock()\\n        c = TaggedCache(3, timer=clock)\\n        assert c._TaggedCache__timer is clock\\n\\n    def test_ttl_none_means_no_expiry(self):\\n        clock = FakeClock()\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1)\\n        c.now = None  # noqa\\n        clock.now = 10 ** 9\\n        assert c.get('a') == 1\\n        assert len(c) == 1\\n\\n    def test_basic_expiry(self):\\n        clock = FakeClock(0.0)\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ttl=5)\\n        clock.now = 4.999\\n        assert c.get('a') == 1\\n        clock.now = 5.0  # exact boundary -> expired\\n        with pytest.raises(KeyError):\\n            c.get('a')\\n        assert len(c) == 0\\n\\n    def test_ttl_zero_immediately_expired(self):\\n        clock = FakeClock(0.0)\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ttl=0)\\n        assert 'a' not in c\\n        assert len(c) == 0\\n        with pytest.raises(KeyError):\\n            c.get('a')\\n\\n    def test_ttl_float(self):\\n        clock = FakeClock(1.25)\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ttl=0.5)\\n        clock.now = 1.75  # exact boundary\\n        with pytest.raises(KeyError):\\n            c.get('a')\\n\\n    def test_expiry_uses_timer_at_put(self):\\n        clock = FakeClock(10.0)\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ttl=3)\\n        clock.now = 12.9\\n        assert 'a' in c\\n        clock.now = 13.0\\n        assert 'a' not in c\\n\\n    @pytest.mark.parametrize(\\\"bad\\\", [True, False, -1, -0.5, float('nan'), '5', None and 'x', [1], 5j, float('inf')])\\n    def test_invalid_ttl_rejected_before_mutation(self, bad):\\n        if bad == float('inf'):\\n            # inf is finite? No: math.isinf -> not finite -> reject\\n            pass\\n        clock = FakeClock()\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ['x'])\\n        with pytest.raises(ValueError):\\n            c.put('a', 9, ['y'], ttl=bad)\\n        # old value/tags/recency unchanged\\n        assert c.get('a') == 1\\n        assert c.invalidate('x') == 1\\n        assert len(c) == 0\\n\\n    def test_invalid_ttl_new_key_no_mutation(self):\\n        c = TaggedCache(3)\\n        with pytest.raises(ValueError):\\n            c.put('a', 1, ttl=-1)\\n        assert len(c) == 0\\n\\n    def test_bool_ttl_rejected(self):\\n        c = TaggedCache(3)\\n        with pytest.raises(ValueError):\\n            c.put('a', 1, ttl=True)\\n        with pytest.raises(ValueError):\\n            c.put('a', 1, ttl=False)\\n\\n    def test_inf_ttl_rejected(self):\\n        c = TaggedCache(3)\\n        with pytest.raises(ValueError):\\n            c.put('a', 1, ttl=float('inf'))\\n\\n    def test_constructor_timer_invalid_maxsize_still_rejected(self):\\n        with pytest.raises(ValueError):\\n            TaggedCache(0, timer=time.monotonic)\\n        with pytest.raises(ValueError):\\n            TaggedCache(True, timer=time.monotonic)\\n\\n\\nclass TestR08:\\n    def test_expired_removed_before_put(self):\\n        clock = FakeClock()\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ttl=1)\\n        c.put('b', 2, ttl=1)\\n        c.put('c', 3, ttl=1)\\n        clock.now = 2\\n        c.put('d', 4)  # purge first: a,b,c gone; no eviction of d\\n        assert len(c) == 1\\n        assert c.get('d') == 4\\n\\n    def test_expired_removed_before_len(self):\\n        clock = FakeClock()\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ttl=1)\\n        c.put('b', 2)\\n        clock.now = 2\\n        assert len(c) == 1\\n\\n    def test_expired_removed_before_invalidate(self):\\n        clock = FakeClock()\\n        c = TaggedCache(5, timer=clock)\\n        c.put('a', 1, ['x'], ttl=1)\\n        c.put('b', 2, ['x'])\\n        clock.now = 2\\n        assert c.invalidate('x') == 1  # only live 'b'\\n        assert 'a' not in c and 'b' not in c\\n\\n    def test_expired_removed_before_invalidate_many(self):\\n        clock = FakeClock()\\n        c = TaggedCache(5, timer=clock)\\n        c.put('a', 1, ['x'], ttl=1)\\n        c.put('b', 2, ['x', 'y'])\\n        c.put('c', 3, ['y'], ttl=1)\\n        clock.now = 2\\n        assert c.invalidate_many(['x', 'y'], mode='any') == 1  # only 'b'\\n        assert len(c) == 0\\n\\n    def test_expired_removed_before_resize(self):\\n        clock = FakeClock()\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ttl=1)\\n        c.put('b', 2)\\n        c.put('c', 3)\\n        clock.now = 2\\n        c.resize(2)\\n        # 'a' already gone; shrink 2->2 is a no-op; b and c survive\\n        assert len(c) == 2\\n        assert c.get('b') == 2 and c.get('c') == 3\\n\\n    def test_resize_does_not_recompute_expiry(self):\\n        \\\"\\\"\\\"R05 clarification: surviving entries keep absolute expiry.\\\"\\\"\\\"\\n        clock = FakeClock(0.0)\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ttl=10)\\n        c.put('b', 2, ttl=10)\\n        clock.now = 5.0\\n        c.resize(2)  # same size: no eviction; must not recompute expiry\\n        clock.now = 9.9\\n        assert 'a' in c and 'b' in c\\n        clock.now = 10.0  # original absolute expiry boundary\\n        assert len(c) == 0\\n\\n    def test_resize_shrink_does_not_drop_expiry(self):\\n        clock = FakeClock(0.0)\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ttl=10)\\n        c.put('b', 2, ttl=10)\\n        c.put('c', 3, ttl=10)\\n        clock.now = 5.0\\n        c.resize(1)  # evicts LRU 'a'; 'b' (and 'c' gone? no: 3->1 evicts a,b)\\n        # order a,b,c -> resize(1) keeps only 'c'\\n        assert len(c) == 1 and 'c' in c\\n        clock.now = 9.9\\n        assert 'c' in c\\n        clock.now = 10.0\\n        assert len(c) == 0  # absolute expiry preserved, not reset to 5+10\\n\\n    def test_resize_grow_preserves_expiry(self):\\n        clock = FakeClock(0.0)\\n        c = TaggedCache(1, timer=clock)\\n        c.put('a', 1, ttl=4)\\n        clock.now = 3.0\\n        c.resize(5)  # grow; must not make 'a' immortal\\n        clock.now = 3.9\\n        assert 'a' in c\\n        clock.now = 4.0\\n        assert len(c) == 0\\n\\n    def test_purge_does_not_touch_recency_of_survivors(self):\\n        clock = FakeClock()\\n        c = TaggedCache(2, timer=clock)\\n        c.put('a', 1, ttl=1)   # LRU\\n        c.put('b', 2, ttl=1)   # MRU\\n        c.put('c', 3)          # evicts 'a' (LRU); order: b, c\\n        clock.now = 2          # 'b' and 'c'... c has no ttl; b expires\\n        c.put('d', 4)          # purge 'b' first, then evict LRU 'c'\\n        assert len(c) == 2\\n        assert c.get('d') == 4\\n        # 'c' was evicted, not 'b' first-then-something-else\\n        assert 'c' not in c\\n\\n    def test_overwrite_replaces_prior_expiry(self):\\n        clock = FakeClock(0.0)\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ttl=100)\\n        clock.now = 50.0\\n        c.put('a', 2, ttl=1)  # new expiry at 51\\n        clock.now = 50.9\\n        assert c.get('a') == 2\\n        clock.now = 51.0\\n        with pytest.raises(KeyError):\\n            c.get('a')\\n\\n    def test_overwrite_to_none_clears_expiry(self):\\n        clock = FakeClock(0.0)\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ttl=1)\\n        clock.now = 0.5\\n        c.put('a', 2)  # now immortal\\n        clock.now = 10 ** 6\\n        assert c.get('a') == 2\\n\\n    def test_get_missing_raises_keyerror(self):\\n        c = TaggedCache(3)\\n        with pytest.raises(KeyError):\\n            c.get('nope')\\n\\n    def test_get_expired_with_default(self):\\n        clock = FakeClock()\\n        c = TaggedCache(3, timer=clock)\\n        c.put('a', 1, ttl=1)\\n        clock.now = 2\\n        assert c.get('a', 'dflt') == 'dflt'\\n\\n    def test_existing_callers_without_timer_ttl_unchanged(self):\\n        c = TaggedCache(2)\\n        c.put('a', 1, ['x'])\\n        time.sleep(0.01)\\n        assert c.get('a') == 1\\n        assert len(c) == 1\\n        c.resize(1)\\n        assert c.maxsize == 1\\n\\n    def test_invalidation_counts_only_live(self):\\n        clock = FakeClock()\\n        c = TaggedCache(5, timer=clock)\\n        c.put('a', 1, ['t'], ttl=1)\\n        c.put('b', 2, ['t'], ttl=1)\\n        c.put('c', 3, ['t'])\\n        clock.now = 2\\n        assert c.invalidate('t') == 1\\n        assert len(c) == 0\\n\\n    def test_eviction_of_expired_key_leaves_no_stale_tags(self):\\n        clock = FakeClock()\\n        c = TaggedCache(2, timer=clock)\\n        c.put('a', 1, ['x'], ttl=1)\\n        c.put('b', 2, ['y'])\\n        clock.now = 2\\n        c.put('c', 3, ['x'])  # purge 'a', evict 'b'\\n        assert c.invalidate('x') == 1  # only 'c'\\n        assert c.invalidate('y') == 0\\n\\n    def test_timer_called_with_default_monotonic(self):\\n        c = TaggedCache(3)\\n        c.put('a', 1, ttl=10)\\n        c.put('b', 2, ttl=10)\\n        assert len(c) == 2\\nPYEOF\\ncd /testbed && PYTHONPATH=src:. python -m pytest tests/test_tagged_ttl_own.py -q 2>&1 | tail -15\"}",
+          "reasoning_sha256": "fdc59ada5bc987dbb6693dca74fd02bf6a0dc44012d546e3a447196105109e22",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792205704,
+    "id": "chatcmpl-HFq1zjN37XZQVXtZTlGSF2Hzko2NXVs8",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 25131,
+      "predicted_ms": 159961.843,
+      "predicted_n": 3164,
+      "predicted_per_second": 19.77346560079331,
+      "predicted_per_token_ms": 50.57282421751501,
+      "prompt_ms": 900.618,
+      "prompt_n": 233,
+      "prompt_per_second": 258.711240503743,
+      "prompt_per_token_ms": 3.86531330472103
+    },
+    "usage": {
+      "completion_tokens": 3164,
+      "prompt_tokens": 25364,
+      "prompt_tokens_details": {
+        "cached_tokens": 25131
+      },
+      "total_tokens": 28528
+    }
+  },
+  "seconds": 160.96900000004098,
+  "stage": 3,
+  "started_at": "2026-10-17T02:52:23.664466+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 3164,
+    "prompt_tokens": 25364,
+    "prompt_tokens_details": {
+      "cached_tokens": 25131
+    },
+    "total_tokens": 28528
+  }
+}

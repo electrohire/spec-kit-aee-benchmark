@@ -1,0 +1,62 @@
+{
+  "budget_debit": 28822,
+  "ended_at": "2026-10-17T06:01:21.038561+00:00",
+  "max_output": 4096,
+  "original_sha256": "105c570501794cfb67d545fabb5e28394c8a81accec60b7a8063e938b572c64a",
+  "phase": "specify",
+  "preflight_http_requests": 16,
+  "preflight_input_tokens": 28633,
+  "preflight_seconds": 1.4059999999590218,
+  "removed_history_messages": 88,
+  "request_seconds": 29.608999999938533,
+  "request_sha256": "2e25df69c0c85846eda8086ccf0c91d4a794b8c71dbbbe55b93c7f8e260ae900",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"wc -l /tmp/patch_spec.py && tail -5 /tmp/patch_spec.py && python3 -c \"import ast; ast.parse(open('/tmp/patch_spec.py').read())\" 2>&1 | tail -3\"}",
+          "reasoning_sha256": "7b7ed085232eacee3bf89d5c6b2c5169c38daf8f1b2ad67afcdebbb8501586f7",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792216881,
+    "id": "chatcmpl-mQDaUQi19xuVZAUKq7Q58kuW01Q4Gr4S",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 6294,
+      "predicted_ms": 8815.117,
+      "predicted_n": 189,
+      "predicted_per_second": 21.326999970618655,
+      "predicted_per_token_ms": 46.88892021276596,
+      "prompt_ms": 18899.605,
+      "prompt_n": 22339,
+      "prompt_per_second": 1181.982374763917,
+      "prompt_per_token_ms": 0.8460363042213169
+    },
+    "usage": {
+      "completion_tokens": 189,
+      "prompt_tokens": 28633,
+      "prompt_tokens_details": {
+        "cached_tokens": 6294
+      },
+      "total_tokens": 28822
+    }
+  },
+  "seconds": 29.608999999938533,
+  "stage": 2,
+  "started_at": "2026-10-17T06:00:51.421117+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 189,
+    "prompt_tokens": 28633,
+    "prompt_tokens_details": {
+      "cached_tokens": 6294
+    },
+    "total_tokens": 28822
+  }
+}

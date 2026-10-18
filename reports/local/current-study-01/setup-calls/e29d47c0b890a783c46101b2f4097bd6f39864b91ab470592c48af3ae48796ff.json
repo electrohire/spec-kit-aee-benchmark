@@ -1,0 +1,63 @@
+{
+  "budget_debit": 13117,
+  "ended_at": "2026-10-16T22:27:10.656430+00:00",
+  "max_output": 4096,
+  "original_sha256": "e29d47c0b890a783c46101b2f4097bd6f39864b91ab470592c48af3ae48796ff",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 12225,
+  "preflight_seconds": 0.14099999982863665,
+  "removed_history_messages": 0,
+  "request_seconds": 8.858999999938533,
+  "request_sha256": "e741548888282ea179942c610aa5a75988ef8d3b1a78de483619061eae1f3148",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"draft\",\"claims\":{\"schema_version\":\"1.0\",\"claims\":[{\"id\":\"R01\",\"text\":\"Create smoke.py with add(a,b) returning a+b\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"this milestone\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"milestone requirement R01\",\"uncertainty\":\"high\",\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"source_id\":\"tests/test_smoke.py\",\"direction\":\"supports\",\"description\":\"Unit tests confirm add function returns correct sum for integers and floats.\"}],\"metadata\":{},\"role\":\"\",\"severity\":\"\",\"headline\":\"\"},{\"id\":\"R02\",\"text\":\"Support negative integers, zero and floats\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"this milestone\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"milestone requirement R02\",\"uncertainty\":\"high\",\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"source_id\":\"tests/test_smoke.py\",\"direction\":\"supports\",\"description\":\"Unit tests confirm add handles negative integers, zero and floats.\"}],\"metadata\":{},\"role\":\"\",\"severity\":\"\",\"headline\":\"\"},{\"id\":\"R03\",\"text\":\"Add and run tests\",\"kind\":\"requirement\",\"status\":\"draft\",\"stage\":\"created\",\"boundary\":[\"this milestone\"],\"depends_on\":[],\"conflicts_with\":[],\"falsification_tests\":[],\"source_ref\":\"milestone requirement R03\",\"uncertainty\":\"high\",\"evidence\":[{\"kind\":\"observed\",\"source_quality\":\"test\",\"source_id\":\"tests/test_smoke.py\",\"direction\":\"supports\",\"description\":\"Pytest run produced no failures, confirming tests are executed.\"}],\"metadata\":{},\"role\":\"\",\"severity\":\"\",\"headline\":\"\"}]} }",
+          "reasoning_content_sha256": "fefd5898de18214ae3cdea687b09dd5437ada29a456485832df5f2dc83f548f2",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792189630,
+    "id": "chatcmpl-cyopRO4tH5IdfSFcbq734T41Eb3PzKhk",
+    "model": "gpt-oss-20b-Q5_K_M",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 12195,
+      "predicted_ms": 8732.099,
+      "predicted_n": 892,
+      "predicted_per_second": 102.03732229788051,
+      "predicted_per_token_ms": 9.800335578002246,
+      "prompt_ms": 62.551,
+      "prompt_n": 30,
+      "prompt_per_second": 479.60863935029016,
+      "prompt_per_token_ms": 2.0850333333333335
+    },
+    "usage": {
+      "completion_tokens": 892,
+      "prompt_tokens": 12225,
+      "prompt_tokens_details": {
+        "cached_tokens": 12195
+      },
+      "total_tokens": 13117
+    }
+  },
+  "seconds": 8.858999999938533,
+  "source": "current-workflow-calibration-02/calls/call-0027.json",
+  "stage": 1,
+  "started_at": "2026-10-16T22:27:01.796044+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 892,
+    "prompt_tokens": 12225,
+    "prompt_tokens_details": {
+      "cached_tokens": 12195
+    },
+    "total_tokens": 13117
+  }
+}

@@ -17,6 +17,7 @@ from gpu_experiment import local_json, digest
 from long_horizon import Sandbox, CLAIMS, skill, PHASE_GOALS
 from report_long_horizon import source_digest
 from context_window import select_context
+from runtime_checks import RuntimeWatchdog, RuntimeIntervention, validate_capacity
 
 ROOT = Path(__file__).resolve().parents[1]
 TASK = ROOT / 'benchmarks/repeated_local'
@@ -53,7 +54,11 @@ def reservation(call):
 
 def compact_assessment(value):
     # Preserve semantic fields without nested raw copies. Full JSON stays in evidence.
-    return {key:value.get(key) for key in ('outcome','findings','next_action','confidence','uncertainty') if key in value}
+    result={key:value.get(key) for key in ('outcome','findings','next_action','confidence','uncertainty') if key in value}
+    metadata=value.get('metadata') or {}
+    display={key:metadata[key] for key in ('lane_states','reported_statuses','evaluator_count') if key in metadata}
+    if display:result['metadata']=display
+    return result
 
 
 def tests_for(project, stage, public):
@@ -98,7 +103,7 @@ def grade(project,snapshot,stage,public,expected=None):
                    for n in ET.fromstring(xml).iter('testcase')]
         except ET.ParseError: cases=[]
         return dict(passed=result['exit_code']==0 and bool(cases) and (expected is None or len(cases)==expected) and all(c['passed'] for c in cases),
-                    test_count=len(cases),cases=cases,output=result['stdout']+result['stderr'],expected=expected)
+                    exit_code=result['exit_code'],test_count=len(cases),cases=cases,output=result['stdout']+result['stderr'],expected=expected)
 
 
 class Provider:
@@ -108,13 +113,20 @@ class Provider:
         self.folder.mkdir(parents=True,exist_ok=True)
     def query(self,messages,phase,stage,deadline):
         if (self.folder.parent/'CANCEL').exists(): raise KeyboardInterrupt('cancelled')
+        if deadline-time.monotonic()<self.timeout:
+            raise TimeoutError('insufficient_request_time_reservation_before_preflight')
         preflight=dict(stage=stage,phase=phase,started_at=utc(),http_requests=0)
         self.preflights.append(preflight);preflight_begin=time.monotonic()
         def measure(selected):
+            remaining=deadline-time.monotonic()-self.timeout
+            if remaining<=0:raise TimeoutError('context_preflight_exhausted_phase_budget')
+            probe_timeout=min(30,remaining)
             preflight['http_requests']+=1
-            prompt=local_json('/apply-template',dict(messages=selected,chat_template_kwargs={'enable_thinking':True}))['prompt']
+            prompt=local_json('/apply-template',dict(messages=selected,chat_template_kwargs={'enable_thinking':True}),timeout=probe_timeout)['prompt']
+            remaining=deadline-time.monotonic()-self.timeout
+            if remaining<=0:raise TimeoutError('context_preflight_exhausted_phase_budget')
             preflight['http_requests']+=1
-            return len(local_json('/tokenize',dict(content=prompt,add_special=False))['tokens'])
+            return len(local_json('/tokenize',dict(content=prompt,add_special=False),timeout=min(30,remaining))['tokens'])
         try:
             chosen,count,removed=select_context(messages,measure,CONFIG['context'],CONFIG['max_output'])
             preflight.update(input_tokens=count,removed_history_messages=removed)
@@ -169,6 +181,7 @@ class Session:
     def __init__(self,box,provider,store,identity):
         self.box=box; self.provider=provider; self.store=store; self.identity=identity
         self.history=[];self.tools=0
+        self.watchdog=None
     def phase(self,phase,instructions,spec,stage,limit,deadline,claims=False):
         messages=[dict(role='system',content=COMMON+'\nCURRENT PHASE: '+phase+'\n'+instructions+('\n'+CLAIMS if claims else '')),
                   dict(role='user',content=spec)] + list(self.history)
@@ -219,6 +232,7 @@ class Session:
                     if not isinstance(bundle,dict) or not bundle.get('claims'):raise ValueError('Nonempty draft claims required')
                     for c in bundle['claims']:Claim.from_dict(c)
                     draft_claims=bundle
+                    if self.watchdog:self.watchdog.success()
                     messages.append(dict(role='user',content='Draft claims recorded (%d claim(s)). Continue exploration or refinement; your final done must still include the complete claims object.' % len(bundle['claims'])))
                     continue
                 if action.get('action')=='done':
@@ -231,15 +245,22 @@ class Session:
                     if required:
                         check=self.box.execute("python -c \"from pathlib import Path;p=Path('"+required+"');assert p.is_file() and len(p.read_text())>100 and '[PROJECT_NAME]' not in p.read_text()\"")
                         if check['exit_code']:raise ValueError('Required phase artifact missing or scaffold: '+required)
-                    done=action;break
+                    done=action
+                    if self.watchdog:self.watchdog.success()
+                    break
                 if action.get('action')!='shell' or not isinstance(action.get('command'),str):raise ValueError('Expected shell command or done')
                 result=self.box.execute(action['command'],60);self.tools+=1
                 ref=self.store.artifact(canonical(dict(command=action['command'],**result)))
                 self.store.append('tools',dict(attempt_id=self.identity,timestamp=utc(),artifact=ref,exit_code=result['exit_code']))
+                if self.watchdog:
+                    self.watchdog.tool(action['command'],result,phase,stage)
+                    self.watchdog.success()
                 observation=dict(exit_code=result['exit_code'],stdout=result['stdout'][-6000:],stderr=result['stderr'][-2000:],evidence_ref=ref['path'],source_id=ref['sha256'])
                 messages.append(dict(role='user',content=json.dumps(observation)))
             except Exception as exc:
+                if isinstance(exc,RuntimeIntervention):raise
                 errors.append(type(exc).__name__+': '+str(exc))
+                if self.watchdog:self.watchdog.error(exc,phase,stage)
                 if 'server_not_idle' in str(exc) or isinstance(exc,TimeoutError) or 'token_cap' in str(exc):break
                 messages.append(dict(role='user',content='Last action/request failed: '+errors[-1]+'. Correct the action; do not invent evidence.'))
         self.history=messages[2:]
@@ -276,7 +297,7 @@ class Session:
 def do_assessment(session,row,phase,done):
     claims=grounded_claims(done['claims'],session.store,session.identity)
     started=time.monotonic()
-    evaluation=assess(ROOT,claims,phase,session.store)
+    evaluation=assess(ROOT,claims,phase,session.store,session.identity)
     value=dict(phase=phase,claims=claims,evaluation=evaluation,outcome=evaluation['outcome'],seconds=time.monotonic()-started)
     row['assessments'].append(value)
     session.history.append(dict(role='user',content='AEE/Evaluator findings (not hidden grades). Claim atomicity/schema/evidence-quality findings are not established code defects: fix claim structure or gather scoped evidence, and leave correct code unchanged unless a concrete behavioral defect is identified. Do not repeatedly rewrite passing tests to change claim wording. '+json.dumps(compact_assessment(evaluation))))
@@ -325,13 +346,22 @@ def latency(out):
     write_json(out/'calibration.json',dict(passed=True,timeout=timeout,context_tokens=tokens,samples=2,records=[f'call-{i:04}.json' for i in range(2)]))
 
 
-def campaign(out,preflight,timeout):
+def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=None,
+             context_preflight=None,assets=None,extra_sources=(),completion_contract='',freeze_hook=None,block_on_assessment=False):
+    # Stop before any scored call if later phases/repairs cannot be reserved.
+    validate_capacity(CONFIG['stage_seconds'],timeout,
+                      ['constitution','specify','plan','tasks','implement','converge','final_implement'],
+                      CONFIG['repair_rounds'])
     # No outcome-dependent changes and no rerun/resume of partial trajectories.
     out.mkdir(parents=True,exist_ok=False)
     cal=json.loads((preflight/'calibration.json').read_text());assert cal['passed']
-    gate=json.loads((ROOT/'artifacts/repeated-workflow-04/result.json').read_text());assert gate['passed']
-    latency_result=json.loads((ROOT/'artifacts/repeated-latency-01/calibration.json').read_text());assert latency_result['passed'] and timeout==latency_result['timeout']
-    context_calibration=json.loads((ROOT/'artifacts/context-selection-01/result.json').read_text())
+    workflow_preflight=workflow_preflight or ROOT/'artifacts/repeated-workflow-04/result.json'
+    latency_preflight=latency_preflight or ROOT/'artifacts/repeated-latency-01/calibration.json'
+    context_preflight=context_preflight or ROOT/'artifacts/context-selection-01/result.json'
+    assets=assets or ROOT/'artifacts/repeated-assets'
+    gate=json.loads(workflow_preflight.read_text());assert gate['passed']
+    latency_result=json.loads(latency_preflight.read_text());assert latency_result['passed'] and timeout==latency_result['timeout']
+    context_calibration=json.loads(context_preflight.read_text())
     assert context_calibration['passed'] and context_calibration['selector_sha256']==digest(ROOT/'scripts/context_window.py')
     for project,meta in PROJECTS.items():
         actual=subprocess.check_output(['git','-c','safe.directory='+str((ROOT/meta['upstream']).resolve()).replace('\\','/'),'-C',str(ROOT/meta['upstream']),'rev-parse','HEAD'],text=True).strip()
@@ -339,21 +369,27 @@ def campaign(out,preflight,timeout):
     schedule=[(p,s,a) for p in PROJECTS for s in SEEDS for a in ARMS]
     random.Random(SEEDS[0]).shuffle(schedule)
     hashes={str(p.relative_to(ROOT)):digest(p) for folder in (TASK,ROOT/'prompts',ROOT/'src/benchmark_runner',ROOT/'.specify/extensions',ROOT/'.specify/templates',ROOT/'.specify/scripts/python') for p in folder.rglob('*') if p.is_file() and '__pycache__' not in p.parts}
-    for item in (ROOT/'artifacts/repeated-assets/installed-aee').rglob('*.py'):
+    for item in (assets/'installed-aee').rglob('*.py'):
         hashes[str(item.relative_to(ROOT))]=digest(item)
     for name in ('hardware.json','server-launch.json','package-versions.json'):
-        item=ROOT/'artifacts/repeated-assets'/name;hashes[str(item.relative_to(ROOT))]=digest(item)
+        item=assets/name;hashes[str(item.relative_to(ROOT))]=digest(item)
     hashes['scripts/calibrate_repeated_workflow.py']=digest(ROOT/'scripts/calibrate_repeated_workflow.py')
     hashes['scripts/context_window.py']=digest(ROOT/'scripts/context_window.py')
+    hashes['scripts/runtime_checks.py']=digest(ROOT/'scripts/runtime_checks.py')
     hashes['scripts/calibrate_context_selection.py']=digest(ROOT/'scripts/calibrate_context_selection.py')
-    hashes['artifacts/context-selection-01/result.json']=digest(ROOT/'artifacts/context-selection-01/result.json')
+    hashes[str(context_preflight.relative_to(ROOT))]=digest(context_preflight)
+    for item in (*extra_sources,workflow_preflight,latency_preflight):
+        hashes[str(item.relative_to(ROOT))]=digest(item)
     hashes['scripts/gpu_experiment.py']=digest(ROOT/'scripts/gpu_experiment.py')
     hashes['scripts/report_long_horizon.py']=digest(ROOT/'scripts/report_long_horizon.py')
     hashes['uv.lock']=digest(ROOT/'uv.lock')
     hashes['.specify/memory/constitution.md']=digest(ROOT/'.specify/memory/constitution.md')
     hashes['scripts/repeated_local.py']=digest(__file__);hashes['scripts/long_horizon.py']=digest(ROOT/'scripts/long_horizon.py')
+    hashes={name.replace('\\','/'):value for name,value in hashes.items()}
     freeze=dict(created_at=utc(),config={**CONFIG,'timeout':timeout},schedule=schedule,hashes=hashes,projects=PROJECTS,image=IMAGE,server_props=local_json('/props'),calibration=cal,workflow_calibration=gate,latency_calibration=latency_result,context_selection_calibration=context_calibration)
     write_json(out/'freeze.json',freeze,exclusive=True)
+    if freeze_hook is not None:
+        freeze_hook(out,freeze)
     rows=[]
     for project,seed,arm in schedule:
         identity=f'{project}-{seed}-{arm}';folder=out/identity;folder.mkdir()
@@ -361,6 +397,7 @@ def campaign(out,preflight,timeout):
         with ProjectSandbox(project) as box:
             if arm!='baseline':box.stage_workflow()
             session=Session(box,provider,store,identity)
+            session.watchdog=RuntimeWatchdog(folder,capture=lambda:box.snapshot(folder/'runtime-stopped.tar'))
             for stage in (1,2,3):
                 begin=time.monotonic();deadline=begin+CONFIG['stage_seconds'];start=len(provider.calls)
                 spec='\n\n'.join((TASK/project/f'stage{i}.md').read_text() for i in range(1,stage+1))
@@ -373,43 +410,72 @@ def campaign(out,preflight,timeout):
                     subprocess.run(['docker','restart',box.name],check=True,capture_output=True,timeout=30)
                     session.history=[]
                 phases=['solve'] if arm=='baseline' else (['constitution'] if stage==1 else [])+['specify','plan','tasks','implement','converge','final_implement']
-                for phase in phases:
+                for phase_index,phase in enumerate(phases):
+                    # Keep at least one physical-call reservation for every later
+                    # phase and each public repair round. These limits are frozen.
+                    phase_deadline=deadline-(len(phases)-phase_index-1+CONFIG['repair_rounds'])*timeout
+                    session.watchdog.deadline(phase_deadline,timeout,phase,stage)
                     left=CONFIG['primary_calls']-(len(provider.calls)-start)
-                    if left<=0:break
+                    if left<=0:session.watchdog.stop('primary call budget exhausted before phase',phase=phase,stage=stage)
                     goal='Implement the active milestone; plan and keep notes as useful; run public and upstream tests. Finish with done.' if arm=='baseline' else PHASE_GOALS[phase].replace('/testbed/tinydb','/testbed/'+PROJECTS[project]['package'])
                     instructions=goal
                     if arm!='baseline':
                         instructions=(ROOT/'prompts/adapter.md').read_text().replace('/workflow','/testbed')+'\n'+skill(phase).replace('$ARGUMENTS',goal+'\n'+spec)+'\n'+goal+'\nUse SPECIFY_FEATURE_DIRECTORY=/testbed/specs/001-transactions. Keep documents concise and evidence explicit.'
+                    if phase in ('solve','final_implement'):
+                        instructions+='\n'+completion_contract
                     limits={'constitution':32,'specify':32,'plan':32,'tasks':32,'implement':32,'converge':16,'final_implement':16}
                     need_claims=arm=='spec_kit_aee' and phase in ('specify','plan','tasks','implement')
                     phase_before=folder/f'stage{stage}-{phase}-before.tar';box.snapshot(phase_before)
-                    phase_row=session.phase(phase,instructions,spec,stage,min(left,limits.get(phase,left)),deadline,need_claims)
+                    phase_row=session.phase(phase,instructions,spec,stage,min(left,limits.get(phase,left)),phase_deadline,need_claims)
                     phase_after=folder/f'stage{stage}-{phase}-after.tar';box.snapshot(phase_after)
-                    phase_row.update(source_changed=source_digest(phase_before)!=source_digest(phase_after),source_before=str(phase_before.relative_to(out)),source_after=str(phase_after.relative_to(out)))
+                    phase_row.update(source_changed=source_digest(phase_before)!=source_digest(phase_after),source_before=phase_before.relative_to(out).as_posix(),source_after=phase_after.relative_to(out).as_posix())
                     row['phases'].append(phase_row)
+                    write_json(out/'attempts.json',rows)
+                    session.watchdog.completed(phase_row,stage)
                     if need_claims and phase_row['done']:
                         try:
                             evaluation=do_assessment(session,row,phase,phase_row['done'])
-                            if phase=='implement' and evaluation['outcome'] not in ('pass','warn'):
-                                rework=session.phase('evidence_rework','Address actual evidence gaps with repository inspection/tests and scoped changes. Keep unsupported claims explicit; return revised claims.',spec,stage,min(16,max(0,CONFIG['primary_calls']-(len(provider.calls)-start))),deadline,True)
+                            if block_on_assessment and evaluation['outcome']=='block':
+                                row['blocked_phase']=phase;row['blocked_reason']='AEE block verdict'
+                            elif phase=='implement' and evaluation['outcome'] not in ('pass','warn'):
+                                rework=session.phase('evidence_rework','Address actual evidence gaps with repository inspection/tests and scoped changes. Keep unsupported claims explicit; return revised claims.',spec,stage,min(16,max(0,CONFIG['primary_calls']-(len(provider.calls)-start))),phase_deadline,True)
                                 row['phases'].append(rework)
-                                if rework['done']:do_assessment(session,row,'implement',rework['done'])
-                        except Exception as exc:row['assessments'].append(dict(phase=phase,error=repr(exc)))
+                                session.watchdog.completed(rework,stage)
+                                if rework['done']:
+                                    checked=do_assessment(session,row,'implement',rework['done'])
+                                    if block_on_assessment and checked['outcome']=='block':
+                                        row['blocked_phase']=phase;row['blocked_reason']='AEE block after evidence rework'
+                        except Exception as exc:
+                            if isinstance(exc,RuntimeIntervention):raise
+                            row['assessments'].append(dict(phase=phase,error=repr(exc)))
+                            if block_on_assessment:
+                                row['blocked_phase']=phase;row['blocked_reason']='AEE execution error'
                     write_json(out/'attempts.json',rows)
+                    if row.get('blocked_phase'):break
                 primary=folder/f'stage{stage}-primary.tar';box.snapshot(primary)
+                primary_terminal=(row['phases'][-1].get('done') or {}) if row['phases'] else {}
+                primary_declaration=primary_terminal.get('completion_asserted')
+                row['primary_completion_asserted']=primary_declaration if type(primary_declaration) is bool else None
                 expected=cal['projects'][project]['reference'][f'{stage}-public']['test_count']
-                row['primary_snapshot']=str(primary.relative_to(out));row['public_primary']=grade(project,primary,stage,True,expected)
+                row['primary_snapshot']=primary.relative_to(out).as_posix();row['public_primary']=grade(project,primary,stage,True,expected)
                 current=row['public_primary']
                 for iteration in (1,2):
-                    if current['passed']:break
+                    if current['passed'] or row.get('blocked_phase'):break
                     before=source_digest(primary if iteration==1 else folder/f'stage{stage}-repair1.tar')
-                    repair=session.phase('repair','Repair using public test feedback. Preserve active requirements.\n'+current['output'][-12000:],spec,stage,CONFIG['repair_calls'],deadline)
+                    repair_deadline=deadline-(CONFIG['repair_rounds']-iteration)*timeout
+                    session.watchdog.deadline(repair_deadline,timeout,'repair',stage)
+                    repair=session.phase('repair','Repair using public test feedback. Preserve active requirements.\n'+current['output'][-12000:]+'\n'+completion_contract,spec,stage,CONFIG['repair_calls'],repair_deadline)
+                    session.watchdog.completed(repair,stage)
                     snap=folder/f'stage{stage}-repair{iteration}.tar';box.snapshot(snap)
                     current=grade(project,snap,stage,True,expected)
-                    repair.update(round=iteration,grade=current,source_changed=source_digest(snap)!=before,snapshot=str(snap.relative_to(out)))
+                    repair.update(round=iteration,grade=current,source_changed=source_digest(snap)!=before,snapshot=snap.relative_to(out).as_posix())
                     row['repairs'].append(repair)
                 final=folder/f'stage{stage}-final.tar';box.snapshot(final)
-                row.update(final_snapshot=str(final.relative_to(out)),public_final=current,seconds=time.monotonic()-begin,calls=len(provider.calls)-start,ended_at=utc())
+                row.update(final_snapshot=final.relative_to(out).as_posix(),public_final=current,seconds=time.monotonic()-begin,calls=len(provider.calls)-start,ended_at=utc())
+                terminal=(row['repairs'] or row['phases'])[-1].get('done') or {}
+                declaration=terminal.get('completion_asserted')
+                row['completion_asserted']=declaration if type(declaration) is bool else None
+                row['completion_declaration_source']='repair' if row['repairs'] else 'primary'
                 notes=box.execute('find .specify specs -type f 2>/dev/null; test ! -f HANDOFF.md || cat HANDOFF.md')
                 row['notes_index']=notes
                 if arm!='baseline':

@@ -1,4 +1,17 @@
 # Preregistered pilot protocol (execution settings pending)
+
+Current controller pins were refreshed on 2026-10-16; see
+[current tooling](current-tooling.md). The new prospective hallucination/cost
+analysis contract is [lifecycle-v1](lifecycle-protocol.md), Spec003. Older version
+sections below document historical migrations, not current install instructions.
+Historical measured runs and freezes remain immutable.
+
+The refresh also repairs stale calls to the assessment adapter: every active
+controller script now passes its attempt identity explicitly. A regression check
+covers these call sites. The local provider now checks frozen model identity,
+supports a multi-model router catalog, and rejects a mismatched response without
+discarding its measured native usage. These are quality fixes, not scored benefits.
+
 Status: protocol and task selection prepared before any scored result.
 20 Python SWE-bench Verified test tasks, three independent repeats, three arms:
 180 attempts. Seed 20260917. Eligible tasks are the pinned task repository's

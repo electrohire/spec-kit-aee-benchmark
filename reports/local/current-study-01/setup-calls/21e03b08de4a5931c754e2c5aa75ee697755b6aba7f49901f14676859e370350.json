@@ -1,0 +1,63 @@
+{
+  "budget_debit": 11503,
+  "ended_at": "2026-10-16T23:18:52.953625+00:00",
+  "max_output": 4096,
+  "original_sha256": "21e03b08de4a5931c754e2c5aa75ee697755b6aba7f49901f14676859e370350",
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 11299,
+  "preflight_seconds": 0.1559999999590218,
+  "removed_history_messages": 0,
+  "request_seconds": 21.25,
+  "request_sha256": "1b05315a1bd6531c581dfd3bae69ec44400ebd471b7d7c007f07124acb16d239",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && echo '=== specs tree ===' && find specs -type f 2>/dev/null | sort && echo '=== feature.json ===' && cat .specify/feature.json 2>/dev/null || echo 'NO feature.json' && echo '=== init-options ===' && cat .specify/init-options.json 2>/dev/null || echo 'NO init-options' && echo '=== extensions.yml ===' && cat .specify/extensions.yml 2>/dev/null || echo 'no extensions.yml'\"}",
+          "reasoning_content_sha256": "069c9f7294d3efb149847a1b45bc07143497d414e5892266fea2b19f57ad7e87",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792192732,
+    "id": "chatcmpl-GG9PUHnaK8oXYr9CtZQ4uO2h4gi1e1I0",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 9281.783,
+      "predicted_n": 204,
+      "predicted_per_second": 21.870797884415097,
+      "predicted_per_token_ms": 45.723068965517236,
+      "prompt_ms": 9877.67,
+      "prompt_n": 11299,
+      "prompt_per_second": 1143.8932460792878,
+      "prompt_per_token_ms": 0.8742074519869015
+    },
+    "usage": {
+      "completion_tokens": 204,
+      "prompt_tokens": 11299,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 11503
+    }
+  },
+  "seconds": 21.25,
+  "source": "current-workflow-calibration-04/calls/call-0010.json",
+  "stage": 1,
+  "started_at": "2026-10-16T23:18:31.699694+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 204,
+    "prompt_tokens": 11299,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 11503
+  }
+}

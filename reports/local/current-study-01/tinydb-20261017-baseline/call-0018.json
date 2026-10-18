@@ -1,0 +1,62 @@
+{
+  "budget_debit": 17692,
+  "ended_at": "2026-10-17T09:51:55.388349+00:00",
+  "max_output": 4096,
+  "original_sha256": "2c6e875001e71caca45e85c24fbe4240971960d12ea12f803fd65f25f1b1e1ff",
+  "phase": "solve",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 14945,
+  "preflight_seconds": 0.1559999999590218,
+  "removed_history_messages": 0,
+  "request_seconds": 128.125,
+  "request_sha256": "820126cd591464aaaf9ccc7ecd518d828138b3c48a79f08f78b61fa92da4cc0d",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cat > /testbed/tinydb/journal.py <<'EOF'\n\\\"\\\"\\\"\nThis module contains the batch journal writer for TinyDB.\n\n:class:`BatchWriter` wraps a :class:`~tinydb.database.TinyDB` instance and\napplies batches of insert/remove operations to the default table atomically:\neither every operation of a batch succeeds, or the complete pre-batch state\nof the default table is restored.\n\\\"\\\"\\\"\n\nfrom collections.abc import Mapping\nfrom typing import Any, Optional, Sequence, Union\n\nfrom .database import TinyDB\n\n__all__ = ('BatchWriter',)\n\n\nclass BatchWriter:\n    \\\"\\\"\\\"\n    Apply batches of journal operations to a TinyDB default table atomically.\n\n    :param db: The TinyDB instance to wrap. Its ordinary APIs are left\n        untouched; the writer only uses ``db.table`` and ``db.storage``.\n    \\\"\\\"\\\"\n\n    def __init__(self, db: TinyDB) -> None:\n        self._db = db\n\n    # -- helpers -----------------------------------------------------------\n\n    def _default_table(self):\n        \\\"\\\"\\\"\n        Return the (cached) default table instance of the wrapped database.\n        \\\"\\\"\\\"\n        return self._db.table(self._db.default_table_name)\n\n    @staticmethod\n    def _deep_copy_document(document: Mapping) -> dict:\n        \\\"\\\"\\\"\n        Deep-copy a document so that neither the database nor the value\n        returned to the caller can alias the caller's input.\n\n        Only JSON-compatible data can be stored in TinyDB, so ``dict``\n        copies are sufficient for the supported nested structures.\n        \\\"\\\"\\\"\n        def copy(value: Any) -> Any:\n            if isinstance(value, dict):\n                return {key: copy(item) for key, item in value.items()}\n            if isinstance(value, (list, tuple)):\n                return [copy(item) for item in value]\n            return value\n\n        return copy(dict(document))\n\n    @staticmethod\n    def _validate_operations(operations: Sequence[Mapping]) -> list[tuple[str, Any]]:\n        \\\"\\\"\\\"\n        Validate the raw operation list.\n\n        Returns a list of ``(kind, payload)`` tuples where ``kind`` is\n        ``'insert'`` (payload: a deep-copied document dict) or ``'remove'``\n        (payload: the positive integer document ID).\n\n        Raises :class:`ValueError` for unknown or malformed operations.\n        \\\"\\\"\\\"\n        validated: list[tuple[str, Any]] = []\n\n        for index, operation in enumerate(operations):\n            if not isinstance(operation, Mapping):\n                raise ValueError(\n                    f'Operation at index {index} is not a dictionary'\n                )\n\n            op = operation.get('op')\n\n            if op == 'insert':\n                document = operation.get('document')\n                if not isinstance(document, Mapping):\n                    raise ValueError(\n                        f'Operation at index {index} is malformed: '\n                        f'insert requires a \"document\" dict'\n                    )\n                validated.append(('insert', dict(document)))\n\n            elif op == 'remove':\n                doc_id = operation.get('doc_id')\n                if isinstance(doc_id, bool) or not isinstance(doc_id, int):\n                    raise ValueError(\n                        f'Operation at index {index} is malformed: '\n                        f'remove requires a \"doc_id\" positive integer'\n                    )\n                if doc_id <= 0:\n                    raise ValueError(\n                        f'Operation at index {index} is malformed: '\n                        f'remove requires a \"doc_id\" positive integer'\n                    )\n                validated.append(('remove', doc_id))\n\n            else:\n                raise ValueError(\n                    f'Operation at index {index} has unknown op {op!r}'\n                )\n\n        return validated\n\n    def _snapshot_default_table(self) -> tuple[dict, bool, dict]:\n        \\\"\\\"\\\"\n        Take a deep copy of the current default table data.\n\n        Returns ``(tables, had_key, pre_table)`` where ``tables`` is the\n        complete pre-batch database state as read from the storage (never\n        ``None``), ``had_key`` whether the default table existed and\n        ``pre_table`` a deep copy of the default table's documents.\n        \\\"\\\"\\\"\n        tables = self._db.storage.read()\n        if tables is None:\n            tables = {}\n\n        name = self._db.default_table_name\n        had_key = name in tables\n        raw_table = tables.get(name, {})\n        pre_table = {\n            str(doc_id): self._deep_copy_document(doc)\n            for doc_id, doc in raw_table.items()\n        }\n\n        return tables, had_key, pre_table\n\n    def _restore_default_table(self, had_key: bool, pre_table: dict) -> None:\n        \\\"\\\"\\\"\n        Restore the complete pre-batch default table data.\n\n        Other tables are left untouched. Previously acquired table handles\n        are refreshed so they observe the restored state.\n        \\\"\\\"\\\"\n        tables = self._db.storage.read()\n        if tables is None:\n            tables = {}\n\n        name = self._db.default_table_name\n        if had_key:\n            tables[name] = pre_table\n        else:\n            # The default table did not exist before the batch; make sure\n            # it does not exist after the rollback either.\n            tables.pop(name, None)\n\n        self._db.storage.write(tables)\n\n        # Refresh the default table handle so previously acquired\n        # ``db.table('_default')`` instances see the restored data.\n        self._default_table().clear_cache()\n\n    # -- public API --------------------------------------------------------\n\n    def apply(self, operations: Sequence[Mapping]) -> list[int]:\n        \\\"\\\"\\\"\n        Apply a batch of operations to the default table atomically.\n\n        Each operation is a dictionary of either the form\n        ``{'op': 'insert', 'document': {...}}`` or\n        ``{'op': 'remove', 'doc_id': <positive int>}``.\n\n        Operations are validated and applied sequentially. If any operation\n        fails (unknown/malformed operations or a remove targeting a missing\n        document ID), the complete pre-batch default-table data is restored\n        and the error is re-raised.\n\n        :param operations: the list of operation dictionaries\n        :returns: a list of the inserted documents' IDs (remove operations\n            add no result)\n        :raises ValueError: on unknown/malformed operations or a remove\n            targeting a missing document ID\n        \\\"\\\"\\\"\n        if not isinstance(operations, (list, tuple)):\n            raise ValueError('operations must be a list of operation dictionaries')\n\n        # Validate the whole batch up front so a malformed operation can\n        # never leave the database in a partially modified state.\n        validated = self._validate_operations(operations)\n\n        # Snapshot the complete pre-batch default table data.\n        _, had_key, pre_table = self._snapshot_default_table()\n\n        table = self._default_table()\n        inserted_ids: list[int] = []\n\n        try:\n            for kind, payload in validated:\n                if kind == 'insert':\n                    inserted_ids.append(table.insert(payload))\n                else:\n                    doc_id = payload\n                    if table.get(doc_id) is None:\n                        raise ValueError(\n                            f'Document with ID {doc_id} does not exist'\n                        )\n                    table.remove(doc_ids=[doc_id])\n        except Exception:\n            # Roll back to the complete pre-batch default-table data.\n            self._restore_default_table(had_key, pre_table)\n            raise\n\n        return inserted_ids\nEOF\npython -c \"import tinydb.journal; print('import ok')\"\nPYTHONPATH=src:. python -c \"from tinydb.journal import BatchWriter; print('ok')\"\"}",
+          "reasoning_sha256": "ead4942913e598f7255728db03cf341d69126186ce7f1f047f8b2b87408d3103",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792230715,
+    "id": "chatcmpl-shWTeVU11orvIGl9mnQSa3PyvGBEpUSE",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 14630,
+      "predicted_ms": 126959.639,
+      "predicted_n": 2747,
+      "predicted_per_second": 21.62892098330557,
+      "predicted_per_token_ms": 46.2343914785142,
+      "prompt_ms": 1092.511,
+      "prompt_n": 315,
+      "prompt_per_second": 288.32661639104776,
+      "prompt_per_token_ms": 3.468288888888889
+    },
+    "usage": {
+      "completion_tokens": 2747,
+      "prompt_tokens": 14945,
+      "prompt_tokens_details": {
+        "cached_tokens": 14630
+      },
+      "total_tokens": 17692
+    }
+  },
+  "seconds": 128.125,
+  "stage": 1,
+  "started_at": "2026-10-17T09:49:47.243377+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2747,
+    "prompt_tokens": 14945,
+    "prompt_tokens_details": {
+      "cached_tokens": 14630
+    },
+    "total_tokens": 17692
+  }
+}
