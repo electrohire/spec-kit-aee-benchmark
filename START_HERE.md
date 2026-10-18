@@ -1,5 +1,19 @@
 # Resume the benchmark
 
+## Required tool fields —protocolv4
+
+PR22 merged after both Ubuntu jobs passed444tests. Its fresh transport03 then
+caught an ordinary-schema omission: a write_file action with summary but no
+content. The probe stopped after two calls/221known tokens, before a write,
+latency, readiness or scoring. Retain it; see
+reports/investigation/current-action-transport-03-20261018/README.md.
+
+Protocolv4 requires actual shell/write arguments in disjoint branches in every
+phase. No guards/budgets change. Merge the exact-green correction, then use unused
+transport04, latency03, context04 and preparation06 paths after checking none is
+occupied and no inference is active. This is a new frozen candidate, never a
+retry/resume of03 or05. Earlier v3-only text below is retained history.
+
 ## Current literal-write repair —2026-10-18
 
 Pipeline05 stopped before scoring on an unchanged-action loop in the third

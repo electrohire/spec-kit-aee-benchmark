@@ -1,5 +1,17 @@
 # Corrected local study02 — prospective, 2026-10-18
 
+## Required tool fields —native protocolv4
+
+Transport03 exposed v3's ordinary optional content field and stopped before tool
+execution after two calls. Retain its221known native tokens. Protocolv4 uses
+disjoint shell/write/terminal branches in all phases: shell requires a nonempty
+command and write_file requires path/content. A summary cannot substitute for
+file bytes. Claim terminals retain their typed nonempty bundles. Host path,
+UTF-8 size and runtime checks remain enforced; shape is not truth or adequacy.
+Fresh four-action transport, grammar-bound latency and six-case readiness are
+required under new unused output paths. No intervention or budget is relaxed.
+The older v3-only description below is superseded where fields were optional.
+
 ## Native action protocolv3 preparation amendment
 
 Readiness05 stopped before scoring on an identical-action loop while the model
