@@ -39,3 +39,12 @@ User-requested evidence completion:
 Measured outcome: 362 offline tests passed. One readiness call used 102 measured
 tokens at $0 API spend. The fresh attempt completed; its 24 structured collection failures,6/48assessment
 coverage and 0-inference repairs prevent a completed-workflow efficacy conclusion.
+
+
+### Readiness06 correction validation (2026-10-18)
+
+- Retain the stopped planning case and all45calls/913,153native tokens; scoring did not start.
+- Parse shell actions before executing any prefix; exercise actual Linux effects and valid heredoc exit status.
+- Observe basic artifact state at half/three-quarter phase slices; preserve the unchanged physical call limit and final semantic limitations.
+- Focused actual AEE/Evaluator audit literal-write-04:92tests,6observations,0evidence findings,1composed result,iterate. Human acceptance remains unrecorded.
+- Full Ubuntu CI, exact-green merge and fresh all-six-case readiness still required before scoring. No result/savings claim is completed here.

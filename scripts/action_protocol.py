@@ -73,6 +73,18 @@ print(json.dumps(dict(path=name,bytes=len(data),sha256=hashlib.sha256(data).hexd
 '''
 
 
+_SHELL_SCRIPT = '''import base64,subprocess,sys
+command=base64.b64decode(sys.argv[1],validate=True).decode('utf-8')
+check=subprocess.run(['bash','--noprofile','--norc','-n','-c',command],capture_output=True)
+# Bash can return zero for an unterminated heredoc while warning on stderr.
+# Reject every parser diagnostic before executing any part of the command.
+if check.returncode or check.stderr:
+    sys.stderr.buffer.write(b'ShellSyntaxRejected: command was not executed. Use write_file for literal file content.\\n'+check.stderr)
+    sys.exit(2)
+sys.exit(subprocess.run(['bash','-lc',command]).returncode)
+'''
+
+
 def action_command(action):
     """Translate a tool action into one sandbox command; never run it on the host.
 
@@ -84,7 +96,10 @@ def action_command(action):
         command=action.get('command')
         if not isinstance(command,str) or not command.strip():
             raise ValueError('shell requires a nonempty command')
-        return command
+        if '\x00' in command or len(command.encode('utf-8')) > MAX_WRITE_BYTES:
+            raise ValueError('shell requires bounded NUL-free UTF-8 command')
+        data=base64.b64encode(command.encode('utf-8')).decode()
+        return 'python -c '+shlex.quote(_SHELL_SCRIPT)+' '+shlex.quote(data)
     if action.get('action') != 'write_file':
         raise ValueError('expected shell, write_file or done')
     name=action.get('path');content=action.get('content')

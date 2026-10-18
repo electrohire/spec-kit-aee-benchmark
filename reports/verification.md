@@ -1,5 +1,25 @@
 # Requirement-to-evidence matrix
 
+## Shell preflight validation
+
+Recorded audit reports/aee-validation/current-20261018-literal-write-04 contains
+92 passing focused cases, six bounded machine observations, zero evidence findings
+and one actual composed AEE/Evaluator result. Outcome iterate preserves unrecorded
+human acceptance; this is not model readiness or comparative efficacy.
+
+## Readiness06 intervention — prospective shell preflight
+
+Pipeline06 stopped before scoring: the first combined case exhausted planning
+and submitted an incomplete five-heredoc shell command that emptied its artifacts.
+All45calls/913,153known native tokens remain; see
+reports/investigation/current-readiness-06-20261018/README.md. No supervisor is
+active and no retry has started. The candidate shell parser rejects syntax errors
+and diagnostics before any command executes; equal half/three-quarter phase
+notices report remaining actions and observed artifact presence without semantic
+approval. No budgets/guards/grading are relaxed. Merge only exact-green, then use
+fresh unused preparation paths and current action-hash-bound transport/timing.
+Never reuse06 cases or resume its changed source. Product release stays held.
+
 ## Required native tool arguments —protocolv4
 
 Fresh transport03 stopped before a write when ordinary v3 permitted a summary
