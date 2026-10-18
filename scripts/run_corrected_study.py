@@ -18,13 +18,18 @@ import current_local as current
 ROOT=Path(__file__).resolve().parents[1]
 
 
-def execute(status,latency,context,transport):
+def execute(status,latency,context,transport,preparation_id=2):
     state=dict(stage='waiting_for_preparatory_inference',complete=False,started_at=utc(),commands=[],paid_calls=False)
-    representative=ROOT/'artifacts/current-representative-01'
-    preflight=ROOT/'artifacts/current-preflight-02'
+    if preparation_id<2:raise ValueError('preparation ID must be2or greater')
+    representative=ROOT/f'artifacts/current-representative-{preparation_id:02}'
+    preflight=ROOT/f'artifacts/current-preflight-{preparation_id:02}'
+    grade=ROOT/f'artifacts/current-grade-calibration-{preparation_id:02}'
+    image=ROOT/f'artifacts/current-image-audit-{preparation_id:02}.json'
     raw=ROOT/'artifacts/current-study-02'
     report=ROOT/'reports/local/current-study-02'
-    if any(p.exists() for p in (representative,preflight,raw,report)):raise FileExistsError('new study paths required; no retry/resume')
+    occupied=[str(p) for p in (representative,preflight,grade,image,raw,report) if p.exists()]
+    if occupied:raise FileExistsError('new preparation/study paths required; no retry/resume: '+', '.join(occupied))
+    state['preparation_id']=preparation_id
     status.parent.mkdir(parents=True,exist_ok=True);write_json(status,state,exclusive=True)
     def command(stage,argv,timeout):
         state.update(stage=stage,updated_at=utc());write_json(status,state)
@@ -43,15 +48,15 @@ def execute(status,latency,context,transport):
             time.sleep(5)
         for path in (latency/'calibration.json',context/'result.json',transport/'result.json'):
             if not json.loads(path.read_text()).get('passed'):raise ValueError('preparation failed: '+str(path))
-        command('independent-grade-controls',['scripts/current_local.py','grade-calibration',ROOT/'artifacts/current-grade-calibration-02'],1800)
-        command('image-isolation',['scripts/audit_current_image.py',ROOT/'artifacts/current-image-audit-02.json'],120)
+        command('independent-grade-controls',['scripts/current_local.py','grade-calibration',grade],1800)
+        command('image-isolation',['scripts/audit_current_image.py',image],120)
         command('representative-readiness',['scripts/representative_readiness.py',representative,'--latency',latency/'calibration.json'],6*current.CONFIG['stage_seconds']+1800)
         validate_representative(representative,current.CONFIG,current.runner.PROJECTS,current.runner.ARMS)
         preflight.mkdir()
         for source,name in ((representative,'representative'),(representative/'tinydb-spec_kit_aee','workflow'),
-                            (ROOT/'artifacts/current-grade-calibration-02','grade'),(latency,'latency'),(context,'context'),(transport,'transport')):
+                            (grade,'grade'),(latency,'latency'),(context,'context'),(transport,'transport')):
             shutil.copytree(source,preflight/name)
-        shutil.copyfile(ROOT/'artifacts/current-image-audit-02.json',preflight/'image-audit.json')
+        shutil.copyfile(image,preflight/'image-audit.json')
         command('dependency-replay',['scripts/replay_current_dependencies.py',preflight/'workflow',preflight/'dependency-replay'],300)
         command('scored-study',['scripts/current_local.py','run',raw,'--preflight',preflight],12*3*current.CONFIG['stage_seconds']+3600)
         export=['scripts/report_current.py',raw,report]
@@ -74,8 +79,9 @@ def execute(status,latency,context,transport):
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--status',type=Path,required=True)
+    parser.add_argument('--preparation-id',type=int,required=True)
     args=parser.parse_args()
-    execute(args.status,ROOT/'artifacts/current-latency-calibration-02',ROOT/'artifacts/current-context-calibration-03',ROOT/'artifacts/current-action-transport-01')
+    execute(args.status,ROOT/'artifacts/current-latency-calibration-02',ROOT/'artifacts/current-context-calibration-03',ROOT/'artifacts/current-action-transport-01',args.preparation_id)
 
 
 if __name__=='__main__':main()
