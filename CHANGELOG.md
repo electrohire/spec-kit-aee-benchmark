@@ -2,6 +2,12 @@
 
 ## Unreleased — authorized corrected study02, 2026-10-18
 
+- Record study02's terminal infrastructure interruption,192 generation calls and
+ 4,172,224 native tokens without claiming completed scoring or comparative benefit.
+ Preserve 348 input hashes, existing chains and all setup history. Document current
+ successful storage/template diagnostics without asserting an established cause.
+
+
 - Retain readiness07's81calls/1,798,706native tokens and missing-task intervention.
   Retire phase-scoped host imperatives while keeping structured observations,
   errors and model claims; reject stale controls before another model request.

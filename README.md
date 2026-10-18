@@ -3,17 +3,25 @@
 Compare ordinary coding agents, Spec Kit, and Spec Kit with Evaluator + Applied
 Epistemic Engineering on correctness, hallucination management, rework and cost.
 
-**Evidence summary:** the current attempt exposed a benchmark calibration/budget
+**Historical study01 evidence:** the retained attempt exposed a benchmark calibration/budget
 defect: neither structured arm received an implementation-phase model call.
 It cannot rank completed workflows or answer whether AEE reduces hallucinations
 or saves money. The [investigation](reports/investigation/current-study-01-20261018/README.md)
 and runtime safeguards are documented; original observations and costs remain visible.
 
+**Study02 stopped on infrastructure (2026-10-18):** the scored campaign halted
+on a model HTTP 500 followed by a storage-write error. Its192 retained generation
+calls contain4,172,224 native tokens; all 348 frozen input hashes and existing event
+chains verify. Final independent grading/export and paired conclusions are not
+complete. [Incident, partial accounting and recovery limits](reports/investigation/current-study-02-infrastructure-stop-20261018/README.md).
+No campaign has been resumed or retried.
+
 ## Results and interpretation
 
-A corrected study is being prepared under a [new prospective protocol](benchmarks/current_local/PROTOCOL-v2.md).
-It requires six representative project/workflow/repair cases before scoring;
-the retained study01 figures below have not been replaced by hoped-for results.
+Study02 began under the [prospective inclusive failure policy](benchmarks/current_local/PROTOCOL-v2.md)
+and stopped on the infrastructure incident above. Model failures are measured
+outcomes; infrastructure faults halt the campaign. The retained study01 figures
+below are historical and have not been replaced by an incomplete comparison.
 
 <!-- current-results:start -->
 
