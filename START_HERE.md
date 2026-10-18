@@ -9,12 +9,17 @@ representative project×treatment readiness; study01 remains unchanged. The
 native JSON transport probes passed all three actions with retained local calls.
 No paid inference, service configuration changes or external publication.
 
-Run only one scripts/run_corrected_study.py pipeline with a new status path.
+Run only one scripts/run_corrected_study.py pipeline with a new status path and
+explicit --preparation-id4 (or a genuinely unused later ID after diagnosis).
 It waits for the existing context03/latency02 preparation, then runs independent
 controls, all six real project readiness cases, four-checkpoint dependency replay,
 new scored generation and export. It stops on any failure without retry/resume.
 Do not launch duplicate inference while preparation or the pipeline is active.
-Read the durable checkpoint and artifacts/current-pipeline-02.json before acting.
+Read the durable checkpoint and latest recorded pipeline status before acting.
+Pipeline02 stopped before inference on an existing grade-calibration02 directory;
+retain that failure and never overwrite/retry it. Grade-calibration03 is also an
+older retained control run. New preparation04 checks all
+output paths before starting any child process.
 The historical no-merge language below is superseded by the latest explicit user
 authorization, recorded in constitution1.4.0. Never infer readiness/scoring passed
 from a process merely starting. Results must retain failures and unknown costs.

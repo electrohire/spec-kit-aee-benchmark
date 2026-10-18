@@ -105,3 +105,14 @@ def test_successful_child_exit_cannot_bypass_missing_readiness_artifacts(tmp_pat
         supervisor.execute(status,tmp_path/'latency',tmp_path/'context',tmp_path/'transport')
     assert len(commands)==3 and not any('scripts/current_local.py' in c and 'run' in c for c in commands)
     assert json.loads(status.read_text())['stage']=='intervention_required'
+
+
+@pytest.mark.parametrize('name',['current-grade-calibration-03','current-image-audit-03.json'])
+def test_all_preparation_paths_checked_before_any_child_or_status(tmp_path,monkeypatch,name):
+    import run_corrected_study as supervisor
+    monkeypatch.setattr(supervisor,'ROOT',tmp_path)
+    monkeypatch.setattr(supervisor.subprocess,'run',lambda *a,**k:pytest.fail('must stop before child commands'))
+    (tmp_path/'artifacts').mkdir();(tmp_path/'artifacts'/name).touch()
+    with pytest.raises(FileExistsError,match=name):
+        supervisor.execute(tmp_path/'status.json',tmp_path/'latency',tmp_path/'context',tmp_path/'transport',3)
+    assert not (tmp_path/'status.json').exists()

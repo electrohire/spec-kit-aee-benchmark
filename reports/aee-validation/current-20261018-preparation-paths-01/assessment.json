@@ -1,0 +1,1484 @@
+{
+  "schema_version": "1.0",
+  "methodology_version": "2.0",
+  "project": "benchmark-current-validation",
+  "phase": "after_implement",
+  "outcome": "iterate",
+  "summary": "Assessed 10 claim(s); found 20 failure mode(s); 0 claim(s) below the 0.70 confidence threshold. Shared evidence: 1 supporting source(s) shared across 10 of 10 claim(s); the same evidence set supports multiple claims (FR-2.8, reporting only, no outcome effect in this phase). Stage cap: 10 claim(s) below stage 'explained'; the outcome cannot be 'pass' (Spec 004 R1.4). Not understood: 20 residual unknown(s) are recorded on this assessment (Spec 004 R5.2). Lane 1 (machine verification): outcome iterate; 10 claim(s) at or above the 0.70 threshold, 0 below. Lane 2 (human acceptance): stages by effective stage: checked 10. Lane-2 lag: 10 claim(s) below explained; 10 verified but unexplained.",
+  "created_at": "2026-10-18T13:17:12.484822Z",
+  "claims": [
+    {
+      "id": "OBS-CURRENT-001",
+      "text": "All 17 collected cases in test_lifecycle.py passed in this recorded local execution.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "boundary": [
+        "Only this recorded local Python3.12.6 execution; not general correctness or workflow efficacy"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "description": "Actual process output; accompanying JUnit confirms all collected cases passed without skips.",
+          "source_id": "recorded-pytest-execution",
+          "independent_of": [],
+          "observed_at": "2026-10-18T13:17:12.253752+00:00",
+          "content_hash": "7b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c",
+          "content_hash_status": "verified"
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "A case in the recorded JUnit file has a failure, error or skip; the process exit is nonzero."
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "tests/test_lifecycle.py",
+      "domain": "",
+      "confidence": 0.9,
+      "confidence_band": "high",
+      "failures": [
+        {
+          "id": "AEE-OBS-CURRENT-001-INDEPENDENCE-UNMODELED",
+          "claim_id": "OBS-CURRENT-001",
+          "challenge": "Shared-evidence independence challenge",
+          "breakpoint": "Supporting evidence 'recorded-pytest-execution' (ref(s): reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log) is shared with claim(s) OBS-CURRENT-002, OBS-CURRENT-003, OBS-CURRENT-004, OBS-CURRENT-005, OBS-CURRENT-006, OBS-CURRENT-007, OBS-CURRENT-008, OBS-CURRENT-009, OBS-CURRENT-010 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+          "severity": "medium",
+          "category": "independence_unmodeled",
+          "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-OBS-CURRENT-001-VERIFIED-UNEXPLAINED",
+          "claim_id": "OBS-CURRENT-001",
+          "challenge": "Verified but unexplained",
+          "breakpoint": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+          "severity": "medium",
+          "category": "verified_unexplained",
+          "recovery_hint": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "checked",
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated test runner",
+          "date": "2026-10-18T13:17:12.253752+00:00",
+          "basis": "Actual pytest process exited0; execution artifact SHA2567b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c; no human acceptance asserted"
+        }
+      ],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "OBS-CURRENT-002",
+      "text": "All 13 collected cases in test_local_provider.py passed in this recorded local execution.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "boundary": [
+        "Only this recorded local Python3.12.6 execution; not general correctness or workflow efficacy"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "description": "Actual process output; accompanying JUnit confirms all collected cases passed without skips.",
+          "source_id": "recorded-pytest-execution",
+          "independent_of": [],
+          "observed_at": "2026-10-18T13:17:12.253752+00:00",
+          "content_hash": "7b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c",
+          "content_hash_status": "verified"
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "A case in the recorded JUnit file has a failure, error or skip; the process exit is nonzero."
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "tests/test_local_provider.py",
+      "domain": "",
+      "confidence": 0.9,
+      "confidence_band": "high",
+      "failures": [
+        {
+          "id": "AEE-OBS-CURRENT-002-INDEPENDENCE-UNMODELED",
+          "claim_id": "OBS-CURRENT-002",
+          "challenge": "Shared-evidence independence challenge",
+          "breakpoint": "Supporting evidence 'recorded-pytest-execution' (ref(s): reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log) is shared with claim(s) OBS-CURRENT-001, OBS-CURRENT-003, OBS-CURRENT-004, OBS-CURRENT-005, OBS-CURRENT-006, OBS-CURRENT-007, OBS-CURRENT-008, OBS-CURRENT-009, OBS-CURRENT-010 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+          "severity": "medium",
+          "category": "independence_unmodeled",
+          "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-OBS-CURRENT-002-VERIFIED-UNEXPLAINED",
+          "claim_id": "OBS-CURRENT-002",
+          "challenge": "Verified but unexplained",
+          "breakpoint": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+          "severity": "medium",
+          "category": "verified_unexplained",
+          "recovery_hint": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "checked",
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated test runner",
+          "date": "2026-10-18T13:17:12.253752+00:00",
+          "basis": "Actual pytest process exited0; execution artifact SHA2567b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c; no human acceptance asserted"
+        }
+      ],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "OBS-CURRENT-003",
+      "text": "All 2 collected cases in test_assessment_contract.py passed in this recorded local execution.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "boundary": [
+        "Only this recorded local Python3.12.6 execution; not general correctness or workflow efficacy"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "description": "Actual process output; accompanying JUnit confirms all collected cases passed without skips.",
+          "source_id": "recorded-pytest-execution",
+          "independent_of": [],
+          "observed_at": "2026-10-18T13:17:12.253752+00:00",
+          "content_hash": "7b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c",
+          "content_hash_status": "verified"
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "A case in the recorded JUnit file has a failure, error or skip; the process exit is nonzero."
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "tests/test_assessment_contract.py",
+      "domain": "",
+      "confidence": 0.9,
+      "confidence_band": "high",
+      "failures": [
+        {
+          "id": "AEE-OBS-CURRENT-003-INDEPENDENCE-UNMODELED",
+          "claim_id": "OBS-CURRENT-003",
+          "challenge": "Shared-evidence independence challenge",
+          "breakpoint": "Supporting evidence 'recorded-pytest-execution' (ref(s): reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log) is shared with claim(s) OBS-CURRENT-001, OBS-CURRENT-002, OBS-CURRENT-004, OBS-CURRENT-005, OBS-CURRENT-006, OBS-CURRENT-007, OBS-CURRENT-008, OBS-CURRENT-009, OBS-CURRENT-010 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+          "severity": "medium",
+          "category": "independence_unmodeled",
+          "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-OBS-CURRENT-003-VERIFIED-UNEXPLAINED",
+          "claim_id": "OBS-CURRENT-003",
+          "challenge": "Verified but unexplained",
+          "breakpoint": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+          "severity": "medium",
+          "category": "verified_unexplained",
+          "recovery_hint": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "checked",
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated test runner",
+          "date": "2026-10-18T13:17:12.253752+00:00",
+          "basis": "Actual pytest process exited0; execution artifact SHA2567b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c; no human acceptance asserted"
+        }
+      ],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "OBS-CURRENT-004",
+      "text": "All 7 collected cases in test_current_local.py passed in this recorded local execution.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "boundary": [
+        "Only this recorded local Python3.12.6 execution; not general correctness or workflow efficacy"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "description": "Actual process output; accompanying JUnit confirms all collected cases passed without skips.",
+          "source_id": "recorded-pytest-execution",
+          "independent_of": [],
+          "observed_at": "2026-10-18T13:17:12.253752+00:00",
+          "content_hash": "7b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c",
+          "content_hash_status": "verified"
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "A case in the recorded JUnit file has a failure, error or skip; the process exit is nonzero."
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "tests/test_current_local.py",
+      "domain": "",
+      "confidence": 0.9,
+      "confidence_band": "high",
+      "failures": [
+        {
+          "id": "AEE-OBS-CURRENT-004-INDEPENDENCE-UNMODELED",
+          "claim_id": "OBS-CURRENT-004",
+          "challenge": "Shared-evidence independence challenge",
+          "breakpoint": "Supporting evidence 'recorded-pytest-execution' (ref(s): reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log) is shared with claim(s) OBS-CURRENT-001, OBS-CURRENT-002, OBS-CURRENT-003, OBS-CURRENT-005, OBS-CURRENT-006, OBS-CURRENT-007, OBS-CURRENT-008, OBS-CURRENT-009, OBS-CURRENT-010 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+          "severity": "medium",
+          "category": "independence_unmodeled",
+          "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-OBS-CURRENT-004-VERIFIED-UNEXPLAINED",
+          "claim_id": "OBS-CURRENT-004",
+          "challenge": "Verified but unexplained",
+          "breakpoint": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+          "severity": "medium",
+          "category": "verified_unexplained",
+          "recovery_hint": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "checked",
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated test runner",
+          "date": "2026-10-18T13:17:12.253752+00:00",
+          "basis": "Actual pytest process exited0; execution artifact SHA2567b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c; no human acceptance asserted"
+        }
+      ],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "OBS-CURRENT-005",
+      "text": "All 7 collected cases in test_report_current.py passed in this recorded local execution.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "boundary": [
+        "Only this recorded local Python3.12.6 execution; not general correctness or workflow efficacy"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "description": "Actual process output; accompanying JUnit confirms all collected cases passed without skips.",
+          "source_id": "recorded-pytest-execution",
+          "independent_of": [],
+          "observed_at": "2026-10-18T13:17:12.254307+00:00",
+          "content_hash": "7b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c",
+          "content_hash_status": "verified"
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "A case in the recorded JUnit file has a failure, error or skip; the process exit is nonzero."
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "tests/test_report_current.py",
+      "domain": "",
+      "confidence": 0.9,
+      "confidence_band": "high",
+      "failures": [
+        {
+          "id": "AEE-OBS-CURRENT-005-INDEPENDENCE-UNMODELED",
+          "claim_id": "OBS-CURRENT-005",
+          "challenge": "Shared-evidence independence challenge",
+          "breakpoint": "Supporting evidence 'recorded-pytest-execution' (ref(s): reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log) is shared with claim(s) OBS-CURRENT-001, OBS-CURRENT-002, OBS-CURRENT-003, OBS-CURRENT-004, OBS-CURRENT-006, OBS-CURRENT-007, OBS-CURRENT-008, OBS-CURRENT-009, OBS-CURRENT-010 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+          "severity": "medium",
+          "category": "independence_unmodeled",
+          "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-OBS-CURRENT-005-VERIFIED-UNEXPLAINED",
+          "claim_id": "OBS-CURRENT-005",
+          "challenge": "Verified but unexplained",
+          "breakpoint": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+          "severity": "medium",
+          "category": "verified_unexplained",
+          "recovery_hint": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "checked",
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated test runner",
+          "date": "2026-10-18T13:17:12.253752+00:00",
+          "basis": "Actual pytest process exited0; execution artifact SHA2567b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c; no human acceptance asserted"
+        }
+      ],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "OBS-CURRENT-006",
+      "text": "All 3 collected cases in test_project_assessment.py passed in this recorded local execution.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "boundary": [
+        "Only this recorded local Python3.12.6 execution; not general correctness or workflow efficacy"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "description": "Actual process output; accompanying JUnit confirms all collected cases passed without skips.",
+          "source_id": "recorded-pytest-execution",
+          "independent_of": [],
+          "observed_at": "2026-10-18T13:17:12.254307+00:00",
+          "content_hash": "7b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c",
+          "content_hash_status": "verified"
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "A case in the recorded JUnit file has a failure, error or skip; the process exit is nonzero."
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "tests/test_project_assessment.py",
+      "domain": "",
+      "confidence": 0.9,
+      "confidence_band": "high",
+      "failures": [
+        {
+          "id": "AEE-OBS-CURRENT-006-INDEPENDENCE-UNMODELED",
+          "claim_id": "OBS-CURRENT-006",
+          "challenge": "Shared-evidence independence challenge",
+          "breakpoint": "Supporting evidence 'recorded-pytest-execution' (ref(s): reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log) is shared with claim(s) OBS-CURRENT-001, OBS-CURRENT-002, OBS-CURRENT-003, OBS-CURRENT-004, OBS-CURRENT-005, OBS-CURRENT-007, OBS-CURRENT-008, OBS-CURRENT-009, OBS-CURRENT-010 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+          "severity": "medium",
+          "category": "independence_unmodeled",
+          "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-OBS-CURRENT-006-VERIFIED-UNEXPLAINED",
+          "claim_id": "OBS-CURRENT-006",
+          "challenge": "Verified but unexplained",
+          "breakpoint": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+          "severity": "medium",
+          "category": "verified_unexplained",
+          "recovery_hint": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "checked",
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated test runner",
+          "date": "2026-10-18T13:17:12.254307+00:00",
+          "basis": "Actual pytest process exited0; execution artifact SHA2567b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c; no human acceptance asserted"
+        }
+      ],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "OBS-CURRENT-007",
+      "text": "All 2 collected cases in test_current_report_audit.py passed in this recorded local execution.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "boundary": [
+        "Only this recorded local Python3.12.6 execution; not general correctness or workflow efficacy"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "description": "Actual process output; accompanying JUnit confirms all collected cases passed without skips.",
+          "source_id": "recorded-pytest-execution",
+          "independent_of": [],
+          "observed_at": "2026-10-18T13:17:12.254307+00:00",
+          "content_hash": "7b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c",
+          "content_hash_status": "verified"
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "A case in the recorded JUnit file has a failure, error or skip; the process exit is nonzero."
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "tests/test_current_report_audit.py",
+      "domain": "",
+      "confidence": 0.9,
+      "confidence_band": "high",
+      "failures": [
+        {
+          "id": "AEE-OBS-CURRENT-007-INDEPENDENCE-UNMODELED",
+          "claim_id": "OBS-CURRENT-007",
+          "challenge": "Shared-evidence independence challenge",
+          "breakpoint": "Supporting evidence 'recorded-pytest-execution' (ref(s): reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log) is shared with claim(s) OBS-CURRENT-001, OBS-CURRENT-002, OBS-CURRENT-003, OBS-CURRENT-004, OBS-CURRENT-005, OBS-CURRENT-006, OBS-CURRENT-008, OBS-CURRENT-009, OBS-CURRENT-010 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+          "severity": "medium",
+          "category": "independence_unmodeled",
+          "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-OBS-CURRENT-007-VERIFIED-UNEXPLAINED",
+          "claim_id": "OBS-CURRENT-007",
+          "challenge": "Verified but unexplained",
+          "breakpoint": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+          "severity": "medium",
+          "category": "verified_unexplained",
+          "recovery_hint": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "checked",
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated test runner",
+          "date": "2026-10-18T13:17:12.254307+00:00",
+          "basis": "Actual pytest process exited0; execution artifact SHA2567b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c; no human acceptance asserted"
+        }
+      ],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "OBS-CURRENT-008",
+      "text": "All 3 collected cases in test_study_investigation.py passed in this recorded local execution.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "boundary": [
+        "Only this recorded local Python3.12.6 execution; not general correctness or workflow efficacy"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "description": "Actual process output; accompanying JUnit confirms all collected cases passed without skips.",
+          "source_id": "recorded-pytest-execution",
+          "independent_of": [],
+          "observed_at": "2026-10-18T13:17:12.254307+00:00",
+          "content_hash": "7b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c",
+          "content_hash_status": "verified"
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "A case in the recorded JUnit file has a failure, error or skip; the process exit is nonzero."
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "tests/test_study_investigation.py",
+      "domain": "",
+      "confidence": 0.9,
+      "confidence_band": "high",
+      "failures": [
+        {
+          "id": "AEE-OBS-CURRENT-008-INDEPENDENCE-UNMODELED",
+          "claim_id": "OBS-CURRENT-008",
+          "challenge": "Shared-evidence independence challenge",
+          "breakpoint": "Supporting evidence 'recorded-pytest-execution' (ref(s): reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log) is shared with claim(s) OBS-CURRENT-001, OBS-CURRENT-002, OBS-CURRENT-003, OBS-CURRENT-004, OBS-CURRENT-005, OBS-CURRENT-006, OBS-CURRENT-007, OBS-CURRENT-009, OBS-CURRENT-010 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+          "severity": "medium",
+          "category": "independence_unmodeled",
+          "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-OBS-CURRENT-008-VERIFIED-UNEXPLAINED",
+          "claim_id": "OBS-CURRENT-008",
+          "challenge": "Verified but unexplained",
+          "breakpoint": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+          "severity": "medium",
+          "category": "verified_unexplained",
+          "recovery_hint": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "checked",
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated test runner",
+          "date": "2026-10-18T13:17:12.254307+00:00",
+          "basis": "Actual pytest process exited0; execution artifact SHA2567b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c; no human acceptance asserted"
+        }
+      ],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "OBS-CURRENT-009",
+      "text": "All 13 collected cases in test_runtime_checks.py passed in this recorded local execution.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "boundary": [
+        "Only this recorded local Python3.12.6 execution; not general correctness or workflow efficacy"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "description": "Actual process output; accompanying JUnit confirms all collected cases passed without skips.",
+          "source_id": "recorded-pytest-execution",
+          "independent_of": [],
+          "observed_at": "2026-10-18T13:17:12.254307+00:00",
+          "content_hash": "7b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c",
+          "content_hash_status": "verified"
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "A case in the recorded JUnit file has a failure, error or skip; the process exit is nonzero."
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "tests/test_runtime_checks.py",
+      "domain": "",
+      "confidence": 0.9,
+      "confidence_band": "high",
+      "failures": [
+        {
+          "id": "AEE-OBS-CURRENT-009-INDEPENDENCE-UNMODELED",
+          "claim_id": "OBS-CURRENT-009",
+          "challenge": "Shared-evidence independence challenge",
+          "breakpoint": "Supporting evidence 'recorded-pytest-execution' (ref(s): reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log) is shared with claim(s) OBS-CURRENT-001, OBS-CURRENT-002, OBS-CURRENT-003, OBS-CURRENT-004, OBS-CURRENT-005, OBS-CURRENT-006, OBS-CURRENT-007, OBS-CURRENT-008, OBS-CURRENT-010 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+          "severity": "medium",
+          "category": "independence_unmodeled",
+          "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-OBS-CURRENT-009-VERIFIED-UNEXPLAINED",
+          "claim_id": "OBS-CURRENT-009",
+          "challenge": "Verified but unexplained",
+          "breakpoint": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+          "severity": "medium",
+          "category": "verified_unexplained",
+          "recovery_hint": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "checked",
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated test runner",
+          "date": "2026-10-18T13:17:12.254307+00:00",
+          "basis": "Actual pytest process exited0; execution artifact SHA2567b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c; no human acceptance asserted"
+        }
+      ],
+      "headline": false,
+      "role": null
+    },
+    {
+      "id": "OBS-CURRENT-010",
+      "text": "All 14 collected cases in test_representative_readiness.py passed in this recorded local execution.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "boundary": [
+        "Only this recorded local Python3.12.6 execution; not general correctness or workflow efficacy"
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "description": "Actual process output; accompanying JUnit confirms all collected cases passed without skips.",
+          "source_id": "recorded-pytest-execution",
+          "independent_of": [],
+          "observed_at": "2026-10-18T13:17:12.254307+00:00",
+          "content_hash": "7b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c",
+          "content_hash_status": "verified"
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "A case in the recorded JUnit file has a failure, error or skip; the process exit is nonzero."
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "tests/test_representative_readiness.py",
+      "domain": "",
+      "confidence": 0.9,
+      "confidence_band": "high",
+      "failures": [
+        {
+          "id": "AEE-OBS-CURRENT-010-INDEPENDENCE-UNMODELED",
+          "claim_id": "OBS-CURRENT-010",
+          "challenge": "Shared-evidence independence challenge",
+          "breakpoint": "Supporting evidence 'recorded-pytest-execution' (ref(s): reports/aee-validation/current-20261018-preparation-paths-01/tests/execution.log) is shared with claim(s) OBS-CURRENT-001, OBS-CURRENT-002, OBS-CURRENT-003, OBS-CURRENT-004, OBS-CURRENT-005, OBS-CURRENT-006, OBS-CURRENT-007, OBS-CURRENT-008, OBS-CURRENT-009 and no independence is declared for it; the same evidence may be counted as independent corroboration in each claim",
+          "severity": "medium",
+          "category": "independence_unmodeled",
+          "recovery_hint": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+          "resolved": false,
+          "disposition": null
+        },
+        {
+          "id": "AEE-OBS-CURRENT-010-VERIFIED-UNEXPLAINED",
+          "claim_id": "OBS-CURRENT-010",
+          "challenge": "Verified but unexplained",
+          "breakpoint": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+          "severity": "medium",
+          "category": "verified_unexplained",
+          "recovery_hint": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "checked",
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated test runner",
+          "date": "2026-10-18T13:17:12.254307+00:00",
+          "basis": "Actual pytest process exited0; execution artifact SHA2567b238daad3f04587b13284744200c8052f4a61f51f40503a48bde79c0e69e25c; no human acceptance asserted"
+        }
+      ],
+      "headline": false,
+      "role": null
+    }
+  ],
+  "scores": {
+    "OBS-CURRENT-001": {
+      "claim_id": "OBS-CURRENT-001",
+      "direct_score": 0.9,
+      "propagated_score": 0.9,
+      "band": "high",
+      "components": {
+        "evidence": 1.0,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "partially_supported",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)"
+      ]
+    },
+    "OBS-CURRENT-002": {
+      "claim_id": "OBS-CURRENT-002",
+      "direct_score": 0.9,
+      "propagated_score": 0.9,
+      "band": "high",
+      "components": {
+        "evidence": 1.0,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "partially_supported",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)"
+      ]
+    },
+    "OBS-CURRENT-003": {
+      "claim_id": "OBS-CURRENT-003",
+      "direct_score": 0.9,
+      "propagated_score": 0.9,
+      "band": "high",
+      "components": {
+        "evidence": 1.0,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "partially_supported",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)"
+      ]
+    },
+    "OBS-CURRENT-004": {
+      "claim_id": "OBS-CURRENT-004",
+      "direct_score": 0.9,
+      "propagated_score": 0.9,
+      "band": "high",
+      "components": {
+        "evidence": 1.0,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "partially_supported",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)"
+      ]
+    },
+    "OBS-CURRENT-005": {
+      "claim_id": "OBS-CURRENT-005",
+      "direct_score": 0.9,
+      "propagated_score": 0.9,
+      "band": "high",
+      "components": {
+        "evidence": 1.0,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "partially_supported",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)"
+      ]
+    },
+    "OBS-CURRENT-006": {
+      "claim_id": "OBS-CURRENT-006",
+      "direct_score": 0.9,
+      "propagated_score": 0.9,
+      "band": "high",
+      "components": {
+        "evidence": 1.0,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "partially_supported",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)"
+      ]
+    },
+    "OBS-CURRENT-007": {
+      "claim_id": "OBS-CURRENT-007",
+      "direct_score": 0.9,
+      "propagated_score": 0.9,
+      "band": "high",
+      "components": {
+        "evidence": 1.0,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "partially_supported",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)"
+      ]
+    },
+    "OBS-CURRENT-008": {
+      "claim_id": "OBS-CURRENT-008",
+      "direct_score": 0.9,
+      "propagated_score": 0.9,
+      "band": "high",
+      "components": {
+        "evidence": 1.0,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "partially_supported",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)"
+      ]
+    },
+    "OBS-CURRENT-009": {
+      "claim_id": "OBS-CURRENT-009",
+      "direct_score": 0.9,
+      "propagated_score": 0.9,
+      "band": "high",
+      "components": {
+        "evidence": 1.0,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "partially_supported",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)"
+      ]
+    },
+    "OBS-CURRENT-010": {
+      "claim_id": "OBS-CURRENT-010",
+      "direct_score": 0.9,
+      "propagated_score": 0.9,
+      "band": "high",
+      "components": {
+        "evidence": 1.0,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "partially_supported",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)"
+      ]
+    }
+  },
+  "verdicts": {},
+  "recoveries": [
+    {
+      "failure_id": "AEE-OBS-CURRENT-001-INDEPENDENCE-UNMODELED",
+      "claim_id": "OBS-CURRENT-001",
+      "strategy": "clarify",
+      "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+      "priority": 3,
+      "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-001-VERIFIED-UNEXPLAINED",
+      "claim_id": "OBS-CURRENT-001",
+      "strategy": "define_falsifier",
+      "action": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+      "priority": 3,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-002-INDEPENDENCE-UNMODELED",
+      "claim_id": "OBS-CURRENT-002",
+      "strategy": "clarify",
+      "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+      "priority": 3,
+      "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-002-VERIFIED-UNEXPLAINED",
+      "claim_id": "OBS-CURRENT-002",
+      "strategy": "define_falsifier",
+      "action": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+      "priority": 3,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-003-INDEPENDENCE-UNMODELED",
+      "claim_id": "OBS-CURRENT-003",
+      "strategy": "clarify",
+      "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+      "priority": 3,
+      "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-003-VERIFIED-UNEXPLAINED",
+      "claim_id": "OBS-CURRENT-003",
+      "strategy": "define_falsifier",
+      "action": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+      "priority": 3,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-004-INDEPENDENCE-UNMODELED",
+      "claim_id": "OBS-CURRENT-004",
+      "strategy": "clarify",
+      "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+      "priority": 3,
+      "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-004-VERIFIED-UNEXPLAINED",
+      "claim_id": "OBS-CURRENT-004",
+      "strategy": "define_falsifier",
+      "action": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+      "priority": 3,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-005-INDEPENDENCE-UNMODELED",
+      "claim_id": "OBS-CURRENT-005",
+      "strategy": "clarify",
+      "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+      "priority": 3,
+      "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-005-VERIFIED-UNEXPLAINED",
+      "claim_id": "OBS-CURRENT-005",
+      "strategy": "define_falsifier",
+      "action": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+      "priority": 3,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-006-INDEPENDENCE-UNMODELED",
+      "claim_id": "OBS-CURRENT-006",
+      "strategy": "clarify",
+      "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+      "priority": 3,
+      "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-006-VERIFIED-UNEXPLAINED",
+      "claim_id": "OBS-CURRENT-006",
+      "strategy": "define_falsifier",
+      "action": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+      "priority": 3,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-007-INDEPENDENCE-UNMODELED",
+      "claim_id": "OBS-CURRENT-007",
+      "strategy": "clarify",
+      "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+      "priority": 3,
+      "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-007-VERIFIED-UNEXPLAINED",
+      "claim_id": "OBS-CURRENT-007",
+      "strategy": "define_falsifier",
+      "action": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+      "priority": 3,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-008-INDEPENDENCE-UNMODELED",
+      "claim_id": "OBS-CURRENT-008",
+      "strategy": "clarify",
+      "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+      "priority": 3,
+      "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-008-VERIFIED-UNEXPLAINED",
+      "claim_id": "OBS-CURRENT-008",
+      "strategy": "define_falsifier",
+      "action": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+      "priority": 3,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-009-INDEPENDENCE-UNMODELED",
+      "claim_id": "OBS-CURRENT-009",
+      "strategy": "clarify",
+      "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+      "priority": 3,
+      "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-009-VERIFIED-UNEXPLAINED",
+      "claim_id": "OBS-CURRENT-009",
+      "strategy": "define_falsifier",
+      "action": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+      "priority": 3,
+      "verification": "A concrete observation that would refute the claim is documented."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-010-INDEPENDENCE-UNMODELED",
+      "claim_id": "OBS-CURRENT-010",
+      "strategy": "clarify",
+      "action": "Declare independent_of between the evidence items, or record that the corroboration is shared.",
+      "priority": 3,
+      "verification": "Independence between the shared evidence items is declared, or the shared corroboration is recorded as shared."
+    },
+    {
+      "failure_id": "AEE-OBS-CURRENT-010-VERIFIED-UNEXPLAINED",
+      "claim_id": "OBS-CURRENT-010",
+      "strategy": "define_falsifier",
+      "action": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+      "priority": 3,
+      "verification": "A concrete observation that would refute the claim is documented."
+    }
+  ],
+  "metadata": {
+    "threshold": 0.7,
+    "input": "C:/Users/trist/Development/ElectroHire/electrohire-aee-release/work/spec-kit-aee-benchmark/reports/aee-validation/current-20261018-preparation-paths-01/claims.json",
+    "ledger": {
+      "mode": "custom",
+      "path": "C:/Users/trist/Development/ElectroHire/electrohire-aee-release/work/spec-kit-aee-benchmark/reports/aee-validation/current-20261018-preparation-paths-01/ledger.jsonl"
+    },
+    "evidence_verification": {
+      "checked": 10,
+      "findings": 0,
+      "unresolvable_offline": 0
+    },
+    "engine_version": "1.5.3"
+  },
+  "reported_statuses": {
+    "OBS-CURRENT-001": "partially_supported",
+    "OBS-CURRENT-002": "partially_supported",
+    "OBS-CURRENT-003": "partially_supported",
+    "OBS-CURRENT-004": "partially_supported",
+    "OBS-CURRENT-005": "partially_supported",
+    "OBS-CURRENT-006": "partially_supported",
+    "OBS-CURRENT-007": "partially_supported",
+    "OBS-CURRENT-008": "partially_supported",
+    "OBS-CURRENT-009": "partially_supported",
+    "OBS-CURRENT-010": "partially_supported"
+  },
+  "stage_caps": [],
+  "not_understood": [
+    "OBS-CURRENT-001: verified but unexplained - no named human has explained this claim, so what the check establishes is narrower than the claim's wording suggests.",
+    "OBS-CURRENT-002: verified but unexplained - no named human has explained this claim, so what the check establishes is narrower than the claim's wording suggests.",
+    "OBS-CURRENT-003: verified but unexplained - no named human has explained this claim, so what the check establishes is narrower than the claim's wording suggests.",
+    "OBS-CURRENT-004: verified but unexplained - no named human has explained this claim, so what the check establishes is narrower than the claim's wording suggests.",
+    "OBS-CURRENT-005: verified but unexplained - no named human has explained this claim, so what the check establishes is narrower than the claim's wording suggests.",
+    "OBS-CURRENT-006: verified but unexplained - no named human has explained this claim, so what the check establishes is narrower than the claim's wording suggests.",
+    "OBS-CURRENT-007: verified but unexplained - no named human has explained this claim, so what the check establishes is narrower than the claim's wording suggests.",
+    "OBS-CURRENT-008: verified but unexplained - no named human has explained this claim, so what the check establishes is narrower than the claim's wording suggests.",
+    "OBS-CURRENT-009: verified but unexplained - no named human has explained this claim, so what the check establishes is narrower than the claim's wording suggests.",
+    "OBS-CURRENT-010: verified but unexplained - no named human has explained this claim, so what the check establishes is narrower than the claim's wording suggests.",
+    "OBS-CURRENT-001: open challenges this assessment does not resolve: independence_unmodeled.",
+    "OBS-CURRENT-002: open challenges this assessment does not resolve: independence_unmodeled.",
+    "OBS-CURRENT-003: open challenges this assessment does not resolve: independence_unmodeled.",
+    "OBS-CURRENT-004: open challenges this assessment does not resolve: independence_unmodeled.",
+    "OBS-CURRENT-005: open challenges this assessment does not resolve: independence_unmodeled.",
+    "OBS-CURRENT-006: open challenges this assessment does not resolve: independence_unmodeled.",
+    "OBS-CURRENT-007: open challenges this assessment does not resolve: independence_unmodeled.",
+    "OBS-CURRENT-008: open challenges this assessment does not resolve: independence_unmodeled.",
+    "OBS-CURRENT-009: open challenges this assessment does not resolve: independence_unmodeled.",
+    "OBS-CURRENT-010: open challenges this assessment does not resolve: independence_unmodeled."
+  ],
+  "lanes": {
+    "lane_1": {
+      "label": "machine verification",
+      "outcome": "iterate",
+      "threshold": 0.7,
+      "claims_at_or_above_threshold": 10,
+      "claims_below_threshold": 0
+    },
+    "lane_2": {
+      "label": "human acceptance",
+      "stage_counts": {
+        "created": 0,
+        "checked": 10,
+        "explained": 0,
+        "accepted": 0,
+        "digested": 0
+      },
+      "claims_below_explained": 10,
+      "exposition_covered_claims": 0,
+      "exposition_missing_claims": 10,
+      "verified_unexplained_claims": 10,
+      "stage_capped_claims": 0,
+      "attribution_contested_claims": 0
+    },
+    "per_claim": {
+      "OBS-CURRENT-001": {
+        "lane_1": {
+          "score": 0.9,
+          "direct_score": 0.9,
+          "author_status": "partially_supported",
+          "at_or_above_threshold": true
+        },
+        "lane_2": {
+          "stage": "checked",
+          "stored_stage": "checked",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": true,
+          "attribution_contested": false
+        }
+      },
+      "OBS-CURRENT-002": {
+        "lane_1": {
+          "score": 0.9,
+          "direct_score": 0.9,
+          "author_status": "partially_supported",
+          "at_or_above_threshold": true
+        },
+        "lane_2": {
+          "stage": "checked",
+          "stored_stage": "checked",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": true,
+          "attribution_contested": false
+        }
+      },
+      "OBS-CURRENT-003": {
+        "lane_1": {
+          "score": 0.9,
+          "direct_score": 0.9,
+          "author_status": "partially_supported",
+          "at_or_above_threshold": true
+        },
+        "lane_2": {
+          "stage": "checked",
+          "stored_stage": "checked",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": true,
+          "attribution_contested": false
+        }
+      },
+      "OBS-CURRENT-004": {
+        "lane_1": {
+          "score": 0.9,
+          "direct_score": 0.9,
+          "author_status": "partially_supported",
+          "at_or_above_threshold": true
+        },
+        "lane_2": {
+          "stage": "checked",
+          "stored_stage": "checked",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": true,
+          "attribution_contested": false
+        }
+      },
+      "OBS-CURRENT-005": {
+        "lane_1": {
+          "score": 0.9,
+          "direct_score": 0.9,
+          "author_status": "partially_supported",
+          "at_or_above_threshold": true
+        },
+        "lane_2": {
+          "stage": "checked",
+          "stored_stage": "checked",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": true,
+          "attribution_contested": false
+        }
+      },
+      "OBS-CURRENT-006": {
+        "lane_1": {
+          "score": 0.9,
+          "direct_score": 0.9,
+          "author_status": "partially_supported",
+          "at_or_above_threshold": true
+        },
+        "lane_2": {
+          "stage": "checked",
+          "stored_stage": "checked",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": true,
+          "attribution_contested": false
+        }
+      },
+      "OBS-CURRENT-007": {
+        "lane_1": {
+          "score": 0.9,
+          "direct_score": 0.9,
+          "author_status": "partially_supported",
+          "at_or_above_threshold": true
+        },
+        "lane_2": {
+          "stage": "checked",
+          "stored_stage": "checked",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": true,
+          "attribution_contested": false
+        }
+      },
+      "OBS-CURRENT-008": {
+        "lane_1": {
+          "score": 0.9,
+          "direct_score": 0.9,
+          "author_status": "partially_supported",
+          "at_or_above_threshold": true
+        },
+        "lane_2": {
+          "stage": "checked",
+          "stored_stage": "checked",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": true,
+          "attribution_contested": false
+        }
+      },
+      "OBS-CURRENT-009": {
+        "lane_1": {
+          "score": 0.9,
+          "direct_score": 0.9,
+          "author_status": "partially_supported",
+          "at_or_above_threshold": true
+        },
+        "lane_2": {
+          "stage": "checked",
+          "stored_stage": "checked",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": true,
+          "attribution_contested": false
+        }
+      },
+      "OBS-CURRENT-010": {
+        "lane_1": {
+          "score": 0.9,
+          "direct_score": 0.9,
+          "author_status": "partially_supported",
+          "at_or_above_threshold": true
+        },
+        "lane_2": {
+          "stage": "checked",
+          "stored_stage": "checked",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": true,
+          "attribution_contested": false
+        }
+      }
+    }
+  },
+  "digestion": {
+    "OBS-CURRENT-001": {
+      "stage": "checked",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "OBS-CURRENT-002": {
+      "stage": "checked",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "OBS-CURRENT-003": {
+      "stage": "checked",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "OBS-CURRENT-004": {
+      "stage": "checked",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "OBS-CURRENT-005": {
+      "stage": "checked",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "OBS-CURRENT-006": {
+      "stage": "checked",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "OBS-CURRENT-007": {
+      "stage": "checked",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "OBS-CURRENT-008": {
+      "stage": "checked",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "OBS-CURRENT-009": {
+      "stage": "checked",
+      "exposition_present": false,
+      "explainers": []
+    },
+    "OBS-CURRENT-010": {
+      "stage": "checked",
+      "exposition_present": false,
+      "explainers": []
+    }
+  }
+}
