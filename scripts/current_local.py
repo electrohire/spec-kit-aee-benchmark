@@ -319,10 +319,15 @@ def run(out, preflight):
     out=out.resolve()
     preflight=preflight.resolve()
     workflow=preflight/"workflow/result.json"
-    if not json.loads(workflow.read_text())["passed"]:
-        raise ValueError("full workflow calibration has not passed")
-    validate_workflow_budget(workflow.parent, CONFIG['stage_seconds'])
-    validate_representative(preflight/'representative',CONFIG,runner.PROJECTS,runner.ARMS)
+    admission=preflight/'admission.json'
+    if admission.exists():
+        from model_outcomes import validate_admission
+        validate_admission(workflow.parent,admission,CONFIG)
+    else:
+        if not json.loads(workflow.read_text())["passed"]:
+            raise ValueError("full workflow calibration has not passed")
+        validate_workflow_budget(workflow.parent, CONFIG['stage_seconds'])
+        validate_representative(preflight/'representative',CONFIG,runner.PROJECTS,runner.ARMS)
     validate_action_readiness(preflight)
     workflow_freeze=json.loads((preflight/"workflow/freeze.json").read_text())
     calibrated=workflow_freeze["config"]
@@ -408,11 +413,13 @@ def run(out, preflight):
     extras.extend((preflight/'transport/result.json',preflight/'transport/freeze.json'))
     extras.extend((replay_file,ROOT/"scripts/replay_current_dependencies.py"))
     extras.extend((image_audit,ROOT/"scripts/audit_current_image.py"))
+    if admission.exists():extras.extend((admission,ROOT/"scripts/model_outcomes.py",ROOT/"scripts/launch_inclusive_study.py"))
     runner.campaign(out,preflight/"grade",timeout,
         workflow_preflight=workflow,latency_preflight=preflight/"latency/calibration.json",
         context_preflight=preflight/"context/result.json",assets=assets,
         extra_sources=tuple(extras),
-        completion_contract=COMPLETION,freeze_hook=archive_inputs,block_on_assessment=True)
+        completion_contract=COMPLETION,freeze_hook=archive_inputs,block_on_assessment=True,
+        admission=admission if admission.exists() else None,contain_model_failures=admission.exists())
 
 
 def main():

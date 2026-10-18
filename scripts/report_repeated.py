@@ -27,6 +27,7 @@ def accounting(records):
 
 
 def workflow_completed(row):
+    if row.get('runtime_intervention'):return False
     required={'solve'} if row['arm']=='baseline' else ({'constitution'} if row['stage']==1 else set()) | {'specify','plan','tasks','implement','converge','final_implement'}
     if not required <= {p['phase'] for p in row['phases'] if p['completed']}:
         return False

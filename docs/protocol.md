@@ -1,5 +1,31 @@
 # Preregistered pilot protocol (execution settings pending)
 
+## Prospective scored admission: model failures are outcomes
+
+The user directed scoring to start after readiness08 completed the full TinyDB
+combined workflow and an independently rechecked injected repair (225 public/upstream
+tests passed), then stopped on repeated incomplete grep actions. Original08 remains
+interrupted and unchanged. Requiring every arm/project to succeed before comparison
+is retired: model loops, incomplete phases and ordinary phase/call exhaustion stop
+that trajectory and count as measured failures. Dependent later checkpoints are
+explicitly not attempted, with zero new model calls, retained source, independent
+grades and unknown completion declarations. Other scheduled trajectories continue.
+Infrastructure, model-identity, snapshot/integrity and unknown interventions still
+stop the campaign. No loop threshold, timeout, token/call cap, grader, task, seed,
+model, provider, solver prompt or native action grammar changes.
+
+Fresh preflight09 binds original interrupted evidence, independently verified exact
+repair source, four real AEE semantic replays, existing gold/untouched grader controls,
+image isolation, native transport, context and latency proofs. No claim that all six
+readiness cases passed. All failed setup costs remain. Study02 gets a fresh immutable
+freeze before scored generation; historical study01/preparations stay unchanged.
+The amendment is prospective: no scored02 outcomes existed when it was chosen.
+Runtime-interrupted work cannot count as completed workflow even if its code passes
+some tests. Preserve positive/unknown/ungraded claim denominators. Results need not
+favor any arm; no savings conclusion is assumed. Shared before/after measurement
+must retain this same failure policy.
+
+
 Current controller pins were refreshed on 2026-10-16; see
 [current tooling](current-tooling.md). The new prospective hallucination/cost
 analysis contract is [lifecycle-v1](lifecycle-protocol.md), Spec003. Older version

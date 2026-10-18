@@ -422,7 +422,7 @@ def latency(out):
 
 
 def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=None,
-             context_preflight=None,assets=None,extra_sources=(),completion_contract='',freeze_hook=None,block_on_assessment=False):
+             context_preflight=None,assets=None,extra_sources=(),completion_contract='',freeze_hook=None,block_on_assessment=False,admission=None,contain_model_failures=False):
     # Stop before any scored call if later phases/repairs cannot be reserved.
     validate_capacity(CONFIG['stage_seconds'],timeout,
                       ['constitution','specify','plan','tasks','implement','converge','final_implement'],
@@ -434,7 +434,11 @@ def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=N
     latency_preflight=latency_preflight or ROOT/'artifacts/repeated-latency-01/calibration.json'
     context_preflight=context_preflight or ROOT/'artifacts/context-selection-01/result.json'
     assets=assets or ROOT/'artifacts/repeated-assets'
-    gate=json.loads(workflow_preflight.read_text());assert gate['passed']
+    gate=json.loads(workflow_preflight.read_text())
+    if admission is None:assert gate['passed']
+    else:
+        from model_outcomes import validate_admission
+        validate_admission(workflow_preflight.parent,admission,CONFIG)
     latency_result=json.loads(latency_preflight.read_text());assert latency_result['passed'] and timeout==latency_result['timeout']
     context_calibration=json.loads(context_preflight.read_text())
     assert context_calibration['passed'] and context_calibration['selector_sha256']==digest(ROOT/'scripts/context_window.py')
@@ -463,6 +467,7 @@ def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=N
     hashes['scripts/repeated_local.py']=digest(__file__);hashes['scripts/long_horizon.py']=digest(ROOT/'scripts/long_horizon.py')
     hashes={name.replace('\\','/'):value for name,value in hashes.items()}
     freeze=dict(created_at=utc(),config={**CONFIG,'timeout':timeout},schedule=schedule,hashes=hashes,projects=PROJECTS,image=IMAGE,server_props=local_json('/props'),calibration=cal,workflow_calibration=gate,latency_calibration=latency_result,context_selection_calibration=context_calibration)
+    freeze['intervention_policy']='model-outcomes-v1' if contain_model_failures else 'stop-campaign'
     write_json(out/'freeze.json',freeze,exclusive=True)
     if freeze_hook is not None:
         freeze_hook(out,freeze)
@@ -474,84 +479,99 @@ def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=N
             if arm!='baseline':box.stage_workflow()
             session=Session(box,provider,store,identity)
             session.watchdog=RuntimeWatchdog(folder,capture=lambda:box.snapshot(folder/'runtime-stopped.tar'))
+            stopped=None
             for stage in (1,2,3):
                 begin=time.monotonic();deadline=begin+CONFIG['stage_seconds'];start=len(provider.calls)
                 spec='\n\n'.join((TASK/project/f'stage{i}.md').read_text() for i in range(1,stage+1))
                 box.put({'acceptance_public.py':tests_for(project,stage,True),f'TASK_STAGE_{stage}.md':spec.encode()})
                 row=dict(project=project,seed=seed,arm=arm,stage=stage,phases=[],assessments=[],repairs=[],started_at=utc(),handoff=stage==3)
                 rows.append(row)
-                if stage==3:
-                    handoff=box.execute('git status --short; test ! -f HANDOFF.md || cat HANDOFF.md')
-                    row['handoff_record']=handoff
-                    subprocess.run(['docker','restart',box.name],check=True,capture_output=True,timeout=30)
-                    session.history=[]
-                phases=phase_plan(arm,stage)
-                for phase_index,phase in enumerate(phases):
-                    # Keep at least one physical-call reservation for every later
-                    # phase and each public repair round. These limits are frozen.
-                    phase_deadline=deadline-(len(phases)-phase_index-1+CONFIG['repair_rounds'])*timeout
-                    session.watchdog.deadline(phase_deadline,timeout,phase,stage)
-                    left=CONFIG['primary_calls']-(len(provider.calls)-start)
-                    if left<=0:session.watchdog.stop('primary call budget exhausted before phase',phase=phase,stage=stage)
-                    instructions=phase_instructions(project,arm,phase,spec,completion_contract)
-                    need_claims=arm=='spec_kit_aee' and phase in ('specify','plan','tasks','implement')
-                    phase_before=folder/f'stage{stage}-{phase}-before.tar';box.snapshot(phase_before)
-                    phase_row=session.phase(phase,instructions,spec,stage,min(left,PHASE_LIMITS.get(phase,left)),phase_deadline,need_claims)
-                    phase_after=folder/f'stage{stage}-{phase}-after.tar';box.snapshot(phase_after)
-                    phase_row.update(source_changed=source_digest(phase_before)!=source_digest(phase_after),source_before=phase_before.relative_to(out).as_posix(),source_after=phase_after.relative_to(out).as_posix())
-                    row['phases'].append(phase_row)
+                if stopped is not None:
+                    from model_outcomes import finish_stopped_stage
+                    expected=cal['projects'][project]['reference'][f'{stage}-public']['test_count']
+                    finish_stopped_stage(box,row,folder,out,grade,expected,0,begin,stopped,dependent=True)
                     write_json(out/'attempts.json',rows)
-                    session.watchdog.completed(phase_row,stage)
-                    if need_claims and phase_row['done']:
-                        try:
-                            evaluation=do_assessment(session,row,phase,phase_row['done'])
-                            if block_on_assessment and evaluation['outcome']=='block':
-                                row['blocked_phase']=phase;row['blocked_reason']='AEE block verdict'
-                            elif phase=='implement' and evaluation['outcome'] not in ('pass','warn'):
-                                rework=session.phase('evidence_rework','Address actual evidence gaps with repository inspection/tests and scoped changes. Keep unsupported claims explicit; return revised claims.',spec,stage,min(16,max(0,CONFIG['primary_calls']-(len(provider.calls)-start))),phase_deadline,True)
-                                row['phases'].append(rework)
-                                session.watchdog.completed(rework,stage)
-                                if rework['done']:
-                                    checked=do_assessment(session,row,'implement',rework['done'])
-                                    if block_on_assessment and checked['outcome']=='block':
-                                        row['blocked_phase']=phase;row['blocked_reason']='AEE block after evidence rework'
-                        except Exception as exc:
-                            if isinstance(exc,RuntimeIntervention):raise
-                            row['assessments'].append(dict(phase=phase,error=repr(exc)))
-                            if block_on_assessment:
-                                row['blocked_phase']=phase;row['blocked_reason']='AEE execution error'
-                    write_json(out/'attempts.json',rows)
-                    if row.get('blocked_phase'):break
-                primary=folder/f'stage{stage}-primary.tar';box.snapshot(primary)
-                primary_terminal=(row['phases'][-1].get('done') or {}) if row['phases'] else {}
-                primary_declaration=primary_terminal.get('completion_asserted')
-                row['primary_completion_asserted']=primary_declaration if type(primary_declaration) is bool else None
-                expected=cal['projects'][project]['reference'][f'{stage}-public']['test_count']
-                row['primary_snapshot']=primary.relative_to(out).as_posix();row['public_primary']=grade(project,primary,stage,True,expected)
-                current=row['public_primary']
-                for iteration in (1,2):
-                    if current['passed'] or row.get('blocked_phase'):break
-                    before=source_digest(primary if iteration==1 else folder/f'stage{stage}-repair1.tar')
-                    repair_deadline=deadline-(CONFIG['repair_rounds']-iteration)*timeout
-                    session.watchdog.deadline(repair_deadline,timeout,'repair',stage)
-                    repair=session.phase('repair','Repair using public test feedback. Preserve active requirements.\n'+current['output'][-12000:]+'\n'+completion_contract,spec,stage,CONFIG['repair_calls'],repair_deadline)
-                    session.watchdog.completed(repair,stage)
-                    snap=folder/f'stage{stage}-repair{iteration}.tar';box.snapshot(snap)
-                    current=grade(project,snap,stage,True,expected)
-                    repair.update(round=iteration,grade=current,source_changed=source_digest(snap)!=before,snapshot=snap.relative_to(out).as_posix())
-                    row['repairs'].append(repair)
-                final=folder/f'stage{stage}-final.tar';box.snapshot(final)
-                row.update(final_snapshot=final.relative_to(out).as_posix(),public_final=current,seconds=time.monotonic()-begin,calls=len(provider.calls)-start,ended_at=utc())
-                terminal=(row['repairs'] or row['phases'])[-1].get('done') or {}
-                declaration=terminal.get('completion_asserted')
-                row['completion_asserted']=declaration if type(declaration) is bool else None
-                row['completion_declaration_source']='repair' if row['repairs'] else 'primary'
-                notes=box.execute('find .specify specs -type f 2>/dev/null; test ! -f HANDOFF.md || cat HANDOFF.md')
-                row['notes_index']=notes
-                if arm!='baseline':
-                    (folder/f'stage{stage}-workflow.tar').write_bytes(subprocess.check_output(['docker','exec',box.name,'tar','--exclude=.git','-cf','-','-C','/testbed','.specify','specs'],timeout=30))
+                    continue
+                try:
+                    if stage==3:
+                        handoff=box.execute('git status --short; test ! -f HANDOFF.md || cat HANDOFF.md')
+                        row['handoff_record']=handoff
+                        subprocess.run(['docker','restart',box.name],check=True,capture_output=True,timeout=30)
+                        session.history=[]
+                    phases=phase_plan(arm,stage)
+                    for phase_index,phase in enumerate(phases):
+                        # Keep at least one physical-call reservation for every later
+                        # phase and each public repair round. These limits are frozen.
+                        phase_deadline=deadline-(len(phases)-phase_index-1+CONFIG['repair_rounds'])*timeout
+                        session.watchdog.deadline(phase_deadline,timeout,phase,stage)
+                        left=CONFIG['primary_calls']-(len(provider.calls)-start)
+                        if left<=0:session.watchdog.stop('primary call budget exhausted before phase',phase=phase,stage=stage)
+                        instructions=phase_instructions(project,arm,phase,spec,completion_contract)
+                        need_claims=arm=='spec_kit_aee' and phase in ('specify','plan','tasks','implement')
+                        phase_before=folder/f'stage{stage}-{phase}-before.tar';box.snapshot(phase_before)
+                        phase_row=session.phase(phase,instructions,spec,stage,min(left,PHASE_LIMITS.get(phase,left)),phase_deadline,need_claims)
+                        phase_after=folder/f'stage{stage}-{phase}-after.tar';box.snapshot(phase_after)
+                        phase_row.update(source_changed=source_digest(phase_before)!=source_digest(phase_after),source_before=phase_before.relative_to(out).as_posix(),source_after=phase_after.relative_to(out).as_posix())
+                        row['phases'].append(phase_row)
+                        write_json(out/'attempts.json',rows)
+                        session.watchdog.completed(phase_row,stage)
+                        if need_claims and phase_row['done']:
+                            try:
+                                evaluation=do_assessment(session,row,phase,phase_row['done'])
+                                if block_on_assessment and evaluation['outcome']=='block':
+                                    row['blocked_phase']=phase;row['blocked_reason']='AEE block verdict'
+                                elif phase=='implement' and evaluation['outcome'] not in ('pass','warn'):
+                                    rework=session.phase('evidence_rework','Address actual evidence gaps with repository inspection/tests and scoped changes. Keep unsupported claims explicit; return revised claims.',spec,stage,min(16,max(0,CONFIG['primary_calls']-(len(provider.calls)-start))),phase_deadline,True)
+                                    row['phases'].append(rework)
+                                    session.watchdog.completed(rework,stage)
+                                    if rework['done']:
+                                        checked=do_assessment(session,row,'implement',rework['done'])
+                                        if block_on_assessment and checked['outcome']=='block':
+                                            row['blocked_phase']=phase;row['blocked_reason']='AEE block after evidence rework'
+                            except Exception as exc:
+                                if isinstance(exc,RuntimeIntervention):raise
+                                row['assessments'].append(dict(phase=phase,error=repr(exc)))
+                                if block_on_assessment:
+                                    row['blocked_phase']=phase;row['blocked_reason']='AEE execution error'
+                        write_json(out/'attempts.json',rows)
+                        if row.get('blocked_phase'):break
+                    primary=folder/f'stage{stage}-primary.tar';box.snapshot(primary)
+                    primary_terminal=(row['phases'][-1].get('done') or {}) if row['phases'] else {}
+                    primary_declaration=primary_terminal.get('completion_asserted')
+                    row['primary_completion_asserted']=primary_declaration if type(primary_declaration) is bool else None
+                    expected=cal['projects'][project]['reference'][f'{stage}-public']['test_count']
+                    row['primary_snapshot']=primary.relative_to(out).as_posix();row['public_primary']=grade(project,primary,stage,True,expected)
+                    current=row['public_primary']
+                    for iteration in (1,2):
+                        if current['passed'] or row.get('blocked_phase'):break
+                        before=source_digest(primary if iteration==1 else folder/f'stage{stage}-repair1.tar')
+                        repair_deadline=deadline-(CONFIG['repair_rounds']-iteration)*timeout
+                        session.watchdog.deadline(repair_deadline,timeout,'repair',stage)
+                        repair=session.phase('repair','Repair using public test feedback. Preserve active requirements.\n'+current['output'][-12000:]+'\n'+completion_contract,spec,stage,CONFIG['repair_calls'],repair_deadline)
+                        session.watchdog.completed(repair,stage)
+                        snap=folder/f'stage{stage}-repair{iteration}.tar';box.snapshot(snap)
+                        current=grade(project,snap,stage,True,expected)
+                        repair.update(round=iteration,grade=current,source_changed=source_digest(snap)!=before,snapshot=snap.relative_to(out).as_posix())
+                        row['repairs'].append(repair)
+                    final=folder/f'stage{stage}-final.tar';box.snapshot(final)
+                    row.update(final_snapshot=final.relative_to(out).as_posix(),public_final=current,seconds=time.monotonic()-begin,calls=len(provider.calls)-start,ended_at=utc())
+                    terminal=(row['repairs'] or row['phases'])[-1].get('done') or {}
+                    declaration=terminal.get('completion_asserted')
+                    row['completion_asserted']=declaration if type(declaration) is bool else None
+                    row['completion_declaration_source']='repair' if row['repairs'] else 'primary'
+                    notes=box.execute('find .specify specs -type f 2>/dev/null; test ! -f HANDOFF.md || cat HANDOFF.md')
+                    row['notes_index']=notes
+                    if arm!='baseline':
+                        (folder/f'stage{stage}-workflow.tar').write_bytes(subprocess.check_output(['docker','exec',box.name,'tar','--exclude=.git','-cf','-','-C','/testbed','.specify','specs'],timeout=30))
+                except RuntimeIntervention:
+                    from model_outcomes import model_failure,finish_stopped_stage
+                    alert=json.loads((folder/'runtime-alert.json').read_text())
+                    if not contain_model_failures or not model_failure(alert):raise
+                    expected=cal['projects'][project]['reference'][f'{stage}-public']['test_count']
+                    finish_stopped_stage(box,row,folder,out,grade,expected,len(provider.calls)-start,begin,alert)
+                    stopped=alert
                 write_json(out/'attempts.json',rows)
-                print('CHECKPOINT',identity,stage,current['passed'],row['calls'],flush=True)
+                print('CHECKPOINT',identity,stage,row['public_final']['passed'],row['calls'],row.get('status','completed'),flush=True)
     for row in rows:
         expected=cal['projects'][row['project']]['reference'][f'{row["stage"]}-hidden']['test_count']
         for kind in ('primary','final'):

@@ -75,3 +75,5 @@
 Offline controller, thin mini-SWE-agent phase adapter, tutorial and reproducibility protocol.
 No scored SWE-bench pilot results yet; separate historical local explorations are
 linked from the README and keep their original freezes.
+
+Prospective scored-study admission now counts model runtime interventions as failed trajectories, preserving dependent checkpoints and costs while retaining campaign-wide infrastructure stops. User directed immediate scored benchmarking; no solver/grader/budget changes.
