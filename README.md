@@ -3,16 +3,19 @@
 Compare ordinary coding agents, Spec Kit, and Spec Kit with Evaluator + Applied
 Epistemic Engineering on correctness, hallucination management, rework and cost.
 
-**Evidence summary:** current measurements do **not** demonstrate that Spec Kit +
-AEE reduces hallucinations or saves tokens or money. Its added planning and
-assessment cost must be repaid by measured prevention or recovery of consequential
-mistakes. We retain unfavorable results and unknown usage to test this honestly.
+**Evidence summary:** the current attempt exposed a benchmark calibration/budget
+defect: neither structured arm received an implementation-phase model call.
+It cannot rank completed workflows or answer whether AEE reduces hallucinations
+or saves money. The [investigation](reports/investigation/current-study-01-20261018/README.md)
+and runtime safeguards are documented; original observations and costs remain visible.
 
 ## Results and interpretation
 
 <!-- current-results:start -->
 
 ### Current-version staged comparison
+
+**Harness validity finding (2026-10-18):** this attempt failed benchmark readiness for the intended completed-workflow comparison. The functional arithmetic calibration took about 71 minutes under a 120-minute allowance, yet scored milestones had only 40 minutes. Both structured arms made **zero implementation-phase model calls**. The retained zero-acceptance figures below must not be read as rejection of implemented Spec Kit/AEE workflows. [Investigation and corrective gate](reports/investigation/current-study-01-20261018/README.md).
 
 | Metric | Agent alone | Spec Kit (adapted) | Spec Kit + AEE (adapted) |
 |---|---:|---:|---:|
@@ -30,11 +33,11 @@ mistakes. We retain unfavorable results and unknown usage to test this honestly.
 
 **Treatment exposure:** neither structured arm completed a milestone workflow within the fixed 40-minute budgets. AEE was reached at only 6/48 planned checkpoints, all after specification. All 24 structured checkpoints failed test collection: 22 snapshots lack the implementation module; two contain a module that raises `NameError` during import. They remain **ungraded**, not completed failing test inventories. The small successful arithmetic calibration did not establish that full project workflows fit the milestone budget. All 52 public-repair records made zero model calls after their budgets ran out; there is no observed repair efficacy here. These are outcomes of attempted policies under these constraints, not a completed AEE workflow efficacy comparison. A false-completion rate of 0/0 is undefined, not zero hallucinations.
 
-**Insight:** the combined workflow delivered 0 final-stage projects, versus 2 with the agent alone and 0 with Spec Kit. Read this together with all-call tokens and false-completion denominators, rather than treating fewer tokens on failing work as savings.
+**Insight:** the harness recorded 0 combined-arm final deliveries, 2 baseline and 0 Spec Kit, but it never supplied a model call in the structured implementation phases. This is a failed budget/readiness design for the requested comparison, not evidence that the structured methods are worse. Costs describe this failed attempt and cannot establish the cost of completing those workflows.
 
 Two projects × two seeds × three arms, with three dependent milestones each; these are not 36 independent tasks or months of production history. False completion means an explicit positive completion declaration contradicted by independent grading of the exact snapshot. Missing declarations are unknown; a failed test alone is not a hallucination. AEE process findings are not independently labeled detections.
 
-**What it means:** this tests a narrow simulated maintenance/handoff workload and the measured overhead/quality tradeoff. It cannot establish general hallucination reduction, production lifetime savings or an AEE-only causal effect. All API bills were $0; hardware, energy and human work were unpriced. Hypothetical token prices are sensitivity scenarios, not actual savings.
+**What it means:** the requested completed-workflow quality/cost comparison remains unanswered. A corrected, representative calibration and a new prospective freeze are required before another scored attempt. It cannot establish general hallucination reduction, production lifetime savings or an AEE-only causal effect. All API bills were $0; hardware, energy and human work were unpriced. Hypothetical token prices are sensitivity scenarios, not actual savings.
 
 [Full results and paired outcomes](reports/local/current-study-01/README.md) · [Bound grades, completion recovery and cost details](reports/local/current-study-01/lifecycle-report.json) · [Every retained setup call](reports/local/current-study-01/setup-inventory.json) · [Frozen protocol](benchmarks/current_local/PROTOCOL.md)
 

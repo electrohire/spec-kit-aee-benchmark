@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased — study validity investigation, 2026-10-18
+
+- Identify the 120-minute functional calibration / 40-minute scored-budget mismatch
+  and zero structured implementation-phase calls; mark the requested efficacy and
+  economics comparison unanswered without rewriting historical observations.
+- Reject calibration timing/cap mismatches and unexercised repairs. Reserve later
+  phase/repair capacity and reject infeasible budgets before scored inference.
+- Stop anomalous executions with durable runtime alerts/source snapshots instead
+  of continuing through zero-call phases; cover malformed-action loops, incomplete
+  handoffs, repeated unchanged actions and safety/budget failures with offline tests.
+
 ## 0.1.0 (unreleased)
 
 ### Current tooling and evidence refresh — 2026-10-16

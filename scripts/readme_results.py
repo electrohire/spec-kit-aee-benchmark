@@ -12,6 +12,7 @@ CURRENT_END="<!-- current-results:end -->"
 
 def current_table(report,audit=None):
     text="\n\n### Current-version staged comparison\n\n"
+    text+="**Harness validity finding (2026-10-18):** this attempt failed benchmark readiness for the intended completed-workflow comparison. The functional arithmetic calibration took about 71 minutes under a 120-minute allowance, yet scored milestones had only 40 minutes. Both structured arms made **zero implementation-phase model calls**. The retained zero-acceptance figures below must not be read as rejection of implemented Spec Kit/AEE workflows. [Investigation and corrective gate](reports/investigation/current-study-01-20261018/README.md).\n\n"
     text+="| Metric | Agent alone | Spec Kit (adapted) | Spec Kit + AEE (adapted) |\n|---|---:|---:|---:|\n"
     arms=("baseline","spec_kit","spec_kit_aee")
     values=[report["arms"][a] for a in arms]
@@ -34,9 +35,9 @@ def current_table(report,audit=None):
     combined=report["delivered_projects"]["spec_kit_aee"]["final_stage_accepted"]
     baseline=report["delivered_projects"]["baseline"]["final_stage_accepted"]
     structured=report["delivered_projects"]["spec_kit"]["final_stage_accepted"]
-    text+=f"**Insight:** the combined workflow delivered {combined} final-stage projects, versus {baseline} with the agent alone and {structured} with Spec Kit. Read this together with all-call tokens and false-completion denominators, rather than treating fewer tokens on failing work as savings.\n\n"
+    text+=f"**Insight:** the harness recorded {combined} combined-arm final deliveries, {baseline} baseline and {structured} Spec Kit, but it never supplied a model call in the structured implementation phases. This is a failed budget/readiness design for the requested comparison, not evidence that the structured methods are worse. Costs describe this failed attempt and cannot establish the cost of completing those workflows.\n\n"
     text+="Two projects × two seeds × three arms, with three dependent milestones each; these are not 36 independent tasks or months of production history. False completion means an explicit positive completion declaration contradicted by independent grading of the exact snapshot. Missing declarations are unknown; a failed test alone is not a hallucination. AEE process findings are not independently labeled detections.\n\n"
-    text+="**What it means:** this tests a narrow simulated maintenance/handoff workload and the measured overhead/quality tradeoff. It cannot establish general hallucination reduction, production lifetime savings or an AEE-only causal effect. All API bills were $0; hardware, energy and human work were unpriced. Hypothetical token prices are sensitivity scenarios, not actual savings.\n\n"
+    text+="**What it means:** the requested completed-workflow quality/cost comparison remains unanswered. A corrected, representative calibration and a new prospective freeze are required before another scored attempt. It cannot establish general hallucination reduction, production lifetime savings or an AEE-only causal effect. All API bills were $0; hardware, energy and human work were unpriced. Hypothetical token prices are sensitivity scenarios, not actual savings.\n\n"
     text+="[Full results and paired outcomes](reports/local/current-study-01/README.md) · [Bound grades, completion recovery and cost details](reports/local/current-study-01/lifecycle-report.json) · [Every retained setup call](reports/local/current-study-01/setup-inventory.json) · [Frozen protocol](benchmarks/current_local/PROTOCOL.md)\n\n"
     return text
 

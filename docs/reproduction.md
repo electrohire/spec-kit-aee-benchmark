@@ -2,6 +2,15 @@
 
 ## Current free local study
 
+**Stop before reproducing scored inference:** the current-study-01 budget design
+failed readiness. See the [investigation](../reports/investigation/current-study-01-20261018/README.md).
+The live controller now rejects that configuration before model calls. A future
+run requires a new prospective budget, representative unscored calibration and a
+new freeze; the commands below do not authorize automatic reruns of the old study.
+Runtime interventions save `runtime-alert.json` and attempt a source snapshot;
+inspect those and the retained calls, then stop for review. Never resume a scored
+attempt with adjusted limits/prompts or reinterpret skipped phases as completed.
+
 The [current protocol](../benchmarks/current_local/PROTOCOL.md) is separate from
 the historical SWE-bench pilot below. Its host-specific model ID, weights path,
 loopback service and immutable Docker image are recorded by `current_local.py`.

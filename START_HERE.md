@@ -2,6 +2,15 @@
 
 ## Current continuation — 2026-10-17
 
+**2026-10-18 investigation supersedes the efficacy framing below:** read
+reports/investigation/current-study-01-20261018/README.md. Calibration allowed
+120 minutes and took 71, while scoring allowed 40; both structured arms received
+zero implementation-phase model calls. This was a harness readiness failure.
+Runtime guards now reject that budget before inference and stop abnormal runs
+with diagnostic/source artifacts. Do not restart this campaign. New prospective
+budgets, representative calibration and a new freeze are required. No new model
+calls were made for the investigation; historical observations remain unchanged.
+
 Branch `feat/longitudinal-hallucination-economics`, PR18. Engine 1.5.3,
 Specify 1.2.1, extension 1.5.2, evaluator 1.1.2; compatible 106-package lock.
 Current-study-01 completed 12 trajectories / 36 checkpoints, independent grading

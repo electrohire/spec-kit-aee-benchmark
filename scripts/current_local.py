@@ -24,6 +24,7 @@ from local_feasibility import NoRedirect
 from long_horizon import PHASE_GOALS, skill
 from context_window import select_context
 from benchmark_runner.project_assessment import assess_project
+from runtime_checks import validate_capacity, RuntimeWatchdog
 
 _grade_impl = runner.grade
 
@@ -119,10 +120,13 @@ def calibrate(out,latency_preflight):
     if measured.get("passed") is not True or measured.get("model")!=MODEL:
         raise ValueError("successful latency calibration for selected model required")
     CONFIG["physical_call_timeout"]=measured["timeout"]
+    validate_capacity(CONFIG['stage_seconds'], measured['timeout'],
+                      ['constitution','specify','plan','tasks','implement','converge','final_implement'], 1)
     runner.assess=assess_project
     freeze(out, "unscored full-workflow and repair calibration")
     write_json(out/"latency-prerequisite.json",measured,exclusive=True)
-    result = dict(passed=False, phases=[], assessments=[], calibration_only=True)
+    result = dict(passed=False, phases=[], assessments=[], calibration_only=True,
+                  allowed_seconds=CONFIG['stage_seconds'], workload='arithmetic_smoke_only')
     provider = Provider(out/"calls", SEEDS[0], CONFIG["physical_call_timeout"])
     store = Store(out/"evidence")
     spec = "Unscored calibration. R01: create smoke.py with add(a,b) returning a+b. R02: support negative integers, zero and floats. R03: add and run tests. Do not modify TinyDB. Keep workflow artifacts concise under specs/001-transactions. No service or deployment is involved."
@@ -130,16 +134,21 @@ def calibrate(out,latency_preflight):
         with runner.ProjectSandbox("tinydb") as box:
             box.stage_workflow()
             session = runner.Session(box, provider, store, "current-calibration")
-            deadline = time.monotonic()+7200
-            for phase in ("constitution", "specify", "plan", "tasks", "implement", "converge", "final_implement"):
+            session.watchdog = RuntimeWatchdog(out, capture=lambda:box.snapshot(out/'runtime-stopped.tar'))
+            deadline = time.monotonic()+CONFIG['stage_seconds']
+            phases = ("constitution", "specify", "plan", "tasks", "implement", "converge", "final_implement")
+            for index, phase in enumerate(phases):
+                phase_deadline = deadline-(len(phases)-index)*measured['timeout']
+                session.watchdog.deadline(phase_deadline, measured['timeout'], phase, 1)
                 goal = PHASE_GOALS[phase]
                 instructions = (ROOT/"prompts/adapter.md").read_text().replace("/workflow", "/testbed")
                 instructions += "\n"+skill(phase).replace("$ARGUMENTS",spec)+"\n"+goal
                 instructions += "\nUse SPECIFY_FEATURE_DIRECTORY=/testbed/specs/001-transactions. Avoid unnecessary architecture for this arithmetic utility."
                 need = phase in ("specify", "plan", "tasks", "implement")
-                row = session.phase(phase, instructions, spec, 1, 32, deadline, need)
+                row = session.phase(phase, instructions, spec, 1, 32, phase_deadline, need)
                 result["phases"].append(row)
                 write_json(out/"result.json", result)
+                session.watchdog.completed(row, 1)
                 if not row["completed"]:
                     raise RuntimeError("incomplete_calibration_phase:"+phase)
                 if need:
@@ -250,6 +259,29 @@ def _bindings(source,names):
     return result
 
 
+def validate_workflow_budget(folder, stage_seconds):
+    """A functional smoke under a larger deadline cannot validate scored budgets.
+
+    Check recorded wall time as well as the declared cap. This gate deliberately
+    rejects old calibration04 without editing its successful *functional* result.
+    Fitting a tiny smoke still does not establish representative project capacity.
+    """
+    from datetime import datetime
+    result = json.loads((folder/'result.json').read_text())
+    calls = [json.loads(p.read_text()) for p in (folder/'calls').glob('call-*.json')]
+    if not calls or any(not c.get('ended_at') for c in calls):
+        raise ValueError('incomplete workflow calibration timing')
+    elapsed = (max(datetime.fromisoformat(c['ended_at']) for c in calls)
+               - min(datetime.fromisoformat(c['started_at']) for c in calls)).total_seconds()
+    if elapsed < 0 or elapsed > stage_seconds:
+        raise ValueError('workflow calibration exceeds scored stage budget')
+    if result.get('allowed_seconds') != stage_seconds:
+        raise ValueError('workflow calibration lacks matching explicit stage budget')
+    if result.get('passed') is not True or result.get('repair', {}).get('calls', 0) < 1:
+        raise ValueError('workflow calibration lacks successful exercised repair')
+    return elapsed
+
+
 def run(out, preflight):
     if preflight is None:raise ValueError("explicit preflight directory required")
     out=out.resolve()
@@ -257,6 +289,7 @@ def run(out, preflight):
     workflow=preflight/"workflow/result.json"
     if not json.loads(workflow.read_text())["passed"]:
         raise ValueError("full workflow calibration has not passed")
+    validate_workflow_budget(workflow.parent, CONFIG['stage_seconds'])
     workflow_freeze=json.loads((preflight/"workflow/freeze.json").read_text())
     calibrated=workflow_freeze["config"]
     for key in ("model","url","context","max_output","temperature","top_p","top_k"):
@@ -293,6 +326,7 @@ def run(out, preflight):
         "scripts/current_local.py":{"http","Provider","calibrate"},
         "scripts/repeated_local.py":{"Provider","Session","do_assessment","compact_assessment","tests_for","ProjectSandbox"},
         "scripts/long_horizon.py":{"Sandbox","skill"},
+        "scripts/runtime_checks.py":{"RuntimeIntervention","RuntimeWatchdog","validate_capacity"},
         "scripts/local_feasibility.py":{"NoRedirect"},
         "src/benchmark_runner/workflow.py":{"assess","grounded_claims"},
         "src/benchmark_runner/project_assessment.py":{"assess_project"},

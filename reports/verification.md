@@ -1,5 +1,22 @@
 # Requirement-to-evidence matrix
 
+## 2026-10-18 harness validity and runtime intervention
+
+The [investigation](investigation/current-study-01-20261018/README.md) recomputes
+the calibration/deadline mismatch and zero implementation exposure from immutable
+public artifacts. The prior scored attempt does not answer completed-workflow
+efficacy/economics. No scored inference was repeated or relabeled.
+
+[Runtime fault tests](../tests/test_runtime_checks.py) exercise admission rejection,
+protected phase/repair reservations, immediate deadline and safety stops, repeated
+bad actions, unchanged tool loops, coerced/incomplete handoffs and durable alerts
+even when source capture fails. [Timing regression tests](../tests/test_study_investigation.py)
+prove the previously successful 71-minute smoke cannot validate a 40-minute budget.
+The [new focused AEE record](aee-validation/current-20261018-runtime-02/summary.json)
+remains narrow machine evidence rather than human acceptance or efficacy proof.
+New representative calibration, a reviewed prospective capacity plan and a fresh
+freeze are still required before any new scored study. No automatic retry is allowed.
+
 ## October controller refresh and lifecycle reporting
 
 - [Current dependency checks](../docs/current-tooling.md): latest public engine,
