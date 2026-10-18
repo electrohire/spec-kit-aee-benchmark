@@ -1,5 +1,25 @@
 # Resume the benchmark
 
+## Current admission repair — 2026-10-18
+
+Pipeline04 stopped before scoring on three missing-claims handoffs. Its runtime
+guard worked; native transport v1 allowed `done` without the claims required by
+the phase. Preserve representative04 and its setup calls. Native transport v2
+requires a nonempty typed claim bundle for claim-phase done/draft, while shell
+actions remain available. Engine semantic/evidence validation remains enforced.
+Transport02 passed all3 actual local calls, including strict engine loading of
+done/draft claims without promoting their draft status. The ordinary action schema
+is byte-equivalent to both measured latency02 requests; reuse those timing samples.
+Next sole pipeline uses unused preparation5 after exact-green merge, transport02,
+context03 and latency02. Never restart04 or overlap inference. No scoring yet.
+
+The user subsequently authorized implementing the six linked execution-control
+features across engine, extension and evaluator, with their own Spec Kit+AEE and
+measured coverage. Read the release workspace's feature-implementation-plan.md.
+Separate product environments preserve baseline releases. A matched after study
+requires a valid completed baseline and validated features; no release during it.
+This supersedes older request-only/no-implementation text below.
+
 ## Authorized corrected rerun — 2026-10-18
 
 The user authorized merging all related green PRs and a fresh study rerun. PR18

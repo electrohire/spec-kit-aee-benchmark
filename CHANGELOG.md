@@ -2,6 +2,11 @@
 
 ## Unreleased — authorized corrected study02, 2026-10-18
 
+- Require typed nonempty claim bundles on claim-phase done/draft native actions;
+  retain strict engine/evidence validation and runtime interruption. Transport02
+  exercised actual engine loading; representative04's missing-claim failure and
+  all calls remain setup evidence. Include previous representative setup costs.
+
 - Use the same native JSON action grammar and per-request non-thinking mode for
   all treatments, with8192 output tokens and prospectively declared equal ceilings.
 - Require all six isolated representative project×treatment workflows, actual AEE

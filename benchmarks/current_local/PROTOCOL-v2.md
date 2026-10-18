@@ -21,6 +21,14 @@ Per-request thinking disabled and native JSON action schema enforced equally,
 instead of guessing/extracting JSON from prose. Model weights/identity and source
 hashes are frozen. No shared service configuration is changed. Three retained
 unscored native transport probes exercise shell, done and draft JSON before work.
+Native action protocol v2 additionally requires a nonempty typed claim bundle
+on done/draft in the prescribed claim-bearing phases; ordinary shell actions
+remain available. This is a phase contract, not evidence of truth. Strict engine
+loading and evidence verification still run. Three actual transport02 probes
+exercise shell plus engine-loaded draft/done without promoting unknown claims.
+Representative04 stopped before scoring because v1 admitted claimless done;
+retain its calls and use a new preparation ID. The nonclaim action schema is
+unchanged from both latency02 requests; their timing samples remain applicable.
 
 Prospective equal stage ceiling14400seconds (four hours), primary208 physical
 calls plus two public-repair opportunities of eight calls each; token reservation
