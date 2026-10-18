@@ -2,6 +2,11 @@
 
 ## Unreleased — authorized corrected study02, 2026-10-18
 
+- Retain readiness06 failure and all45calls/913,153native tokens. Parse shell
+  actions before executing any prefix, including rejecting unterminated-heredoc
+  warnings; report observed phase artifact state at bounded progress checkpoints.
+  No extra model calls, budget extension or acceptance relaxation.
+
 - Protocolv4 requires shell command and write_file path/content directly in both
   native phase grammars. Fresh transport03 caught v3's optional content field
   before execution; retain its two calls/221known tokens. No retry or scoring

@@ -33,9 +33,11 @@ COMMON = '''You are a capable software engineering agent in an isolated real rep
 Return exactly one JSON action: {"action":"shell","command":"..."} or
 {"action":"write_file","path":"relative/file.py","content":"literal complete file content"} or
 {"action":"done","summary":"implemented and actually verified work"}.
-Prefer write_file for creating/replacing files; its content is literal UTF-8,
+Use write_file for creating/replacing files; its content is literal UTF-8,
 not shell/Python source to quote again. Use shell to inspect source, make targeted
-edits and run tests. No internet or human assistance.
+edits and run tests. Incomplete shell syntax is rejected before execution; no
+content is repaired. Reserve actions for writing and checking phase deliverables.
+No internet or human assistance.
 Do not modify upstream tests or acceptance_public.py. You may add your own tests.
 Preserve previous active requirements. The latest requirement text overrides older
 asserted design notes. You may keep persistent HANDOFF.md and any other notes.
@@ -51,6 +53,11 @@ CONFIG = dict(context=32768, max_output=4096, primary_calls=160, repair_calls=8,
               unknown_policy='retain null native usage; reserve input+max_output; wait for idle slot; continue within cap')
 
 PHASE_LIMITS={'constitution':32,'specify':32,'plan':32,'tasks':32,'implement':32,'converge':16,'final_implement':16}
+PHASE_ARTIFACTS={'constitution':'.specify/memory/constitution.md','specify':'specs/001-transactions/spec.md','plan':'specs/001-transactions/plan.md','tasks':'specs/001-transactions/tasks.md'}
+
+
+def phase_artifact_check(path):
+    return "python -c \"from pathlib import Path;p=Path('"+path+"');assert p.is_file() and len(p.read_text())>100 and '[PROJECT_NAME]' not in p.read_text()\""
 
 
 def phase_plan(arm,stage):
@@ -217,6 +224,19 @@ class Session:
         draft_step=limit//2 if (claims and limit>=6) else None
         draft_claims=None
         for step in range(limit):
+            if step in (limit//2, 3*limit//4):
+                required=PHASE_ARTIFACTS.get(phase)
+                status=''
+                if required:
+                    check=self.box.execute(phase_artifact_check(required))
+                    state='present_basic_check_only' if not check['exit_code'] else 'missing_or_scaffold'
+                    self.store.append('phase_progress',dict(phase=phase,stage=stage,step=step,artifact=required,state=state,**check))
+                    status=f' Host artifact observation: {required}={state}; this is not semantic validation.'
+                messages.append(dict(role='user',content=(
+                    f'PHASE PROGRESS: {phase}; {limit-step} actions remain, including done. '
+                    'Exploration alone does not complete this phase. Write the required '
+                    'deliverables with write_file, inspect their actual contents, and report '
+                    'unresolved work honestly. No extra actions will be granted.'+status)))
             if step==limit-1 and claims:
                 messages.append(dict(role='user',content='FINAL STEP: this is the last allocated action for this phase. Only a done action is accepted now. Return {"action":"done","summary":"...","claims":{"schema_version":"1.0","claims":[...]}} with your best current claims object'+(' (finalize your recorded mid-phase draft)' if draft_claims else '')+'. Shell actions are no longer available: any other action ends the phase and the harness records an honest terminal done.'))
             elif step==limit-1:
@@ -262,9 +282,9 @@ class Session:
                         bundle=action.get('claims')
                         if not isinstance(bundle,dict) or not bundle.get('claims'):raise ValueError('Nonempty claims required')
                         for c in bundle['claims']:Claim.from_dict(c)
-                    required={'constitution':'.specify/memory/constitution.md','specify':'specs/001-transactions/spec.md','plan':'specs/001-transactions/plan.md','tasks':'specs/001-transactions/tasks.md'}.get(phase)
+                    required=PHASE_ARTIFACTS.get(phase)
                     if required:
-                        check=self.box.execute("python -c \"from pathlib import Path;p=Path('"+required+"');assert p.is_file() and len(p.read_text())>100 and '[PROJECT_NAME]' not in p.read_text()\"")
+                        check=self.box.execute(phase_artifact_check(required))
                         if check['exit_code']:raise ValueError('Required phase artifact missing or scaffold: '+required)
                     done=action
                     if self.watchdog:self.watchdog.success()

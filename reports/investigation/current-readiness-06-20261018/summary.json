@@ -1,0 +1,30 @@
+{
+  "preparation": 6,
+  "scored_started": false,
+  "completed_cases": 0,
+  "calls": 45,
+  "known_native_tokens": 913153,
+  "unknown_usage": 0,
+  "phase": "plan",
+  "phase_calls": 32,
+  "all_finish_reasons": [
+    "stop"
+  ],
+  "result_sha256": "80aba2fb8ac37e81bb847507a9cb2719378c54820f42edc34658ab947cdf4c11",
+  "runtime_alert": {
+    "status": "intervention_required",
+    "reason": "phase did not complete; downstream execution withheld",
+    "stage": 1,
+    "phase": "plan",
+    "calls": 32,
+    "errors": [
+      "ValueError: Required phase artifact missing or scaffold: specs/001-transactions/plan.md"
+    ],
+    "policy": "stop; retain evidence; no retry, budget extension or treatment change"
+  },
+  "shell_regressions": {
+    "isolated_linux_image": "sha256:adc751293f079d2ed0a459cbeb36e2b746ef8382e23d0b04c1fa282b8cb2a120",
+    "rejected_before_effects": 5,
+    "valid_heredoc_exit_status_preserved": true
+  }
+}

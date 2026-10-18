@@ -16,6 +16,21 @@ from runtime_checks import RuntimeIntervention,RuntimeWatchdog
 
 def run_literal(action,root):
     argv=shlex.split(action_command(action));argv[0]=sys.executable
+    if sys.platform=='win32' and action['action']=='shell':
+        # Windows quoting into Git Bash differs from the actual Linux solver.
+        # Run this small shell fixture in its real pinned image; expose only the
+        # fresh test directory, never a repository or credentials.
+        import shutil
+        if not shutil.which('docker'):pytest.skip('Linux solver shell needs Docker on Windows')
+        argv[0]='python'
+        script='import json,subprocess\nr=subprocess.run('+repr(argv)+',capture_output=True,text=True)\nprint(json.dumps(dict(exit_code=r.returncode,stdout=r.stdout,stderr=r.stderr)))'
+        result=subprocess.run(['docker','run','--rm','-i','--network','none','--cap-drop','ALL',
+            '--security-opt','no-new-privileges','--pids-limit','128','--memory','2g','--cpus','2',
+            '--user','1000:1000','--mount','type=bind,source='+str(root.resolve())+',target=/testbed',
+            'sha256:adc751293f079d2ed0a459cbeb36e2b746ef8382e23d0b04c1fa282b8cb2a120','python','-'],
+            input=script,capture_output=True,text=True,encoding='utf-8',timeout=45)
+        assert result.returncode==0,result.stderr
+        return json.loads(result.stdout)
     result=subprocess.run(argv,cwd=root,capture_output=True,text=True,encoding='utf-8')
     return dict(exit_code=result.returncode,stdout=result.stdout,stderr=result.stderr)
 
@@ -46,9 +61,40 @@ def test_bounded_utf8_content(content):
 
 
 def test_shell_compatibility_and_unsupported_actions():
-    assert action_command(dict(action='shell',command='python -m pytest'))=='python -m pytest'
+    argv=shlex.split(action_command(dict(action='shell',command='python -m pytest')))
+    import base64
+    assert base64.b64decode(argv[-1]).decode()=='python -m pytest'
     for action in ({'action':'shell','command':''},{'action':'done'},{'action':'unknown'}):
         with pytest.raises(ValueError):action_command(action)
+
+
+@pytest.mark.parametrize('command',['x\x00y','λ'*MAX_WRITE_BYTES],ids=['nul','utf8-limit'])
+def test_invalid_shell_transport_bounds(command):
+    with pytest.raises(ValueError):action_command(dict(action='shell',command=command))
+
+
+@pytest.mark.parametrize('command',[
+    "printf damaged > before; cat > plan.md << 'EOF'",
+    "printf damaged > before; cat > plan.md << 'EOF' && cat > research.md << 'EOF2'",
+    "printf damaged > before; printf 'unterminated",
+    'printf damaged > before; if true; then echo incomplete',
+    'printf damaged > before; echo $(touch SUBSTITUTION; echo unfinished',
+])
+def test_shell_syntax_rejected_before_any_effect(tmp_path,command):
+    plan=tmp_path/'plan.md';plan.write_text('preserve original')
+    result=run_literal(dict(action='shell',command=command),tmp_path)
+    assert result['exit_code']==2 and 'ShellSyntaxRejected' in result['stderr']
+    assert plan.read_text()=='preserve original'
+    assert not (tmp_path/'before').exists()
+    assert not (tmp_path/'SUBSTITUTION').exists()
+    assert not (tmp_path/'research.md').exists()
+
+
+def test_shell_valid_heredoc_and_exit_status_preserved(tmp_path):
+    result=run_literal(dict(action='shell',command="cat > plan.md << 'EOF'\nliteral $(touch BAD)\nEOF\nexit 7"),tmp_path)
+    assert result['exit_code']==7
+    assert (tmp_path/'plan.md').read_text()=='literal $(touch BAD)\n'
+    assert not (tmp_path/'BAD').exists()
 
 
 @pytest.mark.parametrize('claims',[True,False])
@@ -104,3 +150,29 @@ def test_session_executes_write_and_retains_exact_action(tmp_path):
     row=json.loads((store.root/'tools.jsonl').read_text().splitlines()[0])
     artifact=store.root/row['artifact']['path']
     assert json.loads(artifact.read_bytes())['action']==actions[0]
+
+
+def test_phase_progress_observes_artifact_without_extra_model_calls(tmp_path):
+    import repeated_local as runner
+    actions=[dict(action='shell',command='inspect') for _ in range(8)]
+    actions[4]=dict(action='write_file',path=runner.PHASE_ARTIFACTS['plan'],content='complete plan '*20)
+    actions[7]=dict(action='done',summary='fixture only')
+    class Provider:
+        def __init__(self):self.calls=[];self.messages=[]
+        def query(self,messages,*args):
+            self.messages.extend(m['content'] for m in messages if m['content'].startswith('PHASE PROGRESS:'))
+            action=actions[len(self.calls)];self.calls.append({});return json.dumps(action)
+    class Box:
+        present=False
+        def execute(self,command,timeout=60):
+            if command==runner.phase_artifact_check(runner.PHASE_ARTIFACTS['plan']):
+                return dict(exit_code=0 if self.present else 1,stdout='',stderr='')
+            if command==action_command(actions[4]):self.present=True
+            return dict(exit_code=0,stdout='',stderr='')
+    provider=Provider();store=runner.Store(tmp_path/'evidence')
+    result=runner.Session(Box(),provider,store,'progress-fixture').phase('plan','fixture','scope',1,8,time.monotonic()+30)
+    assert result['completed'] and result['calls']==8
+    observations=[json.loads(x) for x in (store.root/'phase_progress.jsonl').read_text().splitlines()]
+    assert [x['state'] for x in observations]==['missing_or_scaffold','present_basic_check_only']
+    assert any('missing_or_scaffold' in m for m in provider.messages)
+    assert any('present_basic_check_only' in m for m in provider.messages)
