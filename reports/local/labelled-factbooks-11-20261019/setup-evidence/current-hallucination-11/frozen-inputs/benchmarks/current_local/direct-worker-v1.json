@@ -1,0 +1,37 @@
+{
+  "protocol": "direct-worker-v1",
+  "definitions": {
+    "scripts/current_local.py": {
+      "http": {
+        "before": "d56276c436df848573f47f5b8c1483b20b982910362fc7cc1b3a471dbbc8c197",
+        "after": "e71367bd5966f8fbe1a79e6022c0a7b025b9eb8b847fda8d7252a43c971f82c4"
+      }
+    },
+    "scripts/repeated_local.py": {
+      "Provider": {
+        "before": "cb6a4cc03809fe9820fdb002eaeed82a167604ac2b510dfc4545f09fda92852a",
+        "after": "d1f348fbbb63721b6c4d60a5f43562c3791ee909257b0b5c4d2670fb4f13ecf7"
+      }
+    },
+    "scripts/runtime_checks.py": {
+      "RuntimeIntervention": {
+        "before": "96c9827248e51f2ff72e0202eba8305d911be4c3c9e554a38a01af8c55d78ee1",
+        "after": "2035fc37aec886cfa74b959a47094558170aad2b254a79bcccca2e9eb811ff67"
+      },
+      "RuntimeWatchdog": {
+        "before": "9c01342fc6b20678e794d2ae962aed6b63195acbfaa68c429c46c28e85699709",
+        "after": "b63c75d33fca24c17f1d924797b2e86acb22427a4ce1ab4131db41b2f0494e29"
+      }
+    }
+  },
+  "scope": "Exact infrastructure retention plus guarded client-only route to existing operator-approved qwen worker. Static model/tasks/caps/grammar/grader AST constants unchanged. Fresh direct-route context/transport/latency probes and semantic replays required. Other AST changes refused.",
+  "historical_cause": "Router failed to connect existing worker. Underlying socket cause unresolved; bypass route prospectively authorized by user, not proof cause fixed.",
+  "required_fresh_probes": [
+    "context",
+    "transport",
+    "latency",
+    "grade",
+    "image",
+    "dependency-replay"
+  ]
+}
