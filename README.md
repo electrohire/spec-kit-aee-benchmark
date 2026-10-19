@@ -1,5 +1,12 @@
 # Spec Kit + AEE benchmark
 
+**Hallucination evaluation is separate from coding evaluation.** The
+[external HaluEval/RAGTruth suite](benchmarks/hallucinations/README.md) freezes240
+published labelled responses for a dedicated detection run after the coding
+supervisor finishes. Real execution/results are pending. Its scores will not be
+pooled with software completion or the earlier synthetic factbook diagnostic,
+and will not be presented as an AEE or Spec Kit treatment effect.
+
 **Study04 is stopped by user direction; no benchmark inference is active.** The Cachetools loop exposed failed tool calls being treated as successful actions until the repeat limit, followed by continuation to another trajectory. The prospective runner now halts on the first protocol/tool/verification failure. [Diagnosis, retained costs and fail-fast amendment](reports/investigation/fail-fast-cachetools-20261019/README.md). Main benchmark results remain incomplete.
 
 **Pipeline12 stopped before scoring:** image/grader controls passed, then a direct-client connection timed out during context validation. A persistent-client mitigation and fresh zero-generation context checks pass; no shared service/model changed. [Evidence, transport scope and retained setup accounting](reports/investigation/fail-fast-cachetools-20261019/context-connection-followup.md).

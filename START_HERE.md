@@ -1,5 +1,14 @@
 # Resume the benchmark
 
+## Separate hallucination evaluation
+
+The user requested established external hallucination tests in addition to the
+coding comparison. Read [the pinned HaluEval/RAGTruth protocol](benchmarks/hallucinations/README.md).
+Prepare offline in the publication checkout; do not touch the frozen coding
+checkout or overlap inference. Actual new detection results remain pending.
+Keep coding outcomes, external response-detection metrics and synthetic factbook
+results in separate reports. AEE/Spec Kit efficacy needs its own matched evidence.
+
 ## Latest directive: study04 stopped; fix before new inference
 
 The user replaced continuation after model failures with immediate campaign-wide
