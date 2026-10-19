@@ -2,6 +2,12 @@
 
 ## Current status: study02 infrastructure stop
 
+The [audited stopped-study postmortem](reports/local/current-study-02-stopped-postmortem/README.md)
+exports all12/36 scheduled entries. TinyDB passed225 public tests but failed one
+of228 hidden cases; Cachetools had an incomplete collection. Proxy denominators
+are positive0/negative0/unknown1/ungraded35. No scored AEE assessment ran and no
+valid paired comparison exists. No model inference or campaign retry was used.
+
 Pipeline09 ended at 2026-10-18T22:21:19Z, intervention_required. No model generation
 is active. Read [the incident report](reports/investigation/current-study-02-infrastructure-stop-20261018/README.md) before any recovery. Preserve the
 192 generation calls,348 input freeze, all preparation costs and partial rows.

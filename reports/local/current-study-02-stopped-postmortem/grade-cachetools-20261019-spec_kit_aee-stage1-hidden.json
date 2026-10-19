@@ -1,0 +1,25 @@
+{
+  "passed": false,
+  "exit_code": 2,
+  "test_count": 1,
+  "cases": [
+    {
+      "name": "",
+      "file": "",
+      "passed": false,
+      "failures": [
+        {
+          "kind": "error",
+          "message": "collection failure",
+          "text": "ImportError while importing test module '/grade/test_acceptance.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/usr/local/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/grade/test_acceptance.py:2: in <module>\n    from cachetools.tagged import TaggedCache\nE   ModuleNotFoundError: No module named 'cachetools.tagged'"
+        }
+      ]
+    }
+  ],
+  "output": "\n==================================== ERRORS ====================================\n________________________ ERROR collecting test session _________________________\nImportError while importing test module '/grade/test_acceptance.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/usr/local/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/grade/test_acceptance.py:2: in <module>\n    from cachetools.tagged import TaggedCache\nE   ModuleNotFoundError: No module named 'cachetools.tagged'\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:469\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:469: PytestCacheWarning: could not create cache path /dev/.pytest_cache/v/cache/nodeids: [Errno 13] Permission denied: '/dev/pytest-cache-files-s075uy9a'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:423\n  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:423: PytestCacheWarning: could not create cache path /dev/.pytest_cache/v/cache/lastfailed: [Errno 13] Permission denied: '/dev/pytest-cache-files-zgu0ky0z'\n    config.cache.set(\"cache/lastfailed\", self.lastfailed)\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nERROR ../dev\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n2 warnings, 1 error in 0.09s\n",
+  "expected": null,
+  "source_sha256": "fe5dcf98dd059916ccadf4cd61dc03d1cf9e08eef1df971a1f6943af5815b108",
+  "grader_source_sha256": "b63932ab6e318db20ac238097ab2e33b4a7abbb2b07a50072925ad3a9131dfe9",
+  "grader_mode": "hidden",
+  "grader_function_sha256": "3089a4704b05ab79d96841b08aea55a430c35b1c5fc920849c19a3b09926d6c8"
+}

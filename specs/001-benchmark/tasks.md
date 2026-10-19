@@ -25,6 +25,12 @@ MVP: reproducible offline dry-run and correct accounting, followed by integratio
 Parallel opportunities: research of upstream harness while controller is specified.
 Tests are required by the brief. T014 remains gated; do not check it from mocks.
 
+2026-10-19 stopped-study postmortem exports36 rows and four independent grader
+invocations on two final snapshots. Cachetools collection is incomplete;
+TinyDB225 public passes do not imply hidden acceptance. Full-inventory proxy
+unknown1/ungraded35, zero scored AEE exposure. T014 and valid paired studies remain
+unfinished. No generation, resume, retry or source tuning from hidden outcomes.
+
 2026-10-19: Prospective first-error infrastructure guard and bounded diagnostics
 validated with501 offline cases and59 focused receipt-bound cases. Actual AEE
 and one Evaluator composed iterate; study02 remains stopped, T014 unfinished.

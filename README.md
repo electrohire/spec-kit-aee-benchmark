@@ -22,6 +22,25 @@ Its501 offline tests do not establish recovery of the stopped experiment.
 
 ## Results and interpretation
 
+<!-- stopped-study02:start -->
+
+### Study02 stopped: audited partial observations
+
+The complete scheduled inventory is retained: **12 trajectories / 36 dependent checkpoints**, with 3 attempted and 33 unattempted. Two final snapshots were independently graded; one has a complete test inventory.
+
+| Retained stage1 snapshot | Public/upstream grade | Hidden grade |
+|---|---|---|
+| Cachetools + Spec Kit + AEE | Collection error; inventory incomplete | Collection error; inventory incomplete |
+| TinyDB + Spec Kit | 225 passed | 227 passed, 1 retained-cache requirement failed |
+
+**Completion proxy:** positive 0, negative 0, unknown with complete inventory 1, ungraded 35. False-completion rate is undefined: no eligible positive declaration exists. Actual scored AEE assessments: **0**. A failing test is not an independently adjudicated hallucination; detector precision/recall remain unmeasured.
+
+The stopped run retained 192 generation calls / 4,172,224 known native tokens, with zero stored generation-usage unknowns. Setup and earlier failed cohorts have additional costs and unknown usage. API spend $0 excludes hardware, energy and labor. No accepted final delivery or matched arm comparison was established before the infrastructure halt; no efficacy or savings conclusion follows.
+
+[Full stopped-study findings, 36 rows, bound snapshots/grades and bounded cost inventory](reports/local/current-study-02-stopped-postmortem/README.md). The campaign remains stopped; historical server/storage cause is unresolved.
+
+<!-- stopped-study02:end -->
+
 Study02 began under the [prospective inclusive failure policy](benchmarks/current_local/PROTOCOL-v2.md)
 and stopped on the infrastructure incident above. Model failures are measured
 outcomes; infrastructure faults halt the campaign. The retained study01 figures

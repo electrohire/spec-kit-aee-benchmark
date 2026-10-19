@@ -1,5 +1,13 @@
 # Study02 infrastructure stop — incomplete
 
+**2026-10-19 follow-up:** the [audited stopped-study export](../../local/current-study-02-stopped-postmortem/README.md)
+now includes all36 rows and independent grades of two retained final snapshots.
+TinyDB's public pass did not survive its hidden grade; Cachetools collection was
+incomplete. Proxy categories are positive0/negative0/unknown1/ungraded35. This
+postmortem used no inference or campaign retry and is not a completed comparison.
+
+## Original incident note
+
 Pipeline09 halted at 2026-10-18T22:21:19Z. A context-preflight `/apply-template` request returned HTTP 500; retaining that error then raised `OSError: [Errno28] No space left on device`. The host currently reports roughly420 GB free. The underlying cause is unresolved; do not claim persistent disk exhaustion or a workflow failure.
 
 All348 frozen input hashes and all 7 existing event streams verify. Retained generation:192 calls,4,089,695 prompt tokens +82,529 completion tokens =4,172,224 native tokens; no stored generation call lacks native usage. The failed context preflight made9HTTP requests and never created a new generation call. Historical setup/failed preparations remain retained but are not included in this subtotal or finally aggregated.
