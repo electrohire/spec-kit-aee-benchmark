@@ -30,6 +30,17 @@ and no second trajectory after runtime/public/hidden failure. New native model
 validation and fresh latency are still required before another scored campaign.
 Historical calibration contracts and stopped runs are not rewritten.
 
+Follow-up native tool validation12 completed five real calls with942 known native
+tokens and no missing generation usage: shell, literal argv, literal file write,
+done and draft. The argv/write roundtrips executed in isolated sandboxes. This
+validates the new tool representation, not Cachetools completion or comparative
+efficacy. Two new grammar timing samples run separately before scored generation.
+The launcher can reuse this byte-bound transport/latency evidence and the completed
+diagnostic11; it checks their hashes/contracts and records reuse explicitly.
+It never calls the diagnostic again merely to restart software benchmarking.
+The added preparation checks passed103 focused tests; actual source-bound AEE
+captured103 cases with0 evidence findings and1 iterate for human exposition.
+
 At stop, study04 retained65 call files:64 completed and one cancelled/pending
 receipt with unknown usage. Known native tokens total1,090,717 as a lower bound,
 not a complete total. The first Cachetools trajectory used18calls with zero scored
