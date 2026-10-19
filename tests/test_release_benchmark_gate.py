@@ -145,3 +145,21 @@ def test_release_version_is_literal_and_does_not_import_candidate(tmp_path):
     assert v.version(tmp_path,'extension')=='1.6.0'
     (tmp_path/'extension.yml').write_text('extension:\n  version: "1.6.0"\n  version: "9.9.9"\n')
     with pytest.raises(ValueError):v.version(tmp_path,'extension')
+
+
+def test_reusable_workflows_pin_helpers_and_keep_inference_off_hosted_builds():
+    import re
+    import yaml
+    workflows=ROOT/'.github/workflows'
+    for name in ('benchmark-build-request.yml','benchmark-release-input.yml','benchmark-release-gate.yml'):
+        text=(workflows/name).read_text()
+        data=yaml.load(text,Loader=yaml.BaseLoader)
+        assert 'workflow_call' in data['on']
+        assert all(job['runs-on']=='ubuntu-latest' for job in data['jobs'].values())
+        for job in data['jobs'].values():
+            for step in job['steps']:
+                if step.get('with',{}).get('repository')=='electrohire/spec-kit-aee-benchmark':
+                    assert re.fullmatch('[0-9a-f]{40}',step['with']['ref'])
+        assert 'llama-server' not in text and 'self-hosted' not in text and 'job_workflow_sha' not in text
+    text=(workflows/'benchmark-release-input.yml').read_text()
+    assert text.index('--metadata-only') < text.index('gh run download') < text.index('--folder candidate')

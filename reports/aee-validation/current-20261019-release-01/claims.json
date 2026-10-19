@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "claims": [
+    {
+      "id": "OBS-RELEASE-001",
+      "text": "The captured focused test invocation reported 180 passing cases.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "stage": "checked",
+      "boundary": [
+        "This recorded offline invocation only. Fault injection is synthetic; loopback HTTP uses an ephemeral fixture server, not the model. No model calls, factual detector accuracy, treatment efficacy, monetary savings, human acceptance or full coverage is established."
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "source_ref": "scripts/check_active_harness.py",
+      "uncertainty": "low",
+      "falsification_tests": [
+        "Nonzero command exit, a failing/error/skipped JUnit case or changed source bytes contradicts this observation."
+      ],
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated test runner",
+          "date": "2026-10-19T20:47:48.430739+00:00",
+          "basis": "Actual recorded pytest process and JUnit; no human acceptance asserted."
+        }
+      ],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261019-release-01/tests/execution.log",
+          "content_hash": "9f161ce66aeeebe29958b4dfb0723b2b5b5cb4430d8890c172f7c27153f3cdb9",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "source_id": "recorded-infrastructure-tests",
+          "observed_at": "2026-10-19T20:47:48.431739+00:00",
+          "description": "Actual process log; JUnit and command/source hashes retained alongside it."
+        }
+      ]
+    }
+  ]
+}

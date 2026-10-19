@@ -1,0 +1,72 @@
+name: Prepare exact tested release artifact
+on:
+  workflow_call:
+    inputs:
+      build_run_id:
+        type: string
+        required: true
+      component:
+        type: string
+        required: true
+      release_tag:
+        type: string
+        required: true
+    outputs:
+      candidate_sha:
+        value: ${{ jobs.prepare.outputs.candidate_sha }}
+      artifact_sha256:
+        value: ${{ jobs.prepare.outputs.artifact_sha256 }}
+permissions:
+  contents: read
+  actions: read
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      candidate_sha: ${{ steps.candidate.outputs.candidate_sha }}
+      artifact_sha256: ${{ steps.candidate.outputs.artifact_sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: electrohire/spec-kit-aee-benchmark
+          ref: ee2604d6d22a350f3ef1a34ed936557e79c0bbd6
+          path: benchmark-control
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Download and bind successful trusted-main candidate build
+        id: candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMPONENT_REPOSITORY: ${{ github.repository }}
+          BUILD_RUN_ID: ${{ inputs.build_run_id }}
+        run: |
+          case "$BUILD_RUN_ID" in ''|*[!0-9]*) echo 'Invalid build run ID'; exit 1;; esac
+          gh api "repos/$COMPONENT_REPOSITORY/actions/runs/$BUILD_RUN_ID" > build-run.json
+          gh api "repos/$COMPONENT_REPOSITORY/actions/runs/$BUILD_RUN_ID/artifacts" > build-artifacts.json
+          python benchmark-control/scripts/verify_candidate_build.py --repository "$COMPONENT_REPOSITORY" --run-json build-run.json --artifacts-json build-artifacts.json --metadata-only > verified-source.json
+          name="$(python -c 'import json; print(json.load(open("verified-source.json"))["artifact_name"])')"
+          gh run download "$BUILD_RUN_ID" --repo "$COMPONENT_REPOSITORY" --name "$name" --dir candidate
+          python benchmark-control/scripts/verify_candidate_build.py --repository "$COMPONENT_REPOSITORY" --run-json build-run.json --artifacts-json build-artifacts.json --folder candidate > verified-candidate.json
+          python -c 'import json,os; p=json.load(open("verified-candidate.json")); f=open(os.environ["GITHUB_OUTPUT"],"a"); f.write("candidate_sha="+p["commit"]+"\nartifact_sha256="+p["artifact_sha256"]+"\n")'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ steps.candidate.outputs.candidate_sha }}
+          path: candidate-source
+          persist-credentials: false
+      - name: Require release tag to match literal tested package version
+        env:
+          COMPONENT: ${{ inputs.component }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: python benchmark-control/scripts/verify_release_version.py --source candidate-source --component "$COMPONENT" --tag "$RELEASE_TAG"
+      - name: Extract only verified top-level distributions
+        run: |
+          python -c 'import zipfile; zipfile.ZipFile("candidate/candidate-bundle.zip").extractall("dist")'
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: verified-release-distributions
+          path: dist/
+          retention-days: 90
