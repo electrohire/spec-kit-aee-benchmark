@@ -85,3 +85,34 @@ def test_context_failure_retains_actual_request_without_retry(tmp_path,monkeypat
     assert len(calls)==1 and value['inference_calls']==0
     assert value['infrastructure_evidence']['request']['complete'] is True
     assert value['infrastructure_evidence']['request']['byte_length']==len(b'exact failed payload')
+
+
+def test_idle_socket_retired_before_next_request_not_retried(monkeypatch):
+    clock=[0.0];created=[];sent=[];closed=[]
+    class Connection:
+        sock=None
+        def __init__(self,*a,**k):created.append(self)
+        def request(self,*args):sent.append((self,args))
+        def getresponse(self):return SimpleNamespace(status=200,read=lambda:b'{"ok":true}',getheader=lambda name:'timeout=5, max=100')
+        def close(self):closed.append(self)
+    monkeypatch.setattr(transport.http.client,'HTTPConnection',Connection)
+    monkeypatch.setattr(transport.time,'monotonic',lambda:clock[0])
+    binding=SimpleNamespace(check=lambda:None)
+    transport.request(binding,'/props',None,120)
+    assert binding._http_idle_seconds==4.0
+    clock[0]=6.0
+    transport.request(binding,'/props',None,120)
+    assert len(created)==len(sent)==2 and closed==[created[0]]
+
+
+def test_native_probe_bootstrap_failure_is_retained_without_model_call(tmp_path,monkeypatch):
+    import probe_action_transport as probe
+    from infrastructure_errors import response_failure
+    def fail(path):raise response_failure('/v1/models',None,b'',reason='transport_error',source_complete=False)
+    monkeypatch.setattr(probe.current,'configure_worker_binding',fail)
+    monkeypatch.setattr(probe.current,'Provider',lambda *a:pytest.fail('generation forbidden'))
+    monkeypatch.setattr(sys,'argv',['probe_action_transport.py',str(tmp_path/'probe')])
+    with pytest.raises(InfrastructureFailure):probe.main()
+    value=json.loads((tmp_path/'probe/bootstrap-failure.json').read_text())
+    assert value['generation_requests']==0
+    assert value['infrastructure_evidence']['route']=='/v1/models'

@@ -14,9 +14,18 @@ def main():
     parser.add_argument('output',type=current.Path)
     parser.add_argument('--worker-binding',type=current.Path)
     args=parser.parse_args()
-    current.configure_worker_binding(args.worker_binding)
-    current.setup()
-    current.freeze(args.output,'unscored native action transport; at most five local calls; literal argv and write checked in isolated sandbox')
+    if args.output.exists() or args.output.is_symlink():raise FileExistsError('fresh native probe path required')
+    try:
+        current.configure_worker_binding(args.worker_binding)
+        current.setup()
+        current.freeze(args.output,'unscored native action transport; at most five local calls; literal argv and write checked in isolated sandbox')
+    except Exception as exc:
+        try:
+            args.output.mkdir(parents=True,exist_ok=True)
+            write_json(args.output/'bootstrap-failure.json',dict(error=repr(exc),infrastructure_evidence=getattr(exc,'evidence',None),generation_requests=0),exclusive=True)
+        except OSError:
+            pass
+        raise
     result=dict(passed=False,checks=[],paid_calls=False)
     provider=current.Provider(args.output/'calls',current.SEEDS[0],600)
     fixtures=[

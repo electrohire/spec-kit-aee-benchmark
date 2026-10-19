@@ -66,3 +66,14 @@ UTF-8 bytes with matching SHA256
 This is debugging evidence for the tool convention, not a successful scored model
 trajectory. No old model output is edited, no failed run is promoted, and no
 hallucination/efficacy conclusion follows from the replay.
+
+The next native-probe bootstrap exposed a separate stale-socket issue: after a
+long setup pause, a pooled connection was aborted before any generation. The real
+server advertises `Keep-Alive: timeout=5, max=100`. The client now retires a socket
+before sending a new request once its idle age exceeds a conservative bound
+(80percent of the advertised timeout, capped at4seconds;1second without a hint).
+An actual6-second idle check passed with socket retirement before the next request.
+This is not a replay of a failed request; all actual request failures still halt.
+The151 affected checks pass, including no-retry and pre-network expiry cases.
+Native bootstrap failures now retain their bounded evidence and zero-generation
+classification. The failed probe/log remains retained rather than overwritten.
