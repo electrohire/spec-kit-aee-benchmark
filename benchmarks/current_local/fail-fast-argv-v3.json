@@ -1,0 +1,63 @@
+{
+  "protocol": "fail-fast-argv-v3",
+  "execution_policy": "fail-fast-v1",
+  "scope": "Version3 retains persistent direct-client connections and adds the exact fixed /testbed/ prefix as an alias for the sandbox cwd. Every existing canonical-segment, traversal, byte/length and symlink guard remains; no other absolute root is accepted. This corrects the tool/path convention mismatch exposed by stopped study06, without editing its model output or accepting failed delivery. Native v5 JSON grammar, model, seeds, budgets and graders are unchanged; prior transport12/latency12 remain scoped prior-client observations, not newly measured timings. Require canonical-boundary regressions and a labelled original-action write/readback replay; no automatic request retry/fallback or altered gold outcomes. Preserve v1/v2 contracts and failed runs.",
+  "definitions": {
+    "scripts/current_local.py": {
+      "http": {
+        "before": "d56276c436df848573f47f5b8c1483b20b982910362fc7cc1b3a471dbbc8c197",
+        "after": "391f4c20065b0ece14ad779d0064e277d406aa61cceb8af3451f2e5d8d0fbdbc"
+      }
+    },
+    "scripts/repeated_local.py": {
+      "Provider": {
+        "before": "cb6a4cc03809fe9820fdb002eaeed82a167604ac2b510dfc4545f09fda92852a",
+        "after": "d1f348fbbb63721b6c4d60a5f43562c3791ee909257b0b5c4d2670fb4f13ecf7"
+      },
+      "campaign": {
+        "before": "595c0288cb0e3f9e989188ed097cfe781bb5ce0c6d487b4e266d9add836a2513",
+        "after": "aea7810fe5140b9d3d1d2efe5bf939e33eae46f29bb20786996052ebe2315829"
+      }
+    },
+    "scripts/runtime_checks.py": {
+      "RuntimeIntervention": {
+        "before": "96c9827248e51f2ff72e0202eba8305d911be4c3c9e554a38a01af8c55d78ee1",
+        "after": "2035fc37aec886cfa74b959a47094558170aad2b254a79bcccca2e9eb811ff67"
+      },
+      "RuntimeWatchdog": {
+        "before": "9c01342fc6b20678e794d2ae962aed6b63195acbfaa68c429c46c28e85699709",
+        "after": "c1f4012e69536a8d5d22d3cdcde82f0e24180de0f9de8c382ac170be53e2e455"
+      }
+    },
+    "scripts/action_protocol.py": {
+      "action_command": {
+        "before": "bf4a628f3453917c674283f70bbc245e5d7b84ebbf64690ba1db62d15c5999cc",
+        "after": "e321b1ac0d228586f98e66fd6c363cd5fb4c8415ac8b9b472522951e65a627ce"
+      },
+      "action_response_format": {
+        "before": "7c20bfe8756702944d3bb3a1135f3e45279ec38549d1459c6f86f13ed660045e",
+        "after": "be1f97f3c7b31db85575dd5b0a6df5abc6a66877d0c403e335c45a4e9c36eb6f"
+      }
+    }
+  },
+  "bindings": {
+    "scripts/current_local.py": {
+      "CONFIG": {
+        "before": "ccc7608e6b352eef495cc99fde3374e266f84579146e7b0057d15870f7d90f3a",
+        "after": "d65d494fe63329c631541a4c61e6c4611f7500547b04839080e63a0445823d61"
+      }
+    },
+    "scripts/repeated_local.py": {
+      "COMMON": {
+        "before": "fa7aaeaf6aa06a7c81fe9b777cc31d7e84ba5c9ba910a36860a69d132ef7a354",
+        "after": "16007573792d09a197bef4d52018f05b5a89b8d83a59d5a5d6fe5a53f49d3dd2"
+      }
+    },
+    "scripts/action_protocol.py": {
+      "ACTION_RESPONSE_FORMAT": {
+        "before": "f6dc82e69e0859fecfb8bfc6f536d0c0b3f1bd2e8a53c789df3395c17c73bb4c",
+        "after": "fa52ede1200be31600139d19edc60943d9ce3f6cf036ef9978fb02d5144c8236"
+      }
+    }
+  }
+}

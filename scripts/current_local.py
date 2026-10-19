@@ -474,7 +474,7 @@ def run(out, preflight):
         extras.extend((preflight/"recovery-migration.json",ROOT/"scripts/calibration_recovery.py",ROOT/"scripts/launch_benchmark_mission.py",ROOT/"scripts/labelled_hallucinations.py",ROOT/"benchmarks/current_local/hallucination-cases-v1.json"))
     if WORKER_BINDING is not None:
         extras.extend((preflight/'worker-binding.json', preflight/'direct-route-proof.json', ROOT/'scripts/direct_worker_transport.py', ROOT/'benchmarks/current_local/direct-worker-v1.json', ROOT/'benchmarks/current_local/hallucination-cases-v2.json'))
-    extras.extend((preflight/'fail-fast-amendment.json',ROOT/'scripts/fail_fast_admission.py',ROOT/'benchmarks/current_local/fail-fast-argv-v1.json',ROOT/'benchmarks/current_local/fail-fast-argv-v2.json'))
+    extras.extend((preflight/'fail-fast-amendment.json',ROOT/'scripts/fail_fast_admission.py',ROOT/'benchmarks/current_local/fail-fast-argv-v1.json',ROOT/'benchmarks/current_local/fail-fast-argv-v2.json',ROOT/'benchmarks/current_local/fail-fast-argv-v3.json',ROOT/'benchmarks/current_local/legacy-action-command-v1.py.txt'))
     runner.campaign(out,preflight/"grade",timeout,
         workflow_preflight=workflow,latency_preflight=preflight/"latency/calibration.json",
         context_preflight=preflight/"context/result.json",assets=assets,

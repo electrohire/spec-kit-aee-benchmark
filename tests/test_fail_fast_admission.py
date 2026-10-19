@@ -11,7 +11,7 @@ sys.path.insert(0,str(ROOT/'scripts'))
 import fail_fast_admission as admission
 
 
-@pytest.mark.parametrize('version',['v1','v2'])
+@pytest.mark.parametrize('version',['v1','v2','v3'])
 def test_registered_amendment_matches_current_definitions_and_bindings(version):
     registered=json.loads((ROOT/f'benchmarks/current_local/fail-fast-argv-{version}.json').read_text())
     assert registered['execution_policy']=='fail-fast-v1'
@@ -28,6 +28,9 @@ def test_registered_amendment_matches_current_definitions_and_bindings(version):
                     for target in node.targets:
                         if isinstance(target,ast.Name):found[target.id]=ast.dump(node.value,include_attributes=False)
             for name,entry in entries.items():
+                if version in ('v1','v2') and kind=='definitions' and filename=='scripts/action_protocol.py' and name=='action_command':
+                    legacy=ast.parse((ROOT/'benchmarks/current_local/legacy-action-command-v1.py.txt').read_text()).body[0]
+                    found[name]=ast.dump(legacy,include_attributes=False)
                 assert hashlib.sha256(found[name].encode()).hexdigest()==entry['after']
 
 

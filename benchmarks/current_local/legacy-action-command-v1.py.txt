@@ -1,0 +1,39 @@
+def action_command(action):
+    """Translate a tool action into one sandbox command; never run it on the host.
+
+    Literal UTF-8 file content is transported as base64 data, not shell/Python
+    source. This avoids heredoc/quote truncation without repairing model output.
+    Shell remains available, with the same budgets and runtime intervention.
+    """
+    if action.get('action') == 'exec':
+        argv=action.get('argv')
+        if (not isinstance(argv,list) or not 1<=len(argv)<=128
+            or any(not isinstance(arg,str) or not arg or '\x00' in arg for arg in argv)):
+            raise ValueError('exec requires 1..128 nonempty NUL-free string arguments')
+        data=json.dumps(argv,ensure_ascii=False).encode('utf-8')
+        if len(data)>MAX_WRITE_BYTES:
+            raise ValueError('exec requires bounded UTF-8 arguments')
+        return 'python -c '+shlex.quote(_EXEC_SCRIPT)+' '+shlex.quote(base64.b64encode(data).decode())
+    if action.get('action') == 'shell':
+        command=action.get('command')
+        if not isinstance(command,str) or not command.strip():
+            raise ValueError('shell requires a nonempty command')
+        if '\x00' in command or len(command.encode('utf-8')) > MAX_WRITE_BYTES:
+            raise ValueError('shell requires bounded NUL-free UTF-8 command')
+        data=base64.b64encode(command.encode('utf-8')).decode()
+        return 'python -c '+shlex.quote(_SHELL_SCRIPT)+' '+shlex.quote(data)
+    if action.get('action') != 'write_file':
+        raise ValueError('expected exec, shell, write_file or done')
+    name=action.get('path');content=action.get('content')
+    if (not isinstance(name,str) or not name or len(name)>4096
+        or '\\' in name or ':' in name or '\x00' in name
+        or PureWindowsPath(name).drive or PurePosixPath(name).is_absolute()
+        or any(part in ('','..','.') for part in name.split('/'))):
+        raise ValueError('write_file requires a canonical sandbox-relative path')
+    if not isinstance(content,str) or len(content.encode('utf-8'))>MAX_WRITE_BYTES:
+        raise ValueError('write_file requires bounded UTF-8 content')
+    # Separate binary arguments bound Linux's per-argument and bash command-size
+    # limits even for Unicode and control bytes; no nested JSON expansion.
+    path_data=base64.b64encode(name.encode()).decode()
+    content_data=base64.b64encode(content.encode()).decode()
+    return 'python -c '+shlex.quote(_WRITE_SCRIPT)+' '+shlex.quote(path_data)+' '+shlex.quote(content_data)

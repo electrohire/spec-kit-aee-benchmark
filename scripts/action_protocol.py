@@ -123,6 +123,10 @@ def action_command(action):
     if action.get('action') != 'write_file':
         raise ValueError('expected exec, shell, write_file or done')
     name=action.get('path');content=action.get('content')
+    # Spec Kit also names files under the fixed sandbox mount. Interpret that
+    # one prefix as the same workspace; retain every canonical/symlink check.
+    if isinstance(name,str) and len(name)<=4096 and name.startswith('/testbed/'):
+        name=name[len('/testbed/'):]
     if (not isinstance(name,str) or not name or len(name)>4096
         or '\\' in name or ':' in name or '\x00' in name
         or PureWindowsPath(name).drive or PurePosixPath(name).is_absolute()

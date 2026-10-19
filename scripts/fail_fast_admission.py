@@ -14,7 +14,7 @@ def matches(filename, name, before, after, preflight, kind='definitions'):
         return False
     admission = json.loads((preflight / 'admission.json').read_text())
     version=admission.get('fail_fast_amendment','fail-fast-argv-v1')
-    if version not in ('fail-fast-argv-v1','fail-fast-argv-v2'):return False
+    if version not in ('fail-fast-argv-v1','fail-fast-argv-v2','fail-fast-argv-v3'):return False
     registered=ROOT/'benchmarks/current_local'/(version+'.json')
     if copied.read_bytes()!=registered.read_bytes():return False
     if (admission.get('execution_policy') != 'fail-fast-v1'

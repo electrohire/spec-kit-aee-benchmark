@@ -41,3 +41,28 @@ image lacked repository-pinned Python3.12.6. That validation-fixture failure and
 the corrected image build are retained. Hosted logs independently establish the
 real584-test Ubuntu result; no passing local replica is claimed from the failed
 container. No shared model/service or official benchmark environment was modified.
+
+## Workspace-path convention found on the next attempt
+
+Pipeline14/study06 passed all preflight and four semantic AEE replays, then halted
+after7 native calls/36899 known tokens with0 missing usage. In constitution, the
+model returned valid native JSON writing
+`/testbed/.specify/memory/constitution.md`; the relative-only tool rejected it.
+There was no repeat loop, no scored AEE assessment and no completed delivery.
+The original freeze `7ccd9994adb19baa1583893551f20c9eafe99dce2fa4649f3d11e2f972fca7a5`
+and failed output remain unchanged.
+
+V3 explicitly accepts that one fixed workspace prefix as an alias for the sandbox
+cwd. Other absolute roots, empty/noncanonical segments, traversal, backslashes,
+drive markers, NULs and oversized paths remain refused; the original symlink/root
+checks and literal content transport remain. Native grammar/model/caps do not
+change. Two positive cases first failed, with13 rejection cases already passing;
+all15 pass after the alias. The149 affected checks pass.
+
+A labelled post-implementation replay executed the unchanged original model action
+in a fresh isolated Cachetools sandbox with zero new generation. It wrote/read3758
+UTF-8 bytes with matching SHA256
+`1ca023d6344e51c0793f66cf1305176c37574f1d4e8f8b2b6bb810f2bad1ce19`.
+This is debugging evidence for the tool convention, not a successful scored model
+trajectory. No old model output is edited, no failed run is promoted, and no
+hallucination/efficacy conclusion follows from the replay.
