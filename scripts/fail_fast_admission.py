@@ -10,10 +10,13 @@ def matches(filename, name, before, after, preflight, kind='definitions'):
     if before == after:
         return True
     copied = preflight / 'fail-fast-amendment.json'
-    registered = ROOT / 'benchmarks/current_local/fail-fast-argv-v1.json'
-    if not copied.is_file() or copied.read_bytes() != registered.read_bytes():
+    if not copied.is_file():
         return False
     admission = json.loads((preflight / 'admission.json').read_text())
+    version=admission.get('fail_fast_amendment','fail-fast-argv-v1')
+    if version not in ('fail-fast-argv-v1','fail-fast-argv-v2','fail-fast-argv-v3'):return False
+    registered=ROOT/'benchmarks/current_local'/(version+'.json')
+    if copied.read_bytes()!=registered.read_bytes():return False
     if (admission.get('execution_policy') != 'fail-fast-v1'
         or admission.get('hashes', {}).get(copied.name) != hashlib.sha256(copied.read_bytes()).hexdigest()):
         return False

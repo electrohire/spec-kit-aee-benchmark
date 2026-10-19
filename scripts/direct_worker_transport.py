@@ -9,11 +9,54 @@ import json
 import os
 import socket
 import struct
+import http.client
+import threading
+import time
+import re
 from pathlib import Path
 
 ENDPOINT = 'http://127.0.0.1:50467'
 MODEL = 'qwen3.8-27b'
 WEIGHTS = 'C:/Models/qwen3.8-27b.gguf'
+_HTTP_LOCK = threading.Lock()
+
+
+def request(binding, route, body, timeout):
+    """One request, no retry/fallback; reuse a completed loopback connection."""
+    from infrastructure_errors import response_failure
+    with _HTTP_LOCK:
+        binding.check()
+        connection=getattr(binding,'_http_connection',None)
+        last_used=getattr(binding,'_http_last_used',None)
+        if connection is not None and last_used is not None and time.monotonic()-last_used>=getattr(binding,'_http_idle_seconds',1):
+            # Retire before sending a NEW request. Never replay a failed request.
+            connection.close();connection=None;binding._http_connection=None
+        if connection is None:
+            connection=http.client.HTTPConnection('127.0.0.1',50467,timeout=timeout)
+            binding._http_connection=connection
+        target=route if body is not None else route+'?model='+MODEL
+        try:
+            connection.timeout=timeout
+            if connection.sock:connection.sock.settimeout(timeout)
+            connection.request('POST' if body is not None else 'GET',target,body,{'Content-Type':'application/json'})
+            response=connection.getresponse();raw=response.read()
+            if not 200<=response.status<300:
+                raise response_failure(route,body,raw,status=response.status,reason='http_error')
+            hint=getattr(response,'getheader',lambda name:None)('Keep-Alive') or ''
+            match=re.search(r'(?:^|,)\s*timeout=(\d+(?:\.\d+)?)',hint)
+            binding._http_idle_seconds=min(4.0,float(match.group(1))*0.8) if match else 1.0
+            binding._http_last_used=time.monotonic()
+        except OSError as exc:
+            connection.close();binding._http_connection=None
+            if hasattr(exc,'evidence'):raise
+            failure=response_failure(route,body,b'',reason='transport_error',source_complete=False)
+            failure.evidence['original_error']=repr(exc)[:1000]
+            raise failure from exc
+        try:
+            return json.loads(raw)
+        except (ValueError,UnicodeError) as exc:
+            connection.close();binding._http_connection=None
+            raise response_failure(route,body,raw,status=response.status,reason='invalid_json') from exc
 
 
 def native_observation(pid):

@@ -2,6 +2,15 @@
 
 ## Unreleased — user-directed fail-fast amendment, 2026-10-19
 
+- Mitigate repeated direct-worker TCP handshakes with persistent connections,
+  preserving literal JSON, model/process checks, timeouts and no retry/fallback.
+  Retain context failures and include external reused setup calls in export.
+  Preserve pipeline12's zero-generation preflight stop and historical v1 contract;
+  fresh context13 passes, without claiming the historical timeout cause is solved.
+- Accept only the fixed `/testbed/` writer prefix as a workspace alias while
+  preserving canonical/traversal/symlink guards. Retain study06's7-call failure;
+  replay its unmodified action separately with zero generation, not as scored success.
+
 - Stop study04 and preserve its partial evidence/costs. Diagnose incomplete grep
   actions and runner success bookkeeping. Add literal argv actions and first-error
   campaign halting, including public/hidden verification; withhold repairs and next
