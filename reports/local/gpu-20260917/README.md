@@ -1,6 +1,6 @@
 # Measured GPU exploration and repair supplement — 2026-09-17
 
-**Observed result:** the document-adapted workflows used substantially more tokens
+**Observed result:* * the document-adapted workflows used substantially more tokens
 and had fewer passing primary solutions in this six-task sample. After a shared
 repair policy all arms passed 5/6 of the now feedback-exposed upstream test suites.
 No superiority, token saving, or full Spec Kit integration claim is supported.
@@ -208,13 +208,13 @@ proof or a claim that full Spec Kit worsens coding.
 
 ## Evidence and reproduction
 
-- [Primary summary](coding/coding-summary.json), [per-attempt grades and rework](coding/results.json), [sanitized freeze](coding/freeze-sanitized.json), [audit](coding/audit.json).
-- [Repair summary](repair/summary.json), [all repair rounds](repair/results.json), [repair freeze](repair/freeze.json), [audit](repair/audit.json).
-- [Runtime samples](runtime-final/runtime.json), [summary](runtime-final/runtime-summary.json), [runtime freeze](runtime-final/freeze.json).
-- [Primary protocol](../../../docs/gpu-experiment-protocol.md), [repair protocol](../../../docs/gpu-repair-protocol.md), [reproduction](../../../docs/gpu-reproduction.md).
-- [Regression test output](tests-final.txt): 49 passed; original 41-test checks are retained under reports/offline.
-- [Spec Kit](https://github.com/github/spec-kit), [AEE extension](https://github.com/electrohire/spec-kit-aee), [Evaluator](https://github.com/electrohire/spec-kit-evaluator), [AEE engine](https://github.com/electrohire/applied-epistemic-engineering).
-- [Model revision](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF/tree/d0a692ef765eefbf2fabb130b3cb2e8917e3d225), [runtime release](https://github.com/ggml-org/llama.cpp/releases/tag/b11026), [Exercism source](https://github.com/exercism/python/tree/1f6aab8667bf653b10cc3799f94352fcdb749db6), [canonical problem specifications](https://github.com/exercism/problem-specifications).
+* [Primary summary](coding/coding-summary.json), [per-attempt grades and rework](coding/results.json), [sanitized freeze](coding/freeze-sanitized.json), [audit](coding/audit.json).
+* [Repair summary](repair/summary.json), [all repair rounds](repair/results.json), [repair freeze](repair/freeze.json), [audit](repair/audit.json).
+* [Runtime samples](runtime-final/runtime.json), [summary](runtime-final/runtime-summary.json), [runtime freeze](runtime-final/freeze.json).
+* [Primary protocol](../../../docs/gpu-experiment-protocol.md), [repair protocol](../../../docs/gpu-repair-protocol.md), [reproduction](../../../docs/gpu-reproduction.md).
+* [Regression test output](tests-final.txt): 49 passed; original 41-test checks are retained under reports/offline.
+* [Spec Kit](https://github.com/github/spec-kit), [AEE extension](https://github.com/electrohire/spec-kit-aee), [Evaluator](https://github.com/electrohire/spec-kit-evaluator), [AEE engine](https://github.com/electrohire/applied-epistemic-engineering).
+* [Model revision](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF/tree/d0a692ef765eefbf2fabb130b3cb2e8917e3d225), [runtime release](https://github.com/ggml-org/llama.cpp/releases/tag/b11026), [Exercism source](https://github.com/exercism/python/tree/1f6aab8667bf653b10cc3799f94352fcdb749db6), [canonical problem specifications](https://github.com/exercism/problem-specifications).
 
 Operational failures preserved: original laptop interruption; initial GPU-host
 uv/shared-temp permission errors (a test invocation had 19 passes/29 setup errors);

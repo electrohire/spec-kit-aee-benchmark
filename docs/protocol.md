@@ -5,10 +5,10 @@ only treatment integration, isolation, physical-call accounting, independent
 output joins and evidence integrity locally. No benchmark coverage percentage is
 a goal. Old convenience tasks/diagnostics are retired, with original evidence kept.
 
-- [Matched HaluEval/RAGTruth protocol](../benchmarks/hallucinations/MATCHED-PROTOCOL.md).
-- [Established short/long-horizon coding design](long-horizon-economics-plan.md).
-- [Release comparison policy and trust boundary](benchmark-release-gates.md).
-- [Harness input/output and interpretation](benchmark-harness.md).
+* [Matched HaluEval/RAGTruth protocol](../benchmarks/hallucinations/MATCHED-PROTOCOL.md).
+* [Established short/long-horizon coding design](long-horizon-economics-plan.md).
+* [Release comparison policy and trust boundary](benchmark-release-gates.md).
+* [Harness input/output and interpretation](benchmark-harness.md).
 
 All arms share model, task inputs, seed/caps, tool interface and independent
 labels/graders. Register/freeze changes before inference; one approved local worker,

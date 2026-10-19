@@ -38,13 +38,13 @@ provider_backend: "local"   # or "openai" (default)
 
 Fail-closed behavior, all preserved for local runs:
 
-- `validate_live()` probes the server and requires the reported model id to
+* `validate_live()` probes the server and requires the reported model id to
   match `LOCAL_MODEL_NAME`; a wrong checkpoint or a down server aborts before
   any attempt.
-- `verify_reservation_bounds()` returns zero bounds for local configs.
-- `LocalProvider` sends no OpenAI-only parameters (`reasoning_effort`,
+* `verify_reservation_bounds()` returns zero bounds for local configs.
+* `LocalProvider` sends no OpenAI-only parameters (`reasoning_effort`,
   `service_tier`) and records `response_model` as observed.
-- Telemetry identity is validated before the HTTP request, exactly as with
+* Telemetry identity is validated before the HTTP request, exactly as with
   the OpenAI provider.
 
 ## What the setup script does not do

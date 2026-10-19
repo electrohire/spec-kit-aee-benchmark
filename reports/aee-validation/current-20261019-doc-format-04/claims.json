@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "claims": [
+    {
+      "id": "OBS-DOC-FORMAT-001",
+      "text": "The captured documentation check reported 82 checked files.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "stage": "checked",
+      "boundary": [
+        "This recorded offline invocation only. This guard checks selected presentation spacing and bullet markers, not documentation completeness or a rendering guarantee. The separate visual preview is not part of this atomic count observation. No model calls, factual detector accuracy, treatment efficacy, monetary savings, human acceptance or full coverage is established."
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "source_ref": "scripts/check_docs.py",
+      "uncertainty": "low",
+      "falsification_tests": [
+        "A nonzero check_docs process exit, a different reported file count, or changed declared source bytes contradicts this observation."
+      ],
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated test runner",
+          "date": "2026-10-19T21:29:03.681069+00:00",
+          "basis": "Actual recorded check_docs process; no human acceptance asserted."
+        }
+      ],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261019-doc-format-04/tests/execution.log",
+          "content_hash": "e65e08900f006958162517bf88b7887a92d94ae47f0581b3b96d4ba8a866399f",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "source_id": "recorded-documentation-check",
+          "observed_at": "2026-10-19T21:29:03.681069+00:00",
+          "description": "Actual check_docs process log; command and before/after source hashes retained alongside it."
+        }
+      ]
+    }
+  ]
+}

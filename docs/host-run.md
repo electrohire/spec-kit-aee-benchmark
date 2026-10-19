@@ -65,27 +65,27 @@ package (config/store/scheduler) seeds defects whose symptom surfaces in
 plausible wrong-layer fix in `scheduler.py` that passes every public test
 but fails hidden tests pinned at the true layer:
 
-- `minisched/config_default`: wrong retry default in config.py (trap: `or 3`
+* `minisched/config_default`: wrong retry default in config.py (trap: `or 3`
   coercion in the scheduler breaks explicit max_retries=0)
-- `minisched/store_add_alias`: store.add aliases the caller payload
+* `minisched/store_add_alias`: store.add aliases the caller payload
   (trap: defensive copy in scheduler.enqueue leaves the store broken)
-- `minisched/coupled_xfile`: both defects across files (completeness check)
+* `minisched/coupled_xfile`: both defects across files (completeness check)
 
 plus the `minisched/clean` negative control.
 
 ## What the campaign costs
 
-- Attempt cap $25, global cap $100 (Tristen authorized the freeze-v8.1
+* Attempt cap $25, global cap $100 (Tristen authorized the freeze-v8.1
   phase-2 campaign 2026-09-21).
-- Expected spend ~$6-9 at ~$0.50-0.75/attempt (v7 measured $0.46/attempt
+* Expected spend ~$6-9 at ~$0.50-0.75/attempt (v7 measured $0.46/attempt
   over 24 attempts; cross-file pairs use more tool calls).
-- Worst-case reservation per repair attempt is about $15.40 at the
+* Worst-case reservation per repair attempt is about $15.40 at the
   conservative (long-tier) rates; measured spend settles lower.
-- Measured spend so far: $22.8863 ($1.4831 v4 smoke + $1.5029 v5 +
+* Measured spend so far: $22.8863 ($1.4831 v4 smoke + $1.5029 v5 +
   $8.8870 v6 + $11.0133 v7) against the $100 global cap ($77.1137 remaining). The 2026-09-20 failed run's
   unmeasured charge was discounted by Tristen on 2026-09-21 as
   unverifiable, so the cap counts only measured spend.
-- The script prints measured spend per attempt at the end.
+* The script prints measured spend per attempt at the end.
 
 ## After the run
 
@@ -100,11 +100,11 @@ where partial passes are expected; binary pass/fail is secondary.
 
 ## Notes
 
-- The smoke pair (`tinydb/bool_id`, seed 20260918) is excluded from every
+* The smoke pair (`tinydb/bool_id`, seed 20260918) is excluded from every
   scored freeze, so the scored run does not contaminate the pilot.
-- Historical freezes v2/v3/v4/v5/v6/v7 and all prior evidence are untouched.
-- Negative and partial outcomes are preserved, never discarded.
-- To run again later, re-run the script; it rebuilds from `main`.
+* Historical freezes v2/v3/v4/v5/v6/v7 and all prior evidence are untouched.
+* Negative and partial outcomes are preserved, never discarded.
+* To run again later, re-run the script; it rebuilds from `main`.
   Previous calibration/freeze outputs are archived with timestamps, never
   overwritten. Expect up to ~30 minutes per attempt; the full campaign may
   take several hours.

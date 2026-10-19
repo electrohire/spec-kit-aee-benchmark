@@ -46,21 +46,21 @@ boundary. Changes to policy/indices require the same protected review and CI.
 release comparisons. It covers detector accuracy/misses, coding correctness and
 all-call native token cost; it does not combine them into an AEE score.
 
-- Integrity failures, incomplete schedules/grades, unknown token usage, unmatched
+* Integrity failures, incomplete schedules/grades, unknown token usage, unmatched
   model/task/seed/cap/grader fingerprints, missing actual ledgers, absent accepted
   baseline or wrong product SHA/distribution digest block release.
-- Accuracy/false-acceptance margins are2percentage points; token margin10%.
-  Five-point quality or25% token losses block even if intervals are wide.
-- A paired95% interval wholly on the acceptable side of the margin can pass;
+* Accuracy/false-acceptance margins are 2 percentage points; token margin 10%.
+  Five-point quality or 25% token losses block even if intervals are wide.
+* A paired 95% interval wholly on the acceptable side of the margin can pass;
   an interval crossing the unacceptable boundary is inconclusive and blocks.
   “Not statistically significant” does not demonstrate equivalence.
-- A clear improvement beyond the practical margin is highlighted as good news
+* A clear improvement beyond the practical margin is highlighted as good news
   only after every quality gate clears. Cheap failed work earns no savings claim.
-- Coding requires actual verified successful work. A two-task pilot has narrow
+* Coding requires actual verified successful work. A two-task pilot has narrow
   generalizability even when its conditional interval clears; retain this limit.
   Register independent repetitions/expansion before stronger claims. Never rerun
   until green or tune margins after looking at a candidate's result.
-- Latency is reported separately until a dedicated, repeated same-host timing
+* Latency is reported separately until a dedicated, repeated same-host timing
   experiment calibrates its noise. Concurrent CPU work is disclosed; noisy wall
   time alone does not certify a product regression or improvement.
 

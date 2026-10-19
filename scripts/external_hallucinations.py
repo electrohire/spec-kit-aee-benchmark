@@ -399,7 +399,7 @@ def score(out):
     text += 'These are balanced response-classification subsets, separate from coding outcomes and the synthetic factbook diagnostic. No AEE treatment was applied; this is not AEE efficacy, Spec Kit efficacy, or generated-answer hallucination prevalence.\n\n'
     for name, values in result['metrics'].items():
         text += '## ' + name + '\n\n```json\n' + json.dumps(values, indent=2) + '\n```\n\n'
-    text += f"Physical calls: {len(calls)}; known native tokens: {known}; usage unknown: {unknown}. API spend0 excludes hardware, energy and labor.\n\n"
+    text += f"Physical calls: {len(calls)}; known native tokens: {known:,}; usage unknown: {unknown}. API spend $0 excludes hardware, energy and labor.\n\n"
     text += 'Original labels and output are retained even when wrong. Public data may be in model training. HaluEval pairs share a question; intervals resample question clusters. RAGTruth uses distinct source IDs and its test split; implicit_true annotations are excluded from positive gold. The full upstream benchmarks were not run. No cross-dataset or coding aggregate is reported.\n'
     (out / 'README.md').write_text(text, encoding='utf-8')
     return result

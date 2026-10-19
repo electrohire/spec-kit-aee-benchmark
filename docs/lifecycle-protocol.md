@@ -27,11 +27,11 @@ Collect the same positive claim opportunities in every arm, independently of
 AEE's richer internal claims. Freeze the extraction rubric before viewing grades.
 Supported categories in `lifecycle-report`:
 
-- `completion`: "all acceptance requirements pass", checked against the exact
+* `completion`: "all acceptance requirements pass", checked against the exact
   source snapshot's independent, nonempty, completed grading.
-- `test_passed`: a named independently graded case passes. Unknown cases remain
+* `test_passed`: a named independently graded case passes. Unknown cases remain
   unknown, rather than being scored false or true.
-- `evidence_exists`: a cited artifact belongs to the milestone's recorded tool
+* `evidence_exists`: a cited artifact belongs to the milestone's recorded tool
   artifacts and its bytes match its SHA-256. This checks citation existence;
   it does **not** prove that arbitrary prose is supported by those bytes.
 
@@ -85,14 +85,14 @@ Campaign keys: `schema: lifecycle-v1`, `campaign_id`, `scope`, `schedule`,
 `output`, nonnegative USD/million). Schedule entries contain `project`, `seed`,
 `arm`, `stage` (integer >=1). Milestones repeat those fields and contain:
 
-- `source_sha256`, frozen `expected_case_ids`, `grade: {path, sha256}` or null,
+* `source_sha256`, frozen `expected_case_ids`, `grade: {path, sha256}` or null,
   `source_changing_repairs`;
-- `calls` with unique `call_id`/optional `request_id`, `phase`, native
+* `calls` with unique `call_id`/optional `request_id`, `phase`, native
   `input_tokens`, `cached_input_tokens`, `output_tokens`, `reasoning_tokens`,
   `api_cost_usd`, optional `error`; unknown usage needs `unknown_reason`;
-- `claims` with unique `id`, `kind`, optional `case_id` or `evidence: {path,sha256}`,
+* `claims` with unique `id`, `kind`, optional `case_id` or `evidence: {path,sha256}`,
   and nullable `flagged`; all entries are positive assertions;
-- optional `tool_artifacts: [{path,sha256}]`.
+* optional `tool_artifacts: [{path,sha256}]`.
 
 Grade JSON must contain `grader_completed: true`, `exit_code: 0/1`, matching
 `source_sha256`, and nonempty `cases: [{id,passed}]` without skips/duplicate IDs.

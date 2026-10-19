@@ -13,13 +13,13 @@ Constitution (`.specify/memory/constitution.md` v1.3.0) and repo AGENTS.md read 
 
 16 `pair.json` files in `reports/local/matched-repair-01/`:
 
-- **15/16**: `done=False`, `completed=False`, `calls=8/8`, `errors=[]`,
+* **15/16**: `done=False`, `completed=False`, `calls=8/8`, `errors=[]`,
   `diagnostic_changed_source=False` → no claims, no evaluation.
-- **1/16** (`tinydb-partial_commit-20260918`): `done=True` on call 8 → 8 claims +
+* **1/16** (`tinydb-partial_commit-20260918`): `done=True` on call 8 → 8 claims +
   evaluation produced.
-- Per-call audit of all 128 `diagnostic/call-*.json` responses: all 15 failures
+* Per-call audit of all 128 `diagnostic/call-*.json` responses: all 15 failures
   issued 8/8 `shell` actions and zero `done` attempts; the success issued 7× shell
-  + `done` on the final call.
+  * `done` on the final call.
 
 ## Eliminated causes (quantified)
 
@@ -47,9 +47,9 @@ Decisively: the explicit final-call nudge (`scripts/repeated_local.py:179` —
 
 Two sub-patterns among the 15:
 
-- **8/15 pure passive reading loops** (0 code executions) — e.g. cachetools
+* **8/15 pure passive reading loops** (0 code executions) — e.g. cachetools
   trajectories `cat`-ing the same 3–5 files repeatedly.
-- **7/15 active experimenters that still didn't terminate** — e.g.
+* **7/15 active experimenters that still didn't terminate** — e.g.
   `tinydb-token_alias-20260918` ran pytest 3× and a `python -c` reproduction
   **on the final call** instead of writing the claims deliverable.
 
@@ -59,13 +59,13 @@ termination behavior, not budget.
 
 ## Likely contributors (interpretive)
 
-- The `done` deliverable is heavy: per-claim
+* The `done` deliverable is heavy: per-claim
   id/text/kind/status/boundary/depends_on/conflicts_with/falsification_tests/
   source_ref/uncertainty/evidence[] with hash refs, validated by
   `Claim.from_dict` (`scripts/long_horizon.py:34`,
   `scripts/repeated_local.py:185-188`). The model appears to defer this
   expensive step ("one more check") until the budget is gone.
-- Termination relies solely on model compliance with two warning messages
+* Termination relies solely on model compliance with two warning messages
   (`repeated_local.py:179,181`) — empirically ineffective (15/16 ignored the
   final one). The harness cannot distinguish "still investigating" from "stuck."
 

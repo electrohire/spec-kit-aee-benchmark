@@ -2,7 +2,7 @@
 
 Read the latest durable checkpoints outside this checkout before controlling the
 local worker. This file is a public roadmap, not authorization to start duplicate
-inference. Current matched03 has a separate immutable source checkout; do not
+inference. Current matched 03 has a separate immutable source checkout; do not
 pull these documentation/release changes into it while generation is active.
 
 1. [Harness I/O and what the results mean](docs/benchmark-harness.md).
@@ -10,7 +10,7 @@ pull these documentation/release changes into it while generation is active.
    HaluEval/RAGTruth author labels, same three arms and two-call draft/review,
    policy overhead/actual AEE preserved. Full paired results remain pending.
 3. [Short/long-horizon economics](docs/long-horizon-economics-plan.md): established
-   FeatureBench Fastv1.1 and SWE-EVO; independent grades and registered checkpoints
+   FeatureBench Fast v1.1 and SWE-EVO; independent grades and registered checkpoints
    before coding inference. Neither has executed here yet.
 4. [Build requests and release gates](docs/benchmark-release-gates.md): exact
    candidate artifacts, accepted matched baseline, paired uncertainty, regression
@@ -19,17 +19,17 @@ pull these documentation/release changes into it while generation is active.
 
 ## Current measured findings
 
-[Model-only external01](reports/hallucinations/external-01-20261019/README.md) is
-complete/audited/published: HaluEval100/120 and RAGTruth97/120,213457native tokens,
-0unknown usage. It does not measure Spec Kit/AEE benefit. Never rerun or overwrite
-this completed experiment. Matched01/02 stopped and are not resumed; fresh03 uses
+[Model-only external 01](reports/hallucinations/external-01-20261019/README.md) is
+complete/audited/published: HaluEval 100/120 and RAGTruth 97/120,213457 native tokens,
+0 unknown usage. It does not measure Spec Kit/AEE benefit. Never rerun or overwrite
+this completed experiment. Matched 01/02 stopped and are not resumed; fresh 03 uses
 explicit bounded native grammar with unchanged semantic labels/caps.
 
 ## Historical evidence
 
-[Matched01](reports/hallucinations/matched-01-stopped-20261019/README.md),
-[matched02](reports/hallucinations/matched-02-stopped-20261019/README.md),
-[stopped coding02](reports/local/current-study-02-stopped-postmortem/README.md)
+[Matched 01](reports/hallucinations/matched-01-stopped-20261019/README.md),
+[matched 02](reports/hallucinations/matched-02-stopped-20261019/README.md),
+[stopped coding 02](reports/local/current-study-02-stopped-postmortem/README.md)
 and earlier registered preparations remain immutable. Synthetic factbooks and
 convenience coding tasks are retired from active maintenance/reruns. Their costs
 and unknowns remain in explicitly bounded historical inventories. A generic

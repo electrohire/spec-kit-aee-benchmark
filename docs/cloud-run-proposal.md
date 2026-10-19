@@ -8,20 +8,20 @@ explicitly authorizes paid calls and freezes a spending cap (START_HERE.md,
 
 ## Status update 2026-09-20
 
-- Route A port is complete on branch `feat/cloud-matched-repair`: matched-repair
+* Route A port is complete on branch `feat/cloud-matched-repair`: matched-repair
   arms, guided-only AEE findings, diagnose-first scheduling, deterministic
   repair order, unique attempt IDs, exact authorization text, fail-closed
   verification flags, long-context-tier exclusion check (96 tests green).
-- Provider now authenticates via the Secure Vault connector on the managed VM
+* Provider now authenticates via the Secure Vault connector on the managed VM
   and via `OPENAI_API_KEY` on an operator host (fail-closed either way).
-- OpenAI key connected; free `/v1/models` probe confirms `gpt-6-astra`
+* OpenAI key connected; free `/v1/models` probe confirms `gpt-6-astra`
   available. Pricing cross-checked 2026-09-20: $10/$1/$50 standard,
   $20/$2/$75 above 272K input tokens.
-- The managed VM cannot run containers (supervisor restriction, proven on two
+* The managed VM cannot run containers (supervisor restriction, proven on two
   VMs), so fixture builds, calibration, grader smoke, audit, freeze v4, and
   the 3-attempt smoke move to a Docker-capable host. Runbook:
   `docs/host-run.md`; one-command setup: `scripts/host-setup.sh`.
-- Zero paid spend so far. The 3-attempt development smoke ($25/attempt,
+* Zero paid spend so far. The 3-attempt development smoke ($25/attempt,
   $100 global, authorized 2026-09-20) is ready to run from the host script,
   which stops for explicit confirmation before any paid call.
 
@@ -48,18 +48,18 @@ unpublished until evidence — not ambition — supports it.
 
 Same matched-repair protocol as scripts/matched_repair.py:
 
-- 16 matched pairs: 12 seeded bugs + 4 clean negative controls, across
+* 16 matched pairs: 12 seeded bugs + 4 clean negative controls, across
   `tinydb` and `cachetools`, 2 seeds each (see VARIANTS in
   scripts/matched_repair.py).
-- Per pair: one **shared** read-only diagnostic (identical start, identical
+* Per pair: one **shared** read-only diagnostic (identical start, identical
   tools, identical public-test feedback), then two repair arms from the same
   snapshot: `ordinary_repair` and `aee_guided_repair` (only the guided arm
   receives actual AEE/Evaluator findings). Arm order randomized per pair.
-- 2 fixed repair rounds × up to 8 calls each; diagnostic up to 8 calls with
+* 2 fixed repair rounds × up to 8 calls each; diagnostic up to 8 calls with
   the v3 structural termination fix. Hidden grading happens once, after all
   runs; hidden outcomes are never fed back to any treatment or the shared
   diagnostic.
-- 32 repair attempts + 16 shared-diagnostic attempts = 48 attempts total.
+* 32 repair attempts + 16 shared-diagnostic attempts = 48 attempts total.
   The diagnostic cost is charged once to the physical-work ledger (split
   evenly per arm only for comparison arithmetic).
 
@@ -70,7 +70,7 @@ Same matched-repair protocol as scripts/matched_repair.py:
 structural, not cosmetic:
 
 | Concern | Local `Provider.query(messages, phase, stage, deadline)` | Cloud `OpenAIProvider.query(messages, phase, timeout, retry)` |
-|---|---|---|
+| --- | --- | --- |
 | Transport | Local llama-server: `/v1/chat/completions`, `/tokenize`, `/apply-template`, `/slots` | `https://api.openai.com/v1/chat/completions`, `OPENAI_API_KEY` from env |
 | Request params | llama sampling: temp 0.6, top_p 0.95, top_k 20, min_p, penalties, seed, `response_format: json_object`, chat-template `enable_thinking` | `model`, `reasoning_effort`, `max_completion_tokens`, `service_tier`; temperature only if set |
 | Context mgmt | Preflight tokenization + binary-search history trim to 32k context | No preflight; mini-SWE-agent context handling + ceiling reservation + `token_cap` hard stop |
@@ -80,7 +80,7 @@ structural, not cosmetic:
 
 Two routes exist:
 
-- **Route A (recommended): port matched-repair into `src/benchmark_runner`.**
+* **Route A (recommended): port matched-repair into `src/benchmark_runner`.**
   The runner already has everything the cloud run needs — USD reservations,
   price snapshots, Docker isolation, artifact stores, freeze verification —
   and rebuilding those for the local harness would be re-implementing the
@@ -104,7 +104,7 @@ Two routes exist:
      mode returns.
   5. Port fixture calibration (scripts/matched_repair.py `calibration`) and
      hidden grading into grading.py's separate grading path.
-- **Route B: write an OpenAI-backed provider for the local Session
+* **Route B: write an OpenAI-backed provider for the local Session
   framework.** Feasible (swap transport, drop llama-only preflight, adopt
   ceiling reservation) but then budgets, Docker isolation, price snapshots,
   and audit trails all need rebuilding. Not recommended.
@@ -119,27 +119,27 @@ Token totals are **measured** from `reports/local/matched-repair-01/summary.json
 **$10/1M input, $1/1M cached input, $50/1M output**.
 
 | Segment | Uncached input | Cached input | Output | Cost |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | ordinary_repair (16 attempts, 227 calls) | 292,297 × $10/1M = $2.92 | 1,220,064 × $1/1M = $1.22 | 110,299 × $50/1M = $5.51 | **$9.66** |
 | aee_guided_repair (16 attempts, 242 calls) | 312,134 × $10/1M = $3.12 | 1,444,303 × $1/1M = $1.44 | 113,361 × $50/1M = $5.67 | **$10.23** |
 | Shared diagnostic, physical ledger (16 attempts, 128 calls, charged once) | 129,944 × $10/1M = $1.30 | 500,081 × $1/1M = $0.50 | 47,258 × $50/1M = $2.36 | **$4.16** |
-| **Full campaign total** | | | | **≈ $24.05** |
+| **Full campaign total** |  |  |  | **≈ $24.05** |
 
 Per matched pair ≈ **$1.50**; per repair attempt ≈ **$0.62**; per diagnostic
 attempt ≈ **$0.26**.
 
 Honesty caveats — this is a planning number, **not** a budget cap:
 
-- Qwen's tokenizer ≠ Astra's tokenizer; actual token counts will differ.
-- The local run's ~80% prompt-cache hit rate came from llama-server
+* Qwen's tokenizer ≠ Astra's tokenizer; actual token counts will differ.
+* The local run's ~80% prompt-cache hit rate came from llama-server
   `cache_prompt`; Astra prompt caching is automatic (≥1024-token prefixes)
   and hit rates on real trajectories may be lower.
-- **Biggest uncertainty: reasoning tokens.** At `reasoning_effort=medium` a
+* **Biggest uncertainty: reasoning tokens.** At `reasoning_effort=medium` a
   reasoning model will likely emit more output per call than the local
   ~470 tokens/call average, and reasoning tokens bill at the $50/1M output
   rate. The estimate assumes a comparable output profile; the smoke run
   measures the real one.
-- Estimate says nothing about outcome; spend does not buy a favorable result.
+* Estimate says nothing about outcome; spend does not buy a favorable result.
 
 ## 3. Reservation bounds and recommended caps
 
@@ -150,18 +150,18 @@ is permitted (provider.py):
 
 Sensible frozen ceilings, anchored to measured data:
 
-- `max_input_tokens = 32768` — matches the local 32k context budget; the
+* `max_input_tokens = 32768` — matches the local 32k context budget; the
   largest measured preflight input was 11,241, so this gives ~3× headroom.
-- `max_output_tokens = 4096` — matches the local run and the offline freeze.
+* `max_output_tokens = 4096` — matches the local run and the offline freeze.
 
 Per-call reservation at Astra prices:
 
-- 32,768 × $10/1M + 4,096 × $50/1M = $0.328 + $0.205 = **≈ $0.53/call**
+* 32,768 × $10/1M + 4,096 × $50/1M = $0.328 + $0.205 = **≈ $0.53/call**
 
 Worst-case reservations per attempt:
 
-- Repair attempt (16 calls max): 16 × $0.53 = **$8.52**
-- Diagnostic attempt (8 calls max): 8 × $0.53 = **$4.26**
+* Repair attempt (16 calls max): 16 × $0.53 = **$8.52**
+* Diagnostic attempt (8 calls max): 8 × $0.53 = **$4.26**
 
 If the smoke shows reasoning verbosity routinely threatening the 4,096
 output ceiling, raise `max_output_tokens` to 16,384 — but note this raises
@@ -213,61 +213,61 @@ satisfied before any paid call. Enumerated verbatim from the code:
 Freeze v4 config fields to set (offline-freeze-v3 leaves all of these null;
 v4 must fill them before `freeze()` and commit):
 
-- `model`: the exact Astra snapshot id the API returns (the provider
+* `model`: the exact Astra snapshot id the API returns (the provider
   rejects a response whose `model` field differs — verify with the real
   smoke before freezing the scored manifest).
-- `reasoning_effort: medium` (middle of low/medium/high/xhigh/max; xhigh/max
+* `reasoning_effort: medium` (middle of low/medium/high/xhigh/max; xhigh/max
   would raise output-token costs materially — caps protect regardless).
-- `temperature: null` (unsupported alongside reasoning effort).
-- `max_input_tokens: 32768`, `max_output_tokens: 4096`
+* `temperature: null` (unsupported alongside reasoning effort).
+* `max_input_tokens: 32768`, `max_output_tokens: 4096`
   (or 16384 if smoke measures reasoning verbosity near the ceiling).
-- `token_cap`: attempt token ceiling consistent with the reservation
+* `token_cap`: attempt token ceiling consistent with the reservation
   (runner additionally enforces `used + max_input + max_output ≤ token_cap`
   per request inside `execute_attempt`).
-- `prices: {input: 10.0, cached_input: 1.0, output: 50.0}`, plus
+* `prices: {input: 10.0, cached_input: 1.0, output: 50.0}`, plus
   `long_context_prices` / `long_context_threshold` **only if** Astra has a
   long-context tier — the runner reserves the *highest* applicable rate, so
   an unverified tiering assumption is a budget hole. (Precedent: gpt-5.4
   doubled input / 1.5× output above 272K; Astra's policy must be checked
   against the official pricing page before freezing.)
-- `price_snapshot_id` + `price_source` (official OpenAI pricing URL + date
+* `price_snapshot_id` + `price_source` (official OpenAI pricing URL + date
   checked).
-- `budget_authorization`: Tristen's explicit written approval naming the
+* `budget_authorization`: Tristen's explicit written approval naming the
   dollar cap (the smoke proposal's $30 pattern, updated for §3).
-- `global_cap_usd`, `attempt_cap_usd`: per §3.
-- `purpose` (`development_smoke` for the smoke freeze), `seed`, `max_calls`,
+* `global_cap_usd`, `attempt_cap_usd`: per §3.
+* `purpose` (`development_smoke` for the smoke freeze), `seed`, `max_calls`,
   `max_recovery_rounds: 2`, `timeout_seconds`, `service_tier: default`,
   `currency: USD`, `runner` identifier, verification flags
   (`reservation_bound_verified`, `grader_smoke_verified`,
   `real_smoke_verified`, `solver_image_audit_verified`) flipped only when
   each gate genuinely passes.
-- Tasks: 16-pair matched-repair fixture tasks with pinned image digests and
+* Tasks: 16-pair matched-repair fixture tasks with pinned image digests and
   base commits; the smoke fixture pair listed under exclusions of the scored
   freeze; schedule with deterministic attempt ids.
 
 ## 5. Blockers to starting today
 
-- **Docker is not installed on this Linux VM** (`docker` not found).
+* **Docker is not installed on this Linux VM** (`docker` not found).
   `validate_live` hard-fails without it. Either install Docker here or run
   from a host that has it (the Windows GPU host needs WSL2 + Docker, which
   was already unreachable there per START_HERE.md).
-- **No paid-call authorization.** An `OPENAI_API_KEY` exists in this VM's
+* **No paid-call authorization.** An `OPENAI_API_KEY` exists in this VM's
   environment, but key presence ≠ authorization. Per AGENTS.md and
   START_HERE.md: no paid runs without frozen authorized caps and verified
   preflight. Tristen must approve §3's caps in writing first. The key must
   never appear in chat, logs, or the repo; the runner reads it from the
   environment only.
-- **Astra pricing unverified.** The $10/$1/$50 rates and 1.05M context were
+* **Astra pricing unverified.** The $10/$1/$50 rates and 1.05M context were
   supplied for this proposal, not checked against an official pricing page;
   long-context tiering is unknown. A price snapshot must be verified before
   freezing v4.
-- **Exact model snapshot id unknown.** The provider raises on model
+* **Exact model snapshot id unknown.** The provider raises on model
   mismatch, so the frozen `model` string must be the exact id the API
   returns — confirm via the real smoke call.
-- **Engineering not started.** Matched-repair is not wired to the cloud
+* **Engineering not started.** Matched-repair is not wired to the cloud
   runner (Route A, §1). No cloud execution is possible until the adapter,
   fixtures, and grading port exist and their smoke passes.
-- **Gates 2–4 of validate_live are unmet**: grader smoke, solver image
+* **Gates 2–4 of validate_live are unmet**: grader smoke, solver image
   audit, and reservation-bound verification are all still `false` in the
   current config.
 

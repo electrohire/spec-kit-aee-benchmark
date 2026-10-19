@@ -1,4 +1,5 @@
 # Limitations and open gates
+
 ## GPU continuation update
 
 The [six-task local exploration and repair results](../reports/local/gpu-20260917/README.md)
