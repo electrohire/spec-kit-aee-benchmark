@@ -19,10 +19,13 @@ def validate_capacity(seconds, timeout, phases, repair_rounds):
 
 
 class RuntimeWatchdog:
-    def __init__(self, folder, capture=None, max_errors=3, max_repeat=3):
+    def __init__(self, folder, capture=None, max_errors=3, max_repeat=3, *, fail_fast=False):
         self.folder = Path(folder)
         self.capture = capture
         self.max_errors, self.max_repeat = max_errors, max_repeat
+        self.fail_fast = fail_fast
+        if fail_fast:
+            self.max_errors, self.max_repeat = 1, 2
         self.errors = self.repeats = 0
         self.last_tool = None
         self.recent = []
@@ -77,6 +80,9 @@ class RuntimeWatchdog:
         # even when a read-only command exits successfully. No source is inferred.
         from hashlib import sha256
         key = sha256(json.dumps([command, result], sort_keys=True).encode()).hexdigest()
+        if self.fail_fast and (type(result.get('exit_code')) is not int or result['exit_code'] != 0):
+            self.stop('tool execution failed; campaign halted', phase=phase, stage=stage,
+                      exit_code=result.get('exit_code'), action_observation_sha256=key)
         self.repeats = self.repeats+1 if key == self.last_tool else 1
         self.last_tool = key
         if self.repeats >= self.max_repeat:

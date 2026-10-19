@@ -6,6 +6,7 @@ still run on every returned claim. Empty evidence and draft statuses remain vali
 """
 import copy
 import base64
+import json
 import shlex
 from pathlib import PurePosixPath, PureWindowsPath
 
@@ -13,6 +14,10 @@ MAX_WRITE_BYTES = 64 * 1024
 SHELL_SCHEMA = {'type':'object','properties':{
     'action':{'const':'shell'},'command':{'type':'string','minLength':1}},
     'required':['action','command'],'additionalProperties':False}
+EXEC_SCHEMA = {'type':'object','properties':{
+    'action':{'const':'exec'},'argv':{'type':'array','minItems':1,'maxItems':128,
+        'items':{'type':'string','minLength':1,'maxLength':MAX_WRITE_BYTES}}},
+    'required':['action','argv'],'additionalProperties':False}
 WRITE_SCHEMA = {'type':'object','properties':{
     'action':{'const':'write_file'},'path':{'type':'string','minLength':1},
     'content':{'type':'string','maxLength':MAX_WRITE_BYTES}},
@@ -25,7 +30,7 @@ TERMINAL_SCHEMA = {'type':'object','properties':{
     'required':['action'],'additionalProperties':False}
 ACTION_RESPONSE_FORMAT = {'type':'json_schema','json_schema':{
     'name':'benchmark_action','strict':True,
-    'schema':{'oneOf':[SHELL_SCHEMA,WRITE_SCHEMA,TERMINAL_SCHEMA]}}}
+    'schema':{'oneOf':[SHELL_SCHEMA,EXEC_SCHEMA,WRITE_SCHEMA,TERMINAL_SCHEMA]}}}
 
 
 def action_response_format(requires_claims=False):
@@ -54,7 +59,7 @@ def action_response_format(requires_claims=False):
     terminal['required'] = ['action', 'claims']
     return {'type': 'json_schema', 'json_schema': {
         'name': 'benchmark_claim_action', 'strict': True,
-        'schema': {'oneOf': [copy.deepcopy(SHELL_SCHEMA),copy.deepcopy(WRITE_SCHEMA),terminal]}}}
+        'schema': {'oneOf': [copy.deepcopy(SHELL_SCHEMA),copy.deepcopy(EXEC_SCHEMA),copy.deepcopy(WRITE_SCHEMA),terminal]}}}
 
 
 _WRITE_SCRIPT = '''import base64,hashlib,json,sys
@@ -70,6 +75,12 @@ target.parent.mkdir(parents=True,exist_ok=True)
 data=base64.b64decode(sys.argv[2],validate=True)
 target.write_bytes(data)
 print(json.dumps(dict(path=name,bytes=len(data),sha256=hashlib.sha256(data).hexdigest())))
+'''
+
+
+_EXEC_SCRIPT = '''import base64,json,subprocess,sys
+argv=json.loads(base64.b64decode(sys.argv[1],validate=True).decode('utf-8'))
+sys.exit(subprocess.run(argv,shell=False).returncode)
 '''
 
 
@@ -92,6 +103,15 @@ def action_command(action):
     source. This avoids heredoc/quote truncation without repairing model output.
     Shell remains available, with the same budgets and runtime intervention.
     """
+    if action.get('action') == 'exec':
+        argv=action.get('argv')
+        if (not isinstance(argv,list) or not 1<=len(argv)<=128
+            or any(not isinstance(arg,str) or not arg or '\x00' in arg for arg in argv)):
+            raise ValueError('exec requires 1..128 nonempty NUL-free string arguments')
+        data=json.dumps(argv,ensure_ascii=False).encode('utf-8')
+        if len(data)>MAX_WRITE_BYTES:
+            raise ValueError('exec requires bounded UTF-8 arguments')
+        return 'python -c '+shlex.quote(_EXEC_SCRIPT)+' '+shlex.quote(base64.b64encode(data).decode())
     if action.get('action') == 'shell':
         command=action.get('command')
         if not isinstance(command,str) or not command.strip():
@@ -101,7 +121,7 @@ def action_command(action):
         data=base64.b64encode(command.encode('utf-8')).decode()
         return 'python -c '+shlex.quote(_SHELL_SCRIPT)+' '+shlex.quote(data)
     if action.get('action') != 'write_file':
-        raise ValueError('expected shell, write_file or done')
+        raise ValueError('expected exec, shell, write_file or done')
     name=action.get('path');content=action.get('content')
     if (not isinstance(name,str) or not name or len(name)>4096
         or '\\' in name or ':' in name or '\x00' in name

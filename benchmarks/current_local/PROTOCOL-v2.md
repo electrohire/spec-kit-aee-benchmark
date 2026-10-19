@@ -1,5 +1,25 @@
 # Corrected local study02 — prospective, 2026-10-18
 
+## Superseding user directive: fail-fast-v1, 2026-10-19
+
+Study04 was stopped by explicit user instruction. Future current-local campaigns
+halt on the first invalid action, nonzero/malformed tool result, blocked assessment,
+incomplete phase, or failed public/hidden verification. No repair or next trajectory
+follows failure. Independent hidden grades are evaluated before the next checkpoint
+and never returned to the solver. Literal `exec` argv is a new shared tool interface;
+shell and literal writes remain available. Any nonzero exit, including search
+no-match, stops; expected absence should be reported as data by a successful query,
+never by suppressing errors. An identical successful action/observation repeated
+twice halts. All existing caps remain maxima, not permission to continue after failure.
+
+The exact registered amendment is `fail-fast-argv-v1.json`; fresh native five-action
+transport and grammar latency are mandatory. Historical workflow08 is retained
+setup exposure, not fresh proof of changed instructions. Preserve every original
+attempt/cost and label diagnostic11; never resume04 or tune a frozen run. Debugging
+replays must be labelled as such. Any later comparison must apply the same policy
+and tooling to every arm and disclose amendment/selection history. Earlier
+inclusive continue-after-model-failure instructions below are historical only.
+
 ## Prospective scored admission: model failures are outcomes
 
 The user directed scoring to start after readiness08 completed the full TinyDB

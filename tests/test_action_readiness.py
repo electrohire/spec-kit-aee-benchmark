@@ -20,10 +20,12 @@ def save(path,value):
 def prepared(tmp_path):
     transport=tmp_path/'transport';transport.mkdir()
     write_sha=save(transport/'literal-write.json',dict(write={'exit_code':0},readback={'exit_code':0}))
+    argv_sha=save(transport/'literal-argv.json',dict(execution={'exit_code':0}))
     checks=[dict(action=action,strict_claims_loaded=action in ('done','draft'))
-            for action in ('shell','write_file','done','draft')]
+            for action in ('shell','write_file','done','draft','exec')]
     checks[1].update(literal_write_verified=True,literal_write_sha256=write_sha)
-    save(transport/'result.json',dict(passed=True,physical_calls=4,checks=checks))
+    checks[4].update(literal_argv_verified=True,literal_argv_sha256=argv_sha)
+    save(transport/'result.json',dict(passed=True,physical_calls=5,checks=checks))
     save(transport/'freeze.json',dict(hashes={'scripts/action_protocol.py':hashlib.sha256((current.ROOT/'scripts/action_protocol.py').read_bytes()).hexdigest()}))
     latency=tmp_path/'latency';latency.mkdir()
     save(latency/'freeze.json',dict(config=dict(action_protocol=current.CONFIG['action_protocol'])))
@@ -39,7 +41,7 @@ def test_complete_actual_grammar_binding(prepared):
     current.validate_action_readiness(prepared)
 
 
-@pytest.mark.parametrize('mutation',['count','actions','claims','protocol_hash','write_flag','write_hash','latency_protocol','latency_receipt','latency_schema','latency_unknown'])
+@pytest.mark.parametrize('mutation',['count','actions','claims','protocol_hash','write_flag','write_hash','argv_flag','argv_hash','latency_protocol','latency_receipt','latency_schema','latency_unknown'])
 def test_changed_or_missing_action_readiness_blocked(prepared,mutation):
     if mutation.startswith('latency_'):
         if mutation=='latency_protocol':
@@ -59,6 +61,8 @@ def test_changed_or_missing_action_readiness_blocked(prepared,mutation):
         elif mutation=='claims':v['checks'][2]['strict_claims_loaded']=False
         elif mutation=='write_flag':v['checks'][1]['literal_write_verified']=False
         elif mutation=='write_hash':v['checks'][1]['literal_write_sha256']='0'*64
+        elif mutation=='argv_flag':v['checks'][4]['literal_argv_verified']=False
+        elif mutation=='argv_hash':v['checks'][4]['literal_argv_sha256']='0'*64
         else:save(prepared/'transport/freeze.json',dict(hashes={'scripts/action_protocol.py':'0'*64}))
         save(p,v)
     with pytest.raises(ValueError):current.validate_action_readiness(prepared)

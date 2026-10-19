@@ -1,6 +1,6 @@
 # Spec Kit + AEE benchmark
 
-**Fresh study04 / pipeline11 is running on the existing approved worker directly.** Main software benchmark grading/results remain pending. No server/model changes or stopped-run resume. [Prospective route and validation](reports/investigation/direct-worker-route-20261019/README.md).
+**Study04 is stopped by user direction; no benchmark inference is active.** The Cachetools loop exposed failed tool calls being treated as successful actions until the repeat limit, followed by continuation to another trajectory. The prospective runner now halts on the first protocol/tool/verification failure. [Diagnosis, retained costs and fail-fast amendment](reports/investigation/fail-fast-cachetools-20261019/README.md). Main benchmark results remain incomplete.
 
 **Corrected real-model hallucination diagnostic completed:**12/12 frozen-label agreement (supported4, contradicted4, unknown4),0 invalid responses,12calls/1,974known native tokens/0usage unknowns. [Receipts, correction history and limits](reports/local/labelled-factbooks-11-20261019/README.md). This is a small synthetic factual-judgment test, not AEE efficacy or workflow hallucination prevalence.
 
@@ -8,7 +8,7 @@
 
 **Real-model labelled diagnostic completed:** 12 calls, 10/12 original-label agreement, with two challenged fixture labels and explicit limits. [Receipts and findings](reports/local/labelled-factbooks-10-20261019/README.md). The fresh software benchmark stopped on a router connection error; no completed paired result is claimed.
 
-Current mission: finish benchmarks and labelled diagnostics. Fresh study04 uses the same existing worker directly under explicit user authorization; study03 and study02 remain stopped and unchanged. No completed paired result or efficacy claim is established. Product work is parked. See [prospective protocol](benchmarks/current_local/PROTOCOL-v2.md#prospective-benchmark-mission-study03--pipeline10).
+Current mission: finish benchmarks and labelled diagnostics. Study04, study03 and study02 remain stopped and unchanged. A fresh fail-fast experiment needs validated tool/latency probes and separately frozen inputs; no silent resume or automatic retry. No completed paired result or efficacy claim is established. Product work is parked.
 
 Compare ordinary coding agents, Spec Kit, and Spec Kit with Evaluator + Applied
 Epistemic Engineering on correctness, hallucination management, rework and cost.

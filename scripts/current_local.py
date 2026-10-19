@@ -42,7 +42,7 @@ CONFIG = {**runner.CONFIG, "seeds": SEEDS, "model": MODEL, "url": URL,
           "paid_calls_permitted": False, "physical_call_timeout": 180,
           "stage_seconds": 14400, "primary_calls": 208, "context": 32768,
           "max_output": 8192, "token_cap": 24000000, "enable_thinking": False,
-          "study_id": "current-study-02", "action_protocol": "native-json-schema-v4",
+          "study_id": "current-study-02", "action_protocol": "native-json-schema-v5",
           "claim_rubric": "Final explicit all-requirements completion declarations only; missing/ambiguous = unknown. Independently grade exact submitted snapshot. AEE findings are not truth labels.",
           "scenario_prices_per_million":{"input":"1","cached_input":"0.10","output":"4"},
           "scenario_note":"Illustrative USD/million token sensitivity calculation, not a provider quote, bill, GPU/energy/human cost or a claim that hosted inference has the same behavior."}
@@ -332,8 +332,8 @@ def validate_action_readiness(preflight, *, transport_folder=None, latency_folde
     latency_folder=latency_folder or preflight/'latency'
     transport=json.loads((transport_folder/'result.json').read_text())
     transport_freeze=json.loads((transport_folder/'freeze.json').read_text())
-    if (not transport.get('passed') or transport.get('physical_calls')!=4
-        or {v['action'] for v in transport.get('checks',[])}!={'shell','write_file','done','draft'}
+    if (not transport.get('passed') or transport.get('physical_calls')!=5
+        or {v['action'] for v in transport.get('checks',[])}!={'exec','shell','write_file','done','draft'}
         or not all(v.get('strict_claims_loaded') is True for v in transport.get('checks',[]) if v['action'] in ('done','draft'))
         or transport_freeze['hashes'].get('scripts/action_protocol.py')!=hashlib.sha256((ROOT/'scripts/action_protocol.py').read_bytes()).hexdigest()):
         raise ValueError('native action transport readiness missing or changed')
@@ -341,6 +341,10 @@ def validate_action_readiness(preflight, *, transport_folder=None, latency_folde
     if (literal.get('literal_write_verified') is not True
         or literal.get('literal_write_sha256')!=hashlib.sha256((transport_folder/'literal-write.json').read_bytes()).hexdigest()):
         raise ValueError('literal sandbox write/readback proof missing or changed')
+    literal_argv=next(v for v in transport['checks'] if v['action']=='exec')
+    if (literal_argv.get('literal_argv_verified') is not True
+        or literal_argv.get('literal_argv_sha256')!=hashlib.sha256((transport_folder/'literal-argv.json').read_bytes()).hexdigest()):
+        raise ValueError('literal sandbox argv proof missing or changed')
     latency=json.loads((latency_folder/'calibration.json').read_text())
     freeze=json.loads((latency_folder/'freeze.json').read_text())
     if not latency.get('passed') or freeze['config'].get('action_protocol')!=CONFIG['action_protocol'] or len(latency.get('records',[]))!=2:
@@ -408,7 +412,7 @@ def run(out, preflight):
     # compare the exact ASTs of every shared treatment/provider component.
     for filename,names in {
         "scripts/current_local.py":{"http","Provider","calibrate"},
-        "scripts/repeated_local.py":{"Provider","Session","do_assessment","compact_assessment","tests_for","ProjectSandbox","phase_plan","phase_instructions"},
+        "scripts/repeated_local.py":{"Provider","Session","campaign","do_assessment","compact_assessment","tests_for","ProjectSandbox","phase_plan","phase_instructions"},
         "scripts/long_horizon.py":{"Sandbox","skill"},
         "scripts/runtime_checks.py":{"RuntimeIntervention","RuntimeWatchdog","validate_capacity"},
         "scripts/action_protocol.py":{"action_response_format","action_command"},
@@ -429,7 +433,9 @@ def run(out, preflight):
         "scripts/action_protocol.py":{"ACTION_RESPONSE_FORMAT"},
     }.items():
         before=_bindings((frozen/filename).read_text(encoding="utf-8"),names)
-        if set(before)!=names or before!=_bindings((ROOT/filename).read_text(encoding="utf-8"),names):
+        after=_bindings((ROOT/filename).read_text(encoding="utf-8"),names)
+        from fail_fast_admission import matches
+        if set(before)!=names or set(after)!=names or not all(matches(filename,name,before[name],after[name],preflight,'bindings') for name in names):
             raise ValueError("calibrated model/treatment constants changed: "+filename)
     gold=json.loads((preflight/"grade/calibration.json").read_text())
     if gold.get("passed") is not True or set(gold["projects"])!=set(runner.PROJECTS):
@@ -465,12 +471,13 @@ def run(out, preflight):
         extras.extend((preflight/"recovery-migration.json",ROOT/"scripts/calibration_recovery.py",ROOT/"scripts/launch_benchmark_mission.py",ROOT/"scripts/labelled_hallucinations.py",ROOT/"benchmarks/current_local/hallucination-cases-v1.json"))
     if WORKER_BINDING is not None:
         extras.extend((preflight/'worker-binding.json', preflight/'direct-route-proof.json', ROOT/'scripts/direct_worker_transport.py', ROOT/'benchmarks/current_local/direct-worker-v1.json', ROOT/'benchmarks/current_local/hallucination-cases-v2.json'))
+    extras.extend((preflight/'fail-fast-amendment.json',ROOT/'scripts/fail_fast_admission.py',ROOT/'benchmarks/current_local/fail-fast-argv-v1.json'))
     runner.campaign(out,preflight/"grade",timeout,
         workflow_preflight=workflow,latency_preflight=preflight/"latency/calibration.json",
         context_preflight=preflight/"context/result.json",assets=assets,
         extra_sources=tuple(extras),
         completion_contract=COMPLETION,freeze_hook=archive_inputs,block_on_assessment=True,
-        admission=admission if admission.exists() else None,contain_model_failures=admission.exists())
+        admission=admission if admission.exists() else None,contain_model_failures=False,fail_fast=True)
 
 
 def main():

@@ -32,12 +32,18 @@ SEEDS = [20260918, 20260919]
 ARMS = ['baseline', 'spec_kit', 'spec_kit_aee']
 COMMON = '''You are a capable software engineering agent in an isolated real repository.
 Return exactly one JSON action: {"action":"shell","command":"..."} or
+{"action":"exec","argv":["program","argument one","argument two"]} or
 {"action":"write_file","path":"relative/file.py","content":"literal complete file content"} or
 {"action":"done","summary":"what this phase actually completed and what remains"}.
 Use write_file for creating/replacing files; its content is literal UTF-8,
 not shell/Python source to quote again. Use shell to inspect source, make targeted
 edits and run tests. Incomplete shell syntax is rejected before execution; no
-content is repaired. Reserve actions for writing and checking phase deliverables.
+content is repaired. Prefer exec for a single program: each argument is literal,
+with no shell quoting or expansion. Include every required operand. Use shell
+only when shell features are needed. In fail-fast campaigns every nonzero tool
+exit halts the campaign, including search no-match exits; use a program that
+reports absent matches as data with exit zero when absence is an expected query
+result. Never suppress execution/test errors. Reserve actions for phase deliverables.
 Phase-control notices and controller diagnostics are not verification evidence.
 No internet or human assistance.
 Do not modify upstream tests or acceptance_public.py. You may add your own tests.
@@ -431,7 +437,7 @@ def latency(out):
 
 
 def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=None,
-             context_preflight=None,assets=None,extra_sources=(),completion_contract='',freeze_hook=None,block_on_assessment=False,admission=None,contain_model_failures=False):
+             context_preflight=None,assets=None,extra_sources=(),completion_contract='',freeze_hook=None,block_on_assessment=False,admission=None,contain_model_failures=False,fail_fast=False):
     # Stop before any scored call if later phases/repairs cannot be reserved.
     validate_capacity(CONFIG['stage_seconds'],timeout,
                       ['constitution','specify','plan','tasks','implement','converge','final_implement'],
@@ -476,7 +482,7 @@ def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=N
     hashes['scripts/repeated_local.py']=digest(__file__);hashes['scripts/long_horizon.py']=digest(ROOT/'scripts/long_horizon.py')
     hashes={name.replace('\\','/'):value for name,value in hashes.items()}
     freeze=dict(created_at=utc(),config={**CONFIG,'timeout':timeout},schedule=schedule,hashes=hashes,projects=PROJECTS,image=IMAGE,server_props=local_json('/props'),calibration=cal,workflow_calibration=gate,latency_calibration=latency_result,context_selection_calibration=context_calibration)
-    freeze['intervention_policy']='model-outcomes-v1' if contain_model_failures else 'stop-campaign'
+    freeze['intervention_policy']='fail-fast-v1' if fail_fast else ('model-outcomes-v1' if contain_model_failures else 'stop-campaign')
     write_json(out/'freeze.json',freeze,exclusive=True)
     if freeze_hook is not None:
         freeze_hook(out,freeze)
@@ -487,7 +493,7 @@ def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=N
         with ProjectSandbox(project) as box:
             if arm!='baseline':box.stage_workflow()
             session=Session(box,provider,store,identity)
-            session.watchdog=RuntimeWatchdog(folder,capture=lambda:box.snapshot(folder/'runtime-stopped.tar'))
+            session.watchdog=RuntimeWatchdog(folder,capture=lambda:box.snapshot(folder/'runtime-stopped.tar'),fail_fast=fail_fast)
             stopped=None
             for stage in (1,2,3):
                 begin=time.monotonic();deadline=begin+CONFIG['stage_seconds'];start=len(provider.calls)
@@ -543,7 +549,9 @@ def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=N
                                 if block_on_assessment:
                                     row['blocked_phase']=phase;row['blocked_reason']='AEE execution error'
                         write_json(out/'attempts.json',rows)
-                        if row.get('blocked_phase'):break
+                        if row.get('blocked_phase'):
+                            if fail_fast:session.watchdog.stop(row['blocked_reason'],phase=phase,stage=stage)
+                            break
                     primary=folder/f'stage{stage}-primary.tar';box.snapshot(primary)
                     primary_terminal=(row['phases'][-1].get('done') or {}) if row['phases'] else {}
                     primary_declaration=primary_terminal.get('completion_asserted')
@@ -551,6 +559,9 @@ def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=N
                     expected=cal['projects'][project]['reference'][f'{stage}-public']['test_count']
                     row['primary_snapshot']=primary.relative_to(out).as_posix();row['public_primary']=grade(project,primary,stage,True,expected)
                     current=row['public_primary']
+                    if fail_fast and not current['passed']:
+                        write_json(out/'attempts.json',rows)
+                        session.watchdog.stop('public verification failed; campaign halted',stage=stage,phase='public-grade')
                     for iteration in (1,2):
                         if current['passed'] or row.get('blocked_phase'):break
                         before=source_digest(primary if iteration==1 else folder/f'stage{stage}-repair1.tar')
@@ -568,6 +579,13 @@ def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=N
                     declaration=terminal.get('completion_asserted')
                     row['completion_asserted']=declaration if type(declaration) is bool else None
                     row['completion_declaration_source']='repair' if row['repairs'] else 'primary'
+                    if fail_fast:
+                        expected_hidden=cal['projects'][project]['reference'][f'{stage}-hidden']['test_count']
+                        for kind in ('primary','final'):
+                            row['hidden_'+kind]=grade(project,out/row[kind+'_snapshot'],stage,False,expected_hidden)
+                            write_json(out/'attempts.json',rows)
+                            if not row['hidden_'+kind]['passed']:
+                                session.watchdog.stop('independent verification failed; campaign halted',stage=stage,phase='hidden-grade')
                     notes=box.execute('find .specify specs -type f 2>/dev/null; test ! -f HANDOFF.md || cat HANDOFF.md')
                     row['notes_index']=notes
                     if arm!='baseline':
@@ -576,7 +594,10 @@ def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=N
                     from model_outcomes import model_failure,finish_stopped_stage
                     alert=intervention.alert
                     if alert is None:alert=json.loads((folder/'runtime-alert.json').read_text())
-                    if not contain_model_failures or not model_failure(alert):raise
+                    if fail_fast or not contain_model_failures or not model_failure(alert):
+                        row.update(status='runtime_interrupted',runtime_alert=alert,calls=len(provider.calls)-start,ended_at=utc())
+                        write_json(out/'attempts.json',rows)
+                        raise
                     expected=cal['projects'][project]['reference'][f'{stage}-public']['test_count']
                     finish_stopped_stage(box,row,folder,out,grade,expected,len(provider.calls)-start,begin,alert)
                     stopped=alert
@@ -585,7 +606,8 @@ def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=N
     for row in rows:
         expected=cal['projects'][row['project']]['reference'][f'{row["stage"]}-hidden']['test_count']
         for kind in ('primary','final'):
-            row['hidden_'+kind]=grade(row['project'],out/row[kind+'_snapshot'],row['stage'],False,expected)
+            if 'hidden_'+kind not in row:
+                row['hidden_'+kind]=grade(row['project'],out/row[kind+'_snapshot'],row['stage'],False,expected)
         write_json(out/'results.json',rows)
     print('CAMPAIGN COMPLETE',flush=True)
 

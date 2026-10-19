@@ -67,7 +67,8 @@ def test_repair_intervention_preserves_primary_declaration_but_final_is_unknown(
     assert row['public_final']['passed'] is True
 
 
-def test_campaign_contains_model_failure_keeps_all_rows_and_continues_other_trajectory(tmp_path,monkeypatch):
+@pytest.mark.parametrize('fail_fast,failure',[(False,'runtime'),(True,'runtime'),(True,'public'),(True,'hidden')])
+def test_campaign_contains_model_failure_keeps_all_rows_and_continues_other_trajectory(tmp_path,monkeypatch,fail_fast,failure):
     import repeated_local as r
     task=tmp_path/'tasks/tinydb';task.mkdir(parents=True)
     for stage in (1,2,3):(task/f'stage{stage}.md').write_text('fixture task')
@@ -92,7 +93,10 @@ def test_campaign_contains_model_failure_keeps_all_rows_and_continues_other_traj
         def __init__(self,*args):self.calls=[];providers.append(self)
     def phase(self,phase,instructions,spec,stage,*args):
         self.provider.calls.append(dict(stage=stage))
-        self.watchdog.stop('repeated identical action without changed observation',phase=phase,stage=stage)
+        if failure=='runtime':
+            self.watchdog.stop('repeated identical action without changed observation',phase=phase,stage=stage)
+        assert phase!='repair', 'fail-fast must withhold repairs'
+        return dict(phase=phase,calls=1,completed=True,errors=[],done=dict(action='done',completion_asserted=True))
     monkeypatch.setattr(r,'ROOT',tmp_path);monkeypatch.setattr(r,'TASK',tmp_path/'tasks')
     monkeypatch.setattr(r,'PROJECTS',{'tinydb':dict(upstream='fixture',revision='fake',package='tinydb',module='tinydb/journal.py')})
     monkeypatch.setattr(r,'SEEDS',[1]);monkeypatch.setattr(r,'ARMS',['baseline','spec_kit'])
@@ -103,10 +107,26 @@ def test_campaign_contains_model_failure_keeps_all_rows_and_continues_other_traj
     monkeypatch.setattr(r,'local_json',lambda *args:{})
     monkeypatch.setattr(r,'tests_for',lambda *args:b'fixture')
     monkeypatch.setattr(r,'phase_instructions',lambda *args:'fixture instructions')
-    monkeypatch.setattr(r,'grade',lambda *args:dict(passed=False,exit_code=1,cases=[],test_count=0))
+    monkeypatch.setattr(r,'source_digest',lambda *args:'unchanged')
+    def grade(project,path,stage,public,expected):
+        passed=failure=='hidden' and public
+        return dict(passed=passed,exit_code=0 if passed else 1,cases=[],test_count=1)
+    monkeypatch.setattr(r,'grade',grade)
     out=tmp_path/'scored'
-    r.campaign(out,inputs,1,workflow_preflight=inputs/'workflow.json',latency_preflight=inputs/'latency.json',
-        context_preflight=inputs/'context.json',assets=assets,contain_model_failures=True)
+    def run():
+        r.campaign(out,inputs,1,workflow_preflight=inputs/'workflow.json',latency_preflight=inputs/'latency.json',
+            context_preflight=inputs/'context.json',assets=assets,contain_model_failures=True,fail_fast=fail_fast)
+    if fail_fast:
+        from runtime_checks import RuntimeIntervention
+        with pytest.raises(RuntimeIntervention):run()
+        assert len(providers)==1
+        rows=json.loads((out/'attempts.json').read_text())
+        assert len(providers[0].calls)==(1 if failure=='runtime' else len(r.phase_plan(rows[0]['arm'],1)))
+        assert len(rows)==1 and rows[0]['status']=='runtime_interrupted'
+        assert not (out/'results.json').exists()
+        assert json.loads((out/'freeze.json').read_text())['intervention_policy']=='fail-fast-v1'
+        return
+    run()
     rows=json.loads((out/'results.json').read_text())
     assert len(rows)==6
     assert sum(row['status']=='runtime_interrupted' for row in rows)==2
