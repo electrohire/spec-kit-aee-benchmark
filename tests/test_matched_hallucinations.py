@@ -26,8 +26,8 @@ class FixtureProvider:
         request = dict(model=self.plan['model'], seed=self.plan['seed'], max_tokens=output,
             messages=messages, cache_prompt=False, chat_template_kwargs={'enable_thinking': False},
             temperature=.6, top_p=.95, top_k=20, min_p=0., presence_penalty=0., repeat_penalty=1.,
-            response_format=dict(type='json_schema', json_schema={'schema': schema}))
-        write_json(path, dict(metadata=metadata, request=request, usage=native,
+            grammar=m.schema_grammar(schema))
+        write_json(path, dict(metadata=metadata, request=request, validation_schema=schema, usage=native,
             preflight_input_tokens=20, response=dict(model=self.plan['model'], usage=native,
             choices=[dict(finish_reason='stop', message=dict(content=json.dumps(value)))])))
         return value, path
@@ -231,7 +231,7 @@ def test_v2_only_adds_bounds_and_prospective_explanation_without_budget_or_gold_
 
 
 @pytest.mark.parametrize('fail', [False, True])
-def test_native_probe_is_two_separate_setup_calls_and_first_fault_stops(tmp_path, monkeypatch, fail):
+def test_native_probe_is_three_separate_setup_calls_and_first_fault_stops(tmp_path, monkeypatch, fail):
     import probe_matched_output_bounds as probe
     calls = []
     class Fake(FixtureProvider):
@@ -242,7 +242,13 @@ def test_native_probe_is_two_separate_setup_calls_and_first_fault_stops(tmp_path
             calls.append(args)
             if fail:
                 raise RuntimeError('synthetic native failure')
-            return super().call(*args)
+            from matched_grammar import native_probe_contracts
+            value = ({'document': 'x' * 3000} if len(calls) == 1 else
+                     {'document': native_probe_contracts()[2]['schema']['properties']['document']['const']} if len(calls) == 3 else
+                     dict(verdict='abstain', rationale='Synthetic.', source_quotes=[], uncertainties=[]))
+            path = self.out / 'calls' / f'call-{len(calls)-1:04}.json'
+            write_json(path, {'usage': {'total_tokens': 30}})
+            return value, path
     def prepare(out, original):
         out.mkdir()
         return m.load(m.REGISTRATION)
@@ -261,6 +267,6 @@ def test_native_probe_is_two_separate_setup_calls_and_first_fault_stops(tmp_path
         assert len(calls) == 1 and not (out / 'probe-result.json').exists()
     else:
         result = probe.probe(out, tmp_path / 'original', binding)
-        assert len(calls) == result['physical_calls'] == 2
-        assert result['known_native_tokens'] == 60
+        assert len(calls) == result['physical_calls'] == 3
+        assert result['known_native_tokens'] == 90
         assert all(args[-1]['cohort'] == 'setup' for args in calls)

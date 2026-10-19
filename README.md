@@ -57,6 +57,11 @@ The [prospective infrastructure guard correction](reports/investigation/current-
 now halts on the first transport/storage failure and retains bounded diagnostics.
 Its501 offline tests do not establish recovery of the stopped experiment.
 
+Matched02 stopped during calibration:16setupcalls/56,615known native tokens,
+0scored judgments. [Exact decoder diagnosis and retained schedule](reports/hallucinations/matched-02-stopped-20261019/README.md).
+Prospective v3 preserves schemas/caps and fixes native bound delivery using split
+GBNF; no Spec Kit/AEE benefit or completed matched result is established yet.
+
 ## Results and interpretation
 
 <!-- stopped-study02:start -->

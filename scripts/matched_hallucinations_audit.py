@@ -9,6 +9,7 @@ from collections import Counter
 from pathlib import Path
 
 import jsonschema
+from matched_grammar import receipt_schema
 
 from benchmark_runner.store import Store
 
@@ -115,9 +116,10 @@ def audit(out, plan, cases):
             counter['calls'] += 1
             counter.update(native)
         request = call['request']
+        schema = receipt_schema(call, plan)
         bounds = plan.get('schema_bounds')
         if bounds:
-            props = request['response_format']['json_schema']['schema']['properties']
+            props = schema['properties']
             if metadata['phase'] in ('draft', 'review'):
                 actual = (props['rationale'].get('maxLength'), props['source_quotes']['items'].get('maxLength'), props['uncertainties']['items'].get('maxLength'))
                 expected = (bounds['rationale_characters'], bounds['source_quote_characters'], bounds['uncertainty_characters'])
@@ -138,7 +140,7 @@ def audit(out, plan, cases):
             if response['model'] != plan['model'] or choice['finish_reason'] != 'stop':
                 raise ValueError('invalid native completion')
             parsed = json.loads(choice['message']['content'])
-            jsonschema.validate(parsed, request['response_format']['json_schema']['schema'])
+            jsonschema.validate(parsed, schema)
         elif state['complete']:
             raise ValueError('completed study contains a failed call')
         calls[path.relative_to(out).as_posix()] = call

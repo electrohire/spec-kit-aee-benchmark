@@ -10,10 +10,12 @@ whether either workflow helps. Matched01 stopped at its first output-length
 failure after72/720final judgments. Preserve all185calls/712,919known native
 tokens and all720scheduled rows in the
 [stopped report](reports/hallucinations/matched-01-stopped-20261019/README.md).
-The model identity was correct. Prospective v2 enforces finite native JSON string
-bounds for all arms without extending output/context/call caps or changing gold.
-Run only fresh native delivery checks and a separately frozen matched02 after
-functional/integrity validation and exact-head Ubuntu green. No resume of01.
+The model identity was correct. Matched02 then stopped during calibration on
+an unenforced3,000-character native schema bound:16setupcalls/56,615known native
+tokens,0scored judgments. [Decoder diagnosis and full schedule](reports/hallucinations/matched-02-stopped-20261019/README.md).
+Prospective v3 uses explicit split bounded grammar with unchanged schemas/caps;
+validate fresh technical boundary probes before a separately frozen matched03.
+Neither stopped attempt is resumed or used to claim treatment benefit.
 
 FeatureBench Fast v1.1 and SWE-EVO are the proposed established coding suites;
 read the [short/long-horizon economic design](docs/long-horizon-economics-plan.md).
