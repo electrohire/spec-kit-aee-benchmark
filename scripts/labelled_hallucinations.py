@@ -133,5 +133,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('output', type=Path)
     parser.add_argument('--corpus-version', type=int, choices=(1, 2), default=1)
+    parser.add_argument('--worker-binding',type=Path)
     args = parser.parse_args()
+    current.configure_worker_binding(args.worker_binding)
     run(args.output, args.corpus_version)

@@ -15,12 +15,12 @@ def definition_matches(filename, name, before, after, preflight):
         return True
     copied = preflight / 'recovery-migration.json'
     admission = json.loads((preflight / 'admission.json').read_text())
-    if not copied.is_file() or copied.read_bytes() != MANIFEST.read_bytes():
+    protocol = admission.get('recovery_protocol')
+    registered_manifest = MANIFEST if protocol == 'infrastructure-recovery-v1' else ROOT / 'benchmarks/current_local/direct-worker-v1.json' if protocol == 'direct-worker-v1' else None
+    if registered_manifest is None or not copied.is_file() or copied.read_bytes() != registered_manifest.read_bytes():
         return False
     digest = hashlib.sha256(copied.read_bytes()).hexdigest()
     if admission.get('hashes', {}).get('recovery-migration.json') != digest:
-        return False
-    if admission.get('recovery_protocol') != 'infrastructure-recovery-v1':
         return False
     registered = json.loads(copied.read_text())['definitions'].get(filename, {}).get(name)
     return registered == {

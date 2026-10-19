@@ -47,9 +47,24 @@ CONFIG = {**runner.CONFIG, "seeds": SEEDS, "model": MODEL, "url": URL,
           "scenario_prices_per_million":{"input":"1","cached_input":"0.10","output":"4"},
           "scenario_note":"Illustrative USD/million token sensitivity calculation, not a provider quote, bill, GPU/energy/human cost or a claim that hosted inference has the same behavior."}
 COMPLETION = ('In your final done JSON include completion_asserted: true only if you claim every active task requirement is implemented; false if you know work remains; null if uncertain. This is your declaration, not a claim that hidden acceptance was run. Never claim tests were run when they were not. Include this field even if your summary is short.')
+WORKER_BINDING = None
+
+
+def configure_worker_binding(path):
+    global WORKER_BINDING, URL
+    if path is not None:
+        from direct_worker_transport import WorkerBinding
+        WORKER_BINDING = WorkerBinding(path)
+        URL = WORKER_BINDING.value['endpoint']
+        CONFIG['url'] = URL
+        WORKER_BINDING.check_model(http('/v1/models'), http('/props'))
 
 
 def http(route, payload=None, timeout=120):
+    if WORKER_BINDING is not None:
+        WORKER_BINDING.check()
+        if route == '/v1/chat/completions':
+            WORKER_BINDING.check_model(http('/v1/models'), http('/props'))
     if payload is not None:
         payload["model"] = MODEL
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
@@ -123,7 +138,7 @@ def freeze(out, purpose):
         for path in (ROOT/folder).rglob("*"):
             if path.is_file() and not {"__pycache__", ".runtime", "assessments", "ledger", "results"}.intersection(path.parts):
                 hashes[path.relative_to(ROOT).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
-    for name in ("uv.lock", "manifests/versions.json", "benchmarks/current_local/PROTOCOL-v2.md", "benchmarks/current_local/infrastructure-recovery-v1.json", "benchmarks/current_local/hallucination-cases-v1.json", "benchmarks/current_local/hallucination-cases-v2.json"):
+    for name in ("uv.lock", "manifests/versions.json", "benchmarks/current_local/PROTOCOL-v2.md", "benchmarks/current_local/infrastructure-recovery-v1.json", "benchmarks/current_local/hallucination-cases-v1.json", "benchmarks/current_local/hallucination-cases-v2.json", "benchmarks/current_local/direct-worker-v1.json"):
         hashes[name] = hashlib.sha256((ROOT/name).read_bytes()).hexdigest()
     with WEIGHTS.open("rb") as handle:
         weight_sha = hashlib.file_digest(handle, "sha256").hexdigest()
@@ -132,6 +147,10 @@ def freeze(out, purpose):
                     weights_sha256=weight_sha, projects=runner.PROJECTS,
                     models=http("/v1/models"), server_props=http("/props"),
                     hardware=subprocess.check_output(["nvidia-smi", "--query-gpu=name,memory.total,driver_version", "--format=csv,noheader"], text=True))
+    if WORKER_BINDING is not None:
+        manifest['worker_binding'] = WORKER_BINDING.value
+        manifest['worker_binding_sha256'] = WORKER_BINDING.sha256
+        write_json(out/'worker-binding.json', WORKER_BINDING.value, exclusive=True)
     write_json(out/"freeze.json", manifest, exclusive=True)
     # Archive the exact treatment/controller source before any generation.
     archive_inputs(out,manifest)
@@ -353,7 +372,12 @@ def run(out, preflight):
     workflow_freeze=json.loads((preflight/"workflow/freeze.json").read_text())
     calibrated=workflow_freeze["config"]
     for key in ("model","url","context","max_output","temperature","top_p","top_k","enable_thinking","stage_seconds","primary_calls"):
-        if calibrated[key]!=CONFIG[key]:raise ValueError("model/config differs from successful workflow calibration")
+        if calibrated[key]!=CONFIG[key]:
+            if key == 'url':
+                from direct_worker_transport import admit_route
+                admit_route(preflight, WORKER_BINDING, calibrated[key], CONFIG[key])
+            else:
+                raise ValueError("model/config differs from successful workflow calibration")
     for path in (preflight/"context/result.json",preflight/"latency/calibration.json"):
         value=json.loads(path.read_text())
         if not value["passed"] or any(value.get(k)!=CONFIG[k] for k in ("model","context","max_output")):
@@ -422,7 +446,7 @@ def run(out, preflight):
     assets=preflight/"assets";assets.mkdir(exist_ok=False)
     calibration=json.loads((preflight/"workflow/freeze.json").read_text())
     write_json(assets/"hardware.json",dict(gpus=calibration["hardware"]))
-    write_json(assets/"server-launch.json",dict(model=MODEL,url=URL,weights_sha256=calibration["weights_sha256"],server_props=calibration["server_props"],shared_service_modified=False))
+    write_json(assets/"server-launch.json",dict(model=MODEL,url=URL,weights_sha256=calibration["weights_sha256"],server_props=http("/props") if WORKER_BINDING is not None else calibration["server_props"],shared_service_modified=False))
     write_json(assets/"package-versions.json",{n:importlib.metadata.version(n) for n in ("applied-epistemic-engineering","specify-cli","mini-swe-agent","jsonschema")})
     timeout=json.loads((preflight/"latency/calibration.json").read_text())["timeout"]
     CONFIG["study_id"]=out.name
@@ -439,6 +463,8 @@ def run(out, preflight):
     if admission.exists():extras.extend((admission,ROOT/"scripts/model_outcomes.py",ROOT/"scripts/launch_inclusive_study.py"))
     if (preflight/"recovery-migration.json").exists():
         extras.extend((preflight/"recovery-migration.json",ROOT/"scripts/calibration_recovery.py",ROOT/"scripts/launch_benchmark_mission.py",ROOT/"scripts/labelled_hallucinations.py",ROOT/"benchmarks/current_local/hallucination-cases-v1.json"))
+    if WORKER_BINDING is not None:
+        extras.extend((preflight/'worker-binding.json', preflight/'direct-route-proof.json', ROOT/'scripts/direct_worker_transport.py', ROOT/'benchmarks/current_local/direct-worker-v1.json', ROOT/'benchmarks/current_local/hallucination-cases-v2.json'))
     runner.campaign(out,preflight/"grade",timeout,
         workflow_preflight=workflow,latency_preflight=preflight/"latency/calibration.json",
         context_preflight=preflight/"context/result.json",assets=assets,
@@ -453,7 +479,9 @@ def main():
     parser.add_argument("output", type=Path)
     parser.add_argument("--preflight",type=Path)
     parser.add_argument("--latency",type=Path)
+    parser.add_argument("--worker-binding",type=Path)
     args = parser.parse_args()
+    configure_worker_binding(args.worker_binding)
     setup()
     if args.command == "grade-calibration":
         runner.calibrate(args.output)

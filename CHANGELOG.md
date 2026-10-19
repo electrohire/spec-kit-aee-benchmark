@@ -115,3 +115,6 @@ After the existing pipeline10 has stopped generating and its final grading/expor
 ## Study03 infrastructure stop (2026-10-19)
 
 [Retained results and independent grades](reports/local/current-study-03-router-stop/README.md). Pipeline10 ended13:45:11UTC/09:45:11Eastern. No generation active. RouterHTTP500 body:proxy error:Could not establish connection.98calls1,908,355knownnative tokens/0generationusageunknown;2attempted34unattempted rows. Exactrequest/responsecaptured;present-dayzero-generationreplaypassesbutunderlyingcauseunresolved. No auto retry/resume,sharedservicechange or v2diagnosticgeneration. ActualNoeRelayruntime/router.stderr.log found;capturedproxyconnectionfailuretoexistingqwenworkerport50467;underlyingcauseunresolved. No completed paired benchmark or efficacy conclusion.
+
+
+- Prospective client-only route to the existing operator-approved qwen worker, with process/port/model/path guards and fresh direct-route admission. No fallback, service change, task/cap/grader change or stopped-run resume. Pipeline11 serially includes corrected diagnostic corpus2. Historical router failure cause remains unresolved.

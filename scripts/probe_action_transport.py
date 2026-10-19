@@ -12,7 +12,9 @@ from benchmark_runner.store import write_json
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('output',type=current.Path)
+    parser.add_argument('--worker-binding',type=current.Path)
     args=parser.parse_args()
+    current.configure_worker_binding(args.worker_binding)
     current.setup()
     current.freeze(args.output,'unscored native action transport; at most four local calls; literal write checked in isolated sandbox')
     result=dict(passed=False,checks=[],paid_calls=False)

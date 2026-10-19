@@ -57,13 +57,17 @@ def test_exact_infrastructure_definition_migration(tmp_path, monkeypatch):
     assert recovery.definition_matches('runtime.py', 'solver', before, before, tmp_path)
 
 
-def test_registered_current_changes_are_only_four_infrastructure_definitions():
-    manifest = json.loads(recovery.MANIFEST.read_text())
+@pytest.mark.parametrize('version', ['infrastructure-recovery-v1', 'direct-worker-v1'])
+def test_registered_current_changes_are_only_four_infrastructure_definitions(version):
+    manifest = json.loads((mission.ROOT / f'benchmarks/current_local/{version}.json').read_text())
     expected = {'scripts/current_local.py': {'http'}, 'scripts/repeated_local.py': {'Provider'},
                 'scripts/runtime_checks.py': {'RuntimeIntervention', 'RuntimeWatchdog'}}
     assert {p: set(defs) for p, defs in manifest['definitions'].items()} == expected
     for name, definitions in manifest['definitions'].items():
-        nodes = {n.name: ast.dump(n, include_attributes=False) for n in ast.parse((mission.ROOT / name).read_text()).body if isinstance(n, (ast.FunctionDef, ast.ClassDef))}
+        source = mission.ROOT / name
+        if version == 'infrastructure-recovery-v1':
+            source = mission.ROOT / 'reports/local/labelled-factbooks-10-20261019/setup-evidence/current-hallucination-10/frozen-inputs' / name
+        nodes = {n.name: ast.dump(n, include_attributes=False) for n in ast.parse(source.read_text()).body if isinstance(n, (ast.FunctionDef, ast.ClassDef))}
         for identifier, entry in definitions.items():
             assert hashlib.sha256(nodes[identifier].encode()).hexdigest() == entry['after']
 
