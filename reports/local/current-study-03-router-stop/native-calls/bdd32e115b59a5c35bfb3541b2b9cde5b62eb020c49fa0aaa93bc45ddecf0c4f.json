@@ -1,0 +1,62 @@
+{
+  "budget_debit": 26758,
+  "ended_at": "2026-10-19T13:38:03.444466+00:00",
+  "max_output": 8192,
+  "phase": "implement",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 24341,
+  "preflight_seconds": 1.3439999998081475,
+  "removed_history_messages": 62,
+  "request_seconds": 138.21900000004098,
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"write_file\",\"content\":\"\\\"\\\"\\\"\\nTests for ``tinydb.journal.BatchWriter`` (001-transactions).\\n\\nCovers the spec user stories:\\n\\n- US1: applying a batch of inserts/removes and reporting inserted IDs\\n- US2: atomic rollback of failing batches (malformed ops, missing IDs)\\n- US3: ordinary database usage and data independence (no aliasing)\\n\\\"\\\"\\\"\\n\\nimport pytest\\n\\nfrom tinydb import TinyDB, Query\\nfrom tinydb.journal import BatchWriter\\nfrom tinydb.storages import MemoryStorage\\n\\n\\n@pytest.fixture\\ndef db():\\n    return TinyDB(storage=MemoryStorage())\\n\\n\\n@pytest.fixture\\ndef writer(db):\\n    return BatchWriter(db)\\n\\n\\n# ---------------------------------------------------------------------------\\n# User Story 1: Apply a batch of inserts and removes\\n# ---------------------------------------------------------------------------\\n\\ndef test_single_insert_empty_db(db, writer):\\n    assert writer.apply([{'op': 'insert', 'document': {'a': 1}}]) == [1]\\n    assert db.all() == [{'a': 1}]\\n    assert db[1]['a'] == 1\\n\\n\\ndef test_remove_existing_id(db, writer):\\n    db.insert({'a': 1})\\n    assert writer.apply([{'op': 'remove', 'doc_id': 1}]) == []\\n    assert len(db) == 0\\n\\n\\ndef test_empty_batch(db, writer):\\n    db.insert({'a': 1})\\n    assert writer.apply([]) == []\\n    assert db.all() == [{'a': 1}]\\n\\n\\ndef test_mixed_batch_returns_inserted_ids_in_order(db, writer):\\n    result = writer.apply([\\n        {'op': 'insert', 'document': {'x': 1}},\\n        {'op': 'insert', 'document': {'x': 2}},\\n        {'op': 'remove', 'doc_id': 1},\\n    ])\\n    assert result == [1, 2]\\n    assert [doc['x'] for doc in db.all()] == [2]\\n\\n\\ndef test_remove_only_batch(db, writer):\\n    db.insert({'a': 1})\\n    db.insert({'a': 2})\\n    assert writer.apply([\\n        {'op': 'remove', 'doc_id': 1},\\n        {'op': 'remove', 'doc_id': 2},\\n    ]) == []\\n    assert len(db) == 0\\n\\n\\ndef test_remove_id_inserted_earlier_in_same_batch(db, writer):\\n    result = writer.apply([\\n        {'op': 'insert', 'document': {'x': 1}},\\n        {'op': 'remove', 'doc_id': 1},\\n    ])\\n    assert result == [1]\\n    assert len(db) == 0\\n\\n\\n# ---------------------------------------------------------------------------\\n# User Story 2: Fail a batch safely with full rollback\\n# ---------------------------------------------------------------------------\\n\\ndef test_remove_missing_id_rolls_back(db, writer):\\n    db.insert({'x': 1})\\n    with pytest.raises(ValueError):\\n        writer.apply([\\n            {'op': 'insert', 'document': {'x': 2}},\\n            {'op': 'remove', 'doc_id': 99},\\n        ])\\n    assert [doc['x'] for doc in db.all()] == [1]\\n\\n\\ndef test_double_remove_same_id_rolls_back(db, writer):\\n    db.insert({'x': 1})\\n    with pytest.raises(ValueError):\\n        writer.apply([\\n            {'op': 'remove', 'doc_id': 1},\\n            {'op': 'remove', 'doc_id': 1},\\n        ])\\n    assert [doc['x'] for doc in db.all()] == [1]\\n\\n\\n@pytest.mark.parametrize('batch', [\\n    # Unknown / missing op\\n    [{'op': 'update', 'document': {'x': 1}}],\\n    [{'op': 'remove', 'doc_id': 1, 'extra': 2, 'op2': 'x'} and {'no_op': 1}],\\n    [{'document': {'x': 1}}],\\n    # Insert payload problems\\n    [{'op': 'insert'}],\\n    [{'op': 'insert', 'document': [1, 2]}],\\n    [{'op': 'insert', 'document': 'nope'}],\\n    [{'op': 'insert', 'document': None}],\\n    # Remove payload problems\\n    [{'op': 'remove'}],\\n    [{'op': 'remove', 'doc_id': 0}],\\n    [{'op': 'remove', 'doc_id': -1}],\\n    [{'op': 'remove', 'doc_id': 1.5}],\\n    [{'op': 'remove', 'doc_id': True}],\\n    [{'op': 'remove', 'doc_id': '1'}],\\n    [{'op': 'remove', 'doc_id': None}],\\n    # Non-mapping operation entries\\n    ['insert'],\\n    [42],\\n    [None],\\n])\\ndef test_malformed_batch_raises_value_error_and_rolls_back(db, writer, batch):\\n    db.insert({'x': 1})\\n    with pytest.raises(ValueError):\\n        writer.apply(batch)\\n    assert [doc['x'] for doc in db.all()] == [1]\\n\\n\\n@pytest.mark.parametrize('batch', [None, 'insert', {'op': 'insert'}, 42])\\ndef test_non_list_batch_raises_value_error(db, writer, batch):\\n    db.insert({'x': 1})\\n    with pytest.raises(ValueError):\\n        writer.apply(batch)\\n    assert [doc['x'] for doc in db.all()] == [1]\\n\\n\\ndef test_rollback_after_partial_success(db, writer):\\n    db.insert({'x': 0})\\n    with pytest.raises(ValueError):\\n        writer.apply([\\n            {'op': 'insert', 'document': {'x': 1}},\\n            {'op': 'remove', 'doc_id': 99},\\n        ])\\n    # The table is exactly as before the batch...\\n    assert [doc['x'] for doc in db.all()] == [0]\\n    # ...and the next ordinary insert continues from the restored state\\n    # (no ID reuse of the rolled-back insert).\\n    assert db.insert({'x': 2}) == 2\\n\\n\\ndef test_pre_acquired_handle_sees_success_and_rollback(db):\\n    handle = db.table('_default')\\n    writer = BatchWriter(db)\\n\\n    # Successful batch is visible through the pre-acquired handle\\n    ids = writer.apply([{'op': 'insert', 'document': {'x': 1}}])\\n    assert ids == [1]\\n    assert [doc['x'] for doc in handle.all()] == [1]\\n\\n    # A failing batch is rolled back and the handle sees the restored data\\n    with pytest.raises(ValueError):\\n        writer.apply([\\n            {'op': 'insert', 'document': {'x': 2}},\\n            {'op': 'remove', 'doc_id': 99},\\n        ])\\n    assert [doc['x'] for doc in handle.all()] == [1]\\n    assert [doc['x'] for doc in db.all()] == [1]\\n\\n\\ndef test_rollback_on_empty_db(db, writer):\\n    with pytest.raises(ValueError):\\n        writer.apply([{'op': 'remove', 'doc_id': 1}])\\n    assert len(db) == 0\\n\\n\\ndef test_rollback_preserves_other_tables(db, writer):\\n    other = db.table('other')\\n    other.insert({'y': 1})\\n    with pytest.raises(ValueError):\\n        writer.apply([{'op': 'remove', 'doc_id': 99}])\\n    assert [doc['y'] for doc in other.all()] == [1]\\n    assert len(db) == 0\\n\\n\\n# ---------------------------------------------------------------------------\\n# User Story 3: Ordinary database usage and data independence\\n# ---------------------------------------------------------------------------\\n\\ndef test_ordinary_usage_alongside_writer(db, writer):\\n    db.insert({'a': 1})\\n    writer.apply([{'op': 'insert', 'document': {'a': 2}}])\\n\\n    assert len(db) == 2\\n    assert db[1]['a'] == 1\\n    assert db[2]['a'] == 2\\n    assert db.search(Query('a') == 1) == [db[1]]\\n    assert db.insert({'a': 3}) == 3\\n    assert len(db) == 3\\n\\n\\ndef test_inserted_data_does_not_alias_caller_input(db, writer):\\n    payload = {'nested': {'k': [1, 2, 3]}}\\n    (doc_id,) = writer.apply([{'op': 'insert', 'document': payload}])\\n\\n    stored = db[doc_id]\\n    assert stored == payload\\n    assert stored is not payload\\n    assert stored['nested'] is not payload['nested']\\n\\n    # Mutating the caller's payload (flat and nested) must not change the db\\n    payload['nested']['k'].append(4)\\n    payload['after'] = True\\n\\n    assert db[doc_id]['nested']['k'] == [1, 2, 3]\\n    assert 'after' not in db[doc_id]\\n\\n\\ndef test_mutating_stored_data_does_not_affect_caller_or_db(db, writer):\\n    payload = {'nested': {'k': [1, 2, 3]}}\\n    (doc_id,) = writer.apply([{'op': 'insert', 'document': payload}])\\n\\n    stored = db[doc_id]\\n    stored['nested']['k'].append(99)\\n\\n    assert payload['nested']['k'] == [1, 2, 3]\\n    assert db[doc_id]['nested']['k'] == [1, 2, 3]\\n\\n\\ndef test_flat_document_independence(db, writer):\\n    payload = {'a': 1}\\n    (doc_id,) = writer.apply([{'op': 'insert', 'document': payload}])\\n    payload['a'] = 999\\n    assert db[doc_id]['a'] == 1\\n\\n\\ndef test_preexisting_documents_unmodified_by_batches(db, writer):\\n    original = db.insert({'a': 1, 'b': [1, 2]})\\n    writer.apply([{'op': 'insert', 'document': {'a': 2}}])\\n\\n    doc = db[original]\\n    assert doc == {'a': 1, 'b': [1, 2]}\\n    assert doc['b'] == [1, 2]\\n\", \"path\":\"tests/test_journal.py\"}",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792417083,
+    "id": "chatcmpl-JCfFWguYW1o9FOF26AIwFjKfTwdAqQtC",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 4146,
+      "predicted_ms": 120314.528,
+      "predicted_n": 2417,
+      "predicted_per_second": 20.080700478665385,
+      "predicted_per_token_ms": 49.79905960264901,
+      "prompt_ms": 16611.3,
+      "prompt_n": 20195,
+      "prompt_per_second": 1215.7386839079422,
+      "prompt_per_token_ms": 0.8225451844515969
+    },
+    "usage": {
+      "completion_tokens": 2417,
+      "prompt_tokens": 24341,
+      "prompt_tokens_details": {
+        "cached_tokens": 4146
+      },
+      "total_tokens": 26758
+    }
+  },
+  "seconds": 138.21900000004098,
+  "stage": 1,
+  "started_at": "2026-10-19T13:35:45.225748+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 2417,
+    "prompt_tokens": 24341,
+    "prompt_tokens_details": {
+      "cached_tokens": 4146
+    },
+    "total_tokens": 26758
+  },
+  "request_sha256": "b801c0258050c10d23c2cd61fd717e2b41724d48ce74db3cc1a38e436363114b",
+  "original_sha256": "bdd32e115b59a5c35bfb3541b2b9cde5b62eb020c49fa0aaa93bc45ddecf0c4f",
+  "source": "tinydb-20261019-spec_kit/call-0047.json"
+}

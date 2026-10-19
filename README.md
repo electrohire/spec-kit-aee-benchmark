@@ -1,8 +1,10 @@
 # Spec Kit + AEE benchmark
 
-**Real-model labelled diagnostic completed:** 12 calls, 10/12 original-label agreement, with two challenged fixture labels and explicit limits. [Receipts and findings](reports/local/labelled-factbooks-10-20261019/README.md). The fresh software benchmark is running; no completed paired result is claimed.
+**Study03 stopped on infrastructure (2026-10-19):**98calls/1,908,355known native tokens,2attempted/34unattempted checkpoints. TinyDB partial source passes225public+228hidden tests, but there is no final delivery or valid paired comparison. [Captured error, independent grades and retained results](reports/local/current-study-03-router-stop/README.md).
 
-Current mission: preparing fresh study03 and real labelled hallucination tests. Study02 remains stopped; no completed replacement or efficacy result is claimed. Product work is parked. See [prospective protocol](benchmarks/current_local/PROTOCOL-v2.md#prospective-benchmark-mission-study03--pipeline10).
+**Real-model labelled diagnostic completed:** 12 calls, 10/12 original-label agreement, with two challenged fixture labels and explicit limits. [Receipts and findings](reports/local/labelled-factbooks-10-20261019/README.md). The fresh software benchmark stopped on a router connection error; no completed paired result is claimed.
+
+Current mission: finish benchmarks and labelled diagnostics. Study03 is stopped on a router/backend HTTP500; study02 also remains stopped. No completed paired result or efficacy claim is established. Product work is parked. See [prospective protocol](benchmarks/current_local/PROTOCOL-v2.md#prospective-benchmark-mission-study03--pipeline10).
 
 Compare ordinary coding agents, Spec Kit, and Spec Kit with Evaluator + Applied
 Epistemic Engineering on correctness, hallucination management, rework and cost.

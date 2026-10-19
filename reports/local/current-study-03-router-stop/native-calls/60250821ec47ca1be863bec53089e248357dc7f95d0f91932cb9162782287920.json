@@ -1,0 +1,62 @@
+{
+  "budget_debit": 24949,
+  "ended_at": "2026-10-19T13:19:33.750729+00:00",
+  "max_output": 8192,
+  "phase": "plan",
+  "preflight_http_requests": 12,
+  "preflight_input_tokens": 23651,
+  "preflight_seconds": 1.125,
+  "removed_history_messages": 4,
+  "request_seconds": 84.8430000001099,
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"write_file\",\"content\":\"# Phase 1 Data Model: BatchWriter (001-transactions)\\n\\n**Date**: 2026-10-19\\n\\n## Entities\\n\\n### Entity: BatchWriter\\n\\n- **Represents**: An additive wrapper around a supplied `TinyDB` instance\\n  providing atomic batch application against the default table only.\\n- **Fields**:\\n  - `db` (TinyDB): the wrapped database instance; stored as-is, never\\n    modified (no monkey-patching, no subclassing).\\n- **Behavior**:\\n  - `apply(operations) -> list[int]`: validate + apply a batch atomically;\\n    returns inserted document IDs in insertion order; raises `ValueError` on\\n    any validation or application failure (after full rollback).\\n- **State**: stateless between calls except for the wrapped `db` reference.\\n\\n### Entity: Operation\\n\\n- **Represents**: One entry in a batch (`operations` list).\\n- **Shape (validated)**:\\n  - Insert: `{'op': 'insert', 'document': <Mapping>}`\\n  - Remove: `{'op': 'remove', 'doc_id': <int > 0>}`\\n- **Validation rules** (all violations \u2192 `ValueError`, batch rolls back):\\n  - Must be a `dict`.\\n  - `op` must be present, a `str`, and one of `{'insert', 'remove'}`.\\n  - For `insert`: `document` key required; value must be a `Mapping`.\\n  - For `remove`: `doc_id` key required; value must be an `int` (not `bool`)\\n    and `> 0`.\\n  - Unknown `op` values \u2192 `ValueError`.\\n- **Lifecycle**: validated up front per operation as it is processed\\n  sequentially; a failing operation aborts the batch after rollback.\\n\\n### Entity: Document\\n\\n- **Represents**: A JSON-like mapping stored in the default table under a\\n  positive integer `doc_id`.\\n- **Fields**: arbitrary mapping keys \u2192 JSON-serializable values (nested\\n  dicts/lists allowed).\\n- **Relationships**: belongs to the default table; referenced by operations\\n  (insert carries one; remove references its `doc_id`).\\n- **Invariant (R03)**: stored copies are deep copies of caller payloads;\\n  stored data never aliases caller objects, and reads return fresh `Document`\\n  instances (existing TinyDB behavior).\\n\\n### Entity: Batch Result\\n\\n- **Represents**: The return value of a successful `apply`.\\n- **Shape**: `list[int]` of inserted `doc_id`s, in insertion order; removes\\n  contribute nothing; empty batch \u2192 `[]`.\\n\\n## State Transitions (default table, per `apply` call)\\n\\n```\\npre-batch state S0 (snapshot taken at storage level, deep-copied)\\n   |\\n   | validate+apply op1..opN sequentially (inserts via table.insert,\\n   | removes via membership check + table.remove)\\n   |\\n   +-- all succeed --> state SN  (persisted; _next_id advanced) -> return IDs\\n   |\\n   +-- any op fails (ValueError) --> storage.write(snapshot S0)\\n                                     table._next_id = None\\n                                     re-raise ValueError\\n                                     (state observably S0 for all handles)\\n```\\n\\n- No intermediate state is observable to other handles mid-batch in a way\\n  that persists: on failure the full pre-batch state is restored; on success\\n  the final state is the only persisted state.\\n- `_next_id` (per-handle, non-persisted) is reset to `None` on rollback so\\n  subsequent inserts re-derive IDs from the restored table.\\n\\n## Validation Matrix\\n\\n| Input | Result |\\n|-------|--------|\\n| `[]` | success, returns `[]`, table unchanged |\\n| `{'op':'insert','document':{'a':1}}` | success, returns `[new_id]` |\\n| `{'op':'remove','doc_id':1}` (id exists) | success, returns `[]` |\\n| `{'op':'remove','doc_id':99}` (id missing) | `ValueError`, rollback |\\n| `{'op':'update',...}` | `ValueError` (unknown op), rollback |\\n| `{'op':'insert'}` (no document) | `ValueError` (malformed), rollback |\\n| `{'op':'insert','document':[1,2]}` | `ValueError` (not a Mapping), rollback |\\n| `{'op':'remove','doc_id':0}` / `-1` / `1.5` / `True` | `ValueError`, rollback |\\n| `{'op':'remove'}` (no doc_id) | `ValueError`, rollback |\\n| `{'no_op_key':...}` | `ValueError` (missing op), rollback |\\n| `'not-a-dict'` as an operation | `ValueError`, rollback |\\n| `{'op':'insert','document':{...}}, {'op':'remove','doc_id':<id inserted by prior op>}` | success; inserted ID is reported, doc removed |\\n| non-list `operations` (e.g. dict, str) | `ValueError`, table unchanged |\\n| insert then remove of same pre-existing id twice | second remove \u2192 missing ID \u2192 `ValueError`, rollback |\\n\\n## Relationships\\n\\n- `BatchWriter 1 --* Operation` (per batch invocation).\\n- `Operation * --> 1 Document` (insert carries; remove references by id).\\n- `Document * --> 1 default table` (stored under `doc_id`).\\n- `BatchWriter 1 --> 1 TinyDB db` (wraps; ordinary APIs untouched).\\n\", \"path\":\"specs/001-transactions/data-model.md\"}",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792415973,
+    "id": "chatcmpl-KjPe2QGScheYxrpMCkJVXa6WVR8ex4VX",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 2717,
+      "predicted_ms": 63391.145,
+      "predicted_n": 1298,
+      "predicted_per_second": 20.460270910077426,
+      "predicted_per_token_ms": 48.875208172706245,
+      "prompt_ms": 17473.053,
+      "prompt_n": 20934,
+      "prompt_per_second": 1198.073399079142,
+      "prompt_per_token_ms": 0.8346734021209515
+    },
+    "usage": {
+      "completion_tokens": 1298,
+      "prompt_tokens": 23651,
+      "prompt_tokens_details": {
+        "cached_tokens": 2717
+      },
+      "total_tokens": 24949
+    }
+  },
+  "seconds": 84.8430000001099,
+  "stage": 1,
+  "started_at": "2026-10-19T13:18:08.899995+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1298,
+    "prompt_tokens": 23651,
+    "prompt_tokens_details": {
+      "cached_tokens": 2717
+    },
+    "total_tokens": 24949
+  },
+  "request_sha256": "4c1253277b9cbe867f5b7bd1062a1f65ebd5d3295b4de94ae95885d60772eba0",
+  "original_sha256": "60250821ec47ca1be863bec53089e248357dc7f95d0f91932cb9162782287920",
+  "source": "tinydb-20261019-spec_kit/call-0023.json"
+}

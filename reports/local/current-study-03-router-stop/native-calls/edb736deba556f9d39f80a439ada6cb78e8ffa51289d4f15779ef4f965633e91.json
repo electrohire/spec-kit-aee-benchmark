@@ -1,0 +1,62 @@
+{
+  "budget_debit": 23134,
+  "ended_at": "2026-10-19T13:24:23.055327+00:00",
+  "max_output": 8192,
+  "phase": "plan",
+  "preflight_http_requests": 14,
+  "preflight_input_tokens": 23064,
+  "preflight_seconds": 1.1089999999385327,
+  "removed_history_messages": 16,
+  "request_seconds": 4.108999999938533,
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && ls .specify/extensions.yml 2>/dev/null || echo no-extensions; ls -R specs/001-transactions; git status --short 2>/dev/null | head; git branch --show-current 2>/dev/null || echo no-git-branch\"}",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792416263,
+    "id": "chatcmpl-tnSsfRa2X4enwg7hhISSXgv4iArNlsyu",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 22826,
+      "predicted_ms": 3163.279,
+      "predicted_n": 70,
+      "predicted_per_second": 21.812808797453528,
+      "predicted_per_token_ms": 45.8446231884058,
+      "prompt_ms": 798.654,
+      "prompt_n": 238,
+      "prompt_per_second": 298.00138733418976,
+      "prompt_per_token_ms": 3.355689075630252
+    },
+    "usage": {
+      "completion_tokens": 70,
+      "prompt_tokens": 23064,
+      "prompt_tokens_details": {
+        "cached_tokens": 22826
+      },
+      "total_tokens": 23134
+    }
+  },
+  "seconds": 4.108999999938533,
+  "stage": 1,
+  "started_at": "2026-10-19T13:24:18.942260+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 70,
+    "prompt_tokens": 23064,
+    "prompt_tokens_details": {
+      "cached_tokens": 22826
+    },
+    "total_tokens": 23134
+  },
+  "request_sha256": "dd153ecc4d93462eb99e2f079f11d6f2b64475b3a1a195afb3f65860eb55ae87",
+  "original_sha256": "edb736deba556f9d39f80a439ada6cb78e8ffa51289d4f15779ef4f965633e91",
+  "source": "tinydb-20261019-spec_kit/call-0027.json"
+}

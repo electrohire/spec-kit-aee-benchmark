@@ -1,0 +1,62 @@
+{
+  "budget_debit": 25323,
+  "ended_at": "2026-10-19T13:20:37.227629+00:00",
+  "max_output": 8192,
+  "phase": "plan",
+  "preflight_http_requests": 12,
+  "preflight_input_tokens": 24417,
+  "preflight_seconds": 0.9690000000409782,
+  "removed_history_messages": 6,
+  "request_seconds": 62.234999999869615,
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"write_file\",\"content\":\"# Public Contract: tinydb.journal.BatchWriter\\n\\n**Feature**: 001-transactions\\n**Module**: `tinydb/journal.py` (new file; package `tinydb`)\\n**Status**: normative for Milestone 1\\n\\n## Import\\n\\n```python\\nfrom tinydb.journal import BatchWriter\\n```\\n\\n## Constructor\\n\\n```python\\nBatchWriter(db: TinyDB) -> BatchWriter\\n```\\n\\n- `db` is a `tinydb.TinyDB` instance (any storage backend).\\n- The wrapper does NOT modify the `TinyDB` class, the instance, or any of its\\n  ordinary APIs. It only reads/writes the default table's data through the\\n  database's existing `table()` and storage interface.\\n- No other constructor parameters are part of the contract.\\n\\n## Method: apply\\n\\n```python\\napply(operations: list[dict]) -> list[int]\\n```\\n\\n### Arguments\\n\\n- `operations`: a list of operation dicts. Each operation dict MUST be one of:\\n  - `{'op': 'insert', 'document': <Mapping>}`\\n  - `{'op': 'remove', 'doc_id': <int > 0>}`\\n\\n### Returns\\n\\n- On success: a `list[int]` containing the IDs of the documents inserted by\\n  this batch, in the order the inserts appeared. Remove operations add no\\n  result entries. An empty batch returns `[]`.\\n\\n### Raises\\n\\n- `ValueError` in all of the following cases (each triggers a full rollback\\n  of the default table to its pre-batch state before the exception propagates):\\n  - `operations` is not a list/tuple of dicts.\\n  - An operation is not a dict, or lacks an `op` key, or `op` is not\\n    `'insert'` or `'remove'` (unknown/malformed operation).\\n  - An `insert` operation lacks `document`, or `document` is not a `Mapping`.\\n  - A `remove` operation lacks `doc_id`, or `doc_id` is not a positive\\n    integer (`bool` is rejected; non-int and non-positive values rejected).\\n  - A `remove` targets a `doc_id` that does not exist in the default table\\n    at the time the operation is processed (missing ID is an error).\\n\\n### Semantics\\n\\n1. **Atomicity**: the batch is validated and applied sequentially. If any\\n   operation fails, the complete pre-batch state of the default table is\\n   restored \u2014 including for table handles acquired before the `apply` call.\\n   On success, the final state is exactly the pre-batch state plus all\\n   inserts minus all removes.\\n2. **Inserts**: documents are stored as deep copies of the caller's payload;\\n   IDs are assigned by the database's normal sequential scheme.\\n3. **Removes**: a remove of a document inserted earlier in the same batch is\\n   valid; that document's ID is still reported in the result.\\n4. **Ordinary usage**: reads/writes through the wrapped `TinyDB` instance\\n   behave exactly as before this feature; preexisting documents are unaffected\\n   by a failed batch.\\n5. **No aliasing**: after a successful `apply`, mutating the caller's\\n   operation dicts (including nested values) does NOT change the database;\\n   stored and returned data are not the caller's objects.\\n\\n## Out of Scope (Milestone 1)\\n\\n- Non-default tables.\\n- Update/replace operation kinds.\\n- Persistence of the batch itself (journaling to disk).\\n- Concurrency/locking guarantees beyond single-threaded sequential `apply`.\\n\\n## Error Message Convention\\n\\nError messages MUST identify the failing operation index and the reason\\n(e.g. `\\\"operations[2]: unknown op 'update'\\\"`,\\n`\\\"operations[0]: remove targets missing doc_id 99\\\"`). The exact wording is not\\nnormative; the `ValueError` type and rollback behavior are.\\n\", \"path\":\"specs/001-transactions/contracts/batchwriter.md\"}",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792416037,
+    "id": "chatcmpl-E0p643UDrxhA6i32gJVzkLGJ2zeqCVEy",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 2717,
+      "predicted_ms": 43888.528,
+      "predicted_n": 906,
+      "predicted_per_second": 20.620422721855697,
+      "predicted_per_token_ms": 48.495611049723756,
+      "prompt_ms": 17567.853,
+      "prompt_n": 21700,
+      "prompt_per_second": 1235.2106999073821,
+      "prompt_per_token_ms": 0.8095784792626728
+    },
+    "usage": {
+      "completion_tokens": 906,
+      "prompt_tokens": 24417,
+      "prompt_tokens_details": {
+        "cached_tokens": 2717
+      },
+      "total_tokens": 25323
+    }
+  },
+  "seconds": 62.234999999869615,
+  "stage": 1,
+  "started_at": "2026-10-19T13:19:34.982365+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 906,
+    "prompt_tokens": 24417,
+    "prompt_tokens_details": {
+      "cached_tokens": 2717
+    },
+    "total_tokens": 25323
+  },
+  "request_sha256": "f023b9ceb0cd1a712fc4b7b77d8d3f302fd4c13a885906168d843185166082df",
+  "original_sha256": "a4a1e5c350c280df866b9d6df95e1fb45d31707a15e8aa3337dd4b9494f647b0",
+  "source": "tinydb-20261019-spec_kit/call-0024.json"
+}

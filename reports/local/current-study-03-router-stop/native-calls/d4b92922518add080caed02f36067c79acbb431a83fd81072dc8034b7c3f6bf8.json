@@ -1,0 +1,62 @@
+{
+  "budget_debit": 11278,
+  "ended_at": "2026-10-19T13:12:02.209787+00:00",
+  "max_output": 8192,
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 11202,
+  "preflight_seconds": 0.10900000017136335,
+  "removed_history_messages": 0,
+  "request_seconds": 13.280999999959022,
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && ls -R specs && cat .specify/init-options.json 2>/dev/null; echo ---; cat .specify/feature.json 2>/dev/null; echo ---; ls .specify/templates; echo ---; ls .specify/extensions.yml 2>/dev/null || echo no-extensions\"}",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792415522,
+    "id": "chatcmpl-vilWUT06xrVnRitIFG0puucrMx3cQQPQ",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 3290.699,
+      "predicted_n": 76,
+      "predicted_per_second": 22.791510253596574,
+      "predicted_per_token_ms": 43.87598666666667,
+      "prompt_ms": 8930.157,
+      "prompt_n": 11202,
+      "prompt_per_second": 1254.4012384104783,
+      "prompt_per_token_ms": 0.79719309051955
+    },
+    "usage": {
+      "completion_tokens": 76,
+      "prompt_tokens": 11202,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 11278
+    }
+  },
+  "seconds": 13.280999999959022,
+  "stage": 1,
+  "started_at": "2026-10-19T13:11:48.929261+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 76,
+    "prompt_tokens": 11202,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 11278
+  },
+  "request_sha256": "6646557a4cc0c75d8ce7561b9069f45d384f9db15d42bfe5be718af4a99e9a92",
+  "original_sha256": "d4b92922518add080caed02f36067c79acbb431a83fd81072dc8034b7c3f6bf8",
+  "source": "tinydb-20261019-spec_kit/call-0006.json"
+}
