@@ -4,6 +4,8 @@
 
 **Pipeline12 stopped before scoring:** image/grader controls passed, then a direct-client connection timed out during context validation. A persistent-client mitigation and fresh zero-generation context checks pass; no shared service/model changed. [Evidence, transport scope and retained setup accounting](reports/investigation/fail-fast-cachetools-20261019/context-connection-followup.md).
 
+**Latest study07 stopped on its first malformed grep action:**15native calls, original output retained. The prospective v6 tool interface removes shell-command strings and requires literal argument arrays for every arm. Fresh native grammar/timing validation is required before another scored run. [Current protocol](benchmarks/current_local/PROTOCOL-v2.md#current-v6-action-protocol-literal-argv-only). No completed comparison is claimed.
+
 **Corrected real-model hallucination diagnostic completed:**12/12 frozen-label agreement (supported4, contradicted4, unknown4),0 invalid responses,12calls/1,974known native tokens/0usage unknowns. [Receipts, correction history and limits](reports/local/labelled-factbooks-11-20261019/README.md). This is a small synthetic factual-judgment test, not AEE efficacy or workflow hallucination prevalence.
 
 **Study03 stopped on infrastructure (2026-10-19):**98calls/1,908,355known native tokens,2attempted/34unattempted checkpoints. TinyDB partial source passes225public+228hidden tests, but there is no final delivery or valid paired comparison. [Captured error, independent grades and retained results](reports/local/current-study-03-router-stop/README.md).

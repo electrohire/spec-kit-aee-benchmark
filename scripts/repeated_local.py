@@ -31,16 +31,18 @@ PROJECTS = {
 SEEDS = [20260918, 20260919]
 ARMS = ['baseline', 'spec_kit', 'spec_kit_aee']
 COMMON = '''You are a capable software engineering agent in an isolated real repository.
-Return exactly one JSON action: {"action":"shell","command":"..."} or
-{"action":"exec","argv":["program","argument one","argument two"]} or
+Return exactly one JSON action: {"action":"exec","argv":["program","argument one","argument two"]} or
 {"action":"write_file","path":"relative/file.py","content":"literal complete file content"} or
 {"action":"done","summary":"what this phase actually completed and what remains"}.
 Use write_file for creating/replacing files; its content is literal UTF-8,
-not shell/Python source to quote again. Use shell to inspect source, make targeted
-edits and run tests. Incomplete shell syntax is rejected before execution; no
-content is repaired. Prefer exec for a single program: each argument is literal,
-with no shell quoting or expansion. Include every required operand. Use shell
-only when shell features are needed. In fail-fast campaigns every nonzero tool
+not shell/Python source to quote again. Use exec to inspect source and run tests.
+Every argument is literal: do not add shell quote characters around arguments.
+Command strings, pipelines, shell actions and bash/sh -c wrappers are unavailable.
+Issue separate actions for separate programs. Use write_file for helper scripts
+then exec the script; executing existing bash script files is supported.
+For example search with ["grep","-n","search text","relative/file.txt"]:
+the pattern is one complete argv item, not a partially quoted command string.
+Include every required operand. No model content is repaired. In fail-fast campaigns every nonzero tool
 exit halts the campaign, including search no-match exits; use a program that
 reports absent matches as data with exit zero when absence is an expected query
 result. Never suppress execution/test errors. Reserve actions for phase deliverables.
@@ -49,7 +51,7 @@ No internet or human assistance.
 Do not modify upstream tests or acceptance_public.py. You may add your own tests.
 Preserve previous active requirements. The latest requirement text overrides older
 asserted design notes. You may keep persistent HANDOFF.md and any other notes.
-All shell commands run in /testbed. Use PYTHONPATH=src:. for repository imports.
+Programs run in /testbed. For repository imports use exec ["env","PYTHONPATH=src:.","python",...].
 Do not fabricate test evidence. Hidden acceptance is unavailable. Inspect concise
 outputs; full tool outputs are retained as evidence. Source and notes persist at
 the stage-three handoff but conversation history is cleared for every arm.
@@ -193,7 +195,7 @@ class Provider:
         if remaining<self.timeout: raise TimeoutError('insufficient_request_time_reservation')
         request=dict(model='long-coder',messages=chosen,temperature=0.6,top_p=0.95,top_k=20,min_p=0.0,
                      presence_penalty=0.0,repeat_penalty=1.0,seed=self.seed,max_tokens=CONFIG['max_output'],
-                     cache_prompt=bool(self.calls),response_format=action_response_format(getattr(self,'requires_claims',False)),
+                     cache_prompt=bool(self.calls),response_format=action_response_format(getattr(self,'requires_claims',False),structured=getattr(self,'structured_actions',False)),
                      chat_template_kwargs={'enable_thinking':CONFIG.get('enable_thinking',True)})
         record=dict(stage=stage,phase=phase,started_at=utc(),request=request,usage=None,unknown_reason='pending',
                     preflight_input_tokens=count,max_output=CONFIG['max_output'],removed_history_messages=removed,
@@ -331,7 +333,7 @@ class Session:
                     done=action
                     if self.watchdog:self.watchdog.success()
                     break
-                command=action_command(action)
+                command=action_command(action,allow_shell=not getattr(self.provider,'structured_actions',False))
                 result=self.box.execute(command,60);self.tools+=1
                 ref=self.store.artifact(canonical(dict(action=action,command=command,**result)))
                 self.store.append('tools',dict(attempt_id=self.identity,timestamp=utc(),artifact=ref,exit_code=result['exit_code']))

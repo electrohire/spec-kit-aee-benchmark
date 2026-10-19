@@ -22,10 +22,10 @@ def prepared(tmp_path):
     write_sha=save(transport/'literal-write.json',dict(write={'exit_code':0},readback={'exit_code':0}))
     argv_sha=save(transport/'literal-argv.json',dict(execution={'exit_code':0}))
     checks=[dict(action=action,strict_claims_loaded=action in ('done','draft'))
-            for action in ('shell','write_file','done','draft','exec')]
+            for action in ('exec','write_file','done','draft')]
     checks[1].update(literal_write_verified=True,literal_write_sha256=write_sha)
-    checks[4].update(literal_argv_verified=True,literal_argv_sha256=argv_sha)
-    save(transport/'result.json',dict(passed=True,physical_calls=5,checks=checks))
+    checks[0].update(literal_argv_verified=True,literal_argv_sha256=argv_sha)
+    save(transport/'result.json',dict(passed=True,physical_calls=4,checks=checks))
     save(transport/'freeze.json',dict(hashes={'scripts/action_protocol.py':hashlib.sha256((current.ROOT/'scripts/action_protocol.py').read_bytes()).hexdigest()}))
     latency=tmp_path/'latency';latency.mkdir()
     save(latency/'freeze.json',dict(config=dict(action_protocol=current.CONFIG['action_protocol'])))
@@ -61,8 +61,8 @@ def test_changed_or_missing_action_readiness_blocked(prepared,mutation):
         elif mutation=='claims':v['checks'][2]['strict_claims_loaded']=False
         elif mutation=='write_flag':v['checks'][1]['literal_write_verified']=False
         elif mutation=='write_hash':v['checks'][1]['literal_write_sha256']='0'*64
-        elif mutation=='argv_flag':v['checks'][4]['literal_argv_verified']=False
-        elif mutation=='argv_hash':v['checks'][4]['literal_argv_sha256']='0'*64
+        elif mutation=='argv_flag':v['checks'][0]['literal_argv_verified']=False
+        elif mutation=='argv_hash':v['checks'][0]['literal_argv_sha256']='0'*64
         else:save(prepared/'transport/freeze.json',dict(hashes={'scripts/action_protocol.py':'0'*64}))
         save(p,v)
     with pytest.raises(ValueError):current.validate_action_readiness(prepared)

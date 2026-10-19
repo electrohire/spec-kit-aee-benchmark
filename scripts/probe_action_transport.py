@@ -18,7 +18,7 @@ def main():
     try:
         current.configure_worker_binding(args.worker_binding)
         current.setup()
-        current.freeze(args.output,'unscored native action transport; at most five local calls; literal argv and write checked in isolated sandbox')
+        current.freeze(args.output,'unscored native v6 structured action transport; at most four local calls; literal argv and write checked in isolated sandbox')
     except Exception as exc:
         try:
             args.output.mkdir(parents=True,exist_ok=True)
@@ -29,7 +29,6 @@ def main():
     result=dict(passed=False,checks=[],paid_calls=False)
     provider=current.Provider(args.output/'calls',current.SEEDS[0],600)
     fixtures=[
-        ('shell','Return a shell action whose command prints hello. Do not execute it.'),
         ('exec','Return exec with argv exactly ["python","-c","import json,sys;print(json.dumps(sys.argv[1:]))","quoted phrase","$(touch NEVER)","\\\"literal\\\""] . Do not run a shell.'),
         ('write_file','Return write_file with path transport-literal.txt and content exactly equal to this JSON string: '+json.dumps('**Input**: User description: "quoted"\nit\'s literal; $(touch NEVER) `no`\nUnicode: λ\n')),
         ('done','Return done with completion_asserted null and a complete claim bundle. Use the claim below unchanged; no tests have run.'),

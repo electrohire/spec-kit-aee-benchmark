@@ -31,11 +31,14 @@ TERMINAL_SCHEMA = {'type':'object','properties':{
 ACTION_RESPONSE_FORMAT = {'type':'json_schema','json_schema':{
     'name':'benchmark_action','strict':True,
     'schema':{'oneOf':[SHELL_SCHEMA,EXEC_SCHEMA,WRITE_SCHEMA,TERMINAL_SCHEMA]}}}
+STRUCTURED_RESPONSE_FORMAT=copy.deepcopy(ACTION_RESPONSE_FORMAT)
+STRUCTURED_RESPONSE_FORMAT['json_schema']['name']='benchmark_structured_action_v6'
+STRUCTURED_RESPONSE_FORMAT['json_schema']['schema']['oneOf']=[copy.deepcopy(EXEC_SCHEMA),copy.deepcopy(WRITE_SCHEMA),copy.deepcopy(TERMINAL_SCHEMA)]
 
 
-def action_response_format(requires_claims=False):
+def action_response_format(requires_claims=False, *, structured=False):
     if not requires_claims:
-        return copy.deepcopy(ACTION_RESPONSE_FORMAT)
+        return copy.deepcopy(STRUCTURED_RESPONSE_FORMAT if structured else ACTION_RESPONSE_FORMAT)
     strings = {'type': 'array', 'items': {'type': 'string'}}
     fields = {
         'id': {'type': 'string', 'minLength': 1},
@@ -57,9 +60,11 @@ def action_response_format(requires_claims=False):
     terminal = copy.deepcopy(TERMINAL_SCHEMA)
     terminal['properties']['claims'] = bundle
     terminal['required'] = ['action', 'claims']
+    branches=[copy.deepcopy(EXEC_SCHEMA),copy.deepcopy(WRITE_SCHEMA),terminal]
+    if not structured:branches.insert(0,copy.deepcopy(SHELL_SCHEMA))
     return {'type': 'json_schema', 'json_schema': {
-        'name': 'benchmark_claim_action', 'strict': True,
-        'schema': {'oneOf': [copy.deepcopy(SHELL_SCHEMA),copy.deepcopy(EXEC_SCHEMA),copy.deepcopy(WRITE_SCHEMA),terminal]}}}
+        'name': 'benchmark_structured_claim_action_v6' if structured else 'benchmark_claim_action', 'strict': True,
+        'schema': {'oneOf': branches}}}
 
 
 _WRITE_SCRIPT = '''import base64,hashlib,json,sys
@@ -96,7 +101,7 @@ sys.exit(subprocess.run(['bash','-lc',command]).returncode)
 '''
 
 
-def action_command(action):
+def action_command(action, *, allow_shell=True):
     """Translate a tool action into one sandbox command; never run it on the host.
 
     Literal UTF-8 file content is transported as base64 data, not shell/Python
@@ -108,11 +113,25 @@ def action_command(action):
         if (not isinstance(argv,list) or not 1<=len(argv)<=128
             or any(not isinstance(arg,str) or not arg or '\x00' in arg for arg in argv)):
             raise ValueError('exec requires 1..128 nonempty NUL-free string arguments')
+        program=PurePosixPath(argv[0]).name.lower();arguments=argv[1:]
+        if not allow_shell and program=='env':
+            while arguments and '=' in arguments[0] and not arguments[0].startswith('-'):
+                arguments=arguments[1:]
+            if not arguments or arguments[0].startswith('-'):
+                raise ValueError('structured env requires KEY=value followed by a program; no command-string options')
+            program=PurePosixPath(arguments[0]).name.lower();arguments=arguments[1:]
+        if not allow_shell and program in ('cmd','cmd.exe','powershell','pwsh'):
+            raise ValueError('command-string shells unavailable in the Linux benchmark')
+        if not allow_shell and program in ('bash','sh','dash','zsh','ksh'):
+            script_args=arguments[1:] if arguments and arguments[0]=='--' else arguments
+            if not script_args or script_args[0].startswith('-'):
+                raise ValueError('command-string shell wrappers unavailable; exec a named script file')
         data=json.dumps(argv,ensure_ascii=False).encode('utf-8')
         if len(data)>MAX_WRITE_BYTES:
             raise ValueError('exec requires bounded UTF-8 arguments')
         return 'python -c '+shlex.quote(_EXEC_SCRIPT)+' '+shlex.quote(base64.b64encode(data).decode())
     if action.get('action') == 'shell':
+        if not allow_shell:raise ValueError('shell action unavailable in structured protocol; use literal argv')
         command=action.get('command')
         if not isinstance(command,str) or not command.strip():
             raise ValueError('shell requires a nonempty command')
