@@ -33,8 +33,8 @@ def paths(root, pipeline, study):
     return result
 
 
-def plan(p):
-    return [
+def plan(p, worker_binding=None):
+    steps = [
         ('image', ['scripts/audit_current_image.py', p['image']]),
         ('grade', ['scripts/current_local.py', 'grade-calibration', p['grade']]),
         ('context', ['scripts/current_local.py', 'context-calibration', p['context']]),
@@ -42,9 +42,16 @@ def plan(p):
         ('hallucination', ['scripts/labelled_hallucinations.py', p['hallucination']]),
         ('latency', ['scripts/current_local.py', 'latency', p['latency']]),
     ]
+    if worker_binding is not None:
+        for stage, argv in steps:
+            if stage != 'image':
+                argv.extend(('--worker-binding', worker_binding))
+            if stage == 'hallucination':
+                argv.extend(('--corpus-version', '2'))
+    return steps
 
 
-def prepare(p):
+def prepare(p, worker_binding=None):
     preflight = p['preflight']
     preflight.mkdir()
     shutil.copytree(ROOT / 'artifacts/current-representative-08/tinydb-spec_kit_aee', preflight / 'workflow')
@@ -52,11 +59,15 @@ def prepare(p):
         shutil.copytree(p[name], preflight / name)
     shutil.copyfile(p['image'], preflight / 'image-audit.json')
     shutil.copyfile(ROOT / 'artifacts/current-admission-09/repair-verification.json', preflight / 'repair-verification.json')
-    shutil.copyfile(ROOT / 'benchmarks/current_local/infrastructure-recovery-v1.json', preflight / 'recovery-migration.json')
+    protocol = 'direct-worker-v1' if worker_binding is not None else 'infrastructure-recovery-v1'
+    shutil.copyfile(ROOT / f'benchmarks/current_local/{protocol}.json', preflight / 'recovery-migration.json')
+    if worker_binding is not None:
+        shutil.copyfile(worker_binding, preflight / 'worker-binding.json')
+        shutil.copyfile(worker_binding.parent / 'direct-worker-equivalence-02/result.json', preflight / 'direct-route-proof.json')
     hashes = {f.relative_to(preflight).as_posix(): hashlib.sha256(f.read_bytes()).hexdigest()
               for f in preflight.rglob('*') if f.is_file()}
     write_json(preflight / 'admission.json', dict(protocol='inclusive-model-outcomes-v1',
-        recovery_protocol='infrastructure-recovery-v1', created_at=utc(), hashes=hashes,
+        recovery_protocol=protocol, created_at=utc(), hashes=hashes,
         rationale='Fresh prospective study authorized by latest explicit benchmark mission. Historical HTTP500/ENOSPC cause remains unresolved. Exact infrastructure-only AST migration and fresh context/transport/latency/grader/image probes; no solver cap, task, model, guard or grading relaxation. No automatic retries.',
         unscored_exposure='Historical TinyDB combined workflow08 and injected repair proof; not fresh all-six-success readiness. Four semantic dependency replays follow. Separate synthetic-factbook hallucination diagnostic is not a treatment-effect estimate.'))
 
@@ -66,6 +77,7 @@ def main():
     parser.add_argument('--pipeline-id', type=int, default=10)
     parser.add_argument('--study-id', type=int, default=3)
     parser.add_argument('--dry-run', action='store_true')
+    parser.add_argument('--worker-binding', type=Path)
     args = parser.parse_args()
     p = paths(ROOT, args.pipeline_id, args.study_id)
     for source in ('artifacts/current-representative-08/tinydb-spec_kit_aee/freeze.json',
@@ -74,7 +86,7 @@ def main():
             raise FileNotFoundError(source)
     if args.dry_run:
         print(json.dumps(dict(paths={k: str(v) for k, v in p.items()},
-            preparation=[(stage, list(map(str, argv))) for stage, argv in plan(p)], generation=False), indent=2))
+            preparation=[(stage, list(map(str, argv))) for stage, argv in plan(p, args.worker_binding)], generation=False), indent=2))
         return
     state = dict(stage='starting', started_at=utc(), complete=False, commands=[],
                  pipeline=args.pipeline_id, study=args.study_id, paid_calls=False)
@@ -93,12 +105,22 @@ def main():
             raise RuntimeError(stage + ' halted; inspect ' + str(log))
 
     try:
-        for stage, argv in plan(p):
+        if args.worker_binding is not None:
+            import current_local as current
+            current.configure_worker_binding(args.worker_binding)
+            from direct_worker_transport import validate_route_proof
+            validate_route_proof(args.worker_binding.parent / 'direct-worker-equivalence-02/result.json', current.WORKER_BINDING)
+            if any(slot.get('is_processing') for slot in current.http('/slots')):
+                raise RuntimeError('shared worker busy; no overlapping generation')
+        for stage, argv in plan(p, args.worker_binding):
             command(stage, argv)
-        prepare(p)
+        prepare(p, args.worker_binding)
         command('dependency-replay', ['scripts/replay_current_dependencies.py', p['preflight'] / 'workflow',
             p['preflight'] / 'dependency-replay', '--admission', p['preflight'] / 'admission.json'])
-        command('scored-study', ['scripts/current_local.py', 'run', p['raw'], '--preflight', p['preflight']])
+        scored = ['scripts/current_local.py', 'run', p['raw'], '--preflight', p['preflight']]
+        if args.worker_binding is not None:
+            scored.extend(('--worker-binding', args.worker_binding))
+        command('scored-study', scored)
         export = ['scripts/report_current.py', p['raw'], p['report']]
         setups = [ROOT / 'reports/feasibility/local-20261016', ROOT / 'reports/feasibility/qwen38-readiness-20261016',
             *sorted(ROOT.glob('artifacts/current-workflow-calibration-*')),
