@@ -115,6 +115,16 @@ def audit(out, plan, cases):
             counter['calls'] += 1
             counter.update(native)
         request = call['request']
+        bounds = plan.get('schema_bounds')
+        if bounds:
+            props = request['response_format']['json_schema']['schema']['properties']
+            if metadata['phase'] in ('draft', 'review'):
+                actual = (props['rationale'].get('maxLength'), props['source_quotes']['items'].get('maxLength'), props['uncertainties']['items'].get('maxLength'))
+                expected = (bounds['rationale_characters'], bounds['source_quote_characters'], bounds['uncertainty_characters'])
+                if actual != expected:
+                    raise ValueError('registered native decision string bounds missing/changed')
+            elif props['document'].get('maxLength') != bounds['document_characters']:
+                raise ValueError('registered native policy string bound missing/changed')
         cap = plan['case_output'] if metadata['phase'] in ('draft', 'review') else plan['policy_output']
         if (request['model'] != plan['model'] or request['seed'] != plan['seed'] or request['max_tokens'] != cap
                 or request['chat_template_kwargs'] != {'enable_thinking': False}

@@ -6,7 +6,14 @@ The latest user request is an actual matched baseline/Spec Kit/Spec Kit+AEE
 comparison on HaluEval and RAGTruth. Read the
 [prospective matched protocol](benchmarks/hallucinations/MATCHED-PROTOCOL.md).
 The published external-01 results below used the model alone; they do not answer
-whether either workflow helps. New matched generation has not started.
+whether either workflow helps. Matched01 stopped at its first output-length
+failure after72/720final judgments. Preserve all185calls/712,919known native
+tokens and all720scheduled rows in the
+[stopped report](reports/hallucinations/matched-01-stopped-20261019/README.md).
+The model identity was correct. Prospective v2 enforces finite native JSON string
+bounds for all arms without extending output/context/call caps or changing gold.
+Run only fresh native delivery checks and a separately frozen matched02 after
+functional/integrity validation and exact-head Ubuntu green. No resume of01.
 
 FeatureBench Fast v1.1 and SWE-EVO are the proposed established coding suites;
 read the [short/long-horizon economic design](docs/long-horizon-economics-plan.md).

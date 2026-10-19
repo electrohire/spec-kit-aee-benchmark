@@ -57,6 +57,17 @@ def test_missing_quality_adjudication_blocks_payoff_claim():
     assert result['checkpoints'][0]['pays_back'] is None
 
 
+def test_both_arms_delivering_nothing_cannot_establish_payback():
+    result = compare([point(1, 100, passed=[])], [point(1, 10, passed=[])])
+    assert result['first_observed_break_even'] is None
+    assert result['checkpoints'][0]['pays_back'] is False
+
+
+def test_less_expensive_actual_delivery_can_outperform_no_delivery():
+    result = compare([point(1, 100, passed=[])], [point(1, 10)])
+    assert result['first_observed_break_even'] == 1
+
+
 @pytest.mark.parametrize('problem', ['drop', 'duplicate', 'cache', 'total', 'unknown'])
 def test_accounting_and_requirement_integrity_refuse_invalid_inputs(problem):
     data = [point(1, 100), point(2, 100)]

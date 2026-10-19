@@ -78,7 +78,8 @@ def compare(control, treatment, sustained_points=2):
         delta = b['known_tokens'] - a['known_tokens'] if cost_known else None
         rows.append(dict(index=a['index'], control=a, treatment=b, extra_tokens=delta,
             quality_noninferior=quality_noninferior,
-            pays_back=(delta <= 0 and quality_noninferior) if cost_known and quality_known else None))
+            verified_work_present=bool(b['passed_ids']),
+            pays_back=(delta <= 0 and quality_noninferior and bool(b['passed_ids'])) if cost_known and quality_known else None))
     first = next((r['index'] for r in rows if r['pays_back'] is True), None)
     sustained = next((rows[i]['index'] for i in range(len(rows))
         if len(rows) - i >= sustained_points and all(r['pays_back'] is True for r in rows[i:])), None)
