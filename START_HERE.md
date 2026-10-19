@@ -333,3 +333,9 @@ Do not call generation started or a raw export completion. Finish all twelve tra
 ## Completed labelled diagnostic (2026-10-19)
 
 See [real-model receipts and label-quality findings](reports/local/labelled-factbooks-10-20261019/README.md):12calls/2037knownnative tokens/0usageunknown,10of12original-labelagreement,two challengedunknownfixtures. Mainpairedstudy03 remains running;no completed paired efficacy conclusion. Active source stays frozen in its original checkout.
+
+### Prospective correction of two diagnostic fixtures
+
+The user explicitly requested fixing issues found during tests and rerunning. The published v1 corpus and results remain immutable. `hallucination-cases-v2.json` changes only the facts for case-09 and case-11: absence of a completed execution record replaces an explicit unfinished-run counterexample; an incomplete empty citation inventory replaces the explicit mismatching digest. Labels, claims, other ten cases, oracle, model, seed and diagnostic caps stay unchanged. This repairs ambiguous unknown controls; it does not rewrite v1 model outcomes. Fourteen targeted mission checks pass locally (36 including affected infrastructure/current-run checks).
+
+After the existing pipeline10 has stopped generating and its final grading/export/audit is handled, inspect processes/status/model-qualified slots and run exactly once in a fresh directory using the merged corrected source: `python scripts/labelled_hallucinations.py artifacts/current-hallucination-11 --corpus-version 2`. Do not interleave inference with the active campaign, modify its frozen checkout, overwrite old diagnostic artifacts, or silently rerun failed software trajectories. Publish v2 receipts and compare with v1, retaining the post-outcome fixture-correction disclosure. This authorization covers genuine harness/test fixes and affected reruns; model failures remain measured results.

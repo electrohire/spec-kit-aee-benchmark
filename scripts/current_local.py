@@ -123,7 +123,7 @@ def freeze(out, purpose):
         for path in (ROOT/folder).rglob("*"):
             if path.is_file() and not {"__pycache__", ".runtime", "assessments", "ledger", "results"}.intersection(path.parts):
                 hashes[path.relative_to(ROOT).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
-    for name in ("uv.lock", "manifests/versions.json", "benchmarks/current_local/PROTOCOL-v2.md", "benchmarks/current_local/infrastructure-recovery-v1.json", "benchmarks/current_local/hallucination-cases-v1.json"):
+    for name in ("uv.lock", "manifests/versions.json", "benchmarks/current_local/PROTOCOL-v2.md", "benchmarks/current_local/infrastructure-recovery-v1.json", "benchmarks/current_local/hallucination-cases-v1.json", "benchmarks/current_local/hallucination-cases-v2.json"):
         hashes[name] = hashlib.sha256((ROOT/name).read_bytes()).hexdigest()
     with WEIGHTS.open("rb") as handle:
         weight_sha = hashlib.file_digest(handle, "sha256").hexdigest()

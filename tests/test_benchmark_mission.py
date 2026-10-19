@@ -111,3 +111,27 @@ def test_diagnostic_does_not_retry_infrastructure_failure(tmp_path, monkeypatch)
     record = json.loads((out / 'calls/call-0000.json').read_text())
     assert record['usage'] is None and record['unknown_reason']
     assert json.loads((out / 'result.json').read_text())['complete'] is False
+
+
+def test_corrected_unknown_controls_supply_no_explicit_counterevidence():
+    before = json.loads(diagnostic.CORPUS.read_text())
+    corrected = json.loads((mission.ROOT / 'benchmarks/current_local/hallucination-cases-v2.json').read_text())
+    changed = []
+    for old, new in zip(before['cases'], corrected['cases']):
+        assert old['id'] == new['id']
+        assert diagnostic.oracle(old) == diagnostic.oracle(new)
+        if old != new:
+            changed.append(new['id'])
+            assert {k: v for k, v in old.items() if k != 'facts'} == {k: v for k, v in new.items() if k != 'facts'}
+    assert changed == ['case-09', 'case-11']
+    completion = corrected['cases'][8]
+    citation = corrected['cases'][10]
+    assert completion['facts'] == {}
+    assert citation['facts'] == {'complete_inventory': False, 'references': {}}
+    assert {v: sum(diagnostic.oracle(c) == v for c in corrected['cases']) for v in diagnostic.VERDICTS} == dict(supported=4, contradicted=4, unknown=4)
+
+
+def test_corpus_version_refuses_unregistered_inputs(tmp_path):
+    with pytest.raises(ValueError, match='shipped corpus'):
+        diagnostic.run(tmp_path / 'never-created', corpus_version=3)
+    assert not (tmp_path / 'never-created').exists()

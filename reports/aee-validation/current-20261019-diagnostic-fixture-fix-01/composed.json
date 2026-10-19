@@ -1,0 +1,198 @@
+{
+  "schema_version": "1.0",
+  "evaluator": {
+    "id": "composed",
+    "version": "1.0",
+    "name": "Composed (strict)"
+  },
+  "phase": "after_implement",
+  "outcome": "iterate",
+  "summary": "1 evaluator(s) ran. Outcomes: aee=iterate. 1 finding(s) total. Lane 2 (human acceptance) lags lane 1 (machine verification) — aee: 1 residual unknown(s) not understood. A composed outcome is a checking-stage decision, not acceptance or digestion.",
+  "findings": [
+    {
+      "id": "aee:AEE-OBS-MISSION-001-VERIFIED-UNEXPLAINED",
+      "severity": "medium",
+      "kind": "other",
+      "subject": "tests/test_benchmark_mission.py",
+      "description": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+      "evidence_refs": [
+        {
+          "ref": "reports/aee-validation/current-20261019-diagnostic-fixture-fix-01/tests/execution.log",
+          "kind": "observed",
+          "description": "Actual process log; JUnit and command/source hashes retained alongside it."
+        }
+      ],
+      "provenance_refs": [
+        "tests/test_benchmark_mission.py"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Verified but unexplained"
+    }
+  ],
+  "next_action": {
+    "kind": "iterate",
+    "target_phase": "implement",
+    "message": "Composed outcome: iterate."
+  },
+  "metadata": {
+    "timestamp": "2026-10-19T13:07:45Z",
+    "duration_ms": 0,
+    "artifacts_evaluated": [],
+    "deterministic": true,
+    "composition_strategy": "strict",
+    "evaluator_count": 1,
+    "contradictory_findings": [],
+    "evaluator_results": [
+      {
+        "evaluator_id": "aee",
+        "outcome": "iterate",
+        "findings_count": 1
+      }
+    ],
+    "invalid_results": [],
+    "duplicate_results_ignored": [],
+    "gating": true,
+    "lane_states": [
+      {
+        "evaluator_id": "aee",
+        "lane_1": {
+          "label": "machine verification",
+          "outcome": "iterate",
+          "threshold": 0.7,
+          "claims_at_or_above_threshold": 1,
+          "claims_below_threshold": 0
+        },
+        "lane_2": {
+          "label": "human acceptance",
+          "stage_counts": {
+            "created": 0,
+            "checked": 1,
+            "explained": 0,
+            "accepted": 0,
+            "digested": 0
+          },
+          "claims_below_explained": 1,
+          "exposition_covered_claims": 0,
+          "exposition_missing_claims": 1,
+          "verified_unexplained_claims": 1,
+          "stage_capped_claims": 0,
+          "attribution_contested_claims": 0
+        },
+        "not_understood": [
+          "OBS-MISSION-001: verified but unexplained - no named human has explained this claim, so what the check establishes is narrower than the claim's wording suggests."
+        ]
+      }
+    ]
+  },
+  "state": {
+    "aee": {
+      "aee": {
+        "project": "benchmark-mission",
+        "claims": [
+          {
+            "id": "OBS-MISSION-001",
+            "text": "The captured focused test invocation reported 73 passing cases.",
+            "kind": "observation",
+            "status": "partially_supported",
+            "boundary": [
+              "This recorded offline invocation only. Fault injection is synthetic; loopback HTTP uses an ephemeral fixture server, not the model. No historical server/storage root-cause, model readiness, efficacy, human acceptance or full coverage is established."
+            ],
+            "depends_on": [],
+            "conflicts_with": [],
+            "evidence": [
+              {
+                "ref": "reports/aee-validation/current-20261019-diagnostic-fixture-fix-01/tests/execution.log",
+                "kind": "observed",
+                "direction": "supports",
+                "source_quality": "test",
+                "description": "Actual process log; JUnit and command/source hashes retained alongside it.",
+                "source_id": "recorded-infrastructure-tests",
+                "independent_of": [],
+                "observed_at": "2026-10-19T13:07:44.882609+00:00",
+                "content_hash": "2673ff6c60d41354fb15c4d680cfd996e92f8915396b0ac6b84bad48f95bcce9",
+                "content_hash_status": "verified"
+              }
+            ],
+            "assumptions": [],
+            "alternatives": [],
+            "falsification_tests": [
+              "Nonzero command exit, a failing/error/skipped JUnit case or changed source bytes contradicts this observation."
+            ],
+            "uncertainty": "low",
+            "severity": "medium",
+            "source_ref": "tests/test_benchmark_mission.py",
+            "domain": "",
+            "confidence": 0.9,
+            "confidence_band": "high",
+            "failures": [
+              {
+                "id": "AEE-OBS-MISSION-001-VERIFIED-UNEXPLAINED",
+                "claim_id": "OBS-MISSION-001",
+                "challenge": "Verified but unexplained",
+                "breakpoint": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+                "severity": "medium",
+                "category": "verified_unexplained",
+                "recovery_hint": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+                "resolved": false,
+                "disposition": null
+              }
+            ],
+            "metadata": {},
+            "dispositions": [],
+            "stage": "checked",
+            "stage_events": [
+              {
+                "kind": "checked",
+                "author": "Codex automated test runner",
+                "date": "2026-10-19T13:07:44.882609+00:00",
+                "basis": "Actual recorded pytest process and JUnit; no human acceptance asserted."
+              }
+            ],
+            "headline": false,
+            "role": null
+          }
+        ],
+        "scores": {
+          "OBS-MISSION-001": {
+            "claim_id": "OBS-MISSION-001",
+            "direct_score": 0.9,
+            "propagated_score": 0.9,
+            "band": "high",
+            "components": {
+              "evidence": 1.0,
+              "independence": 0.5,
+              "falsifiability": 1.0,
+              "boundary": 1.0,
+              "contradiction_penalty": 0
+            },
+            "declared_state": {
+              "status": "partially_supported",
+              "uncertainty": "low",
+              "severity": "medium",
+              "conflicts_with": []
+            },
+            "propagation": {
+              "status": "propagated",
+              "cycle_component": []
+            },
+            "notes": [
+              "Fewer than two independent supporting sources",
+              "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)"
+            ]
+          }
+        },
+        "recoveries": [
+          {
+            "failure_id": "AEE-OBS-MISSION-001-VERIFIED-UNEXPLAINED",
+            "claim_id": "OBS-MISSION-001",
+            "strategy": "define_falsifier",
+            "action": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+            "priority": 3,
+            "verification": "A concrete observation that would refute the claim is documented."
+          }
+        ]
+      }
+    }
+  }
+}

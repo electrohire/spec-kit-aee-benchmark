@@ -1,0 +1,141 @@
+{
+  "protocol": "labelled-factbooks-v2",
+  "synthetic_inputs": true,
+  "cases": [
+    {
+      "id": "case-01",
+      "family": "completion",
+      "claim": "Every recorded required test passed in the finished run.",
+      "facts": {
+        "finished": true,
+        "tests": {
+          "test_one": true,
+          "test_two": true
+        }
+      }
+    },
+    {
+      "id": "case-02",
+      "family": "test_execution",
+      "claim": "test_cache was executed and passed.",
+      "target": "test_cache",
+      "facts": {
+        "tests": {
+          "test_cache": true
+        }
+      }
+    },
+    {
+      "id": "case-03",
+      "family": "citation_integrity",
+      "claim": "evidence/test.json exists in the complete inventory with SHA256 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "target": "evidence/test.json",
+      "claimed_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "facts": {
+        "complete_inventory": true,
+        "references": {
+          "evidence/test.json": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      }
+    },
+    {
+      "id": "case-04",
+      "family": "api_inventory",
+      "claim": "The provided API inventory contains Cache.clear.",
+      "target": "Cache.clear",
+      "facts": {
+        "complete_inventory": true,
+        "symbols": [
+          "Cache.clear"
+        ]
+      }
+    },
+    {
+      "id": "case-05",
+      "family": "completion",
+      "claim": "Every recorded required test passed in the finished run.",
+      "facts": {
+        "finished": true,
+        "tests": {
+          "test_one": true,
+          "test_two": false
+        }
+      }
+    },
+    {
+      "id": "case-06",
+      "family": "test_execution",
+      "claim": "test_cache was executed and passed.",
+      "target": "test_cache",
+      "facts": {
+        "tests": {
+          "test_cache": false
+        }
+      }
+    },
+    {
+      "id": "case-07",
+      "family": "citation_integrity",
+      "claim": "evidence/test.json exists in the complete inventory with SHA256 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "target": "evidence/test.json",
+      "claimed_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "facts": {
+        "complete_inventory": true,
+        "references": {
+          "evidence/test.json": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      }
+    },
+    {
+      "id": "case-08",
+      "family": "api_inventory",
+      "claim": "The provided API inventory contains Cache.clear.",
+      "target": "Cache.clear",
+      "facts": {
+        "complete_inventory": true,
+        "symbols": [
+          "Cache.get"
+        ]
+      }
+    },
+    {
+      "id": "case-09",
+      "family": "completion",
+      "claim": "Every recorded required test passed in the finished run.",
+      "facts": {}
+    },
+    {
+      "id": "case-10",
+      "family": "test_execution",
+      "claim": "test_cache was executed and passed.",
+      "target": "test_cache",
+      "facts": {
+        "tests": {}
+      }
+    },
+    {
+      "id": "case-11",
+      "family": "citation_integrity",
+      "claim": "evidence/test.json exists in the complete inventory with SHA256 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "target": "evidence/test.json",
+      "claimed_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "facts": {
+        "complete_inventory": false,
+        "references": {}
+      }
+    },
+    {
+      "id": "case-12",
+      "family": "api_inventory",
+      "claim": "The provided API inventory contains Cache.clear.",
+      "target": "Cache.clear",
+      "facts": {
+        "complete_inventory": false,
+        "symbols": [
+          "Cache.get"
+        ]
+      }
+    }
+  ],
+  "amendment": "User authorized fixture fixes and fresh rerun after v1 audit. Only ambiguous unknown-control facts changed; old corpus/results remain immutable. Rerun must wait until existing campaign inference is idle."
+}
