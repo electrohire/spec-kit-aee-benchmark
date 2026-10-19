@@ -1,0 +1,682 @@
+{
+  "complete": true,
+  "purpose": "Stopped-study postmortem only; no campaign resume or generation",
+  "started_at": "2026-10-19T11:00:50.770699+00:00",
+  "freeze_sha256": "e2d4e0e644328e03ea99f5f8af24dbe781e7a5d41f709437a065425881036c0b",
+  "source_freeze": "0fb1098106ddc0867778911e76b5df629caae7f9",
+  "frozen_input_count": 348,
+  "controller_sha256": "0559d0ad7def7c1e495dd5c223a031d87c9799538ea92a702139eeac74b56570",
+  "grader_function_ast_hashes": {
+    "tests_for": "b46ddf3e4bb0c69d4b8540b735f576fc57b1c5f03d5934755e8830ff793f4ba3",
+    "ProjectSandbox": "421134a2d289a1c914e3b4679f1afbab3cc70cbbdeaa38f45586e84a89f2584d",
+    "grade": "94431ad8ea6904816c7e2ca0945459a9fd774e76e3933fd12a9169f7da7c29a1"
+  },
+  "streams": [
+    {
+      "path": "cachetools-20261019-spec_kit_aee/evidence/action_errors.jsonl",
+      "verification": {
+        "records": 1,
+        "chained": 1,
+        "legacy_records": 0,
+        "chain_verified": true
+      }
+    },
+    {
+      "path": "cachetools-20261019-spec_kit_aee/evidence/history.jsonl",
+      "verification": {
+        "records": 1,
+        "chained": 1,
+        "legacy_records": 0,
+        "chain_verified": true
+      }
+    },
+    {
+      "path": "cachetools-20261019-spec_kit_aee/evidence/tools.jsonl",
+      "verification": {
+        "records": 20,
+        "chained": 20,
+        "legacy_records": 0,
+        "chain_verified": true
+      }
+    },
+    {
+      "path": "tinydb-20261019-spec_kit/evidence/action_errors.jsonl",
+      "verification": {
+        "records": 1,
+        "chained": 1,
+        "legacy_records": 0,
+        "chain_verified": true
+      }
+    },
+    {
+      "path": "tinydb-20261019-spec_kit/evidence/history.jsonl",
+      "verification": {
+        "records": 9,
+        "chained": 9,
+        "legacy_records": 0,
+        "chain_verified": true
+      }
+    },
+    {
+      "path": "tinydb-20261019-spec_kit/evidence/phase_progress.jsonl",
+      "verification": {
+        "records": 3,
+        "chained": 3,
+        "legacy_records": 0,
+        "chain_verified": true
+      }
+    },
+    {
+      "path": "tinydb-20261019-spec_kit/evidence/tools.jsonl",
+      "verification": {
+        "records": 160,
+        "chained": 160,
+        "legacy_records": 0,
+        "chain_verified": true
+      }
+    }
+  ],
+  "generation_calls": 192,
+  "known_prompt_tokens": 4089695,
+  "known_completion_tokens": 82529,
+  "known_total_tokens": 4172224,
+  "generation_usage_unknown": 0,
+  "native_cached_tokens": 2147082,
+  "cached_usage_unknown_calls": 0,
+  "cache_accounting": "Cached tokens are a subset of prompt tokens, not additional tokens or bills.",
+  "rows": [
+    {
+      "project": "cachetools",
+      "seed": 20261019,
+      "arm": "spec_kit_aee",
+      "stage": 1,
+      "generation_calls": 22,
+      "completion_asserted": null,
+      "grade_status": "exact_retained_snapshot_graded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "recorded_status": "runtime_interrupted",
+      "raw_handoff": false,
+      "recorded_repairs": 0,
+      "status": "runtime_interrupted",
+      "final_snapshot": "cachetools-20261019-spec_kit_aee/stage1-final.tar",
+      "snapshot_sha256": "fe5dcf98dd059916ccadf4cd61dc03d1cf9e08eef1df971a1f6943af5815b108",
+      "phase_workflow_complete": false,
+      "grades": {
+        "public": {
+          "path": "grade-cachetools-20261019-spec_kit_aee-stage1-public.json",
+          "sha256": "14ab21e60fcd8eb19e7a66e7007f6a37c22faf2349f2e2092bf476810ef26ce6",
+          "passed": false,
+          "test_count": 1,
+          "exit_code": 2
+        },
+        "hidden": {
+          "path": "grade-cachetools-20261019-spec_kit_aee-stage1-hidden.json",
+          "sha256": "de8bb225767809d3c07a7ae548bf7f749102500d997f841293e638bae422aadd",
+          "passed": false,
+          "test_count": 1,
+          "exit_code": 2
+        }
+      },
+      "checkpoint_code_tests_passed": false
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261019,
+      "arm": "spec_kit_aee",
+      "stage": 2,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "recorded_status": "not_attempted_dependent",
+      "raw_handoff": false,
+      "recorded_repairs": 0,
+      "status": "not_attempted_dependent",
+      "reason": "Prior stage intervention"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261019,
+      "arm": "spec_kit_aee",
+      "stage": 3,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "recorded_status": "not_attempted_dependent",
+      "raw_handoff": true,
+      "recorded_repairs": 0,
+      "status": "not_attempted_dependent",
+      "reason": "Prior stage intervention"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261019,
+      "arm": "spec_kit",
+      "stage": 1,
+      "generation_calls": 114,
+      "completion_asserted": null,
+      "grade_status": "exact_retained_snapshot_graded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "recorded_status": null,
+      "raw_handoff": false,
+      "recorded_repairs": 0,
+      "status": "recorded_checkpoint",
+      "final_snapshot": "tinydb-20261019-spec_kit/stage1-final.tar",
+      "snapshot_sha256": "686cc09fd9d1496b01ec371f5b07b203e7c23a6736d7804b7dceb3b8934245e9",
+      "phase_workflow_complete": true,
+      "grades": {
+        "public": {
+          "path": "grade-tinydb-20261019-spec_kit-stage1-public.json",
+          "sha256": "6b62c6af75a55b7797640d8f4b6b0aaeeaa3b3974aba6fb60f5c35e484a69e9e",
+          "passed": true,
+          "test_count": 225,
+          "exit_code": 0
+        },
+        "hidden": {
+          "path": "grade-tinydb-20261019-spec_kit-stage1-hidden.json",
+          "sha256": "1a22c28ed41aff18e65d906a7fbdacf11708384fe0fce92b9f6512f3b452563a",
+          "passed": false,
+          "test_count": 228,
+          "exit_code": 1
+        }
+      },
+      "checkpoint_code_tests_passed": false
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261019,
+      "arm": "spec_kit",
+      "stage": 2,
+      "generation_calls": 56,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "recorded_status": null,
+      "raw_handoff": false,
+      "recorded_repairs": 0,
+      "status": "infrastructure_interrupted_partial",
+      "reason": "No final submitted snapshot retained"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261019,
+      "arm": "spec_kit",
+      "stage": 3,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261019,
+      "arm": "spec_kit",
+      "stage": 1,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261019,
+      "arm": "spec_kit",
+      "stage": 2,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261019,
+      "arm": "spec_kit",
+      "stage": 3,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261018,
+      "arm": "spec_kit_aee",
+      "stage": 1,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261018,
+      "arm": "spec_kit_aee",
+      "stage": 2,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261018,
+      "arm": "spec_kit_aee",
+      "stage": 3,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261018,
+      "arm": "baseline",
+      "stage": 1,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261018,
+      "arm": "baseline",
+      "stage": 2,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261018,
+      "arm": "baseline",
+      "stage": 3,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261018,
+      "arm": "spec_kit_aee",
+      "stage": 1,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261018,
+      "arm": "spec_kit_aee",
+      "stage": 2,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261018,
+      "arm": "spec_kit_aee",
+      "stage": 3,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261018,
+      "arm": "baseline",
+      "stage": 1,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261018,
+      "arm": "baseline",
+      "stage": 2,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261018,
+      "arm": "baseline",
+      "stage": 3,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261019,
+      "arm": "baseline",
+      "stage": 1,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261019,
+      "arm": "baseline",
+      "stage": 2,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261019,
+      "arm": "baseline",
+      "stage": 3,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261018,
+      "arm": "spec_kit",
+      "stage": 1,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261018,
+      "arm": "spec_kit",
+      "stage": 2,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261018,
+      "arm": "spec_kit",
+      "stage": 3,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261018,
+      "arm": "spec_kit",
+      "stage": 1,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261018,
+      "arm": "spec_kit",
+      "stage": 2,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261018,
+      "arm": "spec_kit",
+      "stage": 3,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261019,
+      "arm": "spec_kit_aee",
+      "stage": 1,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261019,
+      "arm": "spec_kit_aee",
+      "stage": 2,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261019,
+      "arm": "spec_kit_aee",
+      "stage": 3,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261019,
+      "arm": "baseline",
+      "stage": 1,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261019,
+      "arm": "baseline",
+      "stage": 2,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261019,
+      "arm": "baseline",
+      "stage": 3,
+      "generation_calls": 0,
+      "completion_asserted": null,
+      "grade_status": "ungraded",
+      "accepted_project_delivery": "not_observed",
+      "assessments": 0,
+      "status": "not_attempted_infrastructure_halt",
+      "reason": "Campaign stopped before this scheduled checkpoint"
+    }
+  ],
+  "grades": [
+    {
+      "project": "cachetools",
+      "seed": 20261019,
+      "arm": "spec_kit_aee",
+      "stage": 1,
+      "mode": "public",
+      "path": "grade-cachetools-20261019-spec_kit_aee-stage1-public.json",
+      "sha256": "14ab21e60fcd8eb19e7a66e7007f6a37c22faf2349f2e2092bf476810ef26ce6",
+      "passed": false,
+      "test_count": 1,
+      "exit_code": 2
+    },
+    {
+      "project": "cachetools",
+      "seed": 20261019,
+      "arm": "spec_kit_aee",
+      "stage": 1,
+      "mode": "hidden",
+      "path": "grade-cachetools-20261019-spec_kit_aee-stage1-hidden.json",
+      "sha256": "de8bb225767809d3c07a7ae548bf7f749102500d997f841293e638bae422aadd",
+      "passed": false,
+      "test_count": 1,
+      "exit_code": 2
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261019,
+      "arm": "spec_kit",
+      "stage": 1,
+      "mode": "public",
+      "path": "grade-tinydb-20261019-spec_kit-stage1-public.json",
+      "sha256": "6b62c6af75a55b7797640d8f4b6b0aaeeaa3b3974aba6fb60f5c35e484a69e9e",
+      "passed": true,
+      "test_count": 225,
+      "exit_code": 0
+    },
+    {
+      "project": "tinydb",
+      "seed": 20261019,
+      "arm": "spec_kit",
+      "stage": 1,
+      "mode": "hidden",
+      "path": "grade-tinydb-20261019-spec_kit-stage1-hidden.json",
+      "sha256": "1a22c28ed41aff18e65d906a7fbdacf11708384fe0fce92b9f6512f3b452563a",
+      "passed": false,
+      "test_count": 228,
+      "exit_code": 1
+    }
+  ],
+  "stopped_artifacts_unchanged": true,
+  "statuses": {
+    "runtime_interrupted": 1,
+    "not_attempted_dependent": 2,
+    "recorded_checkpoint": 1,
+    "infrastructure_interrupted_partial": 1,
+    "not_attempted_infrastructure_halt": 31
+  },
+  "declaration_denominators": {
+    "positive": 0,
+    "negative": 0,
+    "unknown_graded": 2,
+    "ungraded": 34
+  },
+  "false_completion_rate": null,
+  "detector_precision": null,
+  "detector_recall": null,
+  "comparison": "No matched arm pairs; infrastructure-censored campaign, not a valid completed-workflow study.",
+  "scored_actual_AEE_assessments": 0,
+  "local_API_spend": 0,
+  "cost_boundary": "Excludes hardware, energy and labor; historical setup/failed cohorts remain separate in cost audit03; not final all-history economics.",
+  "ended_at": "2026-10-19T11:01:04.529753+00:00"
+}

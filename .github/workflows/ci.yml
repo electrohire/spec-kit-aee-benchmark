@@ -16,6 +16,7 @@ jobs:
       - run: uv run aee-bench freeze /tmp/ci-freeze.json
       - run: uv run aee-bench dry-run /tmp/ci-freeze.json > /tmp/schedule.json
       - run: uv run python scripts/check_evidence.py
+      - run: uv run python scripts/audit_stopped_postmortem.py
       # Recorded pins must match the vendored extension bytes (FR-7.2).
       - run: uv run python scripts/check_pins.py
       - run: uv run python scripts/readme_results.py --check

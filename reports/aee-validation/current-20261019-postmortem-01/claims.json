@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "claims": [
+    {
+      "id": "OBS-POSTMORTEM-001",
+      "text": "The captured postmortem-integrity test invocation reported 10 passing cases.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "stage": "checked",
+      "boundary": [
+        "Only this recorded local test invocation and unchanged declared code/report fixture bytes. Independent snapshot grades are reported separately. No campaign recovery, causal efficacy, detector performance or human acceptance is established."
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "source_ref": "tests/test_stopped_postmortem.py",
+      "uncertainty": "low",
+      "falsification_tests": [
+        "Nonzero command exit, a failing/error/skipped JUnit case or changed source bytes contradicts this observation."
+      ],
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated test runner",
+          "date": "2026-10-19T11:13:57.639920+00:00",
+          "basis": "Actual recorded pytest process and JUnit; no human acceptance asserted."
+        }
+      ],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261019-postmortem-01/tests/execution.log",
+          "content_hash": "fd72a0d400ebed462ff7fbaa8831563b93e3b06c25673c03e07dabb3b403e3be",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "source_id": "recorded-infrastructure-tests",
+          "observed_at": "2026-10-19T11:13:57.639920+00:00",
+          "description": "Actual process log; JUnit and command/source hashes retained alongside it."
+        }
+      ]
+    }
+  ]
+}

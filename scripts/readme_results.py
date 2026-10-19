@@ -8,6 +8,33 @@ START = "<!-- historical-results:start -->"
 END = "<!-- historical-results:end -->"
 CURRENT_START="<!-- current-results:start -->"
 CURRENT_END="<!-- current-results:end -->"
+STOPPED_START="<!-- stopped-study02:start -->"
+STOPPED_END="<!-- stopped-study02:end -->"
+
+
+def stopped_table(report):
+    bins=report['declaration_denominators']
+    return ("\n\n### Study02 stopped: audited partial observations\n\n"
+        "The complete scheduled inventory is retained: **12 trajectories / 36 dependent checkpoints**, "
+        f"with {report['attempted_checkpoints']} attempted and {report['unattempted_checkpoints']} unattempted. "
+        "Two final snapshots were independently graded; one has a complete test inventory.\n\n"
+        "| Retained stage1 snapshot | Public/upstream grade | Hidden grade |\n"
+        "|---|---|---|\n"
+        "| Cachetools + Spec Kit + AEE | Collection error; inventory incomplete | Collection error; inventory incomplete |\n"
+        "| TinyDB + Spec Kit | 225 passed | 227 passed, 1 retained-cache requirement failed |\n\n"
+        f"**Completion proxy:** positive {bins['positive']}, negative {bins['negative']}, "
+        f"unknown with complete inventory {bins['unknown_graded']}, ungraded {bins['ungraded']}. "
+        "False-completion rate is undefined: no eligible positive declaration exists. "
+        f"Actual scored AEE assessments: **{report['scored_actual_AEE_assessments']}**. "
+        "A failing test is not an independently adjudicated hallucination; detector precision/recall remain unmeasured.\n\n"
+        f"The stopped run retained {report['generation_calls']} generation calls / "
+        f"{report['known_total_tokens']:,} known native tokens, with zero stored generation-usage unknowns. "
+        "Setup and earlier failed cohorts have additional costs and unknown usage. "
+        "API spend $0 excludes hardware, energy and labor. No accepted final delivery or matched arm comparison "
+        "was established before the infrastructure halt; no efficacy or savings conclusion follows.\n\n"
+        "[Full stopped-study findings, 36 rows, bound snapshots/grades and bounded cost inventory]"
+        "(reports/local/current-study-02-stopped-postmortem/README.md). "
+        "The campaign remains stopped; historical server/storage cause is unresolved.\n\n")
 
 
 def current_table(report,audit=None):
@@ -72,6 +99,11 @@ def main():
     audit=ROOT/"reports/local/current-study-01/post-run-audit.json"
     current=current_table(json.loads(report.read_text()),json.loads(audit.read_text()) if audit.exists() else None) if report.exists() else "\n\nFresh current-version comparative evidence is pending successful workflow calibration and the complete scored study. Focused machine validation is recorded separately; it is not an efficacy result.\n\n"
     updated=before+CURRENT_START+current+CURRENT_END+after
+    stopped=ROOT/'reports/local/current-study-02-stopped-postmortem/summary.json'
+    if stopped.exists():
+        before,rest=updated.split(STOPPED_START)
+        _,after=rest.split(STOPPED_END)
+        updated=before+STOPPED_START+stopped_table(json.loads(stopped.read_bytes()))+STOPPED_END+after
     if args.check:
         if updated != text:
             raise SystemExit("README results differ from measured artifacts")

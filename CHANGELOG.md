@@ -2,6 +2,12 @@
 
 ## Unreleased — authorized corrected study02, 2026-10-18
 
+- Export all12 stopped-study trajectories/36 checkpoints and independently grade
+  the two retained final snapshots. Preserve incomplete collections as ungraded;
+  report TinyDB's public225 pass/hidden227pass1fail and zero scored AEE exposure.
+  Bind source/grades/graders, retain original-export correction, and generate the
+  prominent README from audited artifacts. No inference, restart or efficacy claim.
+
 - Halt immediately on infrastructure/transport errors, retain bounded failed
   request/response diagnostics, and preserve the original intervention across
   alert-write failure. Keep missing usage unknown.501 offline tests pass; retain
