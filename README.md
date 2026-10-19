@@ -11,6 +11,8 @@ This repository compares a generic agent, Spec Kit and Spec Kit+AEE on establish
 
 [Harness I/O diagram and results guide](docs/benchmark-harness.md) · [Release gate diagram and policy](docs/benchmark-release-gates.md) · [Long-horizon design](docs/long-horizon-economics-plan.md) · [Resume](START_HERE.md)
 
+[Optimizer extension evaluation plan](docs/optimizer-extension-evaluation-plan.md): test individual benefits, confirm finalists on held-out work, then decide whether to reuse extensions or compose a bundle. This is deferred work, not a change to the active benchmarks or evidence of savings.
+
 The active matched run stays frozen while documentation and release infrastructure are changed in a separate checkout. Retired custom task suites, synthetic factbooks and failed runs remain historical evidence; they are not rerun as active release benchmarks. Only thin adapter-integrity checks remain maintained by this repository. Tokens include all setup/failed/scored calls; API 0 excludes hardware, energy and labor. Detector labels, coding grades and AEE gate eligibility stay separate.
 
 ```mermaid
