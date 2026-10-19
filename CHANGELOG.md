@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased — prospective matched treatments and horizon accounting
+
+- Register a separate baseline/Spec Kit/Spec Kit+AEE source-grounding comparison
+  using unchanged HaluEval/RAGTruth cases and author labels. Real Spec Kit
+  helpers, generated draft policies, AEE/Evaluator feedback and anchored local
+  ledgers are checked alongside physical call, source and token receipts.
+  No matched model results or treatment benefit are asserted yet.
+- Add conservative observed token break-even accounting and a prospective
+  FeatureBench Fast v1.1/SWE-EVO adoption plan. Synthetic accounting tests are
+  distinct from empirical savings; incomplete usage, poorer retained quality or
+  missing adjudication cannot establish payback. Products remain parked.
+
 ## Results — separate external hallucination detection, 2026-10-19
 
 - Complete240native calls and independent source-label/receipt/hash grading:
