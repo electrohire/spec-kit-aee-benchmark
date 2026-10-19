@@ -1,16 +1,28 @@
-# Matched source-grounding treatments, prospective v1
+# Matched source-grounding treatments, prospective v2
 
 This new experiment compares baseline, Spec Kit, and Spec Kit plus AEE on the
 same fixed HaluEval/RAGTruth cases as external-01. It is a **workflow adaptation
 to response classification**, not the original coding workflow, an official
 dataset leaderboard submission, or an efficacy result already obtained.
 
-The machine-readable preregistration is [matched-v1.json](matched-v1.json).
+The machine-readable preregistration is [matched-v2.json](matched-v2.json).
 Upstream sources, author labels and public selection remain unchanged. Original
 model-only predictions and earlier synthetic diagnostics remain immutable. Prior
 case exposure and development on public data are disclosed; this is not a fresh
 unseen-test replication. Never select a treatment or alter prompts from partial
 matched outputs.
+
+Attempt01 under [v1](matched-v1.json) stopped at its first response-length failure:
+the model generated extended reasoning in a rationale string without completing
+the native JSON object. The output cap remains1,024tokens. V2 enforces native
+string bounds uniformly for every arm: document3,000characters, rationale320,
+each quote120 and each uncertainty80. Both decision calls repeat the concise
+contract. No truncation is accepted or repaired into a verdict. Inputs, labels,
+semantics, sampling, seed, caps and independent grading remain unchanged.
+Earlier partial outputs were observed for diagnosis; the delivery amendment is
+prospective and is not an untouched-test replication. Preserve the stopped costs.
+Two separately retained synthetic native checks precede the new study; they
+verify bounded delivery, not correct labels, and add two setup calls to the ledger.
 
 ## Treatment execution
 

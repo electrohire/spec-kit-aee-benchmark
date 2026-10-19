@@ -1,0 +1,61 @@
+{
+  "version": "matched-source-grounding-v2",
+  "arms": [
+    "baseline",
+    "spec_kit",
+    "spec_kit_aee"
+  ],
+  "datasets": [
+    "halueval_qa",
+    "ragtruth_test"
+  ],
+  "cases": 240,
+  "judgments": 720,
+  "seed": 20261019,
+  "context": 32768,
+  "case_calls": 2,
+  "case_output": 1024,
+  "policy_calls": 4,
+  "baseline_policy_calls": 1,
+  "policy_output": 1536,
+  "timeout": 600,
+  "setup_calls": 48,
+  "expected_setup_calls": 39,
+  "expected_total_calls": 1479,
+  "scored_calls": 1440,
+  "maximum_calls": 1488,
+  "reserved_tokens": 48758784,
+  "model": "qwen3.8-27b",
+  "engine": "1.5.3",
+  "specify": "1.2.1",
+  "extension": "1.5.2",
+  "evaluator": "1.1.2",
+  "thinking": false,
+  "paid_inference": false,
+  "gold_visible_to_solver": false,
+  "retries": 0,
+  "primary_metric": "Final proposed verdict accuracy, with abstention incorrect in full denominator, separate per dataset/arm.",
+  "secondary_metrics": [
+    "precision",
+    "recall_all_positives",
+    "false_acceptance",
+    "false_alarm",
+    "abstention",
+    "paired_cluster_bootstrap_accuracy_difference",
+    "actual_AEE_outcomes",
+    "gate_eligible_coverage",
+    "all_setup_failed_scored_native_tokens_and_unknowns"
+  ],
+  "workflow_adaptation": "Spec Kit arms run four real project-policy stages once per dataset/arm; ordinary baseline writes one generic policy brief within the same four-call maximum setup allowance. Every arm uses fixed two-call draft/review implementation per case. Spec Kit arms use shipped commands/templates and execute Python scaffolding/prerequisite helpers; AEE arm invokes released extension/engine and single-result Evaluator composition during policy and case review. Actual setup overhead remains measured, not padded away. No claim of unmodified coding workflow per response.",
+  "guard": "Protocol/infrastructure/identity/source/cap faults halt immediately. Wrong factual classifications and valid AEE iterate/gather_evidence outcomes are retained measured outcomes, never relabelled or retried.",
+  "prior_exposure": "Same public240case selection already has a published model-only one-call result. New equal-budget controls are rerun prospectively; policy generators cannot see cases, gold, previous predictions, metrics or sibling policies. This is not untouched-test discovery or independent replication.",
+  "acceptance": "All policy documents and model judgments remain drafts; no human acceptance, protected authority or promotion is synthesized. Nonpassing AEE outcomes remain nonpassing. Gate-eligible view abstains unless AEE outcome is pass/warn; raw proposed verdict accuracy remains separately reported.",
+  "selection": "Unchanged committed selection-v1.json and original upstream author labels. No selection/prompt/threshold tuning from partial matched outputs.",
+  "schema_bounds": {
+    "document_characters": 3000,
+    "rationale_characters": 320,
+    "source_quote_characters": 120,
+    "uncertainty_characters": 80
+  },
+  "prospective_amendment": "After stopped matched01 hit1024outputtokens in an unbounded rationale, enforce finite native JSON string lengths and repeat concise review instructions uniformly for ALLarms/phases. Original labels/cases/seed/model/sampling/call counts/token/context/output/time caps and grading unchanged. No truncated output is accepted or rewritten. Policy document<=3000characters; rationale<=320; eachquote<=120; eachuncertainty<=80. Authorizations permit a fresh separate attempt, not stopped01resumption. Earlier partial labels/outputs were seen for diagnosis, not used to tune semantic decisions."
+}

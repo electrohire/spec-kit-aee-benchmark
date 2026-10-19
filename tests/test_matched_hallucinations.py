@@ -206,3 +206,61 @@ def test_all_three_workflows_join_real_helpers_aee_feedback_and_accounting(tmp_p
     assert result['accounting']['setup/spec_kit']['calls'] == result['accounting']['setup/spec_kit_aee']['calls'] == 4
     assert all(result['accounting']['scored/' + arm]['calls'] == 2 for arm in m.ARMS)
     assert all(row['human_acceptance'] == 'unrecorded' for row in rows)
+
+
+@pytest.mark.parametrize('field,limit', [('rationale', 320), ('source_quotes', 120), ('uncertainties', 80)])
+def test_native_decision_schema_refuses_unbounded_review_strings(field, limit):
+    import jsonschema
+    value = dict(verdict='abstain', rationale='Unknown.', source_quotes=[], uncertainties=[])
+    value[field] = 'x' * (limit + 1) if field == 'rationale' else ['x' * (limit + 1)]
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(value, m.DECISION_SCHEMA)
+
+
+def test_native_policy_schema_refuses_unbounded_document():
+    import jsonschema
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate({'document': 'x' * 3001}, m.DOC_SCHEMA)
+
+
+def test_v2_only_adds_bounds_and_prospective_explanation_without_budget_or_gold_changes():
+    old = m.load(m.REGISTRATIONS['matched-source-grounding-v1'])
+    new = m.load(m.REGISTRATIONS['matched-source-grounding-v2'])
+    changed = {key for key in set(old) | set(new) if old.get(key) != new.get(key)}
+    assert changed == {'version', 'schema_bounds', 'prospective_amendment'}
+
+
+@pytest.mark.parametrize('fail', [False, True])
+def test_native_probe_is_two_separate_setup_calls_and_first_fault_stops(tmp_path, monkeypatch, fail):
+    import probe_matched_output_bounds as probe
+    calls = []
+    class Fake(FixtureProvider):
+        def __init__(self, out, plan):
+            super().__init__(out)
+            self.plan = plan
+        def call(self, *args):
+            calls.append(args)
+            if fail:
+                raise RuntimeError('synthetic native failure')
+            return super().call(*args)
+    def prepare(out, original):
+        out.mkdir()
+        return m.load(m.REGISTRATION)
+    monkeypatch.setattr(m, 'prepare', prepare)
+    monkeypatch.setattr(m, 'Provider', Fake)
+    monkeypatch.setattr(m, 'source_hashes', lambda: {})
+    monkeypatch.setattr(m.current, 'configure_worker_binding', lambda path: None)
+    monkeypatch.setattr(m.current, 'http', lambda *args, **kwargs: [])
+    monkeypatch.setattr(m.subprocess, 'check_output', lambda argv, **kwargs: b'' if 'status' in argv else b'fixture-head')
+    binding = tmp_path / 'binding.json'
+    binding.write_text('{}')
+    out = tmp_path / 'probe'
+    if fail:
+        with pytest.raises(RuntimeError, match='synthetic native failure'):
+            probe.probe(out, tmp_path / 'original', binding)
+        assert len(calls) == 1 and not (out / 'probe-result.json').exists()
+    else:
+        result = probe.probe(out, tmp_path / 'original', binding)
+        assert len(calls) == result['physical_calls'] == 2
+        assert result['known_native_tokens'] == 60
+        assert all(args[-1]['cohort'] == 'setup' for args in calls)

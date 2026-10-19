@@ -23,18 +23,19 @@ from benchmark_runner.project_assessment import assess_project
 from benchmark_runner.store import Store, canonical, redact, utc, write_json
 
 ROOT = Path(__file__).resolve().parents[1]
-REGISTRATION = ROOT / 'benchmarks/hallucinations/matched-v1.json'
+REGISTRATION = ROOT / 'benchmarks/hallucinations/matched-v2.json'
+REGISTRATIONS = {f'matched-source-grounding-v{i}': ROOT / f'benchmarks/hallucinations/matched-v{i}.json' for i in (1, 2)}
 ARMS = ('baseline', 'spec_kit', 'spec_kit_aee')
 PHASES = ('constitution', 'specify', 'plan', 'tasks')
 FILES = {'constitution': '.specify/memory/constitution.md',
          'specify': 'specs/001-grounding/spec.md', 'plan': 'specs/001-grounding/plan.md',
          'tasks': 'specs/001-grounding/tasks.md'}
-DOC_SCHEMA = dict(type='object', properties=dict(document=dict(type='string')),
+DOC_SCHEMA = dict(type='object', properties=dict(document=dict(type='string', minLength=1, maxLength=3000)),
                   required=['document'], additionalProperties=False)
 DECISION_SCHEMA = dict(type='object', properties=dict(
     verdict=dict(type='string', enum=list(external.LABELS)),
-    rationale=dict(type='string'), source_quotes=dict(type='array', items=dict(type='string'), maxItems=2),
-    uncertainties=dict(type='array', items=dict(type='string'), maxItems=3)),
+    rationale=dict(type='string', maxLength=320), source_quotes=dict(type='array', items=dict(type='string', minLength=1, maxLength=120), maxItems=2),
+    uncertainties=dict(type='array', items=dict(type='string', minLength=1, maxLength=80), maxItems=3)),
     required=['verdict', 'rationale', 'source_quotes', 'uncertainties'], additionalProperties=False)
 TASK = ('Develop a bounded source-grounded response classifier. Labels: hallucinated when a candidate '
         'contradicts or makes unsupported factual assertions relative to its supplied source; grounded '
@@ -100,7 +101,8 @@ def verify(out):
     if any(sha((out / name).read_bytes()) != expected for name, expected in hashes.items()):
         raise ValueError('matched frozen input changed')
     plan, cases = load(out / 'plan.json'), load(out / 'cases.json')
-    if plan != load(REGISTRATION) or len(cases) != 240:
+    registration = REGISTRATIONS.get(plan.get('version'))
+    if registration is None or plan != load(registration) or len(cases) != 240:
         raise ValueError('matched registration mismatch')
     selected = [{**{k: row[k] for k in ('dataset', 'id', 'cluster', 'gold', 'task')},
         'payload_sha256': sha(json.dumps(row['payload'], ensure_ascii=False, sort_keys=True).encode())} for row in cases]
@@ -210,8 +212,10 @@ class Provider:
             record.update(response=response, usage=response.get('usage'),
                 unknown_reason=None if response.get('usage') else 'native_usage_missing')
             choice = response['choices'][0]
-            if response.get('model') != current.MODEL or choice['finish_reason'] != 'stop':
-                raise RuntimeError('model identity or native response limit failure')
+            if response.get('model') != current.MODEL:
+                raise RuntimeError('model identity mismatch')
+            if choice['finish_reason'] != 'stop':
+                raise RuntimeError('native completion did not finish: ' + repr(choice['finish_reason']))
             value = json.loads(choice['message']['content'])
             import jsonschema
             jsonschema.validate(value, schema)
@@ -236,7 +240,7 @@ def build_policy(provider, folder, arm, dataset):
         # Upstream command prose is used through this declared host adapter:
         # the helpers already performed scaffolding; output is persisted literally.
         user = dict(task=TASK, phase=phase, deliverable=instruction, prior_documents=documents,
-            adapter='Helpers/files are managed by the host. Return JSON document only, <=300words. No human review, external tools or benchmark cases are available. All artifacts are drafts.')
+            adapter='Helpers/files are managed by the host. Return JSON document only, <=300words and <=3000characters. No human review, external tools or benchmark cases are available. All artifacts are drafts.')
         if skill:
             user['speckit_command'] = skill.replace('$ARGUMENTS', instruction + '\n' + TASK)
             template_name = {'constitution': 'constitution-template.md', 'specify': 'spec-template.md',
@@ -274,7 +278,7 @@ def judge(provider, project, arm, dataset, case, policy, cohort, opaque_index):
     project.mkdir(parents=True, exist_ok=False)
     payload = case['payload']  # Explicit projection: NO IDs, gold or annotations.
     common = dict(task=TASK, policy=policy, input=payload,
-        response_contract='Return verdict, brief rationale (<=80words), at most2exact source quotes and up to3uncertainties. No claims of independent verification or human acceptance.')
+        response_contract='Return verdict, concise rationale (<=320characters), at most2exact source quotes (<=120characters each) and up to3uncertainties (<=80characters each). No extended scratchwork or claims of independent verification or human acceptance.')
     if arm != 'baseline':
         common['implementation_command'] = (ROOT / 'prompts/skills/speckit-implement.md').read_text(encoding='utf-8').replace('$ARGUMENTS', TASK)
         common['adapter'] = 'Implement the generated checklist by classifying this supplied response; no shell/code tool execution is required. The host captures output and performs external hidden-label grading later.'
@@ -283,7 +287,7 @@ def judge(provider, project, arm, dataset, case, policy, cohort, opaque_index):
     quoted = dict(exact_source_quotes=sum(bool(quote.strip()) and quote in str(payload.get('source')) for quote in first['source_quotes']),
                   quote_count=len(first['source_quotes']), limitation='Literal quote membership is not semantic entailment.')
     review = dict(task=TASK, policy=policy, input=payload, draft=first,
-        literal_quote_check=quoted, instruction='Independently review your draft for source contradictions, unsupported detail and uncertainty. Return final proposed verdict with the same JSON fields. One review only; no hidden labels or retries.')
+        literal_quote_check=quoted, instruction='Independently review your draft for source contradictions, unsupported detail and uncertainty. Return final proposed verdict with the same bounded JSON fields: rationale<=320characters, up to2source quotes<=120characters each, up to3uncertainties<=80characters each. No extended scratchwork. One review only; no hidden labels or retries.')
     before = None
     if arm == 'spec_kit_aee':
         before = assessment(project, 'implement', 'Draft proposed judgment: ' + json.dumps(first, ensure_ascii=False), payload)
@@ -310,6 +314,8 @@ def judge(provider, project, arm, dataset, case, policy, cohort, opaque_index):
 
 def run(out, binding):
     plan, cases = verify(out)
+    if plan['version'] != 'matched-source-grounding-v2':
+        raise RuntimeError('current runner cannot generate a historical protocol; use its frozen source archive')
     if subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT).strip():
         raise RuntimeError('committed clean matched source required')
     current.configure_worker_binding(binding)

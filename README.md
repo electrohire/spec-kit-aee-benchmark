@@ -1,5 +1,14 @@
 # Spec Kit + AEE benchmark
 
+**Matched detector attempt01 stopped at its first output-limit failure:**72/720
+final judgments graded;1 attempted/ungraded;647 unattempted. All185calls and
+712,919known native tokens are retained, with0usage unknowns. The model identity
+was correct; an unbounded rationale exhausted the1,024-token response cap.
+[Stopped report and complete scheduled inventory](reports/hallucinations/matched-01-stopped-20261019/README.md).
+Prospective v2 bounds native JSON strings equally across all arms while preserving
+token caps, tasks, labels and graders. A fresh attempt is pending validation;
+no completed matched efficacy or economic benefit is asserted.
+
 **Separate external hallucination results completed:** HaluEval100/120 correct
 (83.3%;17missed hallucinations,3false alarms); RAGTruth97/120 correct
 (80.8%;11missed hallucinations,12false alarms). All240responses were independently
@@ -14,7 +23,7 @@ arguments to `test`, which exited2. No retry or next trajectory ran. The coding
 comparison remains incomplete; the separate detection results do not repair or
 complete that comparison.
 
-**Study04 is stopped by user direction; no benchmark inference is active.** The Cachetools loop exposed failed tool calls being treated as successful actions until the repeat limit, followed by continuation to another trajectory. The prospective runner now halts on the first protocol/tool/verification failure. [Diagnosis, retained costs and fail-fast amendment](reports/investigation/fail-fast-cachetools-20261019/README.md). Main benchmark results remain incomplete.
+**Historical study04 is stopped by user direction.** The Cachetools loop exposed failed tool calls being treated as successful actions until the repeat limit, followed by continuation to another trajectory. The prospective runner now halts on the first protocol/tool/verification failure. [Diagnosis, retained costs and fail-fast amendment](reports/investigation/fail-fast-cachetools-20261019/README.md). Main benchmark results remain incomplete.
 
 **Pipeline12 stopped before scoring:** image/grader controls passed, then a direct-client connection timed out during context validation. A persistent-client mitigation and fresh zero-generation context checks pass; no shared service/model changed. [Evidence, transport scope and retained setup accounting](reports/investigation/fail-fast-cachetools-20261019/context-connection-followup.md).
 

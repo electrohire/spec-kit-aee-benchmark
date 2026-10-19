@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased — bounded native matched output v2
+
+- Retain attempt01's first length stop:72graded/1attempted-ungraded/647unattempted
+  rows,185calls/712,919native tokens/0usage unknowns and54actual AEE assessments.
+  Model identity was correct; extended rationale exhausted the1,024-token cap.
+- Four negative schema cases exposed unbounded strings. Bound policy/rationale/
+  quote/uncertainty fields in native JSON for every arm and repeat concise review
+  instructions. Preserve output/context/call budgets, model, labels and graders;
+  a fresh registered v2 attempt requires actual native checks and exact-green CI.
+- Correct token accounting so two arms delivering no verified requirements cannot
+  establish payback. Preserve the isolated red counterexample and13candidate
+  checks; no empirical savings or treatment efficacy is asserted.
+
 ## Unreleased — prospective matched treatments and horizon accounting
 
 - Register a separate baseline/Spec Kit/Spec Kit+AEE source-grounding comparison
