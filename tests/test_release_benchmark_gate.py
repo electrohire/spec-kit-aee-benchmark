@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from benchmark_runner.release_gate import compare
+from benchmark_runner.release_gate import compare, canonical_sha
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
 import verify_release_benchmarks as verifier
 ROOT=Path(__file__).resolve().parents[1]
@@ -105,7 +105,7 @@ def test_protected_index_exact_build_and_hashes_are_recomputed(fault):
     a,b,p=fixtures();revision='e'*40
     baseline_ref=dict(path='reports/releases/test/baseline.json',sha256=hashlib.sha256(json.dumps(a).encode()).hexdigest())
     candidate_ref=dict(path='reports/releases/test/candidate.json',sha256=hashlib.sha256(json.dumps(b).encode()).hexdigest())
-    entry=dict(repository=b['component']['repository'],commit=b['component']['commit'],artifact_sha256=b['component']['artifact_sha256'],baseline_id='accepted-01',evidence=candidate_ref)
+    entry=dict(repository=b['component']['repository'],commit=b['component']['commit'],artifact_sha256=b['component']['artifact_sha256'],baseline_id='accepted-01',evidence=candidate_ref,policy_sha256=canonical_sha(p))
     accepted=dict(id='accepted-01',repository=a['component']['repository'],evidence=baseline_ref)
     if fault=='wrong_build':b['component']['artifact_sha256']='f'*64
     if fault=='bad_hash':candidate_ref['sha256']='f'*64

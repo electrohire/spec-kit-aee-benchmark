@@ -14,7 +14,7 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from benchmark_runner.release_gate import compare
+from benchmark_runner.release_gate import compare, canonical_sha
 
 REPO = 'electrohire/spec-kit-aee-benchmark'
 
@@ -69,7 +69,10 @@ def resolve(repository, commit, artifact_sha256, get=fetch):
         raise ValueError('benchmark used another product commit/build artifact')
     if baseline['component'] == candidate['component']:
         raise ValueError('candidate cannot approve itself as baseline')
-    decision = compare(baseline, candidate, read('benchmarks/releases/policy-v1.json'))
+    policy=read('benchmarks/releases/policy-v1.json')
+    if entry['policy_sha256']!=canonical_sha(policy):
+        raise ValueError('approval policy changed; no retroactive margin substitution')
+    decision = compare(baseline, candidate, policy)
     if not decision['release_allowed']:
         raise ValueError('release comparison blocked: ' + decision['status'])
     return dict(benchmark_revision=revision, repository=repository, commit=commit, artifact_sha256=artifact_sha256, decision=decision)

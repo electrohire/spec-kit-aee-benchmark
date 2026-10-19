@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
-from benchmark_runner.release_gate import compare, validate
+from benchmark_runner.release_gate import compare, validate, canonical_sha
 
 
 def check(root):
@@ -33,6 +33,7 @@ def check(root):
         approved.add(key);candidate=evidence(entry['evidence']);baseline=baselines[entry['baseline_id']]
         if candidate['component']!=dict(repository=key[0],commit=key[1],artifact_sha256=key[2]) or candidate['component']==baseline['component']:
             raise ValueError('wrong/self-baseline artifact approval')
+        if entry['policy_sha256']!=canonical_sha(policy):raise ValueError('approval policy changed')
         if not compare(baseline,candidate,policy)['release_allowed']:
             raise ValueError('committed approval does not pass registered comparison')
     return dict(accepted_baselines=len(baselines),approved_builds=len(approved),boundary='Empty indices block all releases; this is offline integrity, not executed empirical evidence.')
