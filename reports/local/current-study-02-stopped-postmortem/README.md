@@ -35,6 +35,8 @@ the original pinned upstream revisions, network-disabled image and unchanged
 grader functions/test bytes. [Freeze](freeze.json), [controller](controller.py),
 [driver and grader sources](grader-sources/grader-driver.py), and both actual
 snapshot archives are retained and hash-bound in [summary.json](summary.json).
+The pinned TinyDB and Cachetools source retains its original attribution and
+[TinyDB MIT notice](licenses/tinydb-LICENSE) / [Cachetools MIT notice](licenses/cachetools-LICENSE).
 No agent test, model assertion or new source change supplies an independent grade.
 
 | Snapshot | Public/upstream | Hidden | Interpretation |
