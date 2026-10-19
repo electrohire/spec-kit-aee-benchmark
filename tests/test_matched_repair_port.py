@@ -688,7 +688,13 @@ def test_public_tests_keep_clean_worktree_clean(tmp_path, monkeypatch):
     diagnostic claims survive instead of being discarded."""
     sandbox = _clean_git_repo(tmp_path / "testbed")
     import sys
+    # This local fixture runs outside Docker. A POSIX /dev/null config can make
+    # Windows pytest resolve its root outside the owned fixture and walk unrelated
+    # temporary directories. Keep the real sandbox's Linux command unchanged.
+    local_config = tmp_path / "pytest-local.ini"
+    local_config.write_text("[pytest]\n", encoding="utf-8")
     local_cmd = (PYTEST_CMD.replace("/testbed/acceptance_public.py", "acceptance_public.py")
+                 .replace("-c /dev/null", f'-c "{local_config}" --rootdir="{sandbox.cwd}"')
                  .replace("/tmp/grade.xml", str(tmp_path / "grade.xml"))
                  .replace("python -m pytest", sys.executable + " -m pytest"))
     monkeypatch.setattr("benchmark_runner.matched_repair.PYTEST_CMD", local_cmd)
