@@ -1,5 +1,23 @@
 # Corrected local study02 — prospective, 2026-10-18
 
+## Current v6 action protocol: literal argv only
+
+The optional argv action in v5 did not prevent the model selecting incomplete
+shell strings. Stopped study07 retained the first malformed grep result and halted
+at15calls; no repeat loop or next trajectory occurred. V6 removes shell actions
+from the current native response grammar and rejects command-string shell wrappers
+at execution. Programs receive literal argument arrays; named scripts can be
+written with the literal writer and executed. Legacy v5 controllers/contracts are
+archived for historical replay, not admitted as fresh v6 calibration. Every arm
+uses this same prospective interface and instruction set. No task answer, grader,
+model, seed, timeout or token/call budget changes.
+
+Fresh native transport checks cover exec/write/done/draft, followed by TWO fresh
+near-context v6 grammar latency samples. Prior v5 timing records cannot pass this
+gate. Exact v4 amendment hashes bind changed controller definitions/constants.
+All outcome-conditioned debugging/exposure and failures remain reportable; this
+does not establish AEE efficacy or independent replication of a successful trial.
+
 ## Superseding user directive: fail-fast-v1, 2026-10-19
 
 Study04 was stopped by explicit user instruction. Future current-local campaigns

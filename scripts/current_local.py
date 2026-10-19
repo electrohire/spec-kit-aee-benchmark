@@ -26,7 +26,7 @@ from long_horizon import PHASE_GOALS, skill
 from context_window import select_context
 from benchmark_runner.project_assessment import assess_project
 from runtime_checks import validate_capacity, RuntimeWatchdog
-from action_protocol import ACTION_RESPONSE_FORMAT
+from action_protocol import STRUCTURED_RESPONSE_FORMAT as ACTION_RESPONSE_FORMAT
 from infrastructure_errors import response_failure, RESPONSE_LIMIT
 from readiness_gate import validate_representative
 from calibration_recovery import definition_matches
@@ -42,7 +42,7 @@ CONFIG = {**runner.CONFIG, "seeds": SEEDS, "model": MODEL, "url": URL,
           "paid_calls_permitted": False, "physical_call_timeout": 180,
           "stage_seconds": 14400, "primary_calls": 208, "context": 32768,
           "max_output": 8192, "token_cap": 24000000, "enable_thinking": False,
-          "study_id": "current-study-02", "action_protocol": "native-json-schema-v5",
+          "study_id": "current-study-02", "action_protocol": "native-json-schema-v6",
           "claim_rubric": "Final explicit all-requirements completion declarations only; missing/ambiguous = unknown. Independently grade exact submitted snapshot. AEE findings are not truth labels.",
           "scenario_prices_per_million":{"input":"1","cached_input":"0.10","output":"4"},
           "scenario_note":"Illustrative USD/million token sensitivity calculation, not a provider quote, bill, GPU/energy/human cost or a claim that hosted inference has the same behavior."}
@@ -99,6 +99,7 @@ def http(route, payload=None, timeout=120):
 
 
 class Provider(runner.Provider):
+    structured_actions=True
     def query(self, messages, phase, stage, deadline):
         text = super().query(messages, phase, stage, deadline)
         record = self.calls[-1]
@@ -335,8 +336,8 @@ def validate_action_readiness(preflight, *, transport_folder=None, latency_folde
     latency_folder=latency_folder or preflight/'latency'
     transport=json.loads((transport_folder/'result.json').read_text())
     transport_freeze=json.loads((transport_folder/'freeze.json').read_text())
-    if (not transport.get('passed') or transport.get('physical_calls')!=5
-        or {v['action'] for v in transport.get('checks',[])}!={'exec','shell','write_file','done','draft'}
+    if (not transport.get('passed') or transport.get('physical_calls')!=4
+        or {v['action'] for v in transport.get('checks',[])}!={'exec','write_file','done','draft'}
         or not all(v.get('strict_claims_loaded') is True for v in transport.get('checks',[]) if v['action'] in ('done','draft'))
         or transport_freeze['hashes'].get('scripts/action_protocol.py')!=hashlib.sha256((ROOT/'scripts/action_protocol.py').read_bytes()).hexdigest()):
         raise ValueError('native action transport readiness missing or changed')
@@ -475,6 +476,7 @@ def run(out, preflight):
     if WORKER_BINDING is not None:
         extras.extend((preflight/'worker-binding.json', preflight/'direct-route-proof.json', ROOT/'scripts/direct_worker_transport.py', ROOT/'benchmarks/current_local/direct-worker-v1.json', ROOT/'benchmarks/current_local/hallucination-cases-v2.json'))
     extras.extend((preflight/'fail-fast-amendment.json',ROOT/'scripts/fail_fast_admission.py',ROOT/'benchmarks/current_local/fail-fast-argv-v1.json',ROOT/'benchmarks/current_local/fail-fast-argv-v2.json',ROOT/'benchmarks/current_local/fail-fast-argv-v3.json',ROOT/'benchmarks/current_local/legacy-action-command-v1.py.txt'))
+    extras.extend((ROOT/'benchmarks/current_local/fail-fast-argv-v4.json',*(ROOT/'benchmarks/current_local/legacy-v5').glob('*.py')))
     runner.campaign(out,preflight/"grade",timeout,
         workflow_preflight=workflow,latency_preflight=preflight/"latency/calibration.json",
         context_preflight=preflight/"context/result.json",assets=assets,

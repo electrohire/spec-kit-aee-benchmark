@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — structured-only current tool protocol
+
+- Preserve study07's first malformed grep failure and15calls. Remove shell actions
+  from current native v6 grammar, enforce literal argv at execution, retain legacy
+  v5 sources/contracts for historical checks, and require fresh four-action native
+  proof plus two fresh v6 latency samples. Apply the same tooling to every arm;
+  no model/cap/grader changes or successful-result claim.
+
 ## Unreleased — user-directed fail-fast amendment, 2026-10-19
 
 - Mitigate repeated direct-worker TCP handshakes with persistent connections,
