@@ -1,4 +1,5 @@
 """Preserve calibration failures and inventory new physical model work exactly once."""
+from benchmark_runner.markdown_presentation import write_markdown
 import argparse
 import hashlib
 import importlib.metadata
@@ -82,10 +83,10 @@ def run(destination):
         all_campaigns_reservation_bound=historical['configured_reservation_upper_bound']+current['budget_reservation_total'],
         api_expenditure_usd=0,
         note='Physical diagnostic calls counted once. Mixed models/tasks: inventory only, not a pooled efficiency comparison. Hardware, energy and controller work unpriced.'))
-    (destination / 'README.md').write_text(
+    write_markdown(destination / 'README.md',
         '# Repeated campaign preparation\n\nAll full-workflow calibration attempts, including failures, are retained. '
         'These requests are setup costs, separate from scored treatment comparisons. '
-        'Full requests and native reasoning remain local with hashes. See summary.json for measured usage and unknown-call reservations.\n', encoding='utf-8')
+        'Full requests and native reasoning remain local with hashes. See summary.json for measured usage and unknown-call reservations.\n')
     manifest(destination)
 
 

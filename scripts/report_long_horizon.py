@@ -1,4 +1,5 @@
 """Export and audit the separately frozen staged-project campaign."""
+from benchmark_runner.markdown_presentation import format_markdown, write_markdown
 import argparse
 import collections
 import hashlib
@@ -239,7 +240,7 @@ def export(source,target):
         '- Two staged pilots and several preliminary smokes exposed integration failures; all costs remain in the separate setup ledger. Run 03 follows a revised full-context freeze. This is iterative benchmark development, not a single pristine preregistered experiment.',
         '- Run 03 freezes workflow scripts/templates and adapter hashes before generation. Run 02 had a disclosed supplemental-provenance limitation; its original evidence remains.',
         '- ElectroHire maintains AEE/Evaluator and the benchmark. No external replication or blinded independent test authorship is claimed.','']
-    (target/'README.md').write_text('\n'.join(lines),encoding='utf-8')
+    write_markdown(target/'README.md', '\n'.join(lines))
     write_json(target/'files-sha256.json',{p.relative_to(target).as_posix():sha(p) for p in target.rglob('*') if p.is_file()})
     print(json.dumps(summary,indent=2))
 

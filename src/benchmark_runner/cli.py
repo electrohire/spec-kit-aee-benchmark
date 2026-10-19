@@ -96,6 +96,7 @@ def main(argv=None):
             return 0
         elif args.command == "lifecycle-report":
             from .lifecycle import summarize, markdown
+            from .markdown_presentation import format_markdown
             if args.output.suffix.lower() != ".json":
                 raise ValueError("lifecycle output must have a .json suffix")
             markdown_path = args.output.with_suffix(".md")
@@ -107,7 +108,7 @@ def main(argv=None):
                 raise ValueError("invalid lifecycle evidence structure") from exc
             write_json(args.output, result, exclusive=True)
             with markdown_path.open("x", encoding="utf-8", newline="\n") as handle:
-                handle.write(markdown(result))
+                handle.write(format_markdown(markdown(result)))
         print(json.dumps(result, indent=2, allow_nan=False))
         return 0
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as e:

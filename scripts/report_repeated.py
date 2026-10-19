@@ -1,4 +1,5 @@
 """Export repeated-study evidence without native reasoning; preserve all failures."""
+from benchmark_runner.markdown_presentation import format_markdown, write_markdown
 import argparse
 import collections
 import hashlib
@@ -139,7 +140,7 @@ def summarize_study(raw,dest):
         text+=f"| {r['project']} | {r['seed']} | {r['arm']} | {r['stage']} | {r['public_final']['passed']} | {r['hidden_primary']['passed']} → {r['hidden_final']['passed']} | {sum(p['completed'] for p in r['phases'])}/{len(r['phases'])} | {len(r['repairs'])} |\n"
     text+='\nRead the frozen protocol and summary.json for cached/uncached/generated tokens, native timing, stage wall time, regressions and workflow completion. Feature counts are separate from unchanged upstream tests; dependent checkpoints are not pooled as independent tasks. Repeated upstream case names use discovery-order occurrence identifiers because this pytest configuration omits class names. Public repair feedback is not hidden grading. Hidden cases were controller-authored; projects were convenience selected. Two seeds are not statistical proof. Raw requests/native reasoning stay local with hashes; exact public prompt replay is unavailable. Earlier failures and calibration work are reported separately, never erased.\n'
     text+='\nThe earlier interrupted pilot used a linear context selector with repeated tokenization overhead. This fresh campaign uses a native-calibrated binary search for the same first-fitting cutoff. Helper requests are reported separately; they are not extra model-generation tokens. Stage wall time includes preflight, tools, grading and container work. Controller audits also ran on the host during generation. Do not attribute all wall-time differences to Spec Kit or the AEE engine alone.\n'
-    (dest/'README.md').write_text(text,encoding='utf-8')
+    write_markdown(dest/'README.md', text)
 
 
 def summarize_repair(raw,dest):
@@ -190,7 +191,7 @@ def summarize_repair(raw,dest):
         text+=f"| {arm} | {v['fixed']} | {v['final_accepted']} | {v['clean_regressions']} | {v['clean_code_changes']} | {v['repair_only']['known_total_tokens']:,} | {v['with_shared_diagnostic_attributed']['known_total_tokens']:,} | {v['tokens_per_fixed'] if v['tokens_per_fixed'] is not None else 'undefined'} |\n"
     text+='\nShared diagnostic tokens are charged equally in treatment comparisons but counted once in the physical-work ledger. Unknown native usages remain null; reservation totals are not measured token totals. Findings require manual adjudication: subject overlap alone is not proof of defect detection. See findings-to-adjudicate.json and the final adjudication report.\n'
     text+='\nRepair timing is exploratory: a roughly25-second CPU-only selector calibration overlapped early generation. The repair experiment retained its original source freeze and selector. No overlapping model-generation calls occurred.\n'
-    (dest/'README.md').write_text(text,encoding='utf-8')
+    write_markdown(dest/'README.md', text)
 
 
 def manifest(dest):

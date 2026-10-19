@@ -1,4 +1,5 @@
 """Render copy/paste article numbers directly from the audited local reports."""
+from benchmark_runner.markdown_presentation import format_markdown, write_markdown
 import argparse
 import json
 from pathlib import Path
@@ -104,5 +105,5 @@ Measured quantization: https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/tree/
 Earlier Qwen2.5 coder: https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF
 '''
 (root/'docs/linkedin-article.txt').write_text(article,encoding='utf-8')
-(root/'docs/linkedin-article.md').write_text('# '+article,encoding='utf-8')
+write_markdown(root/'docs/linkedin-article.md', '# '+article)
 print('Wrote Markdown and plain-text article; not published.')

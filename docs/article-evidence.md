@@ -1,9 +1,6 @@
 # Article claim-to-evidence review
 
-The article cites immutable results commit `835573aff15520a580c7c3862b3534b347101e18`.
-The rows below define claim scope and a concrete way to falsify the numerical or
-interpretive statement. Observed results remain distinct from general effectiveness,
-which is not established. Assessment outputs are review prompts, not correctness grades.
+The article cites immutable results commit `835573aff15520a580c7c3862b3534b347101e18`. The rows below define claim scope and a concrete way to falsify the numerical or interpretive statement. Observed results remain distinct from general effectiveness, which is not established. Assessment outputs are review prompts, not correctness grades.
 
 | Claim ID | Article statement | Evidence | Boundary and falsification check |
 | --- | --- | --- | --- |
@@ -21,11 +18,6 @@ which is not established. Assessment outputs are review prompts, not correctness
 | ART-API | Zero benchmark API expenditure | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03/frozen-inputs/scripts/long_horizon.py) | Loopback-only provider, no external fallback; also see the small-study frozen source and launches. Hardware, energy and controller labor are unpriced. |
 | ART-BOUNDARY | No demonstrated workflow correctness or token-saving advantage in these attempts | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03/README.md) | Depends on ART-SMALL, ART-LONG, ART-TOKENS and ART-TIMEOUT. This is not a claim about general effectiveness or an independently replicated causal estimate. |
 
-Dependencies: ART-BOUNDARY uses the comparison and cost claims above; ART-AEE-REVIEW
-uses the model-extracted claims and actual composed assessment. Hardware observations
-support configuration identity, not performance generalization. Public requests/native
-reasoning are omitted with hashes, so exact prompt replay is not claimed. ElectroHire
-maintains AEE/Evaluator and the study; no external blinded test authorship is claimed.
+Dependencies: ART-BOUNDARY uses the comparison and cost claims above; ART-AEE-REVIEW uses the model-extracted claims and actual composed assessment. Hardware observations support configuration identity, not performance generalization. Public requests/native reasoning are omitted with hashes, so exact prompt replay is not claimed. ElectroHire maintains AEE/Evaluator and the study; no external blinded test authorship is claimed.
 
-Repository and model/runtime source URLs are included in both article versions.
-The article is a draft for user publication; it has not been posted to LinkedIn.
+Repository and model/runtime source URLs are included in both article versions. The article is a draft for user publication; it has not been posted to LinkedIn.

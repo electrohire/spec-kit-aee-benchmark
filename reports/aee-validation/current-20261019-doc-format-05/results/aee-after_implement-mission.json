@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0",
+  "evaluator": {
+    "id": "aee",
+    "version": "1.0.0",
+    "name": "Applied Epistemic Engineering",
+    "url": "https://github.com/electrohire/spec-kit-aee"
+  },
+  "phase": "after_implement",
+  "outcome": "iterate",
+  "summary": "Assessed 1 claim(s); found 1 failure mode(s); 0 claim(s) below the 0.70 confidence threshold. Stage cap: 1 claim(s) below stage 'explained'; the outcome cannot be 'pass' (Spec 004 R1.4). Not understood: 1 residual unknown(s) are recorded on this assessment (Spec 004 R5.2). Lane 1 (machine verification): outcome iterate; 1 claim(s) at or above the 0.70 threshold, 0 below. Lane 2 (human acceptance): stages by effective stage: checked 1. Lane-2 lag: 1 claim(s) below explained; 1 verified but unexpl",
+  "findings": [
+    {
+      "id": "AEE-OBS-DOC-FORMAT-001-VERIFIED-UNEXPLAINED",
+      "severity": "medium",
+      "kind": "other",
+      "subject": "scripts/check_docs.py",
+      "description": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+      "evidence_refs": [
+        {
+          "ref": "reports/aee-validation/current-20261019-doc-format-05/tests/execution.log",
+          "kind": "observed",
+          "description": "Actual check_docs process log; command and before/after source hashes retained alongside it."
+        }
+      ],
+      "provenance_refs": [
+        "scripts/check_docs.py"
+      ],
+      "uncertainty": "low",
+      "recommended_action": "iterate",
+      "rationale": "Verified but unexplained"
+    }
+  ],
+  "next_action": {
+    "kind": "iterate",
+    "target_phase": "implement",
+    "message": "Revise the current phase to address 1 finding(s)."
+  },
+  "metadata": {
+    "timestamp": "2026-10-19T21:40:37.704593Z",
+    "artifacts_evaluated": [],
+    "model": null,
+    "deterministic": true,
+    "engine_version": "1.5.3",
+    "aee_methodology_version": "2.0",
+    "lanes": {
+      "lane_1": {
+        "label": "machine verification",
+        "outcome": "iterate",
+        "threshold": 0.7,
+        "claims_at_or_above_threshold": 1,
+        "claims_below_threshold": 0
+      },
+      "lane_2": {
+        "label": "human acceptance",
+        "stage_counts": {
+          "created": 0,
+          "checked": 1,
+          "explained": 0,
+          "accepted": 0,
+          "digested": 0
+        },
+        "claims_below_explained": 1,
+        "exposition_covered_claims": 0,
+        "exposition_missing_claims": 1,
+        "verified_unexplained_claims": 1,
+        "stage_capped_claims": 0,
+        "attribution_contested_claims": 0
+      }
+    },
+    "not_understood": [
+      "OBS-DOC-FORMAT-001: verified but unexplained - no named human has explained this claim, so what the check establishes is narrower than the claim's wording suggests."
+    ],
+    "reported_statuses": {
+      "OBS-DOC-FORMAT-001": "partially_supported"
+    }
+  },
+  "state": {
+    "aee": {
+      "project": "benchmark-mission",
+      "claims": [
+        {
+          "id": "OBS-DOC-FORMAT-001",
+          "text": "The captured documentation check reported 82 checked files.",
+          "kind": "observation",
+          "status": "partially_supported",
+          "boundary": [
+            "This recorded offline invocation only. This guard checks selected presentation spacing and bullet markers, not documentation completeness or a rendering guarantee. The separate visual preview is not part of this atomic count observation. No model calls, factual detector accuracy, treatment efficacy, monetary savings, human acceptance or full coverage is established."
+          ],
+          "depends_on": [],
+          "conflicts_with": [],
+          "evidence": [
+            {
+              "ref": "reports/aee-validation/current-20261019-doc-format-05/tests/execution.log",
+              "kind": "observed",
+              "direction": "supports",
+              "source_quality": "test",
+              "description": "Actual check_docs process log; command and before/after source hashes retained alongside it.",
+              "source_id": "recorded-documentation-check",
+              "independent_of": [],
+              "observed_at": "2026-10-19T21:40:37.453513+00:00",
+              "content_hash": "e65e08900f006958162517bf88b7887a92d94ae47f0581b3b96d4ba8a866399f",
+              "content_hash_status": "verified"
+            }
+          ],
+          "assumptions": [],
+          "alternatives": [],
+          "falsification_tests": [
+            "A nonzero check_docs process exit, a different reported file count, or changed declared source bytes contradicts this observation."
+          ],
+          "uncertainty": "low",
+          "severity": "medium",
+          "source_ref": "scripts/check_docs.py",
+          "domain": "",
+          "confidence": 0.9,
+          "confidence_band": "high",
+          "failures": [
+            {
+              "id": "AEE-OBS-DOC-FORMAT-001-VERIFIED-UNEXPLAINED",
+              "claim_id": "OBS-DOC-FORMAT-001",
+              "challenge": "Verified but unexplained",
+              "breakpoint": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+              "severity": "medium",
+              "category": "verified_unexplained",
+              "recovery_hint": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+              "resolved": false,
+              "disposition": null
+            }
+          ],
+          "metadata": {},
+          "dispositions": [],
+          "stage": "checked",
+          "stage_events": [
+            {
+              "kind": "checked",
+              "author": "Codex automated test runner",
+              "date": "2026-10-19T21:40:37.453513+00:00",
+              "basis": "Actual recorded check_docs process; no human acceptance asserted."
+            }
+          ],
+          "headline": false,
+          "role": null
+        }
+      ],
+      "scores": {
+        "OBS-DOC-FORMAT-001": {
+          "claim_id": "OBS-DOC-FORMAT-001",
+          "direct_score": 0.9,
+          "propagated_score": 0.9,
+          "band": "high",
+          "components": {
+            "evidence": 1.0,
+            "independence": 0.5,
+            "falsifiability": 1.0,
+            "boundary": 1.0,
+            "contradiction_penalty": 0
+          },
+          "declared_state": {
+            "status": "partially_supported",
+            "uncertainty": "low",
+            "severity": "medium",
+            "conflicts_with": []
+          },
+          "propagation": {
+            "status": "propagated",
+            "cycle_component": []
+          },
+          "notes": [
+            "Fewer than two independent supporting sources",
+            "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)"
+          ]
+        }
+      },
+      "recoveries": [
+        {
+          "failure_id": "AEE-OBS-DOC-FORMAT-001-VERIFIED-UNEXPLAINED",
+          "claim_id": "OBS-DOC-FORMAT-001",
+          "strategy": "define_falsifier",
+          "action": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+          "priority": 3,
+          "verification": "A concrete observation that would refute the claim is documented."
+        }
+      ]
+    }
+  }
+}

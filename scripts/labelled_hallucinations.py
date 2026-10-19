@@ -3,6 +3,7 @@
 This diagnostic measures bounded factual judgments, not spontaneous software
 hallucination prevalence, AEE detector efficacy, or a three-arm treatment effect.
 """
+from benchmark_runner.markdown_presentation import write_markdown
 import argparse
 import hashlib
 import json
@@ -126,7 +127,7 @@ def run(out, corpus_version=1):
         raise
     finally:
         write_json(out / 'result.json', state)
-    (out / 'README.md').write_text('# Labelled factual-judgment diagnostic\n\nTwelve synthetic factbooks, twelve real local-model calls. Gold labels were frozen before generation and withheld from model prompts. This is separate from scored workflow outcomes and is not AEE detector efficacy.\n\n```json\n' + json.dumps(state['metrics'], indent=2) + '\n```\n', encoding='utf-8')
+    write_markdown(out / 'README.md', '# Labelled factual-judgment diagnostic\n\nTwelve synthetic factbooks, twelve real local-model calls. Gold labels were frozen before generation and withheld from model prompts. This is separate from scored workflow outcomes and is not AEE detector efficacy.\n\n```json\n' + json.dumps(state['metrics'], indent=2) + '\n```\n')
 
 
 if __name__ == '__main__':

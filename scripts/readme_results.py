@@ -1,4 +1,5 @@
 """Render the prominent historical table from committed measured artifacts."""
+from benchmark_runner.markdown_presentation import format_markdown, write_markdown
 import argparse
 import json
 from pathlib import Path
@@ -104,12 +105,13 @@ def main():
         before,rest=updated.split(STOPPED_START)
         _,after=rest.split(STOPPED_END)
         updated=before+STOPPED_START+stopped_table(json.loads(stopped.read_bytes()))+STOPPED_END+after
+    updated = format_markdown(updated)
     if args.check:
         if updated != text:
             raise SystemExit("README results differ from measured artifacts")
         print("README results match committed measurements")
     else:
-        path.write_text(updated, encoding="utf-8", newline="\n")
+        write_markdown(path, updated)
 
 
 if __name__ == "__main__":

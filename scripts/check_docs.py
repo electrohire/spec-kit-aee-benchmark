@@ -2,6 +2,8 @@
 import re
 from pathlib import Path
 
+from benchmark_runner.markdown_presentation import format_markdown
+
 ROOT = Path(__file__).resolve().parents[1]
 PROTECTED = re.compile(r"(`+)(.*?)\1|\]\([^)]*\)|<?https?://[^\s>]+>?")
 GLUED = re.compile(
@@ -30,6 +32,8 @@ def documentation_paths(root=ROOT):
 
 
 def check_text(text):
+    if format_markdown(text) != text:
+        yield 1, "keep prose paragraphs/list items on one source line; preserve explicit breaks"
     fence = None
     generated = False
     for number, line in enumerate(text.splitlines(), 1):
@@ -51,6 +55,8 @@ def check_text(text):
             yield number, "separate prose words and measured numbers with spaces"
         if re.match(r"^\s*(?:>\s*)?[-+]\s+\S", line):
             yield number, "use '* ' for an unordered Markdown list"
+    if fence is not None:
+        yield 1, "close the fenced code block"
 
 
 if __name__ == "__main__":

@@ -74,19 +74,4 @@ Disclosure: ElectroHire maintains AEE, the Evaluator extension and this benchmar
 
 Try Spec Kit + AEE where evidence and changing requirements matter. Measure whether it helps your work, and keep the failures visible.
 
-Results and exact protocol: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03
-Complete work ledger: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local
-Earlier small-task results and repairs: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/gpu-20260917
-Interrupted staged runs: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-01-interrupted and https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-02-interrupted
-Spec Kit: https://github.com/github/spec-kit
-Spec Kit AEE extension: https://github.com/electrohire/spec-kit-aee
-Evaluator extension: https://github.com/electrohire/spec-kit-evaluator
-AEE engine: https://github.com/electrohire/applied-epistemic-engineering
-Benchmark repository and reproduction: https://github.com/electrohire/spec-kit-aee-benchmark
-TinyDB source: https://github.com/msiemens/tinydb/tree/19066e03139e904c24410e23901e4b069d715a2e
-Exercism source: https://github.com/exercism/python/tree/1f6aab8667bf653b10cc3799f94352fcdb749db6
-mini-SWE-agent: https://github.com/SWE-agent/mini-swe-agent
-llama.cpp runtime: https://github.com/ggml-org/llama.cpp/releases/tag/b11026
-Qwen3.6 model: https://huggingface.co/Qwen/Qwen3.6-35B-A3B
-Measured quantization: https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/tree/a483e9e6cbd595906af30beda3187c2663a1118c
-Earlier Qwen2.5 coder: https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF
+Results and exact protocol: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03 Complete work ledger: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local Earlier small-task results and repairs: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/gpu-20260917 Interrupted staged runs: https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-01-interrupted and https://github.com/electrohire/spec-kit-aee-benchmark/tree/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-02-interrupted Spec Kit: https://github.com/github/spec-kit Spec Kit AEE extension: https://github.com/electrohire/spec-kit-aee Evaluator extension: https://github.com/electrohire/spec-kit-evaluator AEE engine: https://github.com/electrohire/applied-epistemic-engineering Benchmark repository and reproduction: https://github.com/electrohire/spec-kit-aee-benchmark TinyDB source: https://github.com/msiemens/tinydb/tree/19066e03139e904c24410e23901e4b069d715a2e Exercism source: https://github.com/exercism/python/tree/1f6aab8667bf653b10cc3799f94352fcdb749db6 mini-SWE-agent: https://github.com/SWE-agent/mini-swe-agent llama.cpp runtime: https://github.com/ggml-org/llama.cpp/releases/tag/b11026 Qwen3.6 model: https://huggingface.co/Qwen/Qwen3.6-35B-A3B Measured quantization: https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/tree/a483e9e6cbd595906af30beda3187c2663a1118c Earlier Qwen2.5 coder: https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF

@@ -1,4 +1,5 @@
 """Export current measured lifecycle evidence with explicit completion-claim stats."""
+from benchmark_runner.markdown_presentation import format_markdown, write_markdown
 import argparse
 import hashlib
 import json
@@ -143,7 +144,7 @@ def build(raw, dest):
         denominator=value["positive"]-value["ungraded_positive"]
         value["false_completion_rate"]=value["false_completion"]/denominator if denominator else None
     write_json(dest/"lifecycle-report.json",report)
-    (dest/"lifecycle-report.md").write_text(markdown(report),encoding="utf-8")
+    write_markdown(dest/"lifecycle-report.md", markdown(report))
     text="\n## Explicit completion claims and hallucination proxy\n\n| Arm | Positive / negative / unknown declarations | False completion / graded positive declarations | Rate |\n|---|---:|---:|---:|\n"
     for arm,value in opportunities.items():
         n=value['positive']-value['ungraded_positive']
@@ -162,7 +163,7 @@ def build(raw, dest):
         cost=value["scenario_cost_per_delivered_project"]
         text+=f"| {arm} | {value['final_stage_accepted']}/{value['project_trajectories']} | {tokens if tokens is not None else 'undefined/unknown'} | {cost if cost is not None else 'undefined/unknown'} | {value['blocked_milestones']} |\n"
     text+="\nZero delivered projects makes cost per delivery undefined, rather than zero. Compare quality and complete accounting before interpreting token differences; cumulative stages and repeated seeds are not independent production projects. No electricity, hardware depreciation or human rework cost was priced.\n"
-    with (dest/"README.md").open("a",encoding="utf-8") as handle:handle.write(text)
+    with (dest/"README.md").open("a",encoding="utf-8") as handle:handle.write(format_markdown(text))
     return report
 
 
