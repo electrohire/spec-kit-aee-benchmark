@@ -101,3 +101,7 @@ Prospective scored-study admission now counts model runtime interventions as fai
 - Fresh serial pipeline10, exact infrastructure migration, preserved stopped02.
 - Twelve real-model labelled factbook diagnostic, separated from workflow efficacy.
 - Product coverage work parked; no new results claimed before execution.
+
+## Completed labelled diagnostic (2026-10-19)
+
+See [real-model receipts and label-quality findings](reports/local/labelled-factbooks-10-20261019/README.md):12calls/2037knownnative tokens/0usageunknown,10of12original-labelagreement,two challengedunknownfixtures. Mainpairedstudy03 remains running;no completed paired efficacy conclusion. Active source stays frozen in its original checkout.
