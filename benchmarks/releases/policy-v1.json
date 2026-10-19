@@ -1,0 +1,62 @@
+{
+  "schema": "release-benchmark-policy-v1",
+  "status": "Prospective policy; no accepted release baseline exists yet",
+  "repositories": [
+    "electrohire/applied-epistemic-engineering",
+    "electrohire/spec-kit-aee"
+  ],
+  "bootstrap_seed": 20261019,
+  "bootstrap_resamples": 2000,
+  "metrics": {
+    "halueval_accuracy": {
+      "direction": "higher",
+      "scale": "absolute",
+      "tolerance": 0.02,
+      "gross_loss": 0.05,
+      "minimum_clusters": 60
+    },
+    "halueval_false_acceptance": {
+      "direction": "lower",
+      "scale": "absolute",
+      "tolerance": 0.02,
+      "gross_loss": 0.05,
+      "minimum_clusters": 60
+    },
+    "ragtruth_accuracy": {
+      "direction": "higher",
+      "scale": "absolute",
+      "tolerance": 0.02,
+      "gross_loss": 0.05,
+      "minimum_clusters": 60
+    },
+    "ragtruth_false_acceptance": {
+      "direction": "lower",
+      "scale": "absolute",
+      "tolerance": 0.02,
+      "gross_loss": 0.05,
+      "minimum_clusters": 60
+    },
+    "featurebench_correctness": {
+      "direction": "higher",
+      "scale": "absolute",
+      "tolerance": 0.02,
+      "gross_loss": 0.05,
+      "minimum_clusters": 2
+    },
+    "swe_evo_retained_correctness": {
+      "direction": "higher",
+      "scale": "absolute",
+      "tolerance": 0.02,
+      "gross_loss": 0.05,
+      "minimum_clusters": 2
+    },
+    "all_call_tokens": {
+      "direction": "lower",
+      "scale": "relative",
+      "tolerance": 0.1,
+      "gross_loss": 0.25,
+      "minimum_clusters": 60
+    }
+  },
+  "limitations": "Margins registered before candidate release comparisons, not inferred from partial active outputs. Detector tolerance2percentagepoints and token10percent; gross loss5points/25percent blocks regardless of interval. Crossing a margin is inconclusive, not statistical equivalence. Coding pilot2clusters cannot establish broad generalization; add independent registered repetitions/samples before broad claims. No best-of reruns."
+}

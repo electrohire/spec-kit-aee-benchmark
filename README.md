@@ -1,3 +1,45 @@
+# Spec Kit + AEE: established benchmark evidence
+
+This repository compares a generic agent, Spec Kit and Spec Kit+AEE on established
+upstream tasks. It owns the thin treatment/provenance/accounting adapter, not a
+replacement hallucination dataset or coding grader. No100%coverage target.
+
+| Question | Evidence status | Interpretation |
+|---|---|---|
+| Can the model detect supplied hallucinations? | [HaluEval100/120; RAGTruth97/120](reports/hallucinations/external-01-20261019/README.md) | Complete model-only subset results;83.3%/80.8%,213457native tokens,0usage unknowns |
+| Does Spec Kit or AEE materially help? | Matched03 running; complete paired results pending | No treatment-benefit claim yet |
+| When does workflow overhead pay back? | FeatureBench Fastv1.1 / SWE-EVO resources prepared, not executed | No observed short/long-horizon savings yet |
+| Can builds gate future releases? | Content-bound requests + strict comparison/verifier; no accepted release baseline yet | Release remains blocked without full audited exact-build approval |
+
+[Harness I/O diagram and results guide](docs/benchmark-harness.md) ·
+[Release gate diagram and policy](docs/benchmark-release-gates.md) ·
+[Long-horizon design](docs/long-horizon-economics-plan.md) · [Resume](START_HERE.md)
+
+The active matched run stays frozen while documentation and release infrastructure
+are changed in a separate checkout. Retired custom task suites, synthetic factbooks
+and failed runs remain historical evidence; they are not rerun as active release
+benchmarks. Only thin adapter-integrity checks remain maintained by this repository.
+Tokens include all setup/failed/scored calls; API0 excludes hardware, energy and
+labor. Detector labels, coding grades and AEE gate eligibility stay separate.
+
+```mermaid
+flowchart LR
+    U[Upstream tasks and labels] --> F[Frozen same-model three-arm harness]
+    F --> A[Generic agent]
+    F --> S[Spec Kit]
+    F --> E[Spec Kit + AEE and Evaluator]
+    A --> G[Independent labels and coding graders]
+    S --> G
+    E --> G
+    F --> C[All setup / failed / scored call costs]
+    G --> R[Separate reliability / correctness / economics reports]
+    C --> R
+    R --> V[Exact-build release gate with paired uncertainty]
+```
+
+<details>
+<summary>Historical results and earlier experiment documentation (read only)</summary>
+
 # Spec Kit + AEE benchmark
 
 **Matched detector attempt01 stopped at its first output-limit failure:**72/720
@@ -231,3 +273,6 @@ No paid inference is authorized. `scripts/local_feasibility.py` performs one
 capped, free loopback readiness request, changing no server configuration.
 Readiness is not scored workflow evidence. A fresh efficacy study needs a separate
 frozen model/configuration, task inventory, budgets and independent grader preflight.
+
+
+</details>

@@ -1,3 +1,18 @@
+# Current verification scope
+
+Established upstream labels/graders are primary. Current harness architecture and
+release policy are in [the I/O guide](../docs/benchmark-harness.md) and
+[release contract](../docs/benchmark-release-gates.md). Complete external01 is
+model-only; matched treatment and coding economics results remain pending.
+Thin-adapter functional/integrity checks are required, not100%coverage. Release
+comparison fixtures are synthetic and never empirical product improvements.
+
+The remainder is historical requirement/evidence bookkeeping. Its older readiness
+selection rules and suite counts do not supersede current protocols or active-run
+freezes. Preserve the underlying recorded artifacts unchanged.
+
+---
+
 # Requirement-to-evidence matrix
 
 ## Prospective scored admission: model failures are outcomes
