@@ -58,14 +58,17 @@ def metrics(rows):
         limitations='Synthetic closed-world inputs, real model calls. Unknown truth excluded from binary denominators. Not AEE detector precision/recall, workflow hallucination prevalence or treatment efficacy.')
 
 
-def run(out):
-    corpus = json.loads(CORPUS.read_text(encoding='utf-8'))
+def run(out, corpus_version=1):
+    if type(corpus_version) is not int or corpus_version not in (1, 2):
+        raise ValueError('shipped corpus version1 or2 required')
+    selected = CORPUS if corpus_version == 1 else current.ROOT / 'benchmarks/current_local/hallucination-cases-v2.json'
+    corpus = json.loads(selected.read_text(encoding='utf-8'))
     cases = corpus['cases']
     if len(cases) != 12 or len({c['id'] for c in cases}) != 12:
         raise ValueError('preregistered twelve distinct cases required')
     current.setup()
     current.freeze(out, 'separate twelve-call labelled factbook diagnostic; max output256; no retry; real local model')
-    write_json(out / 'diagnostic-plan.json', dict(corpus_sha256=hashlib.sha256(CORPUS.read_bytes()).hexdigest(),
+    write_json(out / 'diagnostic-plan.json', dict(corpus_version=corpus_version, corpus_sha256=hashlib.sha256(selected.read_bytes()).hexdigest(),
         cases=cases, model=current.MODEL, context=32768, max_output=256, seed=current.SEEDS[0],
         timeout=600, max_calls=12, reserved_tokens=400000, synthetic_inputs=True,
         gold={c['id']: oracle(c) for c in cases}), exclusive=True)
@@ -129,4 +132,6 @@ def run(out):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('output', type=Path)
-    run(parser.parse_args().output)
+    parser.add_argument('--corpus-version', type=int, choices=(1, 2), default=1)
+    args = parser.parse_args()
+    run(args.output, args.corpus_version)
