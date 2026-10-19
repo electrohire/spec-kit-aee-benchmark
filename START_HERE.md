@@ -7,6 +7,7 @@ Read the latest durable checkpoints outside this checkout before controlling the
 3. [Short/long-horizon economics](docs/long-horizon-economics-plan.md): established FeatureBench Fast v1.1 and SWE-EVO; independent grades and registered checkpoints before coding inference. Neither has executed here yet.
 4. [Build requests and release gates](docs/benchmark-release-gates.md): exact candidate artifacts, accepted matched baseline, paired uncertainty, regression blocks and improvement summaries. No accepted release baseline exists yet.
 5. [Reproduction and maintained checks](docs/reproduction.md).
+6. [Optimizer extension comparison plan](docs/optimizer-extension-evaluation-plan.md): individual screening, held-out confirmation and bundle decisions after the current benchmark mission is complete; no changes to the active experiment.
 
 ## Current measured findings
 
