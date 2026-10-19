@@ -1,5 +1,20 @@
 # Resume the benchmark
 
+## Current preparation: matched detector treatments and long-horizon economics
+
+The latest user request is an actual matched baseline/Spec Kit/Spec Kit+AEE
+comparison on HaluEval and RAGTruth. Read the
+[prospective matched protocol](benchmarks/hallucinations/MATCHED-PROTOCOL.md).
+The published external-01 results below used the model alone; they do not answer
+whether either workflow helps. New matched generation has not started.
+
+FeatureBench Fast v1.1 and SWE-EVO are the proposed established coding suites;
+read the [short/long-horizon economic design](docs/long-horizon-economics-plan.md).
+These suites have not been run here. Keep detector findings separate from coding
+correctness, false completion and observed token break-even. Products stay parked;
+benchmark 100% code coverage is not an admission gate. Older stopped coding
+campaigns and completed diagnostics remain immutable and must not be resumed.
+
 ## Separate hallucination evaluation
 
 The user requested established external hallucination tests in addition to the
