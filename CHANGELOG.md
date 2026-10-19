@@ -95,3 +95,9 @@ No scored SWE-bench pilot results yet; separate historical local explorations ar
 linked from the README and keep their original freezes.
 
 Prospective scored-study admission now counts model runtime interventions as failed trajectories, preserving dependent checkpoints and costs while retaining campaign-wide infrastructure stops. User directed immediate scored benchmarking; no solver/grader/budget changes.
+
+## Prospective study03 preparation
+
+- Fresh serial pipeline10, exact infrastructure migration, preserved stopped02.
+- Twelve real-model labelled factbook diagnostic, separated from workflow efficacy.
+- Product coverage work parked; no new results claimed before execution.
