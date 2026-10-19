@@ -35,3 +35,15 @@ unfinished. No generation, resume, retry or source tuning from hidden outcomes.
 validated with501 offline cases and59 focused receipt-bound cases. Actual AEE
 and one Evaluator composed iterate; study02 remains stopped, T014 unfinished.
 See the incident's prospective-guard-followup.md for retained failures and limits.
+
+
+## Established-suite maintenance and release integration (2026-10-19)
+
+- [x] Replace active custom-task maintenance with explicit thin-adapter test inventory; preserve old evidence/tests as opt-in archive.
+- [x] Document separate upstream hallucination, coding correctness and all-call economics panels with Mermaid I/O and release diagrams.
+- [x] Register prospective practical margins/paired cluster policy; fail closed on incomplete/unmatched/unknown data and absent accepted baseline.
+- [x] Implement exact-build request packaging, protected index/hash verification and recomputed release decision; synthetic boundary tests are not empirical improvements.
+- [ ] Complete active matched03 independent grading/audits and publish paired findings.
+- [ ] Validate upstream FeatureBench/SWE-EVO graders/resources and frozen candidate adapter, then execute established coding economics.
+- [ ] Admit first complete matched product baseline and connect serial local worker execution to queued exact-build requests.
+- [ ] Execute a real candidate release comparison and publish approval before any release is allowed.

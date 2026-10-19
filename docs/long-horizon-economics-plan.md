@@ -3,7 +3,7 @@
 Status: researched protocol proposal and tested accounting helper, **not an
 executed FeatureBench/SWE-EVO experiment or evidence of treatment savings**.
 Reviewed official sources on 2026-10-19. Product development stays parked.
-The separately requested matched HaluEval/RAGTruth work remains in preparation;
+The separately requested matched HaluEval/RAGTruth study03 is generating;
 the published external-01 predictions used the model alone.
 
 ## Established evaluation candidates

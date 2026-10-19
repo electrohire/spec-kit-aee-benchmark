@@ -1,0 +1,65 @@
+name: Build benchmark candidate request
+on:
+  workflow_call:
+    inputs:
+      component:
+        type: string
+        required: true
+    outputs:
+      candidate_sha:
+        value: ${{ jobs.build.outputs.candidate_sha }}
+      artifact_sha256:
+        value: ${{ jobs.build.outputs.artifact_sha256 }}
+permissions:
+  contents: read
+jobs:
+  build:
+    # Public pull requests never run on the local inference host.
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    outputs:
+      candidate_sha: ${{ steps.request.outputs.candidate_sha }}
+      artifact_sha256: ${{ steps.request.outputs.artifact_sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Build exact candidate without publishing
+        env:
+          COMPONENT: ${{ inputs.component }}
+          COMPONENT_REPOSITORY: ${{ github.repository }}
+        run: |
+          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          if [ "$COMPONENT" = engine ] && [ "$COMPONENT_REPOSITORY" = electrohire/applied-epistemic-engineering ]; then
+            python -m pip install --require-hashes -r requirements/publish.txt
+            python -m build --no-isolation
+          elif [ "$COMPONENT" = extension ] && [ "$COMPONENT_REPOSITORY" = electrohire/spec-kit-aee ]; then
+            mkdir dist
+            git archive --format=zip --prefix=spec-kit-aee/ HEAD > dist/spec-kit-aee-candidate.zip
+          else
+            echo 'Unsupported component/repository'; exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: electrohire/spec-kit-aee-benchmark
+          ref: ee2604d6d22a350f3ef1a34ed936557e79c0bbd6
+          path: benchmark-control
+          persist-credentials: false
+      - name: Create content-bound benchmark request
+        id: request
+        env:
+          COMPONENT_REPOSITORY: ${{ github.repository }}
+          CANDIDATE_SHA: ${{ github.sha }}
+          BUILD_RUN_ID: ${{ github.run_id }}
+        run: |
+          python benchmark-control/scripts/build_benchmark_request.py --repository "$COMPONENT_REPOSITORY" --commit "$CANDIDATE_SHA" --run-id "$BUILD_RUN_ID" --inputs dist --output benchmark-candidate
+          python -c 'import json,os; p=json.load(open("benchmark-candidate/benchmark-request.json")); f=open(os.environ["GITHUB_OUTPUT"],"a"); f.write("candidate_sha="+p["commit"]+"\nartifact_sha256="+p["artifact_sha256"]+"\n")'
+          echo 'Benchmark request queued. No inference runs on this hosted build runner. Publication requires independently audited exact-build approval.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: benchmark-candidate-${{ github.sha }}
+          path: benchmark-candidate/
+          retention-days: 90
