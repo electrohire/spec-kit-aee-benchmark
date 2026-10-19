@@ -9,7 +9,7 @@ from benchmark_runner.store import utc
 
 
 def model_failure(alert):
-    if alert.get('snapshot_error'):
+    if alert.get('snapshot_error') or alert.get('alert_write_error'):
         return False
     if alert.get('reason') in {
         'repeated identical action without changed observation',

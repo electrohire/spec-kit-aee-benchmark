@@ -16,6 +16,10 @@ chains verify. Final independent grading/export and paired conclusions are not
 complete. [Incident, partial accounting and recovery limits](reports/investigation/current-study-02-infrastructure-stop-20261018/README.md).
 No campaign has been resumed or retried.
 
+The [prospective infrastructure guard correction](reports/investigation/current-study-02-infrastructure-stop-20261018/prospective-guard-followup.md)
+now halts on the first transport/storage failure and retains bounded diagnostics.
+Its501 offline tests do not establish recovery of the stopped experiment.
+
 ## Results and interpretation
 
 Study02 began under the [prospective inclusive failure policy](benchmarks/current_local/PROTOCOL-v2.md)

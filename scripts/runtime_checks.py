@@ -1,11 +1,14 @@
 """Prospective, fail-closed campaign supervision; never retries or changes caps."""
 import json
 import time
+import sys
 from pathlib import Path
 
 
 class RuntimeIntervention(RuntimeError):
-    pass
+    def __init__(self,reason,*,alert=None):
+        super().__init__(reason)
+        self.alert=alert
 
 
 def validate_capacity(seconds, timeout, phases, repair_rounds):
@@ -32,9 +35,18 @@ class RuntimeWatchdog:
                 self.capture()
             except Exception as exc:
                 alert['snapshot_error'] = repr(exc)
-        self.folder.mkdir(parents=True, exist_ok=True)
-        (self.folder/'runtime-alert.json').write_text(json.dumps(alert, indent=2)+'\n', encoding='utf-8')
-        raise RuntimeIntervention(reason)
+        try:
+            self.folder.mkdir(parents=True, exist_ok=True)
+            (self.folder/'runtime-alert.json').write_text(json.dumps(alert, indent=2)+'\n', encoding='utf-8')
+        except (OSError,ValueError,TypeError) as exc:
+            alert['alert_write_error']=repr(exc)
+            # Best effort only: storage failure cannot guarantee durable bytes.
+            try:
+                print(json.dumps({key:alert[key] for key in
+                    ('reason','error','snapshot_error','alert_write_error') if key in alert}),file=sys.stderr)
+            except OSError:
+                pass
+        raise RuntimeIntervention(reason,alert=alert)
 
     def deadline(self, end, timeout, phase, stage):
         if end-time.monotonic() < timeout:
@@ -46,6 +58,9 @@ class RuntimeWatchdog:
         if isinstance(exc, TimeoutError) or any(s in str(exc) for s in (
                 'token_cap', 'server_not_idle', 'ModelIdentityMismatch')):
             self.stop('runtime safety/budget failure', phase=phase, stage=stage, error=repr(exc))
+        if isinstance(exc,OSError):
+            self.stop('infrastructure/transport failure',phase=phase,stage=stage,error=repr(exc),
+                      infrastructure_evidence=getattr(exc,'evidence',None))
         if self.errors >= self.max_errors:
             self.stop('consecutive action/transport failures', phase=phase, stage=stage,
                       consecutive_errors=self.errors, error=repr(exc))

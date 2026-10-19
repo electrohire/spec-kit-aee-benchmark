@@ -14,6 +14,7 @@ import math
 import subprocess
 import time
 import urllib.parse
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -26,6 +27,7 @@ from context_window import select_context
 from benchmark_runner.project_assessment import assess_project
 from runtime_checks import validate_capacity, RuntimeWatchdog
 from action_protocol import ACTION_RESPONSE_FORMAT
+from infrastructure_errors import response_failure, RESPONSE_LIMIT
 from readiness_gate import validate_representative
 
 _grade_impl = runner.grade
@@ -55,8 +57,26 @@ def http(route, payload=None, timeout=120):
         url += "?"+urllib.parse.urlencode({"model":MODEL})
     request = urllib.request.Request(url, canonical(payload) if payload is not None else None,
                                      {"Content-Type":"application/json"})
-    with opener.open(request, timeout=timeout) as handle:
-        return json.loads(handle.read())
+    try:
+        with opener.open(request, timeout=timeout) as handle:
+            status=getattr(handle,'status',None)
+            raw=handle.read()
+    except urllib.error.HTTPError as exc:
+        try:
+            body=exc.read(RESPONSE_LIMIT+1)
+            complete=len(body)<=RESPONSE_LIMIT
+        except OSError:
+            body=b'';complete=False
+        raise response_failure(route,request.data,body,status=exc.code,
+            reason='http_error',source_complete=complete) from exc
+    except OSError as exc:
+        failure=response_failure(route,request.data,b'',reason='transport_error',source_complete=False)
+        failure.evidence['original_error']=repr(exc)[:1000]
+        raise failure from exc
+    try:
+        return json.loads(raw)
+    except (ValueError,UnicodeError) as exc:
+        raise response_failure(route,request.data,raw,status=status,reason='invalid_json') from exc
 
 
 class Provider(runner.Provider):

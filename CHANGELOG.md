@@ -2,6 +2,12 @@
 
 ## Unreleased — authorized corrected study02, 2026-10-18
 
+- Halt immediately on infrastructure/transport errors, retain bounded failed
+  request/response diagnostics, and preserve the original intervention across
+  alert-write failure. Keep missing usage unknown.501 offline tests pass; retain
+  the initial red cases and failed first audit composition. Study02 remains
+  stopped with historical server/storage cause unresolved; no retry or model call.
+
 - Record study02's terminal infrastructure interruption,192 generation calls and
  4,172,224 native tokens without claiming completed scoring or comparative benefit.
  Preserve 348 input hashes, existing chains and all setup history. Document current

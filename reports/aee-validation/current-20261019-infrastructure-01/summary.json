@@ -1,0 +1,54 @@
+{
+  "tests": 59,
+  "test_exit": 0,
+  "machine_claims": 1,
+  "evidence_verification": null,
+  "aee_exit": 1,
+  "composition_exit": 2,
+  "composed": {
+    "schema_version": "1.0",
+    "evaluator": {
+      "id": "composed",
+      "version": "1.0",
+      "name": "Composed (strict)"
+    },
+    "phase": "after_implement",
+    "outcome": "block",
+    "summary": "No evaluator results for phase 'after_implement': composition requires at least one valid evaluator result and fails closed \u2014 absence of evidence is not a pass. The results directory contains no result files for this phase.",
+    "findings": [
+      {
+        "id": "composed:NO-RESULTS",
+        "severity": "critical",
+        "kind": "missing_evidence",
+        "subject": "after_implement",
+        "description": "No valid evaluator results were available to compose for phase 'after_implement'. A missing/crashed evaluator or a typo'd phase must never read downstream as a green gate.",
+        "evidence_refs": [],
+        "provenance_refs": [],
+        "uncertainty": "insufficient_evidence",
+        "recommended_action": "block",
+        "rationale": "Fail-closed composition (Spec 003 FR-6.1)."
+      }
+    ],
+    "next_action": {
+      "kind": "block",
+      "target_phase": null,
+      "message": "No evaluator results found for phase 'after_implement'."
+    },
+    "metadata": {
+      "timestamp": "2026-10-19T10:24:36Z",
+      "duration_ms": 0,
+      "artifacts_evaluated": [],
+      "deterministic": true,
+      "composition_strategy": "strict",
+      "evaluator_count": 0,
+      "contradictory_findings": [],
+      "evaluator_results": [],
+      "invalid_results": [],
+      "duplicate_results_ignored": [],
+      "gating": true,
+      "no_results": true
+    },
+    "state": {}
+  },
+  "limitation": "New narrow machine observation; Review180 approval remains concluded for its original scope. No new human exposition or campaign recovery asserted."
+}
