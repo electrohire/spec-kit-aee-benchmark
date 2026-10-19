@@ -1,9 +1,6 @@
 # Established benchmarks and harness I/O
 
-The maintained task definitions, labels and independent graders come from upstream.
-This repository maintains a thin treatment, provenance and accounting adapter.
-Older convenience tasks and synthetic factbooks are a read-only historical archive;
-they are not an expanding benchmark product or a release requirement.
+The maintained task definitions, labels and independent graders come from upstream. This repository maintains a thin treatment, provenance and accounting adapter. Older convenience tasks and synthetic factbooks are a read-only historical archive; they are not an expanding benchmark product or a release requirement.
 
 ```mermaid
 flowchart TD
@@ -30,10 +27,7 @@ flowchart TD
     R --> L["Exact-build release comparison<br/>accepted baseline + declared margins"]
 ```
 
-AEE feedback is not an upstream label, an independent semantic oracle, human
-acceptance or a new correctness score. A local hash-chain anchor establishes local
-record integrity, not authenticated identity, trusted time or truth. All generated
-artifacts in the detector study remain unaccepted drafts.
+AEE feedback is not an upstream label, an independent semantic oracle, human acceptance or a new correctness score. A local hash-chain anchor establishes local record integrity, not authenticated identity, trusted time or truth. All generated artifacts in the detector study remain unaccepted drafts.
 
 ## What the results mean today
 
@@ -45,32 +39,15 @@ artifacts in the detector study remain unaccepted drafts.
 | FeatureBench / SWE-EVO | Official references and resource metadata prepared; not executed | Suitable established coding suites for the next frozen pilot | Any observed coding savings or long-horizon break-even yet |
 | [Historical stopped runs](../START_HERE.md#historical-evidence) | Failed calls and full scheduled denominators retained | Failure diagnosis and real incurred cost | Successful full comparison or generic-failure-as-hallucination labels |
 
-The completed external detector cost 213,457 native tokens, with 0 unknowns. Its
-240 one-call classifications are not cost-comparable to the matched two-call
-workflow plus policy setup. Keep each cohort's costs separately visible.
+The completed external detector cost 213,457 native tokens, with 0 unknowns. Its 240 one-call classifications are not cost-comparable to the matched two-call workflow plus policy setup. Keep each cohort's costs separately visible.
 
 ## Reading future paired findings
 
-* Accuracy includes abstentions in its denominator; also show decisive coverage.
-  False acceptance means an author-labelled hallucination was called grounded;
-  false alarm means an author-labelled grounded response was called hallucinated.
-* Compare baseline → Spec Kit, baseline → Spec Kit+AEE and Spec Kit → Spec Kit+AEE on the
-  SAME cases. Bootstrap question/task clusters, not dependent checkpoints as if
-  independent. One generated policy/seed gives conditional uncertainty only.
-* Show raw proposed decisions and AEE gate eligibility separately. Blocking every
-  draft can reduce accepted errors while making zero useful deliveries.
-* Coding correctness comes from retained upstream grades. Positive/negative/
-  unknown/ungraded completion declarations stay explicit. Generic failures and
-  AEE findings are not hallucination ground truth.
-* Token cost includes setup, failed and scored physical calls. Cache is an input
-  subset, not another charge. Unknown usage is a lower bound with a reason.
-  Local API spend 0 excludes hardware, energy and labor.
-* Payback requires matched, retained correct work without increased unsafe
-  completion claims. Show the first observed and sustained crossover only inside
-  measured checkpoints. No success means cost per success is undefined; cheap
-  failures and extrapolated horizons are not savings.
+* Accuracy includes abstentions in its denominator; also show decisive coverage. False acceptance means an author-labelled hallucination was called grounded; false alarm means an author-labelled grounded response was called hallucinated.
+* Compare baseline → Spec Kit, baseline → Spec Kit+AEE and Spec Kit → Spec Kit+AEE on the SAME cases. Bootstrap question/task clusters, not dependent checkpoints as if independent. One generated policy/seed gives conditional uncertainty only.
+* Show raw proposed decisions and AEE gate eligibility separately. Blocking every draft can reduce accepted errors while making zero useful deliveries.
+* Coding correctness comes from retained upstream grades. Positive/negative/ unknown/ungraded completion declarations stay explicit. Generic failures and AEE findings are not hallucination ground truth.
+* Token cost includes setup, failed and scored physical calls. Cache is an input subset, not another charge. Unknown usage is a lower bound with a reason. Local API spend 0 excludes hardware, energy and labor.
+* Payback requires matched, retained correct work without increased unsafe completion claims. Show the first observed and sustained crossover only inside measured checkpoints. No success means cost per success is undefined; cheap failures and extrapolated horizons are not savings.
 
-Read [the long-horizon design](long-horizon-economics-plan.md) and
-[the build/release contract](benchmark-release-gates.md). Public-case exposure,
-convenience-task history, controller adaptations, outcome-conditioned debugging,
-local hardware and concurrent CPU work remain disclosed limitations.
+Read [the long-horizon design](long-horizon-economics-plan.md) and [the build/release contract](benchmark-release-gates.md). Public-case exposure, convenience-task history, controller adaptations, outcome-conditioned debugging, local hardware and concurrent CPU work remain disclosed limitations.

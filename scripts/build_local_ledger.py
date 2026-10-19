@@ -1,4 +1,5 @@
 """Inventory measured local benchmark-model work without pooling success rates."""
+from benchmark_runner.markdown_presentation import format_markdown, write_markdown
 import json
 from pathlib import Path
 base=Path('reports/local'); study=base/'long-horizon-03'; small=base/'gpu-20260917'
@@ -21,5 +22,5 @@ ledger=dict(rows=rows,calls=sum(r['calls'] for r in rows),known_tokens=known,unk
 text='# Local measurement index\n\nBoth GPUs were verified: RTX 4070 SUPER 12282 MiB and RTX 5060 Ti 16311 MiB.\nAll benchmark inference used localhost, with $0 API expenditure. Hardware, energy\nand controller work are unpriced. The original SWE-bench pilot remains unrun.\n\n- [CPU application/AEE runtime and six-task study](gpu-20260917/README.md), including actual supplemental repairs.\n- [Staged TinyDB study](long-horizon-03/README.md): nine dependent checkpoints, no complete hidden milestone passes, all three arms timed out.\n- [Interrupted pilot 1](long-horizon-01-interrupted/README.md) and [pilot 2](long-horizon-02-interrupted/README.md), retained as development overhead.\n\n## Complete benchmark-model work inventory\n\nThis combines work counts, not success rates or treatment estimates across models.\n\n| Scope | Calls | Known tokens | Calls with unknown usage |\n|---|---:|---:|---:|\n'
 for r in rows:text+=f"| [{r['scope']}]({r['source']}) | {r['calls']:,} | {r['known_tokens']:,} | {r['unknown_calls']} |\n"
 text+=f"\nTotal: **{ledger['calls']:,} calls; at least {known:,} tokens; {ledger['unknown_calls']} unknown usages**.\nThe configured reservation bound is {known+extra:,} tokens; this is not an imputed\nmeasured total. See [the ledger](token-ledger.json). Failed work and development\nsmokes are retained separately from the scored arm denominators.\n"
-(base/'README.md').write_text(text)
+write_markdown(base/'README.md', text)
 print(json.dumps({k:v for k,v in ledger.items() if k!='rows'},indent=2))

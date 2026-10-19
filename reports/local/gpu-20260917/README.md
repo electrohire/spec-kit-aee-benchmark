@@ -1,21 +1,12 @@
 # Measured GPU exploration and repair supplement — 2026-09-17
 
-**Observed result:* * the document-adapted workflows used substantially more tokens
-and had fewer passing primary solutions in this six-task sample. After a shared
-repair policy all arms passed 5/6 of the now feedback-exposed upstream test suites.
-No superiority, token saving, or full Spec Kit integration claim is supported.
+**Observed result:* * the document-adapted workflows used substantially more tokens and had fewer passing primary solutions in this six-task sample. After a shared repair policy all arms passed 5/6 of the now feedback-exposed upstream test suites. No superiority, token saving, or full Spec Kit integration claim is supported.
 
-Six public Exercism tasks, one attempt/task/arm: 18 primary attempts, not 18 tasks.
-Qwen2.5-Coder-14B-Instruct Q4_K_M, llama.cpp b11026, both NVIDIA GPUs, zero paid model
-API calls. The planned 20 x 3 x 3 SWE-bench pilot remains unrun.
+Six public Exercism tasks, one attempt/task/arm: 18 primary attempts, not 18 tasks. Qwen2.5-Coder-14B-Instruct Q4_K_M, llama.cpp b11026, both NVIDIA GPUs, zero paid model API calls. The planned 20 x 3 x 3 SWE-bench pilot remains unrun.
 
 ## Primary token economics
 
-Correct answer means a final submitted module passing every unchanged upstream test
-with expected test discovery and no skips. Tokens include every phase and failed
-attempt. Tokens per correct answer = all-attempt input + output / passing solutions
-(with parentheses around the summed numerator). Input and output are also shown
-separately; they have different computational costs and are not dollar-equivalent.
+Correct answer means a final submitted module passing every unchanged upstream test with expected test discovery and no skips. Tokens include every phase and failed attempt. Tokens per correct answer = all-attempt input + output / passing solutions (with parentheses around the summed numerator). Input and output are also shown separately; they have different computational costs and are not dollar-equivalent.
 
 | Arm | Passes / attempts | Calls | Input tokens | Output tokens | Total tokens | Tokens / correct |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -31,21 +22,11 @@ All native usage was known; cached input tokens were zero. No failed work is exc
 | Spec Kit (adapted) | 193.30 | 192.75 | 32.31 | 96.65 | 58,887 | 3 |
 | Spec Kit + AEE (adapted) | 193.47 | 185.84 | 31.47 | 193.47 | 86,936 | 4 |
 
-Workflow time includes model HTTP calls, assessments and bookkeeping; it excludes
-model startup, development smoke, primary grading and setup. HTTP time is not GPU
-kernel time. The seven truncations happened at the frozen 512-token document cap;
-they are workflow/cap failures, not seven demonstrated coding-ability failures.
-The 11 normally generated final modules had three failing test suites: Hamming
-in baseline and combined arms (missing error-message period), and resistor-color
-in the adapted Spec Kit arm (colors() referred to a function-local color_map).
-No successful final module contains grader-output spoofing or process manipulation.
+Workflow time includes model HTTP calls, assessments and bookkeeping; it excludes model startup, development smoke, primary grading and setup. HTTP time is not GPU kernel time. The seven truncations happened at the frozen 512-token document cap; they are workflow/cap failures, not seven demonstrated coding-ability failures. The 11 normally generated final modules had three failing test suites: Hamming in baseline and combined arms (missing error-message period), and resistor-color in the adapted Spec Kit arm (colors() referred to a function-local color_map). No successful final module contains grader-output spoofing or process manipulation.
 
 ## Supplemental actual repair loops
 
-The user requested this study after primary results existed. Its own policy was
-frozen before repair generation: same model, up to two ordinary repair calls per
-failed case, same failure-feedback prompt for all arms, no reruns of passing cases.
-These are **same-test feedback outcomes**, not independent held-out repair scores.
+The user requested this study after primary results existed. Its own policy was frozen before repair generation: same model, up to two ordinary repair calls per failed case, same failure-feedback prompt for all arms, no reruns of passing cases. These are **same-test feedback outcomes**, not independent held-out repair scores.
 
 | Arm | Eligible failures | Repair calls | Newly fixed (round 1 / 2) | Final passes | Repair input / output | Cumulative tokens | Cumulative tokens / correct |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -59,19 +40,11 @@ These are **same-test feedback outcomes**, not independent held-out repair score
 | Spec Kit (adapted) | 20.03 | 15.52 | 4.38 | 1,154.67 | 4 |
 | Spec Kit + AEE (adapted) | 20.16 | 14.62 | 5.38 | 1,055.50 | 4 |
 
-Seven cases were fixed on their first repair; no second-round repair fixed another
-case. All three remaining failures were Hamming. The model kept producing the error
-message without the final period despite explicit test diffs. Six unsuccessful
-Hamming repair calls remain counted. Generation-cap failures received an ordinary
-implementation request with empty submitted code; that is recovery from a failed
-workflow, not evidence that AEE repaired code. Repair stages did not rerun AEE or
-Spec Kit documents. Their results cannot establish an AEE-specific repair advantage.
+Seven cases were fixed on their first repair; no second-round repair fixed another case. All three remaining failures were Hamming. The model kept producing the error message without the final period despite explicit test diffs. Six unsuccessful Hamming repair calls remain counted. Generation-cap failures received an ordinary implementation request with empty submitted code; that is recovery from a failed workflow, not evidence that AEE repaired code. Repair stages did not rerun AEE or Spec Kit documents. Their results cannot establish an AEE-specific repair advantage.
 
 ## Scheduled revision versus actual rework
 
-The original adapted workflows include a convergence review and final implementation
-pass. Secondary grading of normally completed initial implementations occurred after
-all primary generation; it supplied no feedback to the primary model calls.
+The original adapted workflows include a convergence review and final implementation pass. Secondary grading of normally completed initial implementations occurred after all primary generation; it supplied no feedback to the primary model calls.
 
 | Arm | Initial/solve + final implementation calls | Completed convergence reviews | Scheduled final passes | Comparable initial/final code pairs | Text / AST changes | Primary initial-to-final grades |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -79,13 +52,7 @@ all primary generation; it supplied no feedback to the primary model calls.
 | Spec Kit (adapted) | 6 | 3 | 3 | 3 | 0 / 0 | {"fail -> fail": 1, "pass -> pass": 2} |
 | Spec Kit + AEE (adapted) | 4 | 2 | 2 | 2 | 0 / 0 | {"fail -> fail": 1, "pass -> pass": 1} |
 
-All five completed initial/final pairs were unchanged. Scheduled reviews therefore
-produced zero observed code fixes in this sample. They must not be described as
-successful repair loops. Actual test-feedback loops are the separately counted
-13 supplemental calls above. Primary infrastructure retries and AEE recovery loops
-were zero. Eleven installed AEE/Evaluator assessments returned gather_evidence;
-each examined a controller-written generic unverified claim, not extracted code
-claims. This demonstrates evidence-gap processing, not defect detection.
+All five completed initial/final pairs were unchanged. Scheduled reviews therefore produced zero observed code fixes in this sample. They must not be described as successful repair loops. Actual test-feedback loops are the separately counted 13 supplemental calls above. Primary infrastructure retries and AEE recovery loops were zero. Eleven installed AEE/Evaluator assessments returned gather_evidence; each examined a controller-written generic unverified claim, not extracted code claims. This demonstrates evidence-gap processing, not defect detection.
 
 ## Per-task paired outcomes
 
@@ -140,17 +107,11 @@ Weighted rates sum native tokens and divide by summed native phase time.
 | Spec Kit (adapted) | 2,874.69 | 42.46 |
 | Spec Kit + AEE (adapted) | 2,739.47 | 41.75 |
 
-Process launch to health-ready was 3.695 seconds, including runtime initialization.
-This is not a measured cold disk/cache load. The excluded hello development call
-used 44 input + 13 output tokens and 0.860 seconds HTTP time; its one Docker test
-passed. Deliberately wrong-code and zero-test grading checks both failed as required.
+Process launch to health-ready was 3.695 seconds, including runtime initialization. This is not a measured cold disk/cache load. The excluded hello development call used 44 input + 13 output tokens and 0.860 seconds HTTP time; its one Docker test passed. Deliberately wrong-code and zero-test grading checks both failed as required.
 
 ## Deterministic application and AEE runtime
 
-One warmup and seven measured repetitions per case; seed-shuffled measured order.
-No concurrent model inference. Input construction excluded. Pipeline includes
-subprocess startup, Evaluator composition and evidence I/O. CLI includes startup,
-file I/O and atomic output. All substantive output hashes matched within each case.
+One warmup and seven measured repetitions per case; seed-shuffled measured order. No concurrent model inference. Input construction excluded. Pipeline includes subprocess startup, Evaluator composition and evidence I/O. CLI includes startup, file I/O and atomic output. All substantive output hashes matched within each case.
 
 | Workload | Size | Median ms | Min ms | Max ms | Measured repetitions |
 | --- | --- | --- | --- | --- | --- |
@@ -163,48 +124,19 @@ file I/O and atomic output. All substantive output hashes matched within each ca
 | triage | 10000 | 431.79 | 373.65 | 465.80 | 7 |
 | triage | 100000 | 1,383.32 | 1,300.67 | 2,123.81 | 7 |
 
-The earlier local `runtime/` series is preliminary and excluded; the interrupted
-laptop warmups are also not results. Desktop background apps remained running;
-a short controller AEE assessment operation overlapped part of the runtime series.
-This host-load interference and wide CLI range limit precision. The data is not an
-isolated performance laboratory result or a CPU/GPU speedup comparison. AEE/triage
-workloads are CPU/Python measurements; the GPUs accelerate the coding model.
+The earlier local `runtime/` series is preliminary and excluded; the interrupted laptop warmups are also not results. Desktop background apps remained running; a short controller AEE assessment operation overlapped part of the runtime series. This host-load interference and wide CLI range limit precision. The data is not an isolated performance laboratory result or a CPU/GPU speedup comparison. AEE/triage workloads are CPU/Python measurements; the GPUs accelerate the coding model.
 
 ## Hardware, spending and scope
 
-Observed i9-14900F (24 cores / 32 threads), 64 GB RAM, Windows 11 Pro for Workstations,
-driver 610.88. nvidia-smi: 4070 SUPER 12282 MiB; 5060 Ti 16311 MiB. User's hardware
-report: Gen4 x16 and x4 respectively. Explicit 10:14 layer split; 16384 context,
-one slot, temperature zero, seed 20260917. Shared system memory is not counted as
-VRAM. Post-smoke usage was about 6523/6927 MiB; sampled load is retained in CSV.
-Server properties matched before primary generation and after repairs. The original
-Qwen3.6 service was restored and its model reported loaded after the experiment.
+Observed i9-14900F (24 cores / 32 threads), 64 GB RAM, Windows 11 Pro for Workstations, driver 610.88. nvidia-smi: 4070 SUPER 12282 MiB; 5060 Ti 16311 MiB. User's hardware report: Gen4 x16 and x4 respectively. Explicit 10:14 layer split; 16384 context, one slot, temperature zero, seed 20260917. Shared system memory is not counted as VRAM. Post-smoke usage was about 6523/6927 MiB; sampled load is retained in CSV. Server properties matched before primary generation and after repairs. The original Qwen3.6 service was restored and its model reported loaded after the experiment.
 
-Benchmark model API expenditure: **USD 0**. Local electricity, hardware depreciation,
-downloads, controller development and human/setup time are unpriced, not zero.
-There were 60 primary + 13 repair + 1 development model calls, all to the dedicated
-localhost server. Primary + repair tokens total 257984; excluded development adds
-57 tokens. No paid OpenAI provider or credit-consuming benchmark endpoint was used.
+Benchmark model API expenditure: **USD 0**. Local electricity, hardware depreciation, downloads, controller development and human/setup time are unpriced, not zero. There were 60 primary + 13 repair + 1 development model calls, all to the dedicated localhost server. Primary + repair tokens total 257984; excluded development adds 57 tokens. No paid OpenAI provider or credit-consuming benchmark endpoint was used.
 
-Limitations: six convenience tasks; public contamination; one quantized model;
-no repeats; document-only Spec Kit; no solver shell/repository tools; unequal
-phase counts; restrictive document caps; generic AEE claims; no component-isolated
-AEE effect; test-feedback exposure in repairs; controller-authored harness; and
-no external replication. AST filtering can reject valid programs, although no
-observed final grade here failed that filter. Timeout checks are between operations
-and HTTP timeouts are socket timeouts; no independent whole-operation watchdog.
-No observed request/attempt exceeded its limit. Grader output parsing is not
-hardened against adversarial spoofing; reviewed submitted modules did not do so.
+Limitations: six convenience tasks; public contamination; one quantized model; no repeats; document-only Spec Kit; no solver shell/repository tools; unequal phase counts; restrictive document caps; generic AEE claims; no component-isolated AEE effect; test-feedback exposure in repairs; controller-authored harness; and no external replication. AST filtering can reject valid programs, although no observed final grade here failed that filter. Timeout checks are between operations and HTTP timeouts are socket timeouts; no independent whole-operation watchdog. No observed request/attempt exceeded its limit. Grader output parsing is not hardened against adversarial spoofing; reviewed submitted modules did not do so.
 
-Expanded economics/revision analysis was requested during generation, but its
-written-plan hash was captured after primary results existed. The initial text
-and corrected plan remain on record. Repair policy was separately frozen before
-repair outputs. Controller development did not strictly follow every Spec Kit
-setup command in sequence; this deviation is explicit in the protocol.
+Expanded economics/revision analysis was requested during generation, but its written-plan hash was captured after primary results existed. The initial text and corrected plan remain on record. Repair policy was separately frozen before repair outputs. Controller development did not strictly follow every Spec Kit setup command in sequence; this deviation is explicit in the protocol.
 
-ElectroHire maintains the evaluated AEE/Evaluator projects. This is a conflict of
-interest. Treat these artifacts as inspectable local evidence, not a marketing
-proof or a claim that full Spec Kit worsens coding.
+ElectroHire maintains the evaluated AEE/Evaluator projects. This is a conflict of interest. Treat these artifacts as inspectable local evidence, not a marketing proof or a claim that full Spec Kit worsens coding.
 
 ## Evidence and reproduction
 
@@ -216,8 +148,4 @@ proof or a claim that full Spec Kit worsens coding.
 * [Spec Kit](https://github.com/github/spec-kit), [AEE extension](https://github.com/electrohire/spec-kit-aee), [Evaluator](https://github.com/electrohire/spec-kit-evaluator), [AEE engine](https://github.com/electrohire/applied-epistemic-engineering).
 * [Model revision](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF/tree/d0a692ef765eefbf2fabb130b3cb2e8917e3d225), [runtime release](https://github.com/ggml-org/llama.cpp/releases/tag/b11026), [Exercism source](https://github.com/exercism/python/tree/1f6aab8667bf653b10cc3799f94352fcdb749db6), [canonical problem specifications](https://github.com/exercism/problem-specifications).
 
-Operational failures preserved: original laptop interruption; initial GPU-host
-uv/shared-temp permission errors (a test invocation had 19 passes/29 setup errors);
-successful retry used a project-local environment/temp directory. No model attempt
-was rerun to hide these setup issues. Seven primary truncations, three primary test
-failures and six failed repair calls are all visible in the evidence.
+Operational failures preserved: original laptop interruption; initial GPU-host uv/shared-temp permission errors (a test invocation had 19 passes/29 setup errors); successful retry used a project-local environment/temp directory. No model attempt was rerun to hide these setup issues. Seven primary truncations, three primary test failures and six failed repair calls are all visible in the evidence.

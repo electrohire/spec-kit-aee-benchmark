@@ -32,21 +32,11 @@
 * [x] T013 Publish offline evidence, execute convergence and open draft PR.
 * [ ] T014 Run real smoke after budget/credentials/preflight, then frozen pilot.
 
-Dependencies: foundation before US1/US2; tutorial can be developed independently.
-MVP: reproducible offline dry-run and correct accounting, followed by integration.
-Parallel opportunities: research of upstream harness while controller is specified.
-Tests are required by the brief. T014 remains gated; do not check it from mocks.
+Dependencies: foundation before US1/US2; tutorial can be developed independently. MVP: reproducible offline dry-run and correct accounting, followed by integration. Parallel opportunities: research of upstream harness while controller is specified. Tests are required by the brief. T014 remains gated; do not check it from mocks.
 
-2026-10-19 stopped-study postmortem exports 36 rows and four independent grader
-invocations on two final snapshots. Cachetools collection is incomplete;
-TinyDB 225 public passes do not imply hidden acceptance. Full-inventory proxy
-unknown 1/ungraded 35, zero scored AEE exposure. T014 and valid paired studies remain
-unfinished. No generation, resume, retry or source tuning from hidden outcomes.
+2026-10-19 stopped-study postmortem exports 36 rows and four independent grader invocations on two final snapshots. Cachetools collection is incomplete; TinyDB 225 public passes do not imply hidden acceptance. Full-inventory proxy unknown 1/ungraded 35, zero scored AEE exposure. T014 and valid paired studies remain unfinished. No generation, resume, retry or source tuning from hidden outcomes.
 
-2026-10-19: Prospective first-error infrastructure guard and bounded diagnostics
-validated with 501 offline cases and 59 focused receipt-bound cases. Actual AEE
-and one Evaluator composed iterate; study 02 remains stopped, T014 unfinished.
-See the incident's prospective-guard-followup.md for retained failures and limits.
+2026-10-19: Prospective first-error infrastructure guard and bounded diagnostics validated with 501 offline cases and 59 focused receipt-bound cases. Actual AEE and one Evaluator composed iterate; study 02 remains stopped, T014 unfinished. See the incident's prospective-guard-followup.md for retained failures and limits.
 
 
 ## Established-suite maintenance and release integration (2026-10-19)

@@ -67,46 +67,16 @@ Per-phase and per-stage detail is in `summary.json`; every call remains separate
 
 ## Interpretation of this run
 
-All nine hidden milestones failed the strict acceptance rule. Every snapshot passed
-all 223 unchanged upstream tests, but every arm missed the retained-handle/cache and
-document-ID rollback cases. Final feature coverage was baseline 21/24, Spec Kit
-5/24, combined 3/24; related and parameterized cases are not independent answers.
-There is no demonstrated correctness or token-saving advantage for the workflow
-arms in this study. It does not establish their general effectiveness.
+All nine hidden milestones failed the strict acceptance rule. Every snapshot passed all 223 unchanged upstream tests, but every arm missed the retained-handle/cache and document-ID rollback cases. Final feature coverage was baseline 21/24, Spec Kit 5/24, combined 3/24; related and parameterized cases are not independent answers. There is no demonstrated correctness or token-saving advantage for the workflow arms in this study. It does not establish their general effectiveness.
 
-All three arms encountered a 120-second request timeout. Baseline and Spec Kit
-reached the third milestone; the combined arm stopped in the first. The unknown
-usage rule then prevented further model calls in that arm. Six common repair
-attempts were blocked before inference, so this long study contains zero actual
-repair model calls. Real supplemental repair results are in the earlier six-task
-study; these blocked attempts do not show whether longer-project repairs would work.
+All three arms encountered a 120-second request timeout. Baseline and Spec Kit reached the third milestone; the combined arm stopped in the first. The unknown usage rule then prevented further model calls in that arm. Six common repair attempts were blocked before inference, so this long study contains zero actual repair model calls. Real supplemental repair results are in the earlier six-task study; these blocked attempts do not show whether longer-project repairs would work.
 
-The combined arm executed three planning assessments, all `iterate`. It never
-reached implementation assessment, evidence rework, convergence, or final
-implementation. See `workflow-audit.json` for actual completed phases and tool
-activity. Planning findings are not an independent correctness verdict. The
-conditional commit/rollback contradiction flag is discussed in
-`assessment-interpretation.md`; it is not counted as a confirmed bug caught.
+The combined arm executed three planning assessments, all `iterate`. It never reached implementation assessment, evidence rework, convergence, or final implementation. See `workflow-audit.json` for actual completed phases and tool activity. Planning findings are not an independent correctness verdict. The conditional commit/rollback contradiction flag is discussed in `assessment-interpretation.md`; it is not counted as a confirmed bug caught.
 
-A context/caching example is `baseline/call-081.json`: 124,622 tokens were actually
-processed in the prompt stage in 66.145 seconds, before generation. Only 253 input
-tokens were reused from cache. Long history can invalidate prefix reuse when older
-messages are removed. These adapter and runtime limits materially constrain the
-comparison; the passing arithmetic preflight was not a worst-case latency test.
+A context/caching example is `baseline/call-081.json`: 124,622 tokens were actually processed in the prompt stage in 66.145 seconds, before generation. Only 253 input tokens were reused from cache. Long history can invalidate prefix reuse when older messages are removed. These adapter and runtime limits materially constrain the comparison; the passing arithmetic preflight was not a worst-case latency test.
 
-`source-review.md` and `source-archive-integrity.json` record scoped source checks.
-The combined source retained seven shadowing TransactionalTinyDB definitions and
-six wrapper definitions, a maintainability issue in its interrupted implementation.
-No grader/test-discovery bypass was observed in the reviewed changes. This is not
-a general security proof. `grade-audit.json` verifies expected test counts and
-matching primary/final outcomes. `service-restoration.json` confirms the original
-local model service was loaded again after the benchmark server stopped.
+`source-review.md` and `source-archive-integrity.json` record scoped source checks. The combined source retained seven shadowing TransactionalTinyDB definitions and six wrapper definitions, a maintainability issue in its interrupted implementation. No grader/test-discovery bypass was observed in the reviewed changes. This is not a general security proof. `grade-audit.json` verifies expected test counts and matching primary/final outcomes. `service-restoration.json` confirms the original local model service was loaded again after the benchmark server stopped.
 
-Exact measured source bytes and upstream notices are in `frozen-inputs`, indexed by
-`frozen-input-map.json`. A reservation upper bound equals known native usage plus
-preflight input and the output reservation for each unknown call; it is not an
-imputed usage total. Public traces omit native reasoning and full requests, retaining
-hashes and all returned usage. Exact historical prompt reconstruction is not possible
-from the public trace alone.
+Exact measured source bytes and upstream notices are in `frozen-inputs`, indexed by `frozen-input-map.json`. A reservation upper bound equals known native usage plus preflight input and the output reservation for each unknown call; it is not an imputed usage total. Public traces omit native reasoning and full requests, retaining hashes and all returned usage. Exact historical prompt reconstruction is not possible from the public trace alone.
 
 Spec Kit stage 2 edited implementation source during the specify phase (call-094.json). Phase labels do not establish faithful semantic execution of every skill.

@@ -1,8 +1,6 @@
 # Local measurement index
 
-Both GPUs were verified: RTX 4070 SUPER 12282 MiB and RTX 5060 Ti 16311 MiB.
-All benchmark inference used localhost, with $0 API expenditure. Hardware, energy
-and controller work are unpriced. The original SWE-bench pilot remains unrun.
+Both GPUs were verified: RTX 4070 SUPER 12282 MiB and RTX 5060 Ti 16311 MiB. All benchmark inference used localhost, with $0 API expenditure. Hardware, energy and controller work are unpriced. The original SWE-bench pilot remains unrun.
 
 * [CPU application/AEE runtime and six-task study](gpu-20260917/README.md), including actual supplemental repairs.
 * [Staged TinyDB study](long-horizon-03/README.md): nine dependent checkpoints, no complete hidden milestone passes, all three arms timed out.
@@ -11,9 +9,7 @@ and controller work are unpriced. The original SWE-bench pilot remains unrun.
 
 ## Historical benchmark-model inventory through run 03
 
-This combines work counts, not success rates or treatment estimates across models.
-It predates the expanded campaign above; its immutable ledger remains available
-for the later cumulative inventory.
+This combines work counts, not success rates or treatment estimates across models. It predates the expanded campaign above; its immutable ledger remains available for the later cumulative inventory.
 
 | Scope | Calls | Known tokens | Calls with unknown usage |
 | --- | ---: | ---: | ---: |
@@ -25,7 +21,4 @@ for the later cumulative inventory.
 | [Interrupted long pilot 2](long-horizon-02-interrupted/summary.json) | 234 | 4,377,753 | 0 |
 | [Frozen long comparison including failures](long-horizon-03/summary.json) | 335 | 22,819,457 | 3 |
 
-Total: **1,001 calls; at least 33,983,869 tokens; 3 unknown usages**.
-The configured reservation bound is 34,375,606 tokens; this is not an imputed
-measured total. See [the ledger](token-ledger.json). Failed work and development
-smokes are retained separately from the scored arm denominators.
+Total: **1,001 calls; at least 33,983,869 tokens; 3 unknown usages**. The configured reservation bound is 34,375,606 tokens; this is not an imputed measured total. See [the ledger](token-ledger.json). Failed work and development smokes are retained separately from the scored arm denominators.

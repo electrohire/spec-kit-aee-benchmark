@@ -1,4 +1,5 @@
 """Build descriptive tables directly from audited primary and repair artifacts."""
+from benchmark_runner.markdown_presentation import format_markdown, write_markdown
 import collections
 import csv
 import hashlib
@@ -193,7 +194,7 @@ successful retry used a project-local environment/temp directory. No model attem
 was rerun to hide these setup issues. Seven primary truncations, three primary test
 failures and six failed repair calls are all visible in the evidence.
 '''
-(OUT/'README.md').write_text(text,encoding='utf-8',newline='\n')
+write_markdown(OUT/'README.md', text)
 with (OUT/'comparison.csv').open('w',encoding='utf-8',newline='') as f:
     writer=csv.writer(f)
     writer.writerow(['arm','primary_passed','attempts','primary_input_tokens','primary_output_tokens','primary_tokens_per_correct','repair_calls','final_passed','cumulative_tokens','cumulative_tokens_per_correct'])

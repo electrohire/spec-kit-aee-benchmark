@@ -4,6 +4,7 @@ prepare/score are offline. run refuses an active coding supervisor, existing
 run receipts, busy worker, changed inputs, and every infrastructure/protocol error.
 Incorrect classifications are measured outcomes, never retried or relabelled.
 """
+from benchmark_runner.markdown_presentation import format_markdown, write_markdown
 import argparse
 import hashlib
 import json
@@ -401,7 +402,7 @@ def score(out):
         text += '## ' + name + '\n\n```json\n' + json.dumps(values, indent=2) + '\n```\n\n'
     text += f"Physical calls: {len(calls)}; known native tokens: {known:,}; usage unknown: {unknown}. API spend $0 excludes hardware, energy and labor.\n\n"
     text += 'Original labels and output are retained even when wrong. Public data may be in model training. HaluEval pairs share a question; intervals resample question clusters. RAGTruth uses distinct source IDs and its test split; implicit_true annotations are excluded from positive gold. The full upstream benchmarks were not run. No cross-dataset or coding aggregate is reported.\n'
-    (out / 'README.md').write_text(text, encoding='utf-8')
+    write_markdown(out / 'README.md', text)
     return result
 
 
