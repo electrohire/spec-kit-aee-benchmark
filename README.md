@@ -1,5 +1,7 @@
 # Spec Kit + AEE benchmark
 
+**Real-model labelled diagnostic completed:** 12 calls, 10/12 original-label agreement, with two challenged fixture labels and explicit limits. [Receipts and findings](reports/local/labelled-factbooks-10-20261019/README.md). The fresh software benchmark is running; no completed paired result is claimed.
+
 Current mission: preparing fresh study03 and real labelled hallucination tests. Study02 remains stopped; no completed replacement or efficacy result is claimed. Product work is parked. See [prospective protocol](benchmarks/current_local/PROTOCOL-v2.md#prospective-benchmark-mission-study03--pipeline10).
 
 Compare ordinary coding agents, Spec Kit, and Spec Kit with Evaluator + Applied

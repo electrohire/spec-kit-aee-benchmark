@@ -329,3 +329,7 @@ Study02 remains stopped and immutable. Its historical `/apply-template` HTTP500 
 A separately preregistered twelve-call diagnostic uses synthetic closed-world factbooks and real local qwen3.8-27b judgments. Four families cover completion, named test execution, citation hashes and API inventory, each with supported/contradicted/unknown gold labels derived before generation. Labels are withheld from prompts. Its context32768/output256/seed20261018/timeout600 and twelve-call cap are diagnostic-specific; main study output8192 and all other caps stay unchanged. Report three-way decisions, invalid outputs, known-truth confusion counts, unknown truth and native token usage separately. This is not spontaneous workflow hallucination prevalence, AEE detector efficacy, or a treatment-effect estimate. Generic test failures and AEE findings are not hallucination labels.
 
 Do not call generation started or a raw export completion. Finish all twelve trajectories / thirty-six checkpoint records, independent grades, hash/ledger/exposure/accounting audits, README/report updates and exact-green publication. API spend $0 excludes hardware, electricity and labor.
+
+## Completed labelled diagnostic (2026-10-19)
+
+See [real-model receipts and label-quality findings](reports/local/labelled-factbooks-10-20261019/README.md):12calls/2037knownnative tokens/0usageunknown,10of12original-labelagreement,two challengedunknownfixtures. Mainpairedstudy03 remains running;no completed paired efficacy conclusion. Active source stays frozen in its original checkout.

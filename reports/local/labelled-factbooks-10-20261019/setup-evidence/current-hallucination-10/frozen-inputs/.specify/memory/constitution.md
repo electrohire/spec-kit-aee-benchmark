@@ -1,0 +1,88 @@
+<!-- Sync impact: 1.1.0 -> 1.2.0. Record the user-authorized staged-project
+supplement and its reporting boundaries. This amendment follows the measured
+run; the exact 1.1.0 constitution in its freeze remains preserved. -->
+# ElectroHire Benchmark Constitution
+
+## Core Principles
+
+### I. Claims require evidence
+Every substantive claim MUST have a stable ID, source, boundary, falsification
+criterion, dependencies and evidence links. Assertions MUST remain distinct from
+observations. Unsupported and contradictory claims MUST remain in the gap register.
+
+### II. Treatment isolation
+Solvers MUST receive only issue facts, upstream instructions and their frozen
+treatment. Controller instructions, sibling attempts and held-out grading MUST be
+inaccessible. All arms MUST use one model configuration and runner.
+
+### III. Honest accounting
+All model work and failed attempts MUST count. Unknown usage MUST be null with a
+reason. Cached tokens MUST not be charged twice. Zero resolutions MUST not imply
+zero cost per resolution. Internal AEE scores MUST remain separate from grading.
+
+### IV. Reproducibility before spending
+Protocol, revisions, prompts, task selection and limits MUST be frozen before
+scored generation. Paid work MUST have explicit user authorization for its cap.
+Changes require new run IDs; resumption MUST reject changed configurations.
+
+### V. Independent validation
+CI MUST exercise accounting, failures, isolation, phase routing and reports with
+labeled fixtures. A real smoke run MUST precede integration claims. SWE-bench
+grading MUST run separately after solver completion. The tutorial is illustrative.
+
+## Experiment Constraints
+Use the 20-task, three-repeat, three-arm pilot. The combined treatment cannot
+isolate Evaluator from AEE. Publish no private source material or credentials.
+No LinkedIn posting, leaderboard submission, email publication or product release
+is authorized. On 2026-10-18 the user authorized merging related green PRs and
+rerunning the study under a fresh, validated prospective freeze.
+The user-authorized GPU handoff also permits a separately frozen free-local
+Exercism exploration. It MUST NOT be presented as execution of that pilot or
+full Spec Kit integration. Report document adaptation, convenience selection,
+generic controller claims, public-test contamination and every failure.
+
+The user also authorized a separately frozen, free-local staged TinyDB comparison
+with supplemental repair loops. It MUST retain failed and interrupted work, unknown
+usage, actual workflow-completion limits, and every adaptation. Dependent milestones
+MUST NOT be presented as independent tasks. The measured run03 freeze retains
+version 1.1.0; this amendment records scope and does not rewrite that historical freeze.
+
+The user now authorizes a fresh two-project/two-seed staged comparison and a separate identical-start repair diagnostic with clean controls. Calibrate full workflows and runtime limits before freezing. Unknown native usage remains null, but conservative maximum-call reservations may enforce budgets without terminating every later stage. Preserve previous failed runs; do not update the email or article based on hoped-for improvements.
+
+## Development Workflow
+
+The 2026-10-18 corrected study must first pass native action transport, matched
+timing/cap checks and all six project×treatment representative readiness cases,
+including actual implementation, public verification and exercised injected repair.
+Keep runtime interventions active and preserve prior failures/costs. A stopped
+scored attempt cannot be resumed with changed code/settings. This authorization
+does not require a favorable result. The user's subsequent instruction authorizes
+implementing the linked product feature requests in isolated product branches and
+environments while preserving the baseline's installed releases. A matched after
+study follows valid baseline completion and measured feature validation.
+Apply constitution, specification, plan, tasks, implementation and convergence
+in sequence. Run AEE explicitly after specification, plan, tasks and implementation;
+compose Evaluator results and record routing. Optional hook registration is not
+execution evidence. Use reviewable PRs and record actual checks and unresolved gaps. The user requested that completed PRs be marked ready for review.
+
+## Governance
+Amend through a reviewed commit with rationale and semantic version increment.
+Every PR MUST report compliance and deviations. The provided implementation brief
+defines scope; this constitution constrains evidence and execution, not user intent.
+
+**Version**: 1.4.1 | **Ratified**: 2026-09-17 | **Last Amended**: 2026-10-18
+
+### Prospective recovery amendment (2026-10-19, user-directed)
+
+
+## Prospective benchmark mission (study03 / pipeline10)
+
+The current goal is completed benchmarks and labelled hallucination tests with published results. Product implementation and coverage work are parked; benchmark 100% coverage is not an admission gate. Meaningful functional/integrity checks and exact-head Ubuntu CI remain required.
+
+Study02 remains stopped and immutable. Its historical `/apply-template` HTTP500 followed by ENOSPC has an unresolved cause. The latest explicit user directive authorizes a separately frozen prospective study03, not a resume or retry of study02. The four exact infrastructure-only AST changes from the published error-retention fix are registered in `infrastructure-recovery-v1.json`; unrelated solver/runtime changes still fail admission. Fresh image/grader/context/transport/latency probes and four semantic dependency replays precede scoring. Historical workflow08 and injected repair exposure are disclosed as historical, without another all-six-success selection loop. Tasks, model, seeds, budgets, guard thresholds and independent graders remain unchanged.
+
+`python scripts/launch_benchmark_mission.py --dry-run` checks fresh paths without inference. The actual launcher is the sole serial supervisor for pipeline10 and refuses every existing output. Model loops/budget/protocol failures remain scored failures with dependent checkpoints unattempted and zero new calls; infrastructure, transport, identity, snapshot, integrity and unknown failures halt without automatic retry. Full export and read-only evidence/accounting audit precede publication.
+
+A separately preregistered twelve-call diagnostic uses synthetic closed-world factbooks and real local qwen3.8-27b judgments. Four families cover completion, named test execution, citation hashes and API inventory, each with supported/contradicted/unknown gold labels derived before generation. Labels are withheld from prompts. Its context32768/output256/seed20261018/timeout600 and twelve-call cap are diagnostic-specific; main study output8192 and all other caps stay unchanged. Report three-way decisions, invalid outputs, known-truth confusion counts, unknown truth and native token usage separately. This is not spontaneous workflow hallucination prevalence, AEE detector efficacy, or a treatment-effect estimate. Generic test failures and AEE findings are not hallucination labels.
+
+Do not call generation started or a raw export completion. Finish all twelve trajectories / thirty-six checkpoint records, independent grades, hash/ledger/exposure/accounting audits, README/report updates and exact-green publication. API spend $0 excludes hardware, electricity and labor.

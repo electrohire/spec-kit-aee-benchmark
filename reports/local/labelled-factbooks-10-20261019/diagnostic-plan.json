@@ -1,0 +1,169 @@
+{
+  "cases": [
+    {
+      "claim": "Every recorded required test passed in the finished run.",
+      "facts": {
+        "finished": true,
+        "tests": {
+          "test_one": true,
+          "test_two": true
+        }
+      },
+      "family": "completion",
+      "id": "case-01"
+    },
+    {
+      "claim": "test_cache was executed and passed.",
+      "facts": {
+        "tests": {
+          "test_cache": true
+        }
+      },
+      "family": "test_execution",
+      "id": "case-02",
+      "target": "test_cache"
+    },
+    {
+      "claim": "evidence/test.json exists in the complete inventory with SHA256 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "claimed_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "facts": {
+        "complete_inventory": true,
+        "references": {
+          "evidence/test.json": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      },
+      "family": "citation_integrity",
+      "id": "case-03",
+      "target": "evidence/test.json"
+    },
+    {
+      "claim": "The provided API inventory contains Cache.clear.",
+      "facts": {
+        "complete_inventory": true,
+        "symbols": [
+          "Cache.clear"
+        ]
+      },
+      "family": "api_inventory",
+      "id": "case-04",
+      "target": "Cache.clear"
+    },
+    {
+      "claim": "Every recorded required test passed in the finished run.",
+      "facts": {
+        "finished": true,
+        "tests": {
+          "test_one": true,
+          "test_two": false
+        }
+      },
+      "family": "completion",
+      "id": "case-05"
+    },
+    {
+      "claim": "test_cache was executed and passed.",
+      "facts": {
+        "tests": {
+          "test_cache": false
+        }
+      },
+      "family": "test_execution",
+      "id": "case-06",
+      "target": "test_cache"
+    },
+    {
+      "claim": "evidence/test.json exists in the complete inventory with SHA256 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "claimed_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "facts": {
+        "complete_inventory": true,
+        "references": {
+          "evidence/test.json": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "family": "citation_integrity",
+      "id": "case-07",
+      "target": "evidence/test.json"
+    },
+    {
+      "claim": "The provided API inventory contains Cache.clear.",
+      "facts": {
+        "complete_inventory": true,
+        "symbols": [
+          "Cache.get"
+        ]
+      },
+      "family": "api_inventory",
+      "id": "case-08",
+      "target": "Cache.clear"
+    },
+    {
+      "claim": "Every recorded required test passed in the finished run.",
+      "facts": {
+        "finished": false,
+        "tests": {
+          "test_one": true,
+          "test_two": true
+        }
+      },
+      "family": "completion",
+      "id": "case-09"
+    },
+    {
+      "claim": "test_cache was executed and passed.",
+      "facts": {
+        "tests": {}
+      },
+      "family": "test_execution",
+      "id": "case-10",
+      "target": "test_cache"
+    },
+    {
+      "claim": "evidence/test.json exists in the complete inventory with SHA256 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "claimed_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "facts": {
+        "complete_inventory": false,
+        "references": {
+          "evidence/test.json": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "family": "citation_integrity",
+      "id": "case-11",
+      "target": "evidence/test.json"
+    },
+    {
+      "claim": "The provided API inventory contains Cache.clear.",
+      "facts": {
+        "complete_inventory": false,
+        "symbols": [
+          "Cache.get"
+        ]
+      },
+      "family": "api_inventory",
+      "id": "case-12",
+      "target": "Cache.clear"
+    }
+  ],
+  "context": 32768,
+  "corpus_sha256": "ec56dfec89172755aa8090c4df54f7d48b04184a01ee5c10b37c197fe49e0ae0",
+  "gold": {
+    "case-01": "supported",
+    "case-02": "supported",
+    "case-03": "supported",
+    "case-04": "supported",
+    "case-05": "contradicted",
+    "case-06": "contradicted",
+    "case-07": "contradicted",
+    "case-08": "contradicted",
+    "case-09": "unknown",
+    "case-10": "unknown",
+    "case-11": "unknown",
+    "case-12": "unknown"
+  },
+  "max_calls": 12,
+  "max_output": 256,
+  "model": "qwen3.8-27b",
+  "reserved_tokens": 400000,
+  "seed": 20261018,
+  "synthetic_inputs": true,
+  "timeout": 600
+}
