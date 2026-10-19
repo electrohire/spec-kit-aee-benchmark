@@ -10,6 +10,10 @@ pass, so cause remains unresolved. No final grading/export or completed comparis
 exists. Do not silently resume, retry or weaken guards/caps. A fresh campaign
 requires a concrete infrastructure diagnosis and prospective admission.
 
+Read the [prospective guard follow-up](reports/investigation/current-study-02-infrastructure-stop-20261018/prospective-guard-followup.md):
+first-error infrastructure halting and bounded diagnostics are implemented and
+tested; historical server/storage root cause is still unresolved. No implicit retry.
+
 
 ## Prospective scored admission: model failures are outcomes
 

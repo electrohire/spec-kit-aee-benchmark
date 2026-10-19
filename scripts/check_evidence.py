@@ -36,7 +36,9 @@ for claims_path in Path("reports/aee-validation").glob("*/claims.json"):
             path=Path(evidence["ref"]).resolve()
             if not path.is_relative_to(Path.cwd().resolve()) or sha(path.read_bytes())!=evidence["content_hash"]:
                 raise SystemExit(f"AEE observation checksum mismatch: {claims_path}")
-    if not HashChainLedger(root/"ledger.jsonl").verify(require_anchor=True).valid:
+    ledger_paths=[root/name for name in ("ledger.jsonl", "epistemic-ledger.jsonl")
+                  if (root/name).exists()]
+    if len(ledger_paths)!=1 or not HashChainLedger(ledger_paths[0]).verify(require_anchor=True).valid:
         raise SystemExit(f"AEE ledger/anchor failure: {root}")
     if not (root/"REVIEW.md").exists():
         composed=json.loads((root/"composed.json").read_text())

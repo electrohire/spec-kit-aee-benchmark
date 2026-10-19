@@ -24,3 +24,8 @@ Dependencies: foundation before US1/US2; tutorial can be developed independently
 MVP: reproducible offline dry-run and correct accounting, followed by integration.
 Parallel opportunities: research of upstream harness while controller is specified.
 Tests are required by the brief. T014 remains gated; do not check it from mocks.
+
+2026-10-19: Prospective first-error infrastructure guard and bounded diagnostics
+validated with501 offline cases and59 focused receipt-bound cases. Actual AEE
+and one Evaluator composed iterate; study02 remains stopped, T014 unfinished.
+See the incident's prospective-guard-followup.md for retained failures and limits.

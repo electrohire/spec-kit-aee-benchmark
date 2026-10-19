@@ -17,6 +17,7 @@ from gpu_experiment import local_json, digest
 from long_horizon import Sandbox, CLAIMS, skill, PHASE_GOALS
 from report_long_horizon import source_digest
 from context_window import select_context
+from infrastructure_errors import InfrastructureFailure
 from runtime_checks import RuntimeWatchdog, RuntimeIntervention, validate_capacity
 from action_protocol import action_response_format, action_command
 
@@ -169,10 +170,17 @@ class Provider:
             preflight.update(input_tokens=count,removed_history_messages=removed)
         except Exception as exc:
             preflight['error']=repr(exc)
-            raise
+            preflight['infrastructure_evidence']=getattr(exc,'evidence',None)
+            if isinstance(exc,OSError):raise
+            raise InfrastructureFailure('context preflight infrastructure failure',
+                dict(original_error=repr(exc),preflight=preflight)) from exc
         finally:
             preflight.update(seconds=time.monotonic()-preflight_begin,ended_at=utc())
-            write_json(self.folder/f'preflight-{len(self.preflights)-1:04}.json',preflight)
+            try:
+                write_json(self.folder/f'preflight-{len(self.preflights)-1:04}.json',preflight)
+            except OSError as exc:
+                raise InfrastructureFailure('context preflight evidence write failed',
+                    dict(write_error=repr(exc),preflight=preflight)) from exc
         if sum(reservation(c) for c in self.calls)+count+CONFIG['max_output']>CONFIG['token_cap']:
             raise RuntimeError('reserved_token_cap')
         remaining=deadline-time.monotonic()
@@ -195,6 +203,7 @@ class Provider:
         except Exception as exc:
             record['request_seconds']=time.monotonic()-begin
             record['error']=type(exc).__name__+': '+str(exc)
+            if hasattr(exc,'evidence'):record['infrastructure_evidence']=exc.evidence
             if record['usage'] is None:
                 record['unknown_reason']='failed_request_reserved_not_imputed'
                 # Do not start overlapping work after a disconnected request.
@@ -563,9 +572,10 @@ def campaign(out,preflight,timeout,*,workflow_preflight=None,latency_preflight=N
                     row['notes_index']=notes
                     if arm!='baseline':
                         (folder/f'stage{stage}-workflow.tar').write_bytes(subprocess.check_output(['docker','exec',box.name,'tar','--exclude=.git','-cf','-','-C','/testbed','.specify','specs'],timeout=30))
-                except RuntimeIntervention:
+                except RuntimeIntervention as intervention:
                     from model_outcomes import model_failure,finish_stopped_stage
-                    alert=json.loads((folder/'runtime-alert.json').read_text())
+                    alert=intervention.alert
+                    if alert is None:alert=json.loads((folder/'runtime-alert.json').read_text())
                     if not contain_model_failures or not model_failure(alert):raise
                     expected=cal['projects'][project]['reference'][f'{stage}-public']['test_count']
                     finish_stopped_stage(box,row,folder,out,grade,expected,len(provider.calls)-start,begin,alert)
