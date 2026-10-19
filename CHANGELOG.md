@@ -1,5 +1,17 @@
 # Changelog
 
+## Results — separate external hallucination detection, 2026-10-19
+
+- Complete240native calls and independent source-label/receipt/hash grading:
+  HaluEval100/120correct,17misses/3false alarms; RAGTruth97/120correct,
+  11misses/12false alarms. No abstentions, invalid decisions or usage unknowns;
+  213,457known native tokens. Publish dedicated report/cluster intervals and
+  sanitized receipts without pooling coding or synthetic factbook results.
+  No AEE/Spec Kit efficacy or generated hallucination prevalence is measured.
+- Retain the later offline HaluEval JSONL-export parsing failure; fix the format
+  handling and rerun export/audit only, with no new model generation. Coding
+  study08 remains stopped on its13-call malformed-argv outcome.
+
 ## Unreleased — separate published hallucination datasets
 
 - Pin original HaluEval/RAGTruth revisions, MIT notices and a240-response seeded

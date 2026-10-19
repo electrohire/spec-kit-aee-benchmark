@@ -69,3 +69,16 @@ coverage and 0-inference repairs prevent a completed-workflow efficacy conclusio
 
 The2 dependent Cachetools rows remain unattempted/0 calls; TinyDB stage1 public
 verification is a bounded observation, not accepted delivery. No implicit retry.
+
+### Separate external hallucination detection (2026-10-19)
+
+- [x] Pin original HaluEval/RAGTruth commits, licenses, raw source hashes and240selected response/payload hashes before outputs.
+- [x] Run240real local-model detection calls alone after coding08stopped; retain original labels and all wrong predictions.
+- [x] Independently rejoin every native prediction to original upstream rows and recompute both confusion matrices.
+- [x] Account for209,990prompt+3,467completion=213,457native tokens,0cache and0usage unknowns; all240scheduled rows graded.
+- [x] Export separate report, cluster intervals, annotation-convention limits and sanitized receipts for exact-green publication.
+- [ ] Complete the valid matched coding comparison and any causal AEE/Spec Kit benefit measurement. External detection accuracy does not establish those claims.
+
+HaluEval100/120correct (17misses/3false alarms); RAGTruth97/120correct
+(11misses/12false alarms),0abstentions. No model response was retried or relabelled.
+The later offline JSONL export-format error was fixed with0new generation calls.

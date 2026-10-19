@@ -1,8 +1,10 @@
 # Separate external hallucination evaluation
 
-Status: source data and 240-case selection frozen; offline implementation checks
-are separate from pending real model execution. No new detector results or AEE
-benefit are claimed. This suite never enters the coding solver or its metrics.
+Status: the [240-response run is complete](../../reports/hallucinations/external-01-20261019/README.md),
+independently graded and exported separately: HaluEval83.3%, RAGTruth80.8%.
+No AEE benefit is measured. This suite never enters the coding solver or its
+metrics. The protocol below was frozen before the model calls; do not rerun the
+completed experiment to improve its scores.
 
 ## Why these tests
 
