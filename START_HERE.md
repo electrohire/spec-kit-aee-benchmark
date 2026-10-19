@@ -343,3 +343,8 @@ After the existing pipeline10 has stopped generating and its final grading/expor
 ## Study03 infrastructure stop (2026-10-19)
 
 [Retained results and independent grades](reports/local/current-study-03-router-stop/README.md). Pipeline10 ended13:45:11UTC/09:45:11Eastern. No generation active. RouterHTTP500 body:proxy error:Could not establish connection.98calls1,908,355knownnative tokens/0generationusageunknown;2attempted34unattempted rows. Exactrequest/responsecaptured;present-dayzero-generationreplaypassesbutunderlyingcauseunresolved. No auto retry/resume,sharedservicechange or v2diagnosticgeneration. ActualNoeRelayruntime/router.stderr.log found;capturedproxyconnectionfailuretoexistingqwenworkerport50467;underlyingcauseunresolved. No completed paired benchmark or efficacy conclusion.
+
+
+## Current prospective campaign04 / corrected diagnostic11
+
+Pipeline11 is the sole active supervisor, using the explicitly approved existing worker50467 with process/port/model/path guards. No server/model/dependency/task/cap/grader changes; no stopped-study resume. Keep active primary source frozen at dc5ee4e. Corrected diagnostic11 completed12/12 frozen labels,0 invalid,1974known native tokens/0usage unknown. Original10/12 v1 and its two challenged factbooks remain unchanged. See reports/local/labelled-factbooks-11-20261019/README.md. Main12/36 benchmark results, independent final grades/audits and publication remain pending; diagnostic completion is not mission completion.

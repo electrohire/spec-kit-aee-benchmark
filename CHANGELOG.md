@@ -118,3 +118,6 @@ After the existing pipeline10 has stopped generating and its final grading/expor
 
 
 - Prospective client-only route to the existing operator-approved qwen worker, with process/port/model/path guards and fresh direct-route admission. No fallback, service change, task/cap/grader change or stopped-run resume. Pipeline11 serially includes corrected diagnostic corpus2. Historical router failure cause remains unresolved.
+
+
+- Publish the authorized corpus2 real-model corrective diagnostic:12/12 bounded labels,0invalid,12calls/1974known tokens/0usage unknowns,368frozen inputs verified. Original corpus1 retained; post-outcome fixture correction and limits explicit. Software study04 still active; no completed paired result claimed.
