@@ -196,3 +196,5 @@ After the existing pipeline10 has stopped generating and its final grading/expor
 
 
 - Fix final setup export collisions across readiness runs with matching directory basenames. Retain every archive and physical-call receipt; repeated identical path arguments export once. No token/grade/metric/solver change. Three regressions red before,51focused cases green after; real five-source378-call zero-inference export rehearsal passed. Active study04 source remains frozen; use corrected reporting only after scoring has ended.
+
+- Matched02 immediate calibration halt retained:16calls/56615native/0unknown/0scored. Diagnose pinned-server repetition>2000 expansion; prospectivev3 explicit split grammar retains schemas/caps. No server change or treatment efficacy claim.

@@ -37,3 +37,18 @@ def test_failure_receipt_known_usage_and_all_retained_aee_counts_agree():
     assert failures[0]['usage']['completion_tokens'] == failures[0]['max_tokens'] == 1024
     assert sum(p['entries'] for p in read(REPORT / 'aee-ledger-commitments.json')) == 54
     assert read(REPORT / 'summary.json')['complete'] is False
+
+def test_stopped02_preserves_zero_scored_schedule_and_native_failure_cost():
+    import hashlib
+    import json
+    root = Path(__file__).resolve().parents[1] / 'reports/hallucinations/matched-02-stopped-20261019'
+    read = lambda name: json.loads((root / name).read_text())
+    for name, digest in read('files-sha256.json').items():
+        assert hashlib.sha256((root / name).read_bytes()).hexdigest() == digest
+    rows, calls, summary = read('scheduled-rows.json'), read('call-receipts.json'), read('summary.json')
+    assert len(rows) == 720 and {r['status'] for r in rows} == {'unattempted'}
+    assert len(calls) == summary['physical_calls'] == 16
+    assert sum(c['usage']['total_tokens'] for c in calls) == summary['known_native_tokens'] == 56615
+    assert all(c['usage'] is not None and c['metadata']['cohort'] == 'setup' for c in calls)
+    assert calls[-1]['finish_reason'] == 'stop' and calls[-1]['error_type'] == 'ValidationError'
+    assert summary['scored_judgments'] == 0 and summary['document_characters'] > summary['schema_limit']

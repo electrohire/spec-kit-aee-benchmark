@@ -19,24 +19,18 @@ from pathlib import Path
 
 import current_local as current
 import external_hallucinations as external
+from matched_grammar import DOC_SCHEMA, DECISION_SCHEMA, schema_grammar
 from benchmark_runner.project_assessment import assess_project
 from benchmark_runner.store import Store, canonical, redact, utc, write_json
 
 ROOT = Path(__file__).resolve().parents[1]
-REGISTRATION = ROOT / 'benchmarks/hallucinations/matched-v2.json'
-REGISTRATIONS = {f'matched-source-grounding-v{i}': ROOT / f'benchmarks/hallucinations/matched-v{i}.json' for i in (1, 2)}
+REGISTRATION = ROOT / 'benchmarks/hallucinations/matched-v3.json'
+REGISTRATIONS = {f'matched-source-grounding-v{i}': ROOT / f'benchmarks/hallucinations/matched-v{i}.json' for i in (1, 2, 3)}
 ARMS = ('baseline', 'spec_kit', 'spec_kit_aee')
 PHASES = ('constitution', 'specify', 'plan', 'tasks')
 FILES = {'constitution': '.specify/memory/constitution.md',
          'specify': 'specs/001-grounding/spec.md', 'plan': 'specs/001-grounding/plan.md',
          'tasks': 'specs/001-grounding/tasks.md'}
-DOC_SCHEMA = dict(type='object', properties=dict(document=dict(type='string', minLength=1, maxLength=3000)),
-                  required=['document'], additionalProperties=False)
-DECISION_SCHEMA = dict(type='object', properties=dict(
-    verdict=dict(type='string', enum=list(external.LABELS)),
-    rationale=dict(type='string', maxLength=320), source_quotes=dict(type='array', items=dict(type='string', minLength=1, maxLength=120), maxItems=2),
-    uncertainties=dict(type='array', items=dict(type='string', minLength=1, maxLength=80), maxItems=3)),
-    required=['verdict', 'rationale', 'source_quotes', 'uncertainties'], additionalProperties=False)
 TASK = ('Develop a bounded source-grounded response classifier. Labels: hallucinated when a candidate '
         'contradicts or makes unsupported factual assertions relative to its supplied source; grounded '
         'when supported; abstain when unable to decide. Null source values are unknown, not false. '
@@ -200,9 +194,9 @@ class Provider:
         request = dict(model=current.MODEL, messages=messages, temperature=.6, top_p=.95,
             top_k=20, min_p=0., presence_penalty=0., repeat_penalty=1., seed=self.plan['seed'],
             max_tokens=output, cache_prompt=False, chat_template_kwargs=dict(enable_thinking=False),
-            response_format=dict(type='json_schema', json_schema=dict(name='matched_grounding_response', strict=True, schema=schema)))
+            grammar=schema_grammar(schema, probe=self.plan.get('decoder_probe', False)))
         path = self.out / 'calls' / f'call-{self.count:04}.json'
-        record = dict(started_at=utc(), request=request, metadata=metadata, usage=None,
+        record = dict(started_at=utc(), request=request, validation_schema=schema, metadata=metadata, usage=None,
                       unknown_reason='request_pending', preflight_input_tokens=len(tokens))
         write_json(path, record, exclusive=True)
         self.count += 1
@@ -314,7 +308,7 @@ def judge(provider, project, arm, dataset, case, policy, cohort, opaque_index):
 
 def run(out, binding):
     plan, cases = verify(out)
-    if plan['version'] != 'matched-source-grounding-v2':
+    if plan['version'] != 'matched-source-grounding-v3':
         raise RuntimeError('current runner cannot generate a historical protocol; use its frozen source archive')
     if subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT).strip():
         raise RuntimeError('committed clean matched source required')

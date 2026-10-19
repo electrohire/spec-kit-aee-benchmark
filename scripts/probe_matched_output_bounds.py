@@ -1,6 +1,6 @@
-"""Two fresh synthetic native schema checks, not a retry of a stopped case.
+"""Three fresh synthetic native grammar checks, not a retry of a stopped case.
 
-Registered separately as setup: two calls, output caps unchanged, no retries.
+Registered separately as setup: three calls, output caps unchanged, no retries.
 This test verifies bounded delivery, never requires a correct factual judgment.
 """
 import argparse
@@ -10,6 +10,7 @@ import subprocess
 from pathlib import Path
 
 import matched_hallucinations as m
+from matched_grammar import native_probe_contracts
 
 
 def probe(out, original, binding):
@@ -21,19 +22,20 @@ def probe(out, original, binding):
     plan = m.prepare(out, original)
     hashes = m.source_hashes()
     m.write_json(out / 'probe-started.json', dict(at=m.utc(), source_hashes=hashes,
-        maximum_calls=2, reserved_tokens=65536, role='separate setup, not scored',
+        maximum_calls=3, reserved_tokens=98304, role='separate setup, not scored',
         source_head=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=m.ROOT).decode().strip(),
         binding_sha256=hashlib.sha256(binding.read_bytes()).hexdigest()), exclusive=True)
-    provider = m.Provider(out, {**plan, 'maximum_calls': 2})
-    tests = [('constitution', m.DOC_SCHEMA, plan['policy_output'],
-              'Return a draft source-grounding policy document. Aim for4000characters, but the native schema bound is authoritative.'),
-             ('review', m.DECISION_SCHEMA, plan['case_output'],
-              'Source: Only the synthetic key cobalt is registered. Candidate: Amber is registered. Return a verdict with rationale, exact source_quotes, uncertainties. Aim for a4000character rationale and200character quotes/uncertainties, but the native schema bounds are authoritative. No human acceptance or external verification.')]
+    provider = m.Provider(out, {**plan, 'maximum_calls': 3, 'decoder_probe': True})
+    tests = native_probe_contracts()
     values = []
-    for phase, schema, cap, instruction in tests:
-        value, path = provider.call([dict(role='system', content='Return only a JSON object matching the native schema.'),
+    for index, test in enumerate(tests):
+        phase = 'review' if index == 1 else 'constitution'
+        schema, cap, instruction = test['schema'], test['output'], test['instruction']
+        value, path = provider.call([dict(role='system', content='Return only a JSON object matching the native decoder contract.'),
             dict(role='user', content=instruction)], schema, cap,
             dict(cohort='setup', dataset='native_bounds_probe', arm='baseline', phase=phase))
+        import jsonschema
+        jsonschema.validate(value, schema)
         values.append(dict(phase=phase, call=path.name,
             document_characters=len(value['document']) if 'document' in value else None,
             rationale_characters=len(value['rationale']) if 'rationale' in value else None))

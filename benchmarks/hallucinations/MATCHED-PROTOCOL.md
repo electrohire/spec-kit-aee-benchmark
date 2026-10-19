@@ -107,3 +107,17 @@ Long-horizon economic adoption is separately planned in
 [the prospective measurement design](../../docs/long-horizon-economics-plan.md).
 Detector data and independent coding/regression outcomes remain separate panels;
 no blended score or generic-test-failure-as-hallucination conversion.
+
+
+## Prospective v3: exact native decoder repair
+
+Matched02 stopped at calibration call0015 because llama.cpp d344123fe converts
+repetition maxima>2000 to unbounded grammar. See the retained stopped02 report.
+The SAME3000document/320rationale/120quote/80uncertainty limits now use explicit
+GBNF with each policy block bounded100. No model/service/cap/selection/gold/grade
+changes. Fixed JSON field order/bounded whitespace apply equally to allarms; JSON
+schema independently validates every response and receipts bind the exact grammar.
+Three separate setup calls probe exact3000characters, decision bounds and an
+escaped literal known only to the decoder. No semantic all-correct admission.
+Unchanged source/clean exact-head Ubuntu checks must precede fresh03; never
+resume01/02. Retain all their setup/failed/scored calls and unknowns separately.

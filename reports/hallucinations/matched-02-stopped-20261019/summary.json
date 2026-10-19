@@ -1,0 +1,29 @@
+{
+  "verified_at": "2026-10-19T19:59:51.887100+00:00",
+  "status": "STOPPED first schema validation failure; no resume/retry",
+  "physical_calls": 16,
+  "prompt_tokens": 52836,
+  "completion_tokens": 3779,
+  "known_native_tokens": 56615,
+  "usage_unknown": 0,
+  "scored_judgments": 0,
+  "scheduled": 720,
+  "unattempted": 720,
+  "failure_call": "call-0015.json",
+  "failure_metadata": {
+    "arm": "spec_kit_aee",
+    "cohort": "setup",
+    "dataset": "calibration",
+    "phase": "plan"
+  },
+  "finish_reason": "stop",
+  "document_characters": 4662,
+  "schema_limit": 3000,
+  "source_head": "bde1413fa813ff7ebada95ec6285c61823b49396",
+  "raw_files": 550,
+  "source_archive_verified": true,
+  "server_build": "b10894-d344123fe",
+  "cause": "Exact server src/llama-grammar.cpp silently changes finite repetition maxima above2000 to UINT64_MAX; JSON schema maxLength3000 compiles to char{1,3000}, losing its upper bound. No service/model change.",
+  "native_probe02_limitation": "2calls527knownnative0unknown; document1252characters did not exercise bound3000. Rationale320 enforcement is narrower evidence.",
+  "next": "Client explicit grammar splits document repetition into max1500 blocks; preserve exact3000character contract/caps and all failed evidence. Fresh validation/admission required before separately frozen03."
+}
