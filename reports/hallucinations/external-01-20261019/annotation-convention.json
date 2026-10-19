@@ -1,0 +1,30 @@
+{
+  "implicit_true_responses": [
+    {
+      "id": "6785",
+      "gold": "hallucinated",
+      "implicit_true_spans": 1,
+      "note": "Author annotation accepts implicit truths not stated literally in the source; original gold retained."
+    },
+    {
+      "id": "13363",
+      "gold": "grounded",
+      "implicit_true_spans": 1,
+      "note": "Author annotation accepts implicit truths not stated literally in the source; original gold retained."
+    },
+    {
+      "id": "15929",
+      "gold": "grounded",
+      "implicit_true_spans": 1,
+      "note": "Author annotation accepts implicit truths not stated literally in the source; original gold retained."
+    },
+    {
+      "id": "6170",
+      "gold": "grounded",
+      "implicit_true_spans": 1,
+      "note": "Author annotation accepts implicit truths not stated literally in the source; original gold retained."
+    }
+  ],
+  "policy": "Preregistered primary gold excludes implicit_true spans from positives, retaining all other author spans. No labels, prompts or denominators changed after model outputs.",
+  "limitation": "These author-accepted implicit truths can require inference beyond literal supplied context. The classifier prompt is source-grounded. Treat scores as conditional on the registered author-label convention, not a universal factuality oracle. No post-hoc relabelling or exclusion."
+}

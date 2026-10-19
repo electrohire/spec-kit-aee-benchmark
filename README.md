@@ -1,11 +1,18 @@
 # Spec Kit + AEE benchmark
 
-**Hallucination evaluation is separate from coding evaluation.** The
-[external HaluEval/RAGTruth suite](benchmarks/hallucinations/README.md) freezes240
-published labelled responses for a dedicated detection run after the coding
-supervisor finishes. Real execution/results are pending. Its scores will not be
-pooled with software completion or the earlier synthetic factbook diagnostic,
-and will not be presented as an AEE or Spec Kit treatment effect.
+**Separate external hallucination results completed:** HaluEval100/120 correct
+(83.3%;17missed hallucinations,3false alarms); RAGTruth97/120 correct
+(80.8%;11missed hallucinations,12false alarms). All240responses were independently
+graded, with0abstentions/invalid responses/usage unknowns and213,457known native
+tokens. [Full results, confusion counts, intervals and receipts](reports/hallucinations/external-01-20261019/README.md).
+These are public-dataset response-detection subsets, separate from coding and
+the synthetic factbook test. **No AEE or Spec Kit treatment effect was measured.**
+
+**Latest coding study08 stopped immediately:**13calls/79,682known native tokens,
+0usage unknowns. A model argument array included shell separators as literal
+arguments to `test`, which exited2. No retry or next trajectory ran. The coding
+comparison remains incomplete; the separate detection results do not repair or
+complete that comparison.
 
 **Study04 is stopped by user direction; no benchmark inference is active.** The Cachetools loop exposed failed tool calls being treated as successful actions until the repeat limit, followed by continuation to another trajectory. The prospective runner now halts on the first protocol/tool/verification failure. [Diagnosis, retained costs and fail-fast amendment](reports/investigation/fail-fast-cachetools-20261019/README.md). Main benchmark results remain incomplete.
 

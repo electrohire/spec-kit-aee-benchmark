@@ -1,0 +1,135 @@
+"""Offline independent upstream join and public sanitized export; no inference."""
+import hashlib
+import json
+from collections import Counter
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+PUB = ROOT / 'work/benchmark-results-publication'
+RAW = PUB / 'artifacts/external-hallucinations-01'
+SOURCES = ROOT / 'validation/external-hallucination-sources-01'
+OUT = PUB / 'reports/hallucinations/external-01-20261019'
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def read(path):
+    return json.loads(path.read_text(encoding='utf-8-sig'))
+
+
+def write(name, value):
+    (OUT / name).write_text(json.dumps(value, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+
+
+def main():
+    supervisor = read(ROOT / 'external-hallucinations-supervisor-01.json')
+    if supervisor['stage'] != 'graded_pending_publication':
+        raise RuntimeError('detector and independent grading must finish first')
+    audit = read(RAW / 'independent-grade-audit.json')
+    if not audit['complete'] or audit['graded'] != 240 or audit['physical_calls'] != 240 or audit['ungraded']:
+        raise ValueError('cannot publish complete detector results')
+    registration = read(PUB / 'benchmarks/hallucinations/upstream-sources-v1.json')
+    for name, spec in registration.items():
+        for path, expected in spec['files'].items():
+            if sha((SOURCES / name / path).read_bytes()) != expected['sha256']:
+                raise ValueError('upstream source changed')
+    qa = [json.loads(line) for line in (SOURCES / 'halueval/data/qa_data.json').read_text().splitlines()]
+    response_map = {r['id']: r for r in map(json.loads, (SOURCES / 'ragtruth/dataset/response.jsonl').read_text().splitlines())}
+    source_map = {r['source_id']: r for r in map(json.loads, (SOURCES / 'ragtruth/dataset/source_info.jsonl').read_text().splitlines())}
+    cases = read(RAW / 'cases.json')
+    selection = read(PUB / 'benchmarks/hallucinations/selection-v1.json')
+    counts, evidence, taxonomy_sensitive = {}, [], []
+    for index, (case, selected) in enumerate(zip(cases, selection, strict=True)):
+        if case['dataset'] == 'halueval_qa':
+            original = qa[case['upstream_row']]
+            field = case['id'].split(':')[-1]
+            gold = 'grounded' if field == 'right_answer' else 'hallucinated'
+            payload = dict(source=original['knowledge'], question=original['question'], response=original[field])
+        elif case['dataset'] == 'ragtruth_test':
+            original = response_map[case['id']]
+            source = source_map[original['source_id']]
+            if original['split'] != 'test' or original['quality'] != 'good':
+                raise ValueError('upstream split/quality mismatch')
+            gold = 'hallucinated' if any(span['implicit_true'] is False for span in original['labels']) else 'grounded'
+            payload = dict(source=source['source_info'], instruction=source['prompt'], response=original['response'])
+            if any(span['implicit_true'] for span in original['labels']):
+                taxonomy_sensitive.append(dict(id=case['id'], gold=gold,
+                    implicit_true_spans=sum(span['implicit_true'] for span in original['labels']),
+                    note='Author annotation accepts implicit truths not stated literally in the source; original gold retained.'))
+        else:
+            raise ValueError('unknown corpus')
+        if gold != case['gold'] or gold != selected['gold'] or payload != case['payload']:
+            raise ValueError('independent upstream gold/payload join failed')
+        if sha(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()) != selected['payload_sha256']:
+            raise ValueError('registered payload digest mismatch')
+        call_path = RAW / 'calls' / f'call-{index:04}.json'
+        call = read(call_path)
+        response = call['response']
+        prediction = json.loads(response['choices'][0]['message']['content'])['verdict']
+        if prediction not in ('hallucinated', 'grounded', 'abstain') or response['choices'][0]['finish_reason'] != 'stop':
+            raise ValueError('invalid native verdict')
+        if json.loads(call['request']['messages'][1]['content']) != payload:
+            raise ValueError('native input mismatch')
+        row = audit['scheduled_rows'][index]
+        if row['id'] != case['id'] or row['dataset'] != case['dataset'] or row['prediction'] != prediction or row['gold'] != gold:
+            raise ValueError('independent grade mismatch')
+        counts.setdefault(case['dataset'], Counter())[gold, prediction] += 1
+        evidence.append(dict(index=index, dataset=case['dataset'], id=case['id'], task=case['task'],
+            cluster=case['cluster'], gold=gold, prediction=prediction, raw_call_sha256=sha(call_path.read_bytes()),
+            request_sha256=sha(json.dumps(call['request'], sort_keys=True, ensure_ascii=False).encode()),
+            response_sha256=sha(json.dumps(response, sort_keys=True, ensure_ascii=False).encode()),
+            model=response['model'], finish_reason=response['choices'][0]['finish_reason'],
+            usage=call.get('usage'), unknown_reason=call.get('unknown_reason'),
+            started_at=call['started_at'], ended_at=call['ended_at'], seconds=call['seconds']))
+    if len(evidence) != 240 or len(list((RAW / 'calls').glob('call-*.json'))) != 240:
+        raise ValueError('physical receipt inventory mismatch')
+    independent = {}
+    for name, table in counts.items():
+        tp, fp = table['hallucinated', 'hallucinated'], table['grounded', 'hallucinated']
+        fn, tn = table['hallucinated', 'grounded'], table['grounded', 'grounded']
+        ap, an = table['hallucinated', 'abstain'], table['grounded', 'abstain']
+        values = dict(tp=tp, fp=fp, fn=fn, tn=tn, abstentions=ap + an, positive_abstentions=ap,
+            accuracy_all=(tp + tn) / sum(table.values()), false_acceptances=fn, false_alarms=fp,
+            precision=tp / (tp + fp) if tp + fp else None,
+            recall_all_positives=tp / (tp + fn + ap) if tp + fn + ap else None)
+        if any(audit['metrics'][name][key] != value for key, value in values.items()):
+            raise ValueError('independent metric recomputation failed')
+        independent[name] = values
+    started = read(RAW / 'run-started.json')
+    for name, expected in started['source_hashes'].items():
+        if sha((RAW / 'source-archive' / name).read_bytes()) != expected:
+            raise ValueError('archived code mismatch')
+    OUT.mkdir(parents=True, exist_ok=False)
+    write('result.json', audit)
+    write('call-receipts.json', evidence)
+    write('upstream-regrade.json', dict(verified_upstream_joins=240, metrics=independent,
+        source_registration_sha256=sha((PUB / 'benchmarks/hallucinations/upstream-sources-v1.json').read_bytes()),
+        selection_sha256=sha((PUB / 'benchmarks/hallucinations/selection-v1.json').read_bytes()),
+        reason='Independent code rejoined native predictions to original upstream rows and recomputed confusion metrics; not independent human relabelling.'))
+    write('annotation-convention.json', dict(implicit_true_responses=taxonomy_sensitive,
+        policy='Preregistered primary gold excludes implicit_true spans from positives, retaining all other author spans. No labels, prompts or denominators changed after model outputs.',
+        limitation='These author-accepted implicit truths can require inference beyond literal supplied context. The classifier prompt is source-grounded. Treat scores as conditional on the registered author-label convention, not a universal factuality oracle. No post-hoc relabelling or exclusion.'))
+    write('run-identity.json', {k: started[k] for k in ('started_at', 'source_head', 'input_hashes_sha256',
+        'worker_binding_sha256', 'weights_sha256', 'model', 'source_hashes', 'coding_status_sha256')})
+    (OUT / 'upstream-regrader.py.txt').write_bytes(Path(__file__).read_bytes())
+    write('plan.json', read(RAW / 'plan.json'))
+    write('input-hashes.json', read(RAW / 'input-hashes.json'))
+    write('upstream-sources.json', registration)
+    write('context-preflight.json', read(RAW / 'context-preflight.json'))
+    text = (RAW / 'README.md').read_text(encoding='utf-8')
+    text += '\n\n[Protocol, selection and limitations](../../../benchmarks/hallucinations/README.md). '
+    text += 'Original upstream data are HaluEval and ParticleMedia/RAGTruth at the exact revisions in upstream-sources.json. '
+    text += 'Gold labels were committed before model calls. Native requests/responses and source archive remain local; public sanitized receipts preserve every call ID, prediction, usage and raw-call hash. '
+    text += 'upstream-regrade.json independently rejoins original source rows and recomputes confusion metrics. '
+    text += f'{len(taxonomy_sensitive)} RAGTruth responses contain author-tagged implicit truths; annotation-convention.json records this boundary without relabelling or excluding them. '
+    text += 'Source hashes establish declared captured bytes, not human identity, trusted time or full/transient host immutability.\n'
+    (OUT / 'README.md').write_text(text, encoding='utf-8')
+    write('files-sha256.json', {p.name: sha(p.read_bytes()) for p in OUT.iterdir() if p.is_file()})
+    print(json.dumps(dict(out=str(OUT), metrics=independent, known_native_tokens=audit['known_native_tokens'],
+                         usage_unknown=audit['usage_unknown']), indent=2))
+
+
+if __name__ == '__main__':
+    main()

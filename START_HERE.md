@@ -4,8 +4,10 @@
 
 The user requested established external hallucination tests in addition to the
 coding comparison. Read [the pinned HaluEval/RAGTruth protocol](benchmarks/hallucinations/README.md).
-Prepare offline in the publication checkout; do not touch the frozen coding
-checkout or overlap inference. Actual new detection results remain pending.
+The [240-response external results](reports/hallucinations/external-01-20261019/README.md)
+are complete: HaluEval83.3%, RAGTruth80.8%,0abstentions/invalid outputs/usage
+unknowns. Both independent upstream-label grading passes agree. Coding study08
+remains stopped; do not resume it or rerun this completed detector study.
 Keep coding outcomes, external response-detection metrics and synthetic factbook
 results in separate reports. AEE/Spec Kit efficacy needs its own matched evidence.
 
