@@ -1,0 +1,11 @@
+# Setup archive namespace correction
+
+Five retained readiness04..08 folders all have the basename `tinydb-spec_kit_aee`. The original final reporter exported each to `setup-evidence/<basename>` with exclusive creation, so the second archive would fail with FileExistsError. Three new regression cases first failed while eight existing cases passed. They exercise one namespace problem: repeated basenames, repeated path arguments and matching parent names.
+
+The corrected report-only adapter keeps existing unique names, prefixes duplicated basenames with their parent run name, adds a path commitment for remaining ambiguities, and exports repeated identical paths once. Physical-call identity checks, strict conflicting-copy refusal, token arithmetic, grades, metrics and verdict thresholds are unchanged. Final focused51cases pass. Actual AEE/Evaluator verification of the bounded test count has0evidence findings/1iterate; it is not human acceptance.
+
+A real offline rehearsal exported all five original closed readiness sources to five different archives, retained378physical calls/7,933,693known native tokens/0usage unknowns, verified archived frozen inputs and kept3430original source files unchanged. This was zero inference. The rehearsal is not new model evidence or an efficacy estimate.
+
+## Active study04 handling
+
+The primary scoring checkout stays frozen at dc5ee4e; this fix is developed in a separate checkout and must not be pulled into active scoring. The original supervisor may reach this known export-only collision after scoring and independent hidden grading finish. Preserve that failed export/log and all raw data. A complete36-row results.json plus stopped generation must be checked before using the merged corrected reporter in a fresh report directory, e.g. `reports/local/current-study-04-audited-01`. Rerun export/audits only: do not rerun inference, change the scored source, alter graders, overwrite partial output or call a reporting failure a solver/model failure. Record the frozen reporter hash and corrected adapter commit alongside the new export. Finish all accounting/ledger/integrity/insight checks and exact-green publication; a supervisor flag alone is not completion.

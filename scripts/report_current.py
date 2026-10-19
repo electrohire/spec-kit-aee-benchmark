@@ -166,13 +166,27 @@ def build(raw, dest):
     return report
 
 
+def setup_names(folders):
+    """Archive names only; never merge different runs that share a basename."""
+    folders = list(dict.fromkeys(Path(p).resolve() for p in folders))
+    counts = Counter(p.name for p in folders)
+    labels = {p: p.name if counts[p.name] == 1 else p.parent.name+'--'+p.name for p in folders}
+    collisions = Counter(labels.values())
+    for p in folders:
+        if collisions[labels[p]] > 1:
+            labels[p] += '--'+hashlib.sha256(p.as_posix().encode()).hexdigest()[:12]
+    if len(set(labels.values())) != len(labels):
+        raise ValueError('setup archive names remain ambiguous')
+    return list(labels.items())
+
+
 def setup_inventory(folders,dest):
     """Count every retained unscored physical generation, once per actual call."""
     import copy
     seen={};models={};sources=[]
-    for folder in folders:
+    for folder,label in setup_names(folders):
         if (folder/"freeze.json").is_file() and (folder/"frozen-inputs").is_dir():
-            export(folder,dest/"setup-evidence"/folder.name)
+            export(folder,dest/"setup-evidence"/label)
         paths=list(folder.rglob("call-*.json"))
         result=folder/"result.json"
         if result.is_file():
@@ -207,10 +221,10 @@ def setup_inventory(folders,dest):
                     reasoning=message.pop(key,None)
                     if reasoning:message[key+"_sha256"]=hashlib.sha256(str(reasoning).encode()).hexdigest()
             public["original_sha256"]=hashlib.sha256(original).hexdigest()
-            public["source"]=folder.name+"/"+path.relative_to(folder).as_posix()
+            public["source"]=label+"/"+path.relative_to(folder).as_posix()
             target=dest/"setup-calls"/(public["original_sha256"]+".json")
             write_json(target,public)
-        sources.append(folder.name)
+        sources.append(label)
     for value in models.values():
         value["total_tokens"]=value["known_tokens_lower_bound"] if not value["unknown_token_calls"] else None
     summary=dict(scope="All retained unscored readiness, failed/successful workflow and latency calibration generation; not scored treatment denominators",sources=sources,by_model=models,
