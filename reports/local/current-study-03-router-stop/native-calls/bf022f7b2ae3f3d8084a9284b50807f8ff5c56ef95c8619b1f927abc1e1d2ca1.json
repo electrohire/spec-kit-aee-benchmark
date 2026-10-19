@@ -1,0 +1,62 @@
+{
+  "budget_debit": 26268,
+  "ended_at": "2026-10-19T13:35:43.609797+00:00",
+  "max_output": 8192,
+  "phase": "implement",
+  "preflight_http_requests": 16,
+  "preflight_input_tokens": 24348,
+  "preflight_seconds": 1.797000000020489,
+  "removed_history_messages": 58,
+  "request_seconds": 96.79700000002049,
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"write_file\",\"content\":\"\\\"\\\"\\\"\\nThis module provides :class:`BatchWriter`, an additive wrapper around a\\n:class:`~tinydb.database.TinyDB` instance that applies batches of insert and\\nremove operations against the database's default table atomically.\\n\\nThe wrapper does not modify the wrapped database or any existing tinydb\\nmodule: ordinary reads/writes on the database keep working unchanged while\\nthe batch writer is in use.\\n\\\"\\\"\\\"\\n\\nfrom collections.abc import Mapping\\nfrom copy import deepcopy\\n\\nfrom .database import TinyDB\\n\\n__all__ = ('BatchWriter',)\\n\\n# The name of the table all batch operations target (FR-002: default table\\n# only). This is TinyDB's built-in default table name.\\n_DEFAULT_TABLE = '_default'\\n\\n# The set of operation names a batch entry may carry.\\n_VALID_OPS = frozenset({'insert', 'remove'})\\n\\n\\nclass BatchWriter:\\n    \\\"\\\"\\\"\\n    Apply batches of insert/remove operations to a TinyDB default table.\\n\\n    A batch writer wraps a supplied :class:`~tinydb.database.TinyDB`\\n    instance and exposes a single method, :meth:`apply`, which takes a list\\n    of operation dictionaries and applies them to the database's default\\n    table atomically.\\n\\n    Each operation must be one of:\\n\\n    - ``{'op': 'insert', 'document': <mapping>}`` \\u2014 insert a new document\\n      and report its assigned document ID in the result,\\n    - ``{'op': 'remove', 'doc_id': <positive int>}`` \\u2014 remove the document\\n      with the given ID; a remove of a missing ID is an error.\\n\\n    Any unknown or malformed operation (wrong or missing ``op``, missing or\\n    wrongly typed payload, non-mapping document, non-positive or non-integer\\n    document ID, non-mapping operation entry, or a batch that is not a list)\\n    raises :class:`ValueError`.\\n\\n    Application is atomic: operations are validated and applied\\n    sequentially, but if any operation fails, the complete pre-batch state\\n    of the default table is restored \\u2014 including for table handles that\\n    were acquired before the batch \\u2014 and the original error is re-raised.\\n\\n    Documents inserted via a batch are stored as independent deep copies of\\n    the caller's input: mutating the caller's operation payloads after a\\n    successful :meth:`apply` does not change the database, and the stored\\n    data is not the caller's own objects.\\n\\n    :param db: The :class:`~tinydb.database.TinyDB` instance to wrap\\n    \\\"\\\"\\\"\\n\\n    def __init__(self, db: TinyDB):\\n        \\\"\\\"\\\"\\n        Wrap the given database instance.\\n\\n        The wrapper only holds a reference to the database; it does not\\n        alter the database's ordinary APIs or state.\\n        \\\"\\\"\\\"\\n        self.db = db\\n\\n    def apply(self, operations) -> list:\\n        \\\"\\\"\\\"\\n        Apply a batch of operations to the default table atomically.\\n\\n        :param operations: a list of operation dictionaries; each entry is\\n            either ``{'op': 'insert', 'document': <mapping>}`` or\\n            ``{'op': 'remove', 'doc_id': <positive int>}``\\n        :returns: the list of IDs of the documents inserted by this batch,\\n            in insertion order; remove operations contribute no entries and\\n            an empty batch returns an empty list\\n        :raises ValueError: if the batch is not a list of operation\\n            dictionaries, if any operation is unknown or malformed, or if a\\n            remove targets a document ID that does not exist\\n        \\\"\\\"\\\"\\n        table = self.db.table(_DEFAULT_TABLE)\\n\\n        # Validate the batch as a whole before touching any state, so a\\n        # non-list batch is rejected without side effects (FR-005).\\n        self._validate_batch(operations)\\n\\n        # Take a deep copy of the complete pre-batch database state. A deep\\n        # copy is mandatory because storages such as ``MemoryStorage`` return\\n        # their live data structure from ``read()``; mutating the snapshot\\n        # would corrupt the database, and restoring a shared reference would\\n        # be a no-op.\\n        snapshot = self._snapshot()\\n\\n        inserted_ids = []\\n        try:\\n            for index, operation in enumerate(operations):\\n                self._validate_operation(index, operation)\\n\\n                op = operation['op']\\n                if op == 'insert':\\n                    # Store an independent deep copy of the caller's payload\\n                    # so neither the database nor the returned IDs alias the\\n                    # caller's input (FR-009). ``Table.insert`` itself only\\n                    # shallow-copies via ``dict(document)``.\\n                    doc_id = table.insert(deepcopy(operation['document']))\\n                    inserted_ids.append(doc_id)\\n                else:  # op == 'remove'\\n                    doc_id = operation['doc_id']\\n                    # ``Table.remove`` silently skips missing IDs, so we\\n                    # have to check existence ourselves: a remove targeting a\\n                    # missing document ID is an error (FR-007).\\n                    if doc_id not in table._read_table():\\n                        raise ValueError(\\n                            f'Operation {index}: remove of missing '\\n                            f'document ID {doc_id}'\\n                        )\\n                    table.remove(doc_ids=[doc_id])\\n        except ValueError:\\n            # Restore the complete pre-batch state and re-raise the original\\n            # error (FR-006). Writing the snapshot back through the storage\\n            # is visible to every table handle because each ``Table`` reads\\n            # its data from the storage on every operation; resetting the\\n            # default table's non-persisted ID counter makes the next insert\\n            # derive its ID from the restored data.\\n            self.db.storage.write(snapshot)\\n            table._next_id = None\\n            raise\\n\\n        return inserted_ids\\n\\n    def _snapshot(self) -> dict:\\n        \\\"\\\"\\\"\\n        Return a deep copy of the complete current database state.\\n\\n        An empty database (``read()`` returning ``None``) is snapshotted as\\n        an empty dict, which is equivalent for restore purposes.\\n        \\\"\\\"\\\"\\n        state = self.db.storage.read()\\n        if state is None:\\n            return {}\\n        return deepcopy(state)\\n\\n    @staticmethod\\n    def _validate_batch(operations) -> None:\\n        \\\"\\\"\\\"\\n        Validate that the batch itself is a list of operation mappings.\\n\\n        :raises ValueError: if ``operations`` is not a list/tuple of\\n            mappings\\n        \\\"\\\"\\\"\\n        if not isinstance(operations, (list, tuple)):\\n            raise ValueError(\\n                f'Batch must be a list of operation dictionaries, got '\\n                f'{type(operations).__name__}'\\n            )\\n        for index, operation in enumerate(operations):\\n            if not isinstance(operation, Mapping):\\n                raise ValueError(\\n                    f'Operation {index} must be a dictionary, got '\\n                    f'{type(operation).__name__}'\\n                )\\n\\n    @staticmethod\\n    def _validate_operation(index: int, operation: Mapping) -> None:\\n        \\\"\\\"\\\"\\n        Validate a single operation entry.\\n\\n        :raises ValueError: if the operation is unknown or malformed\\n        \\\"\\\"\\\"\\n        op = operation.get('op')\\n        if op not in _VALID_OPS:\\n            raise ValueError(\\n                f'Operation {index}: unknown or missing op {op!r}; '\\n                f'expected one of {sorted(_VALID_OPS)}'\\n            )\\n\\n        if op == 'insert':\\n            document = operation.get('document')\\n            if not isinstance(document, Mapping):\\n                raise ValueError(\\n                    f'Operation {index}: insert requires a mapping '\\n                    f'document, got {type(document).__name__}'\\n                )\\n        else:  # op == 'remove'\\n            doc_id = operation.get('doc_id')\\n            # ``bool`` is a subclass of ``int``, so it must be rejected\\n            # explicitly; zero and negative IDs are not valid document IDs.\\n            if not isinstance(doc_id, int) or isinstance(doc_id, bool) \\\\\\n                    or doc_id <= 0:\\n                raise ValueError(\\n                    f'Operation {index}: remove requires a positive '\\n                    f'integer doc_id, got {doc_id!r}'\\n                )\\n\", \"path\":\"tinydb/journal.py\"}",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792416943,
+    "id": "chatcmpl-coiIPm6DZDKJjWNgPilqUVgJ9xz8HwJF",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 23748,
+      "predicted_ms": 95394.226,
+      "predicted_n": 1920,
+      "predicted_per_second": 20.11652151776985,
+      "predicted_per_token_ms": 49.71038353309015,
+      "prompt_ms": 1269.967,
+      "prompt_n": 600,
+      "prompt_per_second": 472.45322122543337,
+      "prompt_per_token_ms": 2.116611666666667
+    },
+    "usage": {
+      "completion_tokens": 1920,
+      "prompt_tokens": 24348,
+      "prompt_tokens_details": {
+        "cached_tokens": 23748
+      },
+      "total_tokens": 26268
+    }
+  },
+  "seconds": 96.79700000002049,
+  "stage": 1,
+  "started_at": "2026-10-19T13:34:06.806943+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 1920,
+    "prompt_tokens": 24348,
+    "prompt_tokens_details": {
+      "cached_tokens": 23748
+    },
+    "total_tokens": 26268
+  },
+  "request_sha256": "64bf4a608308e40d23070c9a427aca9b7c62b47b29a11d1d45ecbeb993e2c84e",
+  "original_sha256": "bf022f7b2ae3f3d8084a9284b50807f8ff5c56ef95c8619b1f927abc1e1d2ca1",
+  "source": "tinydb-20261019-spec_kit/call-0046.json"
+}

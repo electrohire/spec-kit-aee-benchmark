@@ -1,0 +1,62 @@
+{
+  "budget_debit": 10522,
+  "ended_at": "2026-10-19T13:03:16.683830+00:00",
+  "max_output": 8192,
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 10448,
+  "preflight_seconds": 0.1720000000204891,
+  "removed_history_messages": 0,
+  "request_seconds": 14.062999999849126,
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && ls .specify/extensions.yml 2>/dev/null; echo \\\"ext=$?\\\"; ls specs/ 2>/dev/null; cat .specify/init-options.json 2>/dev/null; cat .specify/feature.json 2>/dev/null; ls .specify/templates/\"}",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792414996,
+    "id": "chatcmpl-NsN9sXfWteTmVnbW0NZ6HHh0S31eVwhn",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 3320.462,
+      "predicted_n": 74,
+      "predicted_per_second": 21.98489246375956,
+      "predicted_per_token_ms": 45.48578082191781,
+      "prompt_ms": 8957.777,
+      "prompt_n": 10448,
+      "prompt_per_second": 1166.360805811531,
+      "prompt_per_token_ms": 0.8573676301684533
+    },
+    "usage": {
+      "completion_tokens": 74,
+      "prompt_tokens": 10448,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 10522
+    }
+  },
+  "seconds": 14.062999999849126,
+  "stage": 1,
+  "started_at": "2026-10-19T13:03:02.615405+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 74,
+    "prompt_tokens": 10448,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 10522
+  },
+  "request_sha256": "5fb2398ea6d6a228614b10bc4fd558c03da559969b004dd078db4d92ee9afb77",
+  "original_sha256": "1574424cbb0b5bf725225dafe6a8a468a20ebad5b7e36e9110ea2048b397761d",
+  "source": "cachetools-20261019-spec_kit_aee/call-0007.json"
+}

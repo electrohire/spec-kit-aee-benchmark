@@ -1,0 +1,62 @@
+{
+  "budget_debit": 16027,
+  "ended_at": "2026-10-19T13:14:23.072713+00:00",
+  "max_output": 8192,
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 15959,
+  "preflight_seconds": 0.15600000019185245,
+  "removed_history_messages": 0,
+  "request_seconds": 6.188000000081956,
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && mkdir -p specs/001-transactions/checklists && cat > .specify/feature.json <<'EOF' && cat .specify/feature.json\\n{\\n  \\\"feature_directory\\\": \\\"specs/001-transactions\\\"\\n}\\nEOF\"}",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792415663,
+    "id": "chatcmpl-Y6lQuhcKC6Z4Pf41Y77hCr01zdkQZyLH",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 12899,
+      "predicted_ms": 3155.591,
+      "predicted_n": 68,
+      "predicted_per_second": 21.232155878249117,
+      "predicted_per_token_ms": 47.098373134328355,
+      "prompt_ms": 2941.283,
+      "prompt_n": 3060,
+      "prompt_per_second": 1040.3623180768393,
+      "prompt_per_token_ms": 0.9612035947712418
+    },
+    "usage": {
+      "completion_tokens": 68,
+      "prompt_tokens": 15959,
+      "prompt_tokens_details": {
+        "cached_tokens": 12899
+      },
+      "total_tokens": 16027
+    }
+  },
+  "seconds": 6.188000000081956,
+  "stage": 1,
+  "started_at": "2026-10-19T13:14:16.878259+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 68,
+    "prompt_tokens": 15959,
+    "prompt_tokens_details": {
+      "cached_tokens": 12899
+    },
+    "total_tokens": 16027
+  },
+  "request_sha256": "f860dc4cb71be15f64deace68f45e66360db3ad2e205a2a1a851f1daedf42c99",
+  "original_sha256": "51a4365aec7f1261f3d85549f9a90e3413bf3006d85393d562e6af692dfbfda2",
+  "source": "tinydb-20261019-spec_kit/call-0009.json"
+}

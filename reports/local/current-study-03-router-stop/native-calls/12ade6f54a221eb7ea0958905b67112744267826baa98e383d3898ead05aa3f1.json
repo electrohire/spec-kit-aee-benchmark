@@ -1,0 +1,62 @@
+{
+  "budget_debit": 17217,
+  "ended_at": "2026-10-19T13:15:40.585673+00:00",
+  "max_output": 8192,
+  "phase": "plan",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 17102,
+  "preflight_seconds": 0.13999999989755452,
+  "removed_history_messages": 0,
+  "request_seconds": 6.858999999938533,
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && grep -n 'def insert\\\\|def _insert\\\\|def remove\\\\|def _remove\\\\|def all\\\\|def __init__\\\\|class Table\\\\|def table\\\\|def _default_table\\\\|class TinyDB\\\\|def _get_table\\\\|def __len__\\\\|def insert\\\\|def dump\\\\|class Storage\\\\|def load\\\\|def save' tinydb/database.py tinydb/table.py tinydb/storages.py | head -60\"}",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792415740,
+    "id": "chatcmpl-TbXfG6Vj8lAw0cptCxkgdChqAiPEAbW2",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 15576,
+      "predicted_ms": 5097.926,
+      "predicted_n": 115,
+      "predicted_per_second": 22.362035070732684,
+      "predicted_per_token_ms": 44.71864912280702,
+      "prompt_ms": 1631.322,
+      "prompt_n": 1526,
+      "prompt_per_second": 935.4376389210714,
+      "prompt_per_token_ms": 1.0690183486238531
+    },
+    "usage": {
+      "completion_tokens": 115,
+      "prompt_tokens": 17102,
+      "prompt_tokens_details": {
+        "cached_tokens": 15576
+      },
+      "total_tokens": 17217
+    }
+  },
+  "seconds": 6.858999999938533,
+  "stage": 1,
+  "started_at": "2026-10-19T13:15:33.725481+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 115,
+    "prompt_tokens": 17102,
+    "prompt_tokens_details": {
+      "cached_tokens": 15576
+    },
+    "total_tokens": 17217
+  },
+  "request_sha256": "f970caa50357efba6281183b97aae7a06e081159c53fb14d912bdd8ba43367b3",
+  "original_sha256": "12ade6f54a221eb7ea0958905b67112744267826baa98e383d3898ead05aa3f1",
+  "source": "tinydb-20261019-spec_kit/call-0016.json"
+}

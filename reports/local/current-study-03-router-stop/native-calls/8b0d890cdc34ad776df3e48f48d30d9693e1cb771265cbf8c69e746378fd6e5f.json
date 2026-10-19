@@ -1,0 +1,62 @@
+{
+  "budget_debit": 10781,
+  "ended_at": "2026-10-19T13:03:20.428374+00:00",
+  "max_output": 8192,
+  "phase": "specify",
+  "preflight_http_requests": 2,
+  "preflight_input_tokens": 10723,
+  "preflight_seconds": 0.2660000000614673,
+  "removed_history_messages": 0,
+  "request_seconds": 3.1879999998491257,
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "{\"action\":\"shell\",\"command\":\"cd /testbed && ls -la specs/001-transactions/ 2>/dev/null; ls specs/001-transactions/checklists 2>/dev/null; echo ---; cat .specify/templates/spec-template.md\"}",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1792415000,
+    "id": "chatcmpl-mVIYPEWjR1CbP64Q4q9shu0nPQlE78cx",
+    "model": "qwen3.8-27b",
+    "object": "chat.completion",
+    "system_fingerprint": "b10894-d344123fe",
+    "timings": {
+      "cache_n": 10521,
+      "predicted_ms": 2529.16,
+      "predicted_n": 58,
+      "predicted_per_second": 22.53712695124073,
+      "predicted_per_token_ms": 44.371228070175434,
+      "prompt_ms": 541.757,
+      "prompt_n": 202,
+      "prompt_per_second": 372.8608951984008,
+      "prompt_per_token_ms": 2.6819653465346533
+    },
+    "usage": {
+      "completion_tokens": 58,
+      "prompt_tokens": 10723,
+      "prompt_tokens_details": {
+        "cached_tokens": 10521
+      },
+      "total_tokens": 10781
+    }
+  },
+  "seconds": 3.1879999998491257,
+  "stage": 1,
+  "started_at": "2026-10-19T13:03:17.233357+00:00",
+  "unknown_reason": null,
+  "usage": {
+    "completion_tokens": 58,
+    "prompt_tokens": 10723,
+    "prompt_tokens_details": {
+      "cached_tokens": 10521
+    },
+    "total_tokens": 10781
+  },
+  "request_sha256": "7fbca35f363385865bd66d17486be4c72b4c24eb98bf3f9fcb3f09aa60125a86",
+  "original_sha256": "8b0d890cdc34ad776df3e48f48d30d9693e1cb771265cbf8c69e746378fd6e5f",
+  "source": "cachetools-20261019-spec_kit_aee/call-0008.json"
+}
