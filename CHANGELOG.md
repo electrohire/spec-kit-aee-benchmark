@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — separate published hallucination datasets
+
+- Pin original HaluEval/RAGTruth revisions, MIT notices and a240-response seeded
+  selection before model calls. Add a separate detector runner with no coding
+  overlap/retries and independent gold/receipt/schedule/usage audit. Keep
+  abstentions and failed/unattempted rows visible. New model results pending;
+  no AEE efficacy, workflow prevalence or full-benchmark score is asserted.
+
 ## Unreleased — structured-only current tool protocol
 
 - Preserve study07's first malformed grep failure and15calls. Remove shell actions
