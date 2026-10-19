@@ -13,7 +13,7 @@ import zipfile
 from pathlib import Path
 
 
-def verify(repository, run, artifacts, folder):
+def verify_source(repository, run, artifacts):
     if repository not in ('electrohire/applied-epistemic-engineering','electrohire/spec-kit-aee') or run['repository']['full_name']!=repository or run['head_repository']['full_name']!=repository:
         raise ValueError('candidate source repository mismatch')
     if run['event'] not in ('push','workflow_dispatch') or run['head_branch']!='main' or run['path']!='.github/workflows/benchmark-candidate.yml' or run['conclusion']!='success':
@@ -22,6 +22,12 @@ def verify(repository, run, artifacts, folder):
     if not re.fullmatch('[0-9a-f]{40}',commit):raise ValueError('invalid candidate source SHA')
     matches=[a for a in artifacts['artifacts'] if a['name']=='benchmark-candidate-'+commit and not a['expired']]
     if len(matches)!=1:raise ValueError('candidate artifact missing/expired/ambiguous')
+    return dict(repository=repository,commit=commit,build_run_id=run['id'],artifact_name=matches[0]['name'])
+
+
+def verify(repository, run, artifacts, folder):
+    source=verify_source(repository,run,artifacts)
+    commit=source['commit']
     if {p.name for p in folder.iterdir()}!={'benchmark-request.json','candidate-bundle.zip'}:raise ValueError('unexpected downloaded artifact inventory')
     request=json.loads((folder/'benchmark-request.json').read_text())
     bundle=folder/'candidate-bundle.zip';digest=hashlib.sha256(bundle.read_bytes()).hexdigest()
@@ -37,5 +43,8 @@ def verify(repository, run, artifacts, folder):
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--repository',required=True);p.add_argument('--run-json',type=Path,required=True);p.add_argument('--artifacts-json',type=Path,required=True);p.add_argument('--folder',type=Path,required=True)
-    a=p.parse_args();print(json.dumps(verify(a.repository,json.loads(a.run_json.read_text()),json.loads(a.artifacts_json.read_text()),a.folder),indent=2))
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--repository',required=True);p.add_argument('--run-json',type=Path,required=True);p.add_argument('--artifacts-json',type=Path,required=True);p.add_argument('--folder',type=Path);p.add_argument('--metadata-only',action='store_true')
+    a=p.parse_args()
+    run,artifacts=json.loads(a.run_json.read_text()),json.loads(a.artifacts_json.read_text())
+    if not a.metadata_only and a.folder is None:p.error('--folder is required for complete verification')
+    print(json.dumps(verify_source(a.repository,run,artifacts) if a.metadata_only else verify(a.repository,run,artifacts,a.folder),indent=2))
