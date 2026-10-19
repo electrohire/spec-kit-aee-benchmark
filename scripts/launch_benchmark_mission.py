@@ -85,16 +85,26 @@ def prepare(p, worker_binding=None):
     shutil.copyfile(ROOT / 'artifacts/current-admission-09/repair-verification.json', preflight / 'repair-verification.json')
     protocol = 'direct-worker-v1' if worker_binding is not None else 'infrastructure-recovery-v1'
     shutil.copyfile(ROOT / f'benchmarks/current_local/{protocol}.json', preflight / 'recovery-migration.json')
-    shutil.copyfile(ROOT / 'benchmarks/current_local/fail-fast-argv-v1.json', preflight / 'fail-fast-amendment.json')
+    shutil.copyfile(ROOT / 'benchmarks/current_local/fail-fast-argv-v2.json', preflight / 'fail-fast-amendment.json')
     if worker_binding is not None:
         shutil.copyfile(worker_binding, preflight / 'worker-binding.json')
         shutil.copyfile(worker_binding.parent / 'direct-worker-equivalence-02/result.json', preflight / 'direct-route-proof.json')
     hashes = {f.relative_to(preflight).as_posix(): hashlib.sha256(f.read_bytes()).hexdigest()
               for f in preflight.rglob('*') if f.is_file()}
     write_json(preflight / 'admission.json', dict(protocol='inclusive-model-outcomes-v1',
-        recovery_protocol=protocol, execution_policy='fail-fast-v1', created_at=utc(), hashes=hashes,
+        recovery_protocol=protocol, execution_policy='fail-fast-v1', fail_fast_amendment='fail-fast-argv-v2', created_at=utc(), hashes=hashes,
         rationale='User-directed prospective fail-fast/argv amendment. First protocol/tool/verification failure halts the campaign; no repairs or next trajectory after failure. Literal argv is a changed shared tool interface, requiring fresh transport and latency. Prior runs remain immutable; no comparable treatment-effect inference across this amendment. Historical HTTP500/ENOSPC cause remains unresolved. Model/tasks/seeds/caps/graders unchanged. No automatic retries.',
         unscored_exposure='Historical TinyDB combined workflow08 and injected repair proof; not fresh all-six-success readiness. Four semantic dependency replays follow. Separate synthetic-factbook hallucination diagnostic is not a treatment-effect estimate.'))
+
+
+def setup_sources(root,p):
+    sources=[root/'reports/feasibility/local-20261016',root/'reports/feasibility/qwen38-readiness-20261016',
+        *sorted(root.glob('artifacts/current-workflow-calibration-*')),
+        *sorted(f for f in root.glob('artifacts/current-representative-*/*') if (f/'calls').is_dir()),
+        *sorted(root.glob('artifacts/current-action-transport-*')),
+        *sorted(root.glob('artifacts/current-latency-calibration-*')),
+        p['transport'],p['latency'],p['hallucination']]
+    return list(dict.fromkeys(source.resolve() for source in sources if source.exists()))
 
 
 def main():
@@ -161,12 +171,7 @@ def main():
             scored.extend(('--worker-binding', args.worker_binding))
         command('scored-study', scored)
         export = ['scripts/report_current.py', p['raw'], p['report']]
-        setups = [ROOT / 'reports/feasibility/local-20261016', ROOT / 'reports/feasibility/qwen38-readiness-20261016',
-            *sorted(ROOT.glob('artifacts/current-workflow-calibration-*')),
-            *sorted(f for f in ROOT.glob('artifacts/current-representative-*/*') if (f / 'calls').is_dir()),
-            *sorted(ROOT.glob('artifacts/current-action-transport-*')),
-            *sorted(ROOT.glob('artifacts/current-latency-calibration-*')),
-            p['hallucination']]
+        setups = setup_sources(ROOT,p)
         for source in setups:
             if source.exists():
                 export.extend(('--setup', source))

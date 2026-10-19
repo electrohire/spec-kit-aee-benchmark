@@ -11,13 +11,17 @@ sys.path.insert(0,str(ROOT/'scripts'))
 import fail_fast_admission as admission
 
 
-def test_registered_amendment_matches_current_definitions_and_bindings():
-    registered=json.loads((ROOT/'benchmarks/current_local/fail-fast-argv-v1.json').read_text())
+@pytest.mark.parametrize('version',['v1','v2'])
+def test_registered_amendment_matches_current_definitions_and_bindings(version):
+    registered=json.loads((ROOT/f'benchmarks/current_local/fail-fast-argv-{version}.json').read_text())
     assert registered['execution_policy']=='fail-fast-v1'
     for kind in ('definitions','bindings'):
         for filename,entries in registered[kind].items():
             found={}
-            for node in ast.parse((ROOT/filename).read_text()).body:
+            source=ROOT/filename
+            if version=='v1' and kind=='definitions' and filename=='scripts/current_local.py':
+                source=ROOT/'reports/local/labelled-factbooks-11-20261019/setup-evidence/current-hallucination-11/frozen-inputs'/filename
+            for node in ast.parse(source.read_text()).body:
                 if kind=='definitions' and isinstance(node,(ast.FunctionDef,ast.ClassDef)):
                     found[node.name]=ast.dump(node,include_attributes=False)
                 if kind=='bindings' and isinstance(node,ast.Assign):
