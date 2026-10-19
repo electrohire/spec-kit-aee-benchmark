@@ -12,11 +12,11 @@ case exposure and development on public data are disclosed; this is not a fresh
 unseen-test replication. Never select a treatment or alter prompts from partial
 matched outputs.
 
-Attempt01 under [v1](matched-v1.json) stopped at its first response-length failure:
+Attempt 01 under [v1](matched-v1.json) stopped at its first response-length failure:
 the model generated extended reasoning in a rationale string without completing
-the native JSON object. The output cap remains1,024tokens. V2 enforces native
-string bounds uniformly for every arm: document3,000characters, rationale320,
-each quote120 and each uncertainty80. Both decision calls repeat the concise
+the native JSON object. The output cap remains1,024 tokens. V2 enforces native
+string bounds uniformly for every arm: document 3,000 characters, rationale 320,
+each quote 120 and each uncertainty 80. Both decision calls repeat the concise
 contract. No truncation is accepted or repaired into a verdict. Inputs, labels,
 semantics, sampling, seed, caps and independent grading remain unchanged.
 Earlier partial outputs were observed for diagnosis; the delivery amendment is
@@ -111,13 +111,13 @@ no blended score or generic-test-failure-as-hallucination conversion.
 
 ## Prospective v3: exact native decoder repair
 
-Matched02 stopped at calibration call0015 because llama.cpp d344123fe converts
-repetition maxima>2000 to unbounded grammar. See the retained stopped02 report.
-The SAME3000document/320rationale/120quote/80uncertainty limits now use explicit
-GBNF with each policy block bounded100. No model/service/cap/selection/gold/grade
+Matched 02 stopped at calibration call 0015 because llama.cpp d344123fe converts
+repetition maxima>2000 to unbounded grammar. See the retained stopped 02 report.
+The SAME 3000 document/320 rationale/120 quote/80 uncertainty limits now use explicit
+GBNF with each policy block bounded 100. No model/service/cap/selection/gold/grade
 changes. Fixed JSON field order/bounded whitespace apply equally to allarms; JSON
 schema independently validates every response and receipts bind the exact grammar.
-Three separate setup calls probe exact3000characters, decision bounds and an
+Three separate setup calls probe exact3000 characters, decision bounds and an
 escaped literal known only to the decoder. No semantic all-correct admission.
-Unchanged source/clean exact-head Ubuntu checks must precede fresh03; never
-resume01/02. Retain all their setup/failed/scored calls and unknowns separately.
+Unchanged source/clean exact-head Ubuntu checks must precede fresh 03; never
+resume 01/02. Retain all their setup/failed/scored calls and unknowns separately.

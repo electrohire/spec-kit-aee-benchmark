@@ -1,17 +1,17 @@
 # Reproduce the repeated local comparison
 
 Read `benchmarks/repeated_local/PROTOCOL.md` and `ADJUDICATION.md` first. This is
-separate from the earlier run03 and from the original unrun SWE-bench pilot.
+separate from the earlier run 03 and from the original unrun SWE-bench pilot.
 Do not update the email/article based on preparation or preliminary results.
 The requirement tests are published in this repository. They were withheld from
 these isolated solvers, but future replication is not a fresh secret-test study.
 
 ## Prerequisites
 
-Use Python3.12 and `uv sync --locked --group dev`. The measured host uses Python3.12.6
+Use Python 3.12 and `uv sync --locked --group dev`. The measured host uses Python 3.12.6
 in `.venv-gpu`, verified RTX4070SUPER12282MiB plus RTX5060Ti16311MiB, and the same
-local quantized Qwen weight/hash as run03. No API keys, paid endpoints or fallback.
-The adapter's HTTP helper only addresses127.0.0.1:8091 and disables proxies/redirects.
+local quantized Qwen weight/hash as run 03. No API keys, paid endpoints or fallback.
+The adapter's HTTP helper only addresses 127.0.0.1:8091 and disables proxies/redirects.
 
 Clone the pinned TinyDB and cachetools revisions listed in PROJECTS in
 `scripts/repeated_local.py` into `artifacts/tinydb-upstream` and
@@ -49,8 +49,8 @@ $env:PYTHONUTF8='1'
 ```
 
 Start an owned localhost llama.cpp server using the recorded launch arguments.
-On the measured host the existing8081router remains running while its model is
-unloaded to free VRAM. A separate8091benchmark server uses both GPUs. Never stop
+On the measured host the existing 8081 router remains running while its model is
+unloaded to free VRAM. A separate 8091 benchmark server uses both GPUs. Never stop
 an unrelated PID. Restore the original model after the suite, including on failure.
 
 ## Calibration and freeze
@@ -64,13 +64,13 @@ Run in order, using fresh output directories for every failed or changed attempt
 .venv-gpu/Scripts/python.exe scripts/matched_repair.py calibrate artifacts/matched-calibration-01 --preflight artifacts/repeated-calibration-01
 ```
 
-Workflow attempts01–03 are retained development failures; do not overwrite or
+Workflow attempts 01–03 are retained development failures; do not overwrite or
 exclude their work. The final workflow gate path is explicit in the runner and
 must match the completed calibration. Changing paths/protocol requires a new
 freeze. Model-free grader references and unrelated model workflow calibration
 serve different purposes. Both must pass before scored generation.
 
-The suite wrapper sequentially starts the12 project trajectories and16 matched
+The suite wrapper sequentially starts the 12 project trajectories and 16 matched
 repair pairs, then restores the original model in `finally`:
 
 ```powershell
@@ -91,11 +91,11 @@ and use it to stop a process on another machine.
 
 ## Reporting
 
-Study01 was interrupted before hidden grading; its evidence is retained in
+Study 01 was interrupted before hidden grading; its evidence is retained in
 `reports/local/repeated-study-01-interrupted`. The replacement uses the same
 model, tasks, budgets and grading with a calibrated equivalent context search.
-On the measured host, `scripts/run_repeated_revision.py` waits for matched-repair01
-and restoration, then starts study02 and restores the service again afterward.
+On the measured host, `scripts/run_repeated_revision.py` waits for matched-repair 01
+and restoration, then starts study 02 and restores the service again afterward.
 It requires `artifacts/context-selection-01/result.json` from
 `scripts/calibrate_context_selection.py`. That calibration uses long saved local
 request traces; public exports retain their hashes rather than full requests.

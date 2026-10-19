@@ -1,5 +1,5 @@
 # Local exploratory campaign, 2026-09-17
-**PAUSED / DRAFT:** User stopped this CPU plan before coding generation and asked
+**PAUSED / DRAFT:* * User stopped this CPU plan before coding generation and asked
 to continue on a GPU machine. See gpu-machine-handoff.md. Runtime execution was
 interrupted during warmups; no completed measurement series exists. Model,
 runtime, scope and adapter below are proposals, not a frozen GPU protocol.
@@ -50,7 +50,7 @@ extraction. Convergence emits final Python code; missing/invalid code is failure
 
 Grade only after all attempts finish, using upstream unittest in temporary
 directories. Before execution, reject unsafe generated AST (imports except math,
-re,string,collections; dunder access; eval/exec/open/compile/input and other OS
+re, string, collections; dunder access; eval/exec/open/compile/input and other OS
 access). This is a restricted pure-function experiment, not an OS security
 sandbox. Grading timeout 10 seconds. Keep all nine attempts in denominator.
 Report passes, native server input/output tokens, wall time and all gaps. Do not

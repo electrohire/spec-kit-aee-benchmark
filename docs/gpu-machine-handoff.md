@@ -57,21 +57,21 @@ within this free-local scope; never invent benchmark wins or token savings.
 
 ## What is actually done
 
-- Original controller, tutorial, accounting and offline integration: 41 tests
+* Original controller, tutorial, accounting and offline integration: 41 tests
   previously passed; Linux CI passed. Frozen 180-attempt SWE-bench schedule is a
   dry run only. No scored SWE-bench results, paid calls or real Docker gold smoke.
-- Actual deterministic AEE and Evaluator execution exists under reports/offline.
-- Current laptop Docker daemon was unavailable. Codex subscription allowance was
+* Actual deterministic AEE and Evaluator execution exists under reports/offline.
+* Current laptop Docker daemon was unavailable. Codex subscription allowance was
   exhausted; available paid credits were deliberately not used.
-- Started the separate runtime script, then interrupted it on the user's stop
+* Started the separate runtime script, then interrupted it on the user's stop
   instruction. reports/local/runtime-20260917 contains seven warmups and evidence
   objects only. No measured repetitions or publishable runtime summary.
-- Downloaded llama.cpp b11026 CPU binaries and official Qwen2.5-Coder-1.5B-Instruct
+* Downloaded llama.cpp b11026 CPU binaries and official Qwen2.5-Coder-1.5B-Instruct
   Q4_K_M weights outside the repository. No model server or inference was started.
-- scripts/local_experiment.py and docs/local-benchmark-protocol.md are UNVALIDATED
+* scripts/local_experiment.py and docs/local-benchmark-protocol.md are UNVALIDATED
   DRAFTS. They are saved work, not a ready-to-run GPU campaign. No coding freeze,
   smoke, generation, grading or comparative results exist.
-- docs/linkedin-article.md is the prior unrun-results draft. Do not present it as
+* docs/linkedin-article.md is the prior unrun-results draft. Do not present it as
   a completed benchmark article. New article drafting waits for actual results.
 
 ## Resume sequence
@@ -136,31 +136,31 @@ within this free-local scope; never invent benchmark wins or token savings.
 
 ## Local assets on the old laptop (not pushed)
 
-- Workspace: D:/Development/spec-kit-aee-benchmark; environment .venv312.
-- D:/Development/benchmark-tools/llama-b11026.zip and llama-b11026/.
-- D:/Development/benchmark-tools/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf.
+* Workspace: D:/Development/spec-kit-aee-benchmark; environment .venv312.
+* D:/Development/benchmark-tools/llama-b11026.zip and llama-b11026/.
+* D:/Development/benchmark-tools/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf.
   SHA-256: cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046.
   HF revision: f86cb2c1fa58255f8052cc32aeede1b7482d4361.
-- D:/Development/benchmark-upstreams/exercism-python at
+* D:/Development/benchmark-upstreams/exercism-python at
   1f6aab8667bf653b10cc3799f94352fcdb749db6; upstream clones listed in START_HERE.
-- Weights, binaries, environments and upstream clones are intentionally not Git
+* Weights, binaries, environments and upstream clones are intentionally not Git
   artifacts. Recreate them on the destination; GPU runtime/model may differ.
 
 ## Source URLs for the eventual article
 
-- https://github.com/github/spec-kit
-- https://github.com/electrohire/spec-kit-aee
-- https://github.com/electrohire/spec-kit-evaluator
-- https://github.com/electrohire/applied-epistemic-engineering
-- https://github.com/electrohire/spec-kit-aee-benchmark
-- https://github.com/SWE-bench/SWE-bench
-- https://github.com/SWE-bench/swe-bench-tasks
-- https://github.com/SWE-agent/mini-swe-agent
-- https://github.com/Aider-AI/aider/blob/main/benchmark/README.md
-- https://github.com/exercism/python
-- https://github.com/exercism/problem-specifications
-- https://github.com/ggml-org/llama.cpp
-- https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF
+* https://github.com/github/spec-kit
+* https://github.com/electrohire/spec-kit-aee
+* https://github.com/electrohire/spec-kit-evaluator
+* https://github.com/electrohire/applied-epistemic-engineering
+* https://github.com/electrohire/spec-kit-aee-benchmark
+* https://github.com/SWE-bench/SWE-bench
+* https://github.com/SWE-bench/swe-bench-tasks
+* https://github.com/SWE-agent/mini-swe-agent
+* https://github.com/Aider-AI/aider/blob/main/benchmark/README.md
+* https://github.com/exercism/python
+* https://github.com/exercism/problem-specifications
+* https://github.com/ggml-org/llama.cpp
+* https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF
 
 Only cite tools actually relevant to the final experiment, add the selected GPU
 model's official source, and verify URLs/revisions before publication.

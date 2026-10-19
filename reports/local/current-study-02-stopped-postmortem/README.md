@@ -1,4 +1,4 @@
-# Study02: audited stopped-study observations
+# Study 02: audited stopped-study observations
 
 This is a postmortem of the infrastructure-interrupted campaign, not a completed
 paired experiment. No inference or campaign retry occurred. All stopped raw
@@ -9,27 +9,27 @@ unresolved; the prospective controller guard fix does not explain it.
 ## What was actually attempted
 
 The [complete JSON inventory](checkpoint-rows.json) and [CSV](checkpoint-rows.csv)
-cover all12 scheduled trajectories and36 dependent checkpoints. Only two
-trajectories began. Three checkpoints incurred generation calls;33 were
+cover all 12 scheduled trajectories and 36 dependent checkpoints. Only two
+trajectories began. Three checkpoints incurred generation calls; 33 were
 unattempted. There were no observed accepted final-stage project deliveries.
 The infrastructure censoring prevents interpreting these as arm-level efficacy
 or completion-rate estimates.
 
 | Project / seed / arm / stage | Generation calls | Observation |
-|---|---:|---|
+| --- | ---: | --- |
 | Cachetools / 20261019 / Spec Kit+AEE / 1 | 22 | Repeated-action intervention during specification; implementation never reached |
-| Cachetools / same / 2 and3 | 0 | Dependent checkpoints withheld |
-| TinyDB / 20261019 / Spec Kit / 1 | 114 | All seven workflow phases completed; public225 tests passed; hidden grade failed |
+| Cachetools / same / 2 and 3 | 0 | Dependent checkpoints withheld |
+| TinyDB / 20261019 / Spec Kit / 1 | 114 | All seven workflow phases completed; public 225 tests passed; hidden grade failed |
 | TinyDB / same / 2 | 56 | Infrastructure halt during tasks; no submitted final snapshot |
 | Remaining scheduled checkpoints | 0 | Campaign stopped before execution |
 
-The raw Cachetools stage3 row has a bookkeeping `handoff=true` flag despite its
+The raw Cachetools stage 3 row has a bookkeeping `handoff=true` flag despite its
 `not_attempted_dependent` status and zero calls. That flag is not an executed
 handoff, accepted delivery or completed workflow. It remains visible in the export.
 
 ## Independent source grades
 
-The two retained stage1 primary/final snapshots have identical primary/final
+The two retained stage 1 primary/final snapshots have identical primary/final
 hashes within each checkpoint. Four fresh public/hidden grader invocations used
 the original pinned upstream revisions, network-disabled image and unchanged
 grader functions/test bytes. [Freeze](freeze.json), [controller](controller.py),
@@ -40,9 +40,9 @@ The pinned TinyDB and Cachetools source retains its original attribution and
 No agent test, model assertion or new source change supplies an independent grade.
 
 | Snapshot | Public/upstream | Hidden | Interpretation |
-|---|---|---|---|
-| Cachetools stage1 | Collection error:1 case vs218 expected | Collection error:1 case vs221 expected | Incomplete inventory; proxy-ungraded |
-| TinyDB stage1 | 225/225 passed | 227/228 passed | One independently observed hidden failure; no accepted checkpoint |
+| --- | --- | --- | --- |
+| Cachetools stage 1 | Collection error: 1 case vs218 expected | Collection error: 1 case vs221 expected | Incomplete inventory; proxy-ungraded |
+| TinyDB stage 1 | 225/225 passed | 227/228 passed | One independently observed hidden failure; no accepted checkpoint |
 
 TinyDB's `test_R02_retained_cache` expected an empty result but received
 `[{'x': 1}]`. This shows that the public suite did not establish the retained-cache
@@ -51,15 +51,15 @@ detection. The explicit completion declaration was unknown. The model's public
 test success and completed phase workflow therefore cannot stand in for accepted
 delivery. See the full [hidden grade](grade-tinydb-20261019-spec_kit-stage1-hidden.json).
 
-The interim TinyDB stage2 source was not promoted to a submitted final checkpoint.
+The interim TinyDB stage 2 source was not promoted to a submitted final checkpoint.
 Unattempted Cachetools carry-forward snapshots were not scored as new attempts.
 The missing checkpoints remain ungraded, with their zero new-call accounting intact.
 
 ## Completion and treatment exposure
 
-The disjoint completion-proxy categories across36 scheduled checkpoints are:
-**positive0; negative0; unknown with complete inventory1; ungraded35**. The35
-include33 unattempted checkpoints, one infrastructure-interrupted partial
+The disjoint completion-proxy categories across 36 scheduled checkpoints are:
+**positive 0; negative 0; unknown with complete inventory 1; ungraded 35**. The 35
+include 33 unattempted checkpoints, one infrastructure-interrupted partial
 checkpoint and the Cachetools collection failure. False-completion rate is
 undefined because there is no eligible positive declaration. No detector
 precision/recall can be estimated without independent joined detection labels.
@@ -82,39 +82,39 @@ could ignore a missing hidden-grade binding. Both public and hidden bindings are
 now mandatory. The [initial failing case](validation/missing-mode-red.json) is
 retained as byte-exact base64 with its hash; this was an auditor implementation
 gap, not another model defect. The [interim full suite](validation/full-interim.xml)
-passed510 cases before that final hardening; final focused checks cover10 cases.
+passed 510 cases before that final hardening; final focused checks cover 10 cases.
 The exact-head Ubuntu CI also runs the full suite and the committed audit command.
 
 ## Calls, costs and rework limits
 
-Study02 retained192 generation calls:4,089,695 prompt+82,529 completion=
-**4,172,224 known native tokens**, with0 stored generation-usage unknowns.
-Reported cached prompt tokens are2,147,082, a subset of prompt tokens rather than
+Study 02 retained 192 generation calls: 4,089,695 prompt+82,529 completion=
+**4,172,224 known native tokens**, with 0 stored generation-usage unknowns.
+Reported cached prompt tokens are 2,147,082, a subset of prompt tokens rather than
 additional tokens or a monetary discount. The failed context preflight's nine
 HTTP helper requests made zero additional generation calls.
 
-The [bounded retained-cost inventory](bounded-cost-inventory.json) covers2074
+The [bounded retained-cost inventory](bounded-cost-inventory.json) covers 2074
 deduplicated receipts, including four with unknown usage. Its cohorts remain
 separate:
 
 | Cohort / model | Calls | Known native-token lower bound | Unknown-usage calls |
-|---|---:|---:|---:|
+| --- | ---: | ---: | ---: |
 | Setup / gpt-oss-20b | 56 | 542,676 | 1 |
 | Setup / qwen3.8-27b | 695 | 14,334,614 | 2 |
-| Invalid historical study01 / qwen3.8-27b | 1131 | 24,087,135 | 1 |
-| Stopped study02 / qwen3.8-27b | 192 | 4,172,224 | 0 |
+| Invalid historical study 01 / qwen3.8-27b | 1131 | 24,087,135 | 1 |
+| Stopped study 02 / qwen3.8-27b | 192 | 4,172,224 | 0 |
 
 Older study families outside those explicitly inventoried roots remain excluded;
 this is not final all-history economics. Unknown usage stays unknown. Models and
 cohorts are not pooled into an efficiency estimate. Local API spend was$0,
 excluding hardware, energy and labor. No hypothetical price is presented as a bill.
 
-No repair round was recorded for the two submitted stage1 snapshots. The partial
+No repair round was recorded for the two submitted stage 1 snapshots. The partial
 later work cannot establish repair efficacy or absence of regressions. Timing is
-descriptive: convenience tasks, public stage1 readiness exposure, controller/host
+descriptive: convenience tasks, public stage 1 readiness exposure, controller/host
 adaptation, prospective admission amendment and concurrent authorized CPU-only
 product validation limit inference. Twelve trajectories are not twelve unrelated
-projects, and36 dependent checkpoints are not36 independent samples.
+projects, and 36 dependent checkpoints are not 36 independent samples.
 
 ## Remaining requirements
 

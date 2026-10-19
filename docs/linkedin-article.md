@@ -30,9 +30,9 @@ Public tests were available during development. Separate hidden cases were withh
 
 No arm passed a complete hidden milestone, before or after the scheduled repair attempts. Recorded logical token totals were:
 
-- Ordinary coding agent: at least 6,943,953 tokens.
-- Spec Kit through our adapter: at least 8,799,193 tokens.
-- Spec Kit + Evaluator + AEE through our adapter: at least 7,076,311 tokens.
+* Ordinary coding agent: at least 6,943,953 tokens.
+* Spec Kit through our adapter: at least 8,799,193 tokens.
+* Spec Kit + Evaluator + AEE through our adapter: at least 7,076,311 tokens.
 
 Each arm had one call with unknown native usage. Tokens per accepted milestone are undefined because there were no fully accepted milestones; exact usage is also incomplete. Unknown is not zero.
 

@@ -218,14 +218,14 @@ Before finishing, verify the remote owner is ElectroHire, visibility is PUBLIC, 
 
 ## Primary references
 
-- [Spec Kit](https://github.com/github/spec-kit) and [extension reference](https://github.com/github/spec-kit/blob/main/docs/reference/extensions.md).
-- [ElectroHire Evaluator extension](https://github.com/electrohire/spec-kit-evaluator).
-- [ElectroHire AEE extension and engine installation](https://github.com/electrohire/spec-kit-aee).
-- [SWE-bench harness and current setup](https://github.com/SWE-bench/SWE-bench).
-- [SWE-bench task definitions](https://github.com/SWE-bench/swe-bench-tasks).
-- [mini-SWE-agent](https://github.com/SWE-agent/mini-swe-agent).
-- [Aider benchmark instructions](https://github.com/Aider-AI/aider/blob/main/benchmark/README.md).
-- [GitHub CLI repository creation](https://cli.github.com/manual/gh_repo_create).
-- [OpenAI API pricing](https://developers.openai.com/api/docs/pricing).
+* [Spec Kit](https://github.com/github/spec-kit) and [extension reference](https://github.com/github/spec-kit/blob/main/docs/reference/extensions.md).
+* [ElectroHire Evaluator extension](https://github.com/electrohire/spec-kit-evaluator).
+* [ElectroHire AEE extension and engine installation](https://github.com/electrohire/spec-kit-aee).
+* [SWE-bench harness and current setup](https://github.com/SWE-bench/SWE-bench).
+* [SWE-bench task definitions](https://github.com/SWE-bench/swe-bench-tasks).
+* [mini-SWE-agent](https://github.com/SWE-agent/mini-swe-agent).
+* [Aider benchmark instructions](https://github.com/Aider-AI/aider/blob/main/benchmark/README.md).
+* [GitHub CLI repository creation](https://cli.github.com/manual/gh_repo_create).
+* [OpenAI API pricing](https://developers.openai.com/api/docs/pricing).
 
 Recheck current upstream documentation locally, then freeze the tested versions. Prefer verified installed behavior over stale command examples, and record any deviations from this brief.

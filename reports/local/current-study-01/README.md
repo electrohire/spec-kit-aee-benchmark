@@ -1,11 +1,11 @@
 # Repeated two-project local comparison
 
-**Audit qualification:** [Read the interpretation and exposure limits](analysis.md). All 36 checkpoints were attempted, but the 24 structured checkpoints are ungraded collection errors (22 missing modules, two import-time NameErrors). Only six specification AEE assessments occurred; all 52 public-repair records made zero inference calls. Zero accepted deliveries is not a complete AEE workflow efficacy test.
+**Audit qualification:* * [Read the interpretation and exposure limits](analysis.md). All 36 checkpoints were attempted, but the 24 structured checkpoints are ungraded collection errors (22 missing modules, two import-time NameErrors). Only six specification AEE assessments occurred; all 52 public-repair records made zero inference calls. Zero accepted deliveries is not a complete AEE workflow efficacy test.
 
 12 project trajectories; 36 dependent checkpoints, not independent tasks. All inference is local. API expenditure $0; hardware, energy and controller work unpriced.
 
 | Arm | Primary /12 | Final /12 | Entire trajectories /4 | Known tokens | Unknown calls | Tokens/accepted | Repair rounds | Completed milestone workflows |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | baseline | 9 | 9 | 2 | 7,748,458 | 0 | 860939.7777777778 | 4 | 9 |
 | spec_kit | 0 | 0 | 0 | 8,511,570 | 1 | undefined | 24 | 0 |
 | spec_kit_aee | 0 | 0 | 0 | 7,827,107 | 0 | undefined | 24 | 0 |
@@ -13,7 +13,7 @@
 ## Paired project/seed outcomes
 
 | Project | Seed | Arm | Stage | Public final | Hidden primary → final | Completed phases | Repair rounds |
-|---|---|---|---:|---|---|---:|---:|
+| --- | --- | --- | ---: | --- | --- | ---: | ---: |
 | cachetools | 20261016 | baseline | 1 | True | True → True | 1/1 | 0 |
 | cachetools | 20261016 | baseline | 2 | True | True → True | 1/1 | 0 |
 | cachetools | 20261016 | baseline | 3 | True | True → True | 0/1 | 0 |
@@ -58,7 +58,7 @@ The earlier interrupted pilot used a linear context selector with repeated token
 ## Explicit completion claims and hallucination proxy
 
 | Arm | Positive / negative / unknown declarations | False completion / graded positive declarations | Rate |
-|---|---:|---:|---:|
+| --- | ---: | ---: | ---: |
 | baseline | 9 / 0 / 3 | 1/9 | 11.1% |
 | spec_kit | 0 / 0 / 12 | 0/0 | undefined |
 | spec_kit_aee | 0 / 0 / 12 | 0/0 | undefined |
@@ -70,7 +70,7 @@ Primary-to-final recovery counts distinguish independently repaired code from ex
 ## Recorded AEE management activity
 
 | Arm | Assessment invocations / errors | Verdict counts | Findings by severity | Evidence rework rounds |
-|---|---:|---|---|---:|
+| --- | ---: | --- | --- | ---: |
 | baseline | 0 / 0 | {} | {} | 0 |
 | spec_kit | 0 / 0 | {} | {} | 0 |
 | spec_kit_aee | 6 / 0 | {'iterate': 2, 'gather_evidence': 4} | {'high': 22, 'medium': 60, 'low': 34} | 0 |
@@ -82,7 +82,7 @@ Final-stage project delivery is separate from uninterrupted success at every che
 ## Delivery and token economics
 
 | Arm | Final-stage projects delivered | All scored tokens per delivered project | Illustrative USD per delivered project | Blocked milestones |
-|---|---:|---:|---:|---:|
+| --- | ---: | ---: | ---: | ---: |
 | baseline | 2/4 | 3874229.0 | 1.70368835 | 0 |
 | spec_kit | 0/4 | undefined/unknown | undefined/unknown | 0 |
 | spec_kit_aee | 0/4 | undefined/unknown | undefined/unknown | 0 |

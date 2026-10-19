@@ -1,19 +1,19 @@
 # Published external hallucination detection results
 
-**Completed:240/240 independently graded responses;0invalid or ungraded responses,0abstentions,0generation-usage unknowns.** This is separate from the coding comparison and the earlier synthetic factbook diagnostic.
+**Completed: 240/240 independently graded responses; 0 invalid or ungraded responses, 0 abstentions, 0 generation-usage unknowns.** This is separate from the coding comparison and the earlier synthetic factbook diagnostic.
 
 | Dataset | Responses | Accuracy | Cluster bootstrap95% interval | Missed hallucinations | False alarms on grounded answers | Abstentions |
-|---|---:|---:|---:|---:|---:|---:|
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | HaluEval QA | 120 | 83.3% | 76.7–89.2% | 17/60 | 3/60 | 0 |
 | RAGTruth test | 120 | 80.8% | 73.3–87.5% | 11/60 | 12/60 | 0 |
 
-The local qwen3.8-27b detector accepted17/60 HaluEval hallucinated answers and11/60 RAGTruth hallucinated responses. It also flagged3/60 and12/60 grounded responses respectively. No answer was retried, repaired or relabelled to improve these scores. The original tiny12/12 factbook result did not establish this broader detection performance.
+The local qwen3.8-27b detector accepted 17/60 HaluEval hallucinated answers and 11/60 RAGTruth hallucinated responses. It also flagged 3/60 and 12/60 grounded responses respectively. No answer was retried, repaired or relabelled to improve these scores. The original tiny 12/12 factbook result did not establish this broader detection performance.
 
-HaluEval precision93.5%/recall71.7%; RAGTruth precision80.3%/recall81.7%. The HaluEval sample has60paired question clusters; RAGTruth uses120distinct source IDs. Intervals resample those clusters, not independent answer pairs. These balanced public subsets are not full-benchmark leaderboard scores or population hallucination prevalence, and may overlap model pretraining. Four RAGTruth cases contain upstream implicit-true annotations; the preregistered author-label convention is retained and disclosed in annotation-convention.json.
+HaluEval precision 93.5%/recall 71.7%; RAGTruth precision 80.3%/recall 81.7%. The HaluEval sample has 60 paired question clusters; RAGTruth uses 120 distinct source IDs. Intervals resample those clusters, not independent answer pairs. These balanced public subsets are not full-benchmark leaderboard scores or population hallucination prevalence, and may overlap model pretraining. Four RAGTruth cases contain upstream implicit-true annotations; the preregistered author-label convention is retained and disclosed in annotation-convention.json.
 
 **AEE or Spec Kit benefit is not measured by this experiment.** Neither treatment was used here. This tests recognition of other candidate responses against supplied evidence, not spontaneous hallucination generation or software delivery. The coding comparison remains incomplete; no causal benefit, savings or superiority claim follows.
 
-All240 model calls are accounted for:209,990prompt+3,467completion=213,457known native tokens;0native cached tokens;0missing usage fields. Local API spend$0 excludes hardware, electricity and labor. One later offline export initially parsed the upstream HaluEval JSONL file as a JSON array; this was fixed and only the export/audit was rerun, with0new generation calls. Raw model evidence was unchanged.
+All 240 model calls are accounted for: 209,990 prompt+3,467 completion=213,457 known native tokens; 0 native cached tokens; 0 missing usage fields. Local API spend$0 excludes hardware, electricity and labor. One later offline export initially parsed the upstream HaluEval JSONL file as a JSON array; this was fixed and only the export/audit was rerun, with 0 new generation calls. Raw model evidence was unchanged.
 
 ## Full metrics, provenance and limits
 
@@ -83,7 +83,7 @@ These are balanced response-classification subsets, separate from coding outcome
 }
 ```
 
-Physical calls: 240; known native tokens: 213457; usage unknown: 0. API spend0 excludes hardware, energy and labor.
+Physical calls: 240; known native tokens: 213457; usage unknown: 0. API spend 0 excludes hardware, energy and labor.
 
 Original labels and output are retained even when wrong. Public data may be in model training. HaluEval pairs share a question; intervals resample question clusters. RAGTruth uses distinct source IDs and its test split; implicit_true annotations are excluded from positive gold. The full upstream benchmarks were not run. No cross-dataset or coding aggregate is reported.
 

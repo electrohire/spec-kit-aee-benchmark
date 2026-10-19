@@ -1,5 +1,5 @@
 # Repeated local comparison
-B01: Preserve run03 and earlier evidence; use a fresh freeze before scored generation.
+B01: Preserve run 03 and earlier evidence; use a fresh freeze before scored generation.
 B02: Loopback-only same-model inference; verify both GPUs and reserve maximum next-call tokens. Unknown calls remain null, charged only as conservative budget reservations; they do not poison all later calls.
 B03: Two upstream projects (TinyDB and cachetools), two seeds, three arms, three dependent milestones per trajectory. Identical requirements, tools, notes access, context limits, stage budgets and grading for all arms. No tuning from scored outcomes.
 B04: Exercise actual seven-phase workflow and installed AEE/Evaluator after specify, plan, tasks, implementation and actual evidence rework on an unrelated calibration task before scoring. Calibrate near-context generation latency before fixing request timeout.

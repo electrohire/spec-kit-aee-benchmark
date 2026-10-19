@@ -6,7 +6,7 @@ interpretive statement. Observed results remain distinct from general effectiven
 which is not established. Assessment outputs are review prompts, not correctness grades.
 
 | Claim ID | Article statement | Evidence | Boundary and falsification check |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | ART-HW | Dedicated VRAM 12282/16311 MiB; i9-14900F and 64 GB RAM | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/long-horizon-03/freeze.json) | Measured host; shared RAM excluded. Compare frozen hardware observations and preflight/runtime-machine.json. |
 | ART-SMALL | Primary 5/6, 2/6, 1/6; repaired 5/6 each; cumulative tokens/correct 957, 23524, 27116 rounded | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/gpu-20260917/comparison.csv) | Six convenience tasks, one run per arm, document adaptation; repairs see the tests. Recompute from coding/results.json and repair/summary.json. |
 | ART-REPAIR | Seven initially failing submissions fixed; three punctuation failures remain | [Versioned artifact](https://github.com/electrohire/spec-kit-aee-benchmark/blob/835573aff15520a580c7c3862b3534b347101e18/reports/local/gpu-20260917/repair/summary.json) | Sum cases_repaired and remaining_failures across arms; inspect raw failure output. No hidden repair-effect claim. |

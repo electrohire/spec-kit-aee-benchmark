@@ -27,12 +27,12 @@ all seven measured repetitions, stable output hashes and separate warmups.
 
 Rework has separate, explicit definitions:
 
-- Initial implementation/solve calls and scheduled final-implementation calls.
-- Completed convergence reviews and scheduled revision passes actually reached.
-- Changed final code versus initial implementation, using both text and AST equality.
-- Repeated generation calls/retries: zero by protocol; failed attempts are not rerun.
-- Test-feedback repair rounds: zero because tests were withheld through generation.
-- AEE recovery loops: zero; assessments and feedback are counted separately.
+* Initial implementation/solve calls and scheduled final-implementation calls.
+* Completed convergence reviews and scheduled revision passes actually reached.
+* Changed final code versus initial implementation, using both text and AST equality.
+* Repeated generation calls/retries: zero by protocol; failed attempts are not rerun.
+* Test-feedback repair rounds: zero because tests were withheld through generation.
+* AEE recovery loops: zero; assessments and feedback are counted separately.
 
 As a labeled **secondary post-run diagnostic**, grade normally completed initial
 implementation outputs against the same unchanged upstream tests after the entire

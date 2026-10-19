@@ -3,7 +3,7 @@
 Status: researched protocol proposal and tested accounting helper, **not an
 executed FeatureBench/SWE-EVO experiment or evidence of treatment savings**.
 Reviewed official sources on 2026-10-19. Product development stays parked.
-The separately requested matched HaluEval/RAGTruth study03 is generating;
+The separately requested matched HaluEval/RAGTruth study 03 is generating;
 the published external-01 predictions used the model alone.
 
 ## Established evaluation candidates
@@ -35,11 +35,11 @@ Record all actual treatment work; do not pad the baseline with unnecessary calls
 to erase the fixed cost of Spec Kit or AEE. Give the baseline comparable access
 to ordinary persistent notes and the same permitted context capacity.
 
-**Cold start:** How many tokens does a fresh independent feature consume,
+**Cold start:* * How many tokens does a fresh independent feature consume,
 including setup, implementation, verification and repair? Report task completion,
 retained tests, false completion and all-attempt cost, including halted work.
 
-**Sustained work:** What happens at increasing observed prefixes of a large
+**Sustained work:* * What happens at increasing observed prefixes of a large
 evolution task or a prospectively registered compatible change sequence? Preserve
 each arm's own artifacts and state, without sharing sibling outputs or golden
 patches. Regrade saved code snapshots in isolated grading containers. Do not feed

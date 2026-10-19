@@ -164,13 +164,13 @@ third was interrupted. Baseline/combined did not run; no hidden results were obs
 This is retained as an incomplete integration pilot, not a comparative outcome.
 The 16-message adapter dominated behavior with repeated reads. The existing host
 configuration demonstrated room for 131072 context; this was reverified at startup
-with 11208/13589 MiB occupied on the two GPUs. Use batch512/ubatch256, full history,
+with 11208/13589 MiB occupied on the two GPUs. Use batch 512/ubatch 256, full history,
 native reasoning retention and within-arm prompt caching. Weight/sampling settings
 and task/grader definitions remain the same. These simultaneous changes are not an
 isolated causal test of context or caching. A new full-workflow arithmetic smoke must
 complete all seven phases, four actual AEE/Evaluator assessments and independent code
-checks before scored run03. Primary allocation becomes 1800 seconds/80 calls, with
-10 calls per repair and 2400 seconds total/stage; cap300 calls/30M logical tokens per
+checks before scored run 03. Primary allocation becomes 1800 seconds/80 calls, with
+10 calls per repair and 2400 seconds total/stage; cap 300 calls/30M logical tokens per
 arm allows retained/cached history without pretending cached input is free logical
 context. All setup and interrupted costs remain visible. This iterative design is
 exploratory, not an untouched preregistration or evidence of general superiority.
@@ -179,21 +179,21 @@ The first full-context smoke completed constitution/specification but omitted
 required AEE claims. Add at most two model format-repair opportunities when a
 required claims object is missing, charged to the same phase/stage budget. The
 next full-workflow smoke must validate actual assessment execution as well as
-code. Run03 also freezes every workflow script/template and adapter hash before
+code. Run 03 also freezes every workflow script/template and adapter hash before
 generation, closing the supplemental-provenance limitation in the earlier pilot.
 
-Final run03 resource allocation supersedes the historical caps above: primary
-120 calls/2400 seconds; at most two 20-call public repair rounds; total160 calls
-and3000 seconds per stage,480 calls/60M logical tokens per arm. This provides
+Final run 03 resource allocation supersedes the historical caps above: primary
+120 calls/2400 seconds; at most two 20-call public repair rounds; total 160 calls
+and 3000 seconds per stage, 480 calls/60M logical tokens per arm. This provides
 headroom relative to the full-workflow smoke and reserves useful inspection/edit/
 retest capacity. Caching does not remove logical tokens from the numerator.
 The same allocation applies to baseline and both workflow arms.
 
-Full-workflow smoke10 reached tested implementation but produced claim.kind=observed,
+Full-workflow smoke 10 reached tested implementation but produced claim.kind=observed,
 which is not a valid AEE claim type. Clarify claim.kind versus evidence.kind and
 validate model-produced claims with the installed Claim.from_dict before assessment,
 with at most two format-repair turns within the same budget. Failed assessment
-subprocess diagnostics are retained as evidence. Smoke11 exercises the corrected
+subprocess diagnostics are retained as evidence. Smoke 11 exercises the corrected
 contract; prior failed claims and traces remain unchanged.
 
 Assessment scope: AEE runs after the four named planning/initial-implementation

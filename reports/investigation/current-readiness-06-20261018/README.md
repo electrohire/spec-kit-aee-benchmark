@@ -1,4 +1,4 @@
-# Readiness06 stopped before scoring
+# Readiness 06 stopped before scoring
 
 The first TinyDB + Spec Kit + AEE case completed constitution and specification,
 then exhausted its unchanged 32 planning actions without a completed plan. All

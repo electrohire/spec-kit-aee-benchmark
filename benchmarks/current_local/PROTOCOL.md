@@ -1,6 +1,6 @@
 # Current-version lifecycle study — prospective protocol, 2026-10-16
 
-**2026-10-18 readiness correction:** the completed attempt using the protocol
+**2026-10-18 readiness correction:* * the completed attempt using the protocol
 below did not establish valid completed-workflow exposure. The functional smoke
 was allowed 7200 seconds while scored milestones had 2400; neither structured
 arm received an implementation-phase model call. See
@@ -11,31 +11,31 @@ reserves later phases/repairs and stops abnormal executions with durable alerts.
 This historical protocol does not authorize a corrected scored rerun. A new
 prospective plan/freeze and representative readiness evidence are required.
 
-This fresh free-local campaign uses engine1.5.3, Specify1.2.1, AEE extension1.5.2,
-evaluator1.1.2 and mini-SWE-agent2.4.6. It does not overwrite September studies or
+This fresh free-local campaign uses engine 1.5.3, Specify 1.2.1, AEE extension 1.5.2,
+evaluator 1.1.2 and mini-SWE-agent 2.4.6. It does not overwrite September studies or
 execute the original 180-attempt SWE-bench pilot.
 
-The task inventory and independent grading are the existing staged TinyDB4.9.0
-and cachetools5.5.2 tasks under benchmarks/repeated_local, at their pinned source
-commits. Two seeds20261016/20261017 × three arms × two projects =12 trajectories,
+The task inventory and independent grading are the existing staged TinyDB 4.9.0
+and cachetools 5.5.2 tasks under benchmarks/repeated_local, at their pinned source
+commits. Two seeds 20261016/20261017 × three arms × two projects =12 trajectories,
 each with three cumulative stages (36 dependent checkpoints). Convenience-selected
 controller-authored library tasks and two seeds cannot establish general superiority
-or production lifetime savings. Stage3 clears conversation and restarts the
+or production lifetime savings. Stage 3 clears conversation and restarts the
 container while preserving code/notes: simulated handoff, not elapsed months.
 
 The shared localhost llama.cpp router is used without changing its configuration.
 Exact model ID qwen3.8-27b, observed model/server properties, local weights
 SHA256, GPU inventory, package versions, image ID and source hashes are frozen.
 No paid endpoint, proxy, redirect, fallback model, overlapping generation or
-unrecorded retries. Samples: temperature0.6/top_p0.95/top_k20/min_p0/repeat1/presence0;
-native response identity must match. Context is capped at32768 including4096
+unrecorded retries. Samples: temperature 0.6/top_p0.95/top_k20/min_p0/repeat 1/presence 0;
+native response identity must match. Context is capped at 32768 including 4096
 output tokens, selected by native-template/tokenizer calibration. The server's
 larger physical context does not enlarge this request budget.
 
 Before scored generation: untouched/reference grader checks for every project/stage,
 strict-schema tests, complete core workflow with four actual AEE/evaluator checks
 plus independent injected-bug repair, native context-selector equivalence, and
-two uncached near-context latency probes. Timeout is180–600 seconds by the prior
+two uncached near-context latency probes. Timeout is 180–600 seconds by the prior
 protocol's twice-observed-latency rule. Failed calibrations are retained as setup
 cost; no scored outcome is used to tune prompts, model or limits. Shared treatment
 and provider ASTs are checked against the archived successful calibration.
@@ -47,8 +47,8 @@ generation, subject to the same complete calibration gate. No service config is
 changed and failed attempts are not erased.
 
 Same tools, model/configuration, task text, public tests, ceilings and feedback
-policy for every arm. Primary160calls/stage plus at most two public-feedback
-repairs of8calls, within2400seconds/stage; total reservation ceiling18M tokens per
+policy for every arm. Primary 160 calls/stage plus at most two public-feedback
+repairs of 8 calls, within 2400 seconds/stage; total reservation ceiling 18M tokens per
 trajectory. Unknown native usage remains null; full next-call reservations enforce
 the ceiling. Stop or cancel if a request cannot be shown idle after failure.
 Every failed/abandoned attempt remains in the denominator; no favorable reruns.

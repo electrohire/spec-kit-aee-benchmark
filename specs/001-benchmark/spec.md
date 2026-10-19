@@ -38,34 +38,36 @@ nonfinite measurements, same input/output path and insufficient disk.
 ## Requirements
 
 ### Functional Requirements
-- **REQ-EXP-001**: Freeze 20 eligible Python tasks, excluding gold/development tasks,
+
+* **REQ-EXP-001**: Freeze 20 eligible Python tasks, excluding gold/development tasks,
   with seed and repository stratification; schedule three repeats across three arms.
-- **REQ-EXP-002**: Isolate fresh solver contexts and separate hidden grading.
-- **REQ-EXP-003**: Run one instrumented runner/model with faithful treatment phases.
-- **REQ-EXP-004**: Enforce global/per-attempt budgets, timeout, cancellation and resume.
-- **REQ-DATA-001**: Append real per-call usage with IDs, timestamps, nullable counts,
+* **REQ-EXP-002**: Isolate fresh solver contexts and separate hidden grading.
+* **REQ-EXP-003**: Run one instrumented runner/model with faithful treatment phases.
+* **REQ-EXP-004**: Enforce global/per-attempt budgets, timeout, cancellation and resume.
+* **REQ-DATA-001**: Append real per-call usage with IDs, timestamps, nullable counts,
   reasons, price basis, retry status and content-addressed artifact references.
-- **REQ-DATA-002**: Report all-attempt economics and task-clustered paired uncertainty.
-- **REQ-AEE-001**: Preserve explicit claims, evidence, contradictions and routing;
+* **REQ-DATA-002**: Report all-attempt economics and task-clustered paired uncertainty.
+* **REQ-AEE-001**: Preserve explicit claims, evidence, contradictions and routing;
   analyze assessment disagreement only after independent grading.
-- **REQ-PUB-001**: Publish tested implementation, pinned reproduction instructions,
+* **REQ-PUB-001**: Publish tested implementation, pinned reproduction instructions,
   sanitized evidence and an article that labels unrun results.
-- **REQ-TRIAGE-001**: Read asset_id,vibration_mm_s,temperature_c CSV fields.
-- **REQ-TRIAGE-002**: Reject missing/duplicate IDs, missing/nonnumeric/nonfinite
+* **REQ-TRIAGE-001**: Read asset_id, vibration_mm_s, temperature_c CSV fields.
+* **REQ-TRIAGE-002**: Reject missing/duplicate IDs, missing/nonnumeric/nonfinite
   measurements and negative vibration with useful nonzero errors.
-- **REQ-TRIAGE-003**: Flag vibration >=7.1 or temperature >=80, including equality.
-- **REQ-TRIAGE-004**: Emit deterministic JSON ordered by asset ID and explicit reasons.
-- **REQ-TRIAGE-005**: Preserve input and atomically replace output only after validation.
-- **REQ-TRIAGE-006**: Supply help, samples, installation instructions and acceptance tests.
+* **REQ-TRIAGE-003**: Flag vibration >=7.1 or temperature >=80, including equality.
+* **REQ-TRIAGE-004**: Emit deterministic JSON ordered by asset ID and explicit reasons.
+* **REQ-TRIAGE-005**: Preserve input and atomically replace output only after validation.
+* **REQ-TRIAGE-006**: Supply help, samples, installation instructions and acceptance tests.
 
 ### Key Entities
 Frozen experiment, task, arm, attempt, call, artifact, independent grade, claim.
 
 ## Success Criteria
-- **SC-001**: All offline acceptance tests pass, with published logs and hashes.
-- **SC-002**: Every scheduled attempt appears in reports, including failures.
-- **SC-003**: A separate real smoke validates telemetry and isolation before a pilot.
-- **SC-004**: Readers can reproduce tutorial output using documented commands.
+
+* **SC-001**: All offline acceptance tests pass, with published logs and hashes.
+* **SC-002**: Every scheduled attempt appears in reports, including failures.
+* **SC-003**: A separate real smoke validates telemetry and isolation before a pilot.
+* **SC-004**: Readers can reproduce tutorial output using documented commands.
 
 ## Assumptions
 Budget and model credentials are not supplied. Offline work proceeds first.

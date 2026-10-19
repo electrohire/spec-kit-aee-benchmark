@@ -28,9 +28,9 @@ Docker Desktop engine was 29.8.0. Generated code never executes in the host Pyth
 
 Download official assets, retaining notices and checking their SHA-256 values:
 
-- [Model repository at the frozen revision](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF/tree/d0a692ef765eefbf2fabb130b3cb2e8917e3d225): `qwen2.5-coder-14b-instruct-q4_k_m.gguf`.
-- [llama.cpp b11026 release](https://github.com/ggml-org/llama.cpp/releases/tag/b11026): `llama-b11026-bin-win-cuda-13.4-x64.zip` and `cudart-llama-bin-win-cuda-13.4-x64.zip`, extracted together.
-- [Exercism Python revision](https://github.com/exercism/python/tree/1f6aab8667bf653b10cc3799f94352fcdb749db6), checked out under `artifacts/exercism-python`.
+* [Model repository at the frozen revision](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF/tree/d0a692ef765eefbf2fabb130b3cb2e8917e3d225): `qwen2.5-coder-14b-instruct-q4_k_m.gguf`.
+* [llama.cpp b11026 release](https://github.com/ggml-org/llama.cpp/releases/tag/b11026): `llama-b11026-bin-win-cuda-13.4-x64.zip` and `cudart-llama-bin-win-cuda-13.4-x64.zip`, extracted together.
+* [Exercism Python revision](https://github.com/exercism/python/tree/1f6aab8667bf653b10cc3799f94352fcdb749db6), checked out under `artifacts/exercism-python`.
 
 Model SHA-256: `c1e659736d89ac1065fb495330fb824d94001974a4bfa78e7270e43476a8d940`.
 Binary archive SHA-256: `6799f0962d066c54aee3773f0e5efa0076e46418695c0f4f6d24a38e7007dfb1`.

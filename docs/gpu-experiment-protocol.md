@@ -107,11 +107,11 @@ LinkedIn publication. Constitution 1.1.0 records this authorized separate scope.
 
 ## Implementation tasks
 
-- Freeze protocol and sources; retain controller assessment evidence at all phases.
-- Harden localhost transport, pending-call ledger, deadlines and terminal-phase rules.
-- Validate Docker smoke, failed/zero-test grading, truncation and unknown accounting.
-- Run isolated runtime series, smoke, freeze, all-arm generation and final grading.
-- Audit artifacts and article numbers; preserve limitations and push draft PR.
+* Freeze protocol and sources; retain controller assessment evidence at all phases.
+* Harden localhost transport, pending-call ledger, deadlines and terminal-phase rules.
+* Validate Docker smoke, failed/zero-test grading, truncation and unknown accounting.
+* Run isolated runtime series, smoke, freeze, all-arm generation and final grading.
+* Audit artifacts and article numbers; preserve limitations and push draft PR.
 
 Controller development deviation: runner hardening began during specification review
 before this consolidated protocol file was written. No scored coding generation had

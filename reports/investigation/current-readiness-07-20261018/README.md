@@ -1,8 +1,8 @@
-# Readiness07 stopped; phase-control history confound
+# Readiness 07 stopped; phase-control history confound
 
 The first combined TinyDB case completed constitution (7 calls), specification
-(10), and planning (32). Tasks then exhausted its unchanged32actions without a
-completed tasks.md. All81calls/1,798,706native tokens are retained,0unknown; all
+(10), and planning (32). Tasks then exhausted its unchanged 32 actions without a
+completed tasks.md. All 81 calls/1,798,706 native tokens are retained, 0 unknown; all
 native responses ended stop. No scoring started. The final done explicitly
 reported INCOMPLETE; this is not itself a false-completion assertion.
 
@@ -14,7 +14,7 @@ prove the failure belongs exclusively to the model, workflow or controller.
 
 ## Reproduced controller confound
 
-The first tasks request also contained stale planning controls: “plan;8actions
+The first tasks request also contained stale planning controls: “plan; 8 actions
 remain”, “Two actions remain”, and “FINAL STEP...Shell actions are no longer
 available”. Their message indexes and the exact retained request hash are in
 summary.json. Session.history retained old imperative controls beside observations,
@@ -35,6 +35,6 @@ historical requests/results and previous failures stay unchanged.
 The common done example is phase-neutral. This host change applies equally to
 all arms. It grants no extra calls, rewrites no model content, changes no grader
 or threshold, and does not guarantee completion. After an exact-green merge,
-fresh unused preparation08 and current transport/context/timing proof are required;
-all six fresh cases must still pass before scoring. Never resume07 or reuse its
+fresh unused preparation 08 and current transport/context/timing proof are required;
+all six fresh cases must still pass before scoring. Never resume 07 or reuse its
 cases. Historical setup costs remain in the eventual export.

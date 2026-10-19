@@ -4,19 +4,19 @@ Both GPUs were verified: RTX 4070 SUPER 12282 MiB and RTX 5060 Ti 16311 MiB.
 All benchmark inference used localhost, with $0 API expenditure. Hardware, energy
 and controller work are unpriced. The original SWE-bench pilot remains unrun.
 
-- [CPU application/AEE runtime and six-task study](gpu-20260917/README.md), including actual supplemental repairs.
-- [Staged TinyDB study](long-horizon-03/README.md): nine dependent checkpoints, no complete hidden milestone passes, all three arms timed out.
-- [Interrupted pilot 1](long-horizon-01-interrupted/README.md) and [pilot 2](long-horizon-02-interrupted/README.md), retained as development overhead.
-- [Interrupted repeated-study pilot](repeated-study-01-interrupted/README.md): 357 calls and 8,987,818 measured tokens, stopped before hidden grading for a context-preflight scalability correction. The fresh study and matched repair experiment remain in progress; these costs will be included in their complete physical inventory.
+* [CPU application/AEE runtime and six-task study](gpu-20260917/README.md), including actual supplemental repairs.
+* [Staged TinyDB study](long-horizon-03/README.md): nine dependent checkpoints, no complete hidden milestone passes, all three arms timed out.
+* [Interrupted pilot 1](long-horizon-01-interrupted/README.md) and [pilot 2](long-horizon-02-interrupted/README.md), retained as development overhead.
+* [Interrupted repeated-study pilot](repeated-study-01-interrupted/README.md): 357 calls and 8,987,818 measured tokens, stopped before hidden grading for a context-preflight scalability correction. The fresh study and matched repair experiment remain in progress; these costs will be included in their complete physical inventory.
 
-## Historical benchmark-model inventory through run03
+## Historical benchmark-model inventory through run 03
 
 This combines work counts, not success rates or treatment estimates across models.
 It predates the expanded campaign above; its immutable ledger remains available
 for the later cumulative inventory.
 
 | Scope | Calls | Known tokens | Calls with unknown usage |
-|---|---:|---:|---:|
+| --- | ---: | ---: | ---: |
 | [Small-task development smoke](gpu-20260917/coding/development-smoke/hello-call.json) | 1 | 57 | 0 |
 | [Small-task primary comparison](gpu-20260917/coding/results.json) | 60 | 247,852 | 0 |
 | [Small-task supplemental repairs](gpu-20260917/repair/summary.json) | 13 | 10,132 | 0 |

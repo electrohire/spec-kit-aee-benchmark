@@ -3,7 +3,7 @@
 Verified against live PyPI/GitHub and actual installation:
 
 | Component | Installed/latest published |
-|---|---|
+| --- | --- |
 | Specify CLI | 1.2.1 |
 | applied-epistemic-engineering (import/CLI `aee`) | 1.5.3 |
 | Spec Kit `aee` extension | 1.5.2 |
@@ -24,7 +24,7 @@ compatible dependency graph, not overriding those constraints. See the
 [recorded upstream constraints](../reports/dependency-validation/2026-10-16/dependency-constraint-explanations.json).
 Transitive dependencies are locked;
 never drift to future "latest" during an experiment. Operation skills were
-regenerated using Specify1.2.1; controller skills and constitution were preserved.
+regenerated using Specify 1.2.1; controller skills and constitution were preserved.
 Pin checks cover CLI/integration, engine, extension registry and vendored bytes.
 Historical archived freezes retain their own skills and dependencies.
 
@@ -34,7 +34,7 @@ archive installations through Specify. Local assessment artifacts were preserved
 
 ## Reproduction and trust troubleshooting
 
-Ordinary guides use `specify extension add aee`. Specify1.2.x needs an
+Ordinary guides use `specify extension add aee`. Specify 1.2.x needs an
 install-allowed trusted catalog for bare installation; discovery-only catalog
 acceptance does not change CLI trust policy. Benchmark reproduction deliberately
 uses immutable archives listed with SHA256/tag identities in `manifests/versions.json`:
