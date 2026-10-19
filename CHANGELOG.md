@@ -121,3 +121,6 @@ After the existing pipeline10 has stopped generating and its final grading/expor
 
 
 - Publish the authorized corpus2 real-model corrective diagnostic:12/12 bounded labels,0invalid,12calls/1974known tokens/0usage unknowns,368frozen inputs verified. Original corpus1 retained; post-outcome fixture correction and limits explicit. Software study04 still active; no completed paired result claimed.
+
+
+- Fix final setup export collisions across readiness runs with matching directory basenames. Retain every archive and physical-call receipt; repeated identical path arguments export once. No token/grade/metric/solver change. Three regressions red before,51focused cases green after; real five-source378-call zero-inference export rehearsal passed. Active study04 source remains frozen; use corrected reporting only after scoring has ended.

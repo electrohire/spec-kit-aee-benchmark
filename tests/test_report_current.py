@@ -87,6 +87,43 @@ def test_setup_retains_unknown_failures_without_double_counting_copies(tmp_path)
     assert report["by_model"]["local"]["total_tokens"] is None
 
 
+def frozen_setup(folder, identity):
+    folder.mkdir(parents=True)
+    (folder/'frozen-inputs').mkdir()
+    (folder/'freeze.json').write_text(json.dumps(dict(model='local', hashes={})))
+    (folder/'call-0000.json').write_text(json.dumps(dict(response=dict(id=identity, model='local'),
+        usage=dict(prompt_tokens=15, completion_tokens=5, total_tokens=20))))
+    return folder
+
+
+def test_setup_archives_same_basename_without_overwrite_or_lost_cost(tmp_path):
+    first = frozen_setup(tmp_path/'preparation04'/'tinydb-spec_kit_aee', 'first')
+    second = frozen_setup(tmp_path/'preparation05'/'tinydb-spec_kit_aee', 'second')
+    dest = tmp_path/'out'
+    report = setup_inventory([first, second], dest)
+    archives = list((dest/'setup-evidence').glob('*/call-0000.json'))
+    assert len(archives) == 2
+    assert {json.loads(p.read_text())['response']['id'] for p in archives} == {'first', 'second'}
+    assert len(set(report['sources'])) == 2
+    assert report['physical_calls'] == 2
+    assert report['by_model']['local']['known_tokens_lower_bound'] == 40
+    exported = [json.loads(p.read_text()) for p in (dest/'setup-calls').glob('*.json')]
+    assert len({v['source'] for v in exported}) == 2
+
+
+def test_same_setup_path_requested_twice_is_exported_once(tmp_path):
+    folder = frozen_setup(tmp_path/'fixture', 'one')
+    report = setup_inventory([folder, folder], tmp_path/'out')
+    assert report['physical_calls'] == 1 and len(report['sources']) == 1
+
+
+def test_setup_namespace_handles_matching_parent_names(tmp_path):
+    first = frozen_setup(tmp_path/'a'/'preparation'/'tinydb', 'first')
+    second = frozen_setup(tmp_path/'b'/'preparation'/'tinydb', 'second')
+    report = setup_inventory([first, second], tmp_path/'out')
+    assert len(set(report['sources'])) == 2 and report['physical_calls'] == 2
+
+
 def test_interrupted_and_unattempted_passing_snapshots_are_not_deliveries(tmp_path):
     raw,dest,rows = fixture(tmp_path)
     freeze=json.loads((raw/"freeze.json").read_text())
