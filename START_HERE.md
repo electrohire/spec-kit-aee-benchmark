@@ -1,5 +1,13 @@
 # Resume the benchmark
 
+## Latest directive: study04 stopped; fix before new inference
+
+The user replaced continuation after model failures with immediate campaign-wide
+halting. Study04 is stopped, the worker is idle, and raw evidence is preserved.
+Read the [Cachetools diagnosis and prospective amendment](reports/investigation/fail-fast-cachetools-20261019/README.md)
+first. Older continue-after-model-failure instructions below are historical.
+No product work, automatic retry, stopped-run resume or completed-result claim.
+
 ## Current status: study02 infrastructure stop
 
 The [audited stopped-study postmortem](reports/local/current-study-02-stopped-postmortem/README.md)

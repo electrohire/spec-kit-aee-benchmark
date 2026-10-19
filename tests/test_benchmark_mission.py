@@ -67,6 +67,8 @@ def test_registered_current_changes_are_only_four_infrastructure_definitions(ver
         source = mission.ROOT / name
         if version == 'infrastructure-recovery-v1':
             source = mission.ROOT / 'reports/local/labelled-factbooks-10-20261019/setup-evidence/current-hallucination-10/frozen-inputs' / name
+        else:
+            source = mission.ROOT / 'reports/local/labelled-factbooks-11-20261019/setup-evidence/current-hallucination-11/frozen-inputs' / name
         nodes = {n.name: ast.dump(n, include_attributes=False) for n in ast.parse(source.read_text()).body if isinstance(n, (ast.FunctionDef, ast.ClassDef))}
         for identifier, entry in definitions.items():
             assert hashlib.sha256(nodes[identifier].encode()).hexdigest() == entry['after']

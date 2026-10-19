@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — user-directed fail-fast amendment, 2026-10-19
+
+- Stop study04 and preserve its partial evidence/costs. Diagnose incomplete grep
+  actions and runner success bookkeeping. Add literal argv actions and first-error
+  campaign halting, including public/hidden verification; withhold repairs and next
+  trajectories after failure. Preserve legacy policy for historical replay only.
+- Require fresh native argv transport and grammar latency proofs plus exact
+  prospective AST/constant registration. No claim of model reliability, completed
+  benchmark results or comparative efficacy follows from the runner correction.
+
 ## Unreleased — authorized corrected study02, 2026-10-18
 
 - Export all12 stopped-study trajectories/36 checkpoints and independently grade

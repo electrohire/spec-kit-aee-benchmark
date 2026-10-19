@@ -13,6 +13,9 @@ MANIFEST = ROOT / 'benchmarks/current_local/infrastructure-recovery-v1.json'
 def definition_matches(filename, name, before, after, preflight):
     if before == after:
         return True
+    from fail_fast_admission import matches
+    if matches(filename, name, before, after, preflight):
+        return True
     copied = preflight / 'recovery-migration.json'
     admission = json.loads((preflight / 'admission.json').read_text())
     protocol = admission.get('recovery_protocol')
