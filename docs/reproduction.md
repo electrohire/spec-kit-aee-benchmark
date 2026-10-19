@@ -158,3 +158,15 @@ link attempts, calls, phases, tool observations, assessments and grades. Keep
 raw sensitive data local. Review sanitized artifacts and redistribution rights
 before attaching versioned release assets; include hashes and retrieval instructions.
 Compact offline evidence is committed under reports/. Never publish entire datasets.
+
+## Prospective benchmark mission (study03 / pipeline10)
+
+The current goal is completed benchmarks and labelled hallucination tests with published results. Product implementation and coverage work are parked; benchmark 100% coverage is not an admission gate. Meaningful functional/integrity checks and exact-head Ubuntu CI remain required.
+
+Study02 remains stopped and immutable. Its historical `/apply-template` HTTP500 followed by ENOSPC has an unresolved cause. The latest explicit user directive authorizes a separately frozen prospective study03, not a resume or retry of study02. The four exact infrastructure-only AST changes from the published error-retention fix are registered in `infrastructure-recovery-v1.json`; unrelated solver/runtime changes still fail admission. Fresh image/grader/context/transport/latency probes and four semantic dependency replays precede scoring. Historical workflow08 and injected repair exposure are disclosed as historical, without another all-six-success selection loop. Tasks, model, seeds, budgets, guard thresholds and independent graders remain unchanged.
+
+`python scripts/launch_benchmark_mission.py --dry-run` checks fresh paths without inference. The actual launcher is the sole serial supervisor for pipeline10 and refuses every existing output. Model loops/budget/protocol failures remain scored failures with dependent checkpoints unattempted and zero new calls; infrastructure, transport, identity, snapshot, integrity and unknown failures halt without automatic retry. Full export and read-only evidence/accounting audit precede publication.
+
+A separately preregistered twelve-call diagnostic uses synthetic closed-world factbooks and real local qwen3.8-27b judgments. Four families cover completion, named test execution, citation hashes and API inventory, each with supported/contradicted/unknown gold labels derived before generation. Labels are withheld from prompts. Its context32768/output256/seed20261018/timeout600 and twelve-call cap are diagnostic-specific; main study output8192 and all other caps stay unchanged. Report three-way decisions, invalid outputs, known-truth confusion counts, unknown truth and native token usage separately. This is not spontaneous workflow hallucination prevalence, AEE detector efficacy, or a treatment-effect estimate. Generic test failures and AEE findings are not hallucination labels.
+
+Do not call generation started or a raw export completion. Finish all twelve trajectories / thirty-six checkpoint records, independent grades, hash/ledger/exposure/accounting audits, README/report updates and exact-green publication. API spend $0 excludes hardware, electricity and labor.

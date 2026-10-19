@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "claims": [
+    {
+      "id": "OBS-MISSION-001",
+      "text": "The captured focused test invocation reported 71 passing cases.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "stage": "checked",
+      "boundary": [
+        "This recorded offline invocation only. Fault injection is synthetic; loopback HTTP uses an ephemeral fixture server, not the model. No historical server/storage root-cause, model readiness, efficacy, human acceptance or full coverage is established."
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "source_ref": "tests/test_benchmark_mission.py",
+      "uncertainty": "low",
+      "falsification_tests": [
+        "Nonzero command exit, a failing/error/skipped JUnit case or changed source bytes contradicts this observation."
+      ],
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated test runner",
+          "date": "2026-10-19T12:41:43.536609+00:00",
+          "basis": "Actual recorded pytest process and JUnit; no human acceptance asserted."
+        }
+      ],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261019-benchmark-mission-02/tests/execution.log",
+          "content_hash": "b39be05396ab30a2b1049d4eb5b48c70058c362fb108fbedd60716c23e98e709",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "source_id": "recorded-infrastructure-tests",
+          "observed_at": "2026-10-19T12:41:43.537147+00:00",
+          "description": "Actual process log; JUnit and command/source hashes retained alongside it."
+        }
+      ]
+    }
+  ]
+}

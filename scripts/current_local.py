@@ -29,6 +29,7 @@ from runtime_checks import validate_capacity, RuntimeWatchdog
 from action_protocol import ACTION_RESPONSE_FORMAT
 from infrastructure_errors import response_failure, RESPONSE_LIMIT
 from readiness_gate import validate_representative
+from calibration_recovery import definition_matches
 
 _grade_impl = runner.grade
 
@@ -122,7 +123,7 @@ def freeze(out, purpose):
         for path in (ROOT/folder).rglob("*"):
             if path.is_file() and not {"__pycache__", ".runtime", "assessments", "ledger", "results"}.intersection(path.parts):
                 hashes[path.relative_to(ROOT).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
-    for name in ("uv.lock", "manifests/versions.json", "benchmarks/current_local/PROTOCOL-v2.md"):
+    for name in ("uv.lock", "manifests/versions.json", "benchmarks/current_local/PROTOCOL-v2.md", "benchmarks/current_local/infrastructure-recovery-v1.json", "benchmarks/current_local/hallucination-cases-v1.json"):
         hashes[name] = hashlib.sha256((ROOT/name).read_bytes()).hexdigest()
     with WEIGHTS.open("rb") as handle:
         weight_sha = hashlib.file_digest(handle, "sha256").hexdigest()
@@ -394,7 +395,8 @@ def run(out, preflight):
     }.items():
         before=_definitions((frozen/filename).read_text(encoding="utf-8"),names)
         after=_definitions((ROOT/filename).read_text(encoding="utf-8"),names)
-        if set(before)!=names or before!=after:
+        if set(before)!=names or set(after)!=names or not all(
+                definition_matches(filename,name,before[name],after[name],preflight) for name in names):
             raise ValueError("calibrated treatment changed: "+filename)
     for filename,names in {
         "scripts/current_local.py":{"MODEL","WEIGHTS","URL","SEEDS","CONFIG"},
@@ -423,6 +425,7 @@ def run(out, preflight):
     write_json(assets/"server-launch.json",dict(model=MODEL,url=URL,weights_sha256=calibration["weights_sha256"],server_props=calibration["server_props"],shared_service_modified=False))
     write_json(assets/"package-versions.json",{n:importlib.metadata.version(n) for n in ("applied-epistemic-engineering","specify-cli","mini-swe-agent","jsonschema")})
     timeout=json.loads((preflight/"latency/calibration.json").read_text())["timeout"]
+    CONFIG["study_id"]=out.name
     CONFIG["physical_call_timeout"]=timeout
     CONFIG["completion_contract"]=COMPLETION
     CONFIG["persistent_project_ledger"]=True
@@ -434,6 +437,8 @@ def run(out, preflight):
     extras.extend((replay_file,ROOT/"scripts/replay_current_dependencies.py"))
     extras.extend((image_audit,ROOT/"scripts/audit_current_image.py"))
     if admission.exists():extras.extend((admission,ROOT/"scripts/model_outcomes.py",ROOT/"scripts/launch_inclusive_study.py"))
+    if (preflight/"recovery-migration.json").exists():
+        extras.extend((preflight/"recovery-migration.json",ROOT/"scripts/calibration_recovery.py",ROOT/"scripts/launch_benchmark_mission.py",ROOT/"scripts/labelled_hallucinations.py",ROOT/"benchmarks/current_local/hallucination-cases-v1.json"))
     runner.campaign(out,preflight/"grade",timeout,
         workflow_preflight=workflow,latency_preflight=preflight/"latency/calibration.json",
         context_preflight=preflight/"context/result.json",assets=assets,

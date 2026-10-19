@@ -1,5 +1,7 @@
 # Spec Kit + AEE benchmark
 
+Current mission: preparing fresh study03 and real labelled hallucination tests. Study02 remains stopped; no completed replacement or efficacy result is claimed. Product work is parked. See [prospective protocol](benchmarks/current_local/PROTOCOL-v2.md#prospective-benchmark-mission-study03--pipeline10).
+
 Compare ordinary coding agents, Spec Kit, and Spec Kit with Evaluator + Applied
 Epistemic Engineering on correctness, hallucination management, rework and cost.
 
