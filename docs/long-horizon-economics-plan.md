@@ -1,6 +1,6 @@
 # Prospective short- and long-horizon token economics
 
-Status: researched protocol proposal and tested accounting helper, **not an executed FeatureBench/SWE-EVO experiment or evidence of treatment savings**. Reviewed official sources on 2026-10-19. Product development stays parked. The separately requested matched HaluEval/RAGTruth study 03 is generating; the published external-01 predictions used the model alone.
+Status: researched protocol proposal and tested accounting helper, **not an executed FeatureBench/SWE-EVO experiment or evidence of treatment savings**. Reviewed official sources on 2026-10-19. Product development stays parked. The separately requested [matched HaluEval/RAGTruth comparison](../reports/hallucinations/matched-03-recovered-20261020/README.md) is complete, audited and published; its paired intervals cross zero and it establishes no consistent AEE benefit. The coding study remains unadmitted, with real upstream resource/grade and cold/warm workflow controls completed without model calls.
 
 ## Established evaluation candidates
 
@@ -25,7 +25,7 @@ Keep task inputs, initial repository bytes, seed, call/context/output/time caps,
 
 **Sustained work:** What happens at increasing observed prefixes of a large evolution task or a prospectively registered compatible change sequence? Preserve each arm's own artifacts and state, without sharing sibling outputs or golden patches. Regrade saved code snapshots in isolated grading containers. Do not feed hidden intermediate grader results back into the solver. Retain all previous requirements and regression tests. Any constructed sequence or intermediate grading is an explicitly named adaptation, not an official benchmark score.
 
-Use predefined checkpoints by elapsed budget/call count for within-task curves, and complete independently graded changes for cumulative project curves. Do not choose a convenient stopping point after seeing a favorable crossover. Separate unchanged-repository continuation from a reset that rebuilds workflow artifacts.
+Use predefined checkpoints by elapsed budget/call count for within-task curves, and complete independently graded changes for cumulative project curves. Do not choose a convenient stopping point after seeing a favorable crossover. Separate unchanged-repository continuation from a reset that rebuilds workflow artifacts. In the two-release pilot, carry each arm's actual source and notes into a fresh dependency resource, never the author's intervening implementation. Reuse the controller-managed trusted Spec Kit project, its unaccepted constitution and earlier feature documents; create feature 002 for the next release. The baseline also retains its ordinary notes and creates a distinct second work brief. Reused setup is recorded with zero new model calls, without transferring human acceptance. The same source and tool ceilings remain; do not count saved calls in canned controls as empirical token savings.
 
 ## What the ledger must count
 

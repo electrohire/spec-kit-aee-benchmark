@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "claims": [
+    {
+      "id": "OBS-UPSTREAM-ADAPTER-001",
+      "kind": "observation",
+      "stage": "checked",
+      "status": "partially_supported",
+      "text": "The captured focused test invocation reported 60 passing cases.",
+      "boundary": [
+        "Only this recorded offline provider/control invocation. Canned wire replies and injected faults are synthetic; no model requests, benchmark correctness, efficacy, savings, full coverage or human acceptance is established."
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "source_ref": "tests/test_upstream_agent_adapter.py",
+      "uncertainty": "low",
+      "falsification_tests": [
+        "The recorded JUnit report has another count or a failed, errored or skipped case."
+      ],
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated audit",
+          "date": "2026-10-20T04:24:36.931649+00:00",
+          "basis": "Actual pytest process exited0; receipt SHA256 3972b5a921ab8d3aba6e6abdbd17c54fa5e289e81eb312379ca3e2858d162ed4; no human acceptance asserted."
+        }
+      ],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261020-upstream-adapter-03/tests/execution.log",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "source_id": "recorded-upstream-adapter-tests",
+          "content_hash": "3972b5a921ab8d3aba6e6abdbd17c54fa5e289e81eb312379ca3e2858d162ed4",
+          "observed_at": "2026-10-20T04:24:36.931649+00:00",
+          "description": "Actual captured pytest process output and matching JUnit count."
+        }
+      ]
+    }
+  ]
+}
