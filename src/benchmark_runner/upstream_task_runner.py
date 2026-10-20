@@ -25,6 +25,13 @@ from .upstream_workflow_adapter import Workflow, PHASES, capture_document
 CHECKPOINTS = frozenset((16, 32, 64, 128))
 
 
+def phase_budget_notice(phase,limit,used,task_calls,tokens):
+    return dict(kind='controller_budget_notice',phase=phase,phase_call_limit=limit,
+        phase_calls_already_used=used,phase_calls_remaining_including_next=limit-used,
+        task_calls_remaining=224-task_calls,native_token_budget_remaining=24000000-tokens,
+        instruction='These are the actual unchanged limits, not extra calls. Complete the current declared artifact and submit within them. You may combine necessary checks and file writes in one bash action, then finish that action with echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT. Do not claim completion before the artifact exists or invent verification/acceptance.')
+
+
 def _file_state(snapshot):
     return {f['path']: (f.get('mode'), f.get('sha256'))
             for f in snapshot['files'] if not f.get('deleted')}
@@ -145,6 +152,14 @@ def run_task(*, upstream, transport, environment, source_root, out, arm, public_
                                      dict(zip(('system','release','version','machine'), facts)))
 
         class InstrumentedAgent(upstream.DefaultAgent):
+            def query(self):
+                if self.n_calls<budget:
+                    notice=phase_budget_notice(phase,budget,self.n_calls,model.n_calls,model.tokens)
+                    self.add_messages(model.format_message(role='user',content=json.dumps(notice)))
+                    model.metadata.update(phase_call_limit=budget,
+                        phase_calls_remaining_including_next=budget-self.n_calls)
+                return super().query()
+
             def step(self):
                 result = super().step()
                 if implementation and self.n_calls in CHECKPOINTS:
@@ -153,10 +168,10 @@ def run_task(*, upstream, transport, environment, source_root, out, arm, public_
 
         if implementation:
             instance = config['agent']['instance_template']
-            phase_system = system + '\nCurrent phase: implementation. Use the retained draft documents and actual feedback as context; neither is independent truth. Independent hidden grades are unavailable.'
+            phase_system = system + '\nThis implementation phase has at most 208 model calls, within the unchanged whole-task limits. Current phase: implementation. Use the retained draft documents and actual feedback as context; neither is independent truth. Independent hidden grades are unavailable.'
         else:
             instance = '{{task}}'
-            phase_system = system + '\nCurrent phase: planning only. Inspect source as needed, but modify ONLY '+flow.paths[phase]+'. Write a concise UTF-8 draft of at most 3000 characters. Submit by the separate exact command echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT. Do not make an implementation patch or modify earlier documents in this phase.'
+            phase_system = system + f'\nThis planning phase has at most {budget} model calls, including inspection, writing and submission. ' + 'Current phase: planning only. Inspect source as needed, but modify ONLY '+flow.paths[phase]+'. Write a concise UTF-8 draft of at most 3000 characters. After writing the artifact, finish your final bash action with echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT; the write and that final echo may share one action. Do not make an implementation patch or modify earlier documents in this phase.'
         agent = InstrumentedAgent(model, wrapped, system_template=phase_system, instance_template=instance,
             step_limit=budget, cost_limit=0, max_consecutive_format_errors=1,
             wall_time_limit_seconds=max(1, int(remaining)), output_path=out/'trajectories'/(phase+'.json'))

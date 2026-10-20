@@ -20,7 +20,7 @@ This repository compares a generic agent, Spec Kit and Spec Kit+AEE on establish
 | --- | --- | --- |
 | Can the model detect supplied hallucinations? | [HaluEval 100/120; RAGTruth 97/120](reports/hallucinations/external-01-20261019/README.md) | Complete model-only subset results; 83.3%/80.8%, 213457 native tokens, 0 usage unknowns |
 | Does Spec Kit or AEE materially help? | 720 graded judgments; explicitly authorized nine-cell recovery; intervals cross zero | No consistent material advantage established |
-| When does workflow overhead pay back? | FeatureBench Fast v1.1 / SWE-EVO gold/resource controls prepared; solver study not executed | No observed short/long-horizon savings yet |
+| When does workflow overhead pay back? | Latest FeatureBench/SWE-EVO attempts stopped before implementation; no complete coding comparison | No observed short/long-horizon savings yet |
 | Can builds gate future releases? | Content-bound requests + strict comparison/verifier; no accepted release baseline yet | Release remains blocked without full audited exact-build approval |
 
 [Harness I/O diagram and results guide](docs/benchmark-harness.md) · [Release gate diagram and policy](docs/benchmark-release-gates.md) · [Long-horizon design](docs/long-horizon-economics-plan.md) · [Resume](START_HERE.md)

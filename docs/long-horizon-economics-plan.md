@@ -1,6 +1,6 @@
 # Prospective short- and long-horizon token economics
 
-Status: researched protocol proposal and tested accounting helper, **not an executed FeatureBench/SWE-EVO experiment or evidence of treatment savings**. Reviewed official sources on 2026-10-19. Product development stays parked. The separately requested [matched HaluEval/RAGTruth comparison](../reports/hallucinations/matched-03-recovered-20261020/README.md) is complete, audited and published; its paired intervals cross zero and it establishes no consistent AEE benefit. The coding study remains unadmitted, with real upstream resource/grade and cold/warm workflow controls completed without model calls.
+Status: researched protocol proposal and tested accounting helper, **not a completed FeatureBench/SWE-EVO comparison or evidence of treatment savings**. Reviewed official sources on 2026-10-19. Product development stays parked. The separately requested [matched HaluEval/RAGTruth comparison](../reports/hallucinations/matched-03-recovered-20261020/README.md) is complete, audited and published; its paired intervals cross zero and it establishes no consistent AEE benefit. The latest upstream attempts stopped before implementation; their costs and partial grades remain retained. Real resource/grade and cold/warm controls pass, but a corrected attempt still requires a fresh source freeze and admission.
 
 ## Established evaluation candidates
 
