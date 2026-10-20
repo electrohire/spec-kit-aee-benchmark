@@ -103,8 +103,25 @@ def test_actor_scaffold_has_public_templates_not_controller_constitution(tmp_pat
     assert raw('.specify/memory/constitution.md')==(ROOT/'.specify/templates/constitution-template.md').read_bytes()
     assert raw('.specify/memory/constitution.md')!=(ROOT/'.specify/memory/constitution.md').read_bytes()
     assert '.specify/extensions.yml' in entries
-    assert not any('/scripts/' in name or '/store/' in name for name in entries)
+    expected_helpers={'.specify/scripts/python/'+p.relative_to(ROOT/'.specify/scripts/python').as_posix()
+        for p in (ROOT/'.specify/scripts/python').rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.suffix!='.pyc'}
+    assert expected_helpers and expected_helpers.issubset(entries)
+    assert all(name.startswith(('.specify/scripts/python/','.specify/extensions/aee/scripts/','.specify/extensions/evaluator/scripts/')) for name in entries if '/scripts/' in name)
+    assert not any('/.runtime/' in name or '/ledger/' in name for name in entries)
+    assert ('.specify/extensions/aee/extension.yml' in entries)==(arm=='spec_kit_aee')
+    assert not any('/store/' in name or name.startswith('scripts/') for name in entries)
     import yaml
     config=yaml.safe_load(raw('.specify/extensions.yml'))
     assert config['installed']==(['aee','evaluator'] if arm=='spec_kit_aee' else [])
     assert all(w.paths[phase] in entries for phase in ['constitution','specify','plan','tasks'])
+
+
+def test_scaffold_batches_preserve_actual_large_public_client_bytes(tmp_path):
+    import base64
+    from benchmark_runner.upstream_scaffold import files_for,batches
+    w=Workflow(ROOT,tmp_path/'flow','spec_kit_aee','public task')
+    payload=files_for(w);parts=batches(payload)
+    assert len(parts)>1 and [item for part in parts for item in part]==payload
+    assert all(len(base64.b64encode(json.dumps(part).encode()))<=115000 for part in parts)
+    run=next(item for item in payload if item['path'].endswith('aee/scripts/python/run_aee.py'))
+    assert base64.b64decode(run['base64'])==(ROOT/'.specify/extensions/aee/scripts/python/run_aee.py').read_bytes()

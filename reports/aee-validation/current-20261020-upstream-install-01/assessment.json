@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0",
+  "methodology_version": "2.0",
+  "project": "benchmark-mission",
+  "phase": "after_implement",
+  "outcome": "iterate",
+  "summary": "Assessed 1 claim(s); found 1 failure mode(s); 0 claim(s) below the 0.70 confidence threshold. Stage cap: 1 claim(s) below stage 'explained'; the outcome cannot be 'pass' (Spec 004 R1.4). Not understood: 1 residual unknown(s) are recorded on this assessment (Spec 004 R5.2). Lane 1 (machine verification): outcome iterate; 1 claim(s) at or above the 0.70 threshold, 0 below. Lane 2 (human acceptance): stages by effective stage: checked 1. Lane-2 lag: 1 claim(s) below explained; 1 verified but unexplained.",
+  "created_at": "2026-10-20T04:51:24.980382Z",
+  "claims": [
+    {
+      "id": "OBS-UPSTREAM-ADAPTER-001",
+      "text": "The captured focused test invocation reported 65 passing cases.",
+      "kind": "observation",
+      "status": "partially_supported",
+      "boundary": [
+        "Only this recorded offline provider/control invocation. Canned wire replies and injected faults are synthetic; no model requests, benchmark correctness, efficacy, savings, full coverage or human acceptance is established."
+      ],
+      "depends_on": [],
+      "conflicts_with": [],
+      "evidence": [
+        {
+          "ref": "reports/aee-validation/current-20261020-upstream-install-01/tests/execution.log",
+          "kind": "observed",
+          "direction": "supports",
+          "source_quality": "test",
+          "description": "Actual captured pytest process output and matching JUnit count.",
+          "source_id": "recorded-upstream-adapter-tests",
+          "independent_of": [],
+          "observed_at": "2026-10-20T04:51:24.748937+00:00",
+          "content_hash": "b54f21f3ff4420f581ab8afa74f6876f63aeb332f5f6630a6dcf1c5783aa7dd1",
+          "content_hash_status": "verified"
+        }
+      ],
+      "assumptions": [],
+      "alternatives": [],
+      "falsification_tests": [
+        "The recorded JUnit report has another count or a failed, errored or skipped case."
+      ],
+      "uncertainty": "low",
+      "severity": "medium",
+      "source_ref": "tests/test_upstream_agent_adapter.py",
+      "domain": "",
+      "confidence": 0.9,
+      "confidence_band": "high",
+      "failures": [
+        {
+          "id": "AEE-OBS-UPSTREAM-ADAPTER-001-VERIFIED-UNEXPLAINED",
+          "claim_id": "OBS-UPSTREAM-ADAPTER-001",
+          "challenge": "Verified but unexplained",
+          "breakpoint": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+          "severity": "medium",
+          "category": "verified_unexplained",
+          "recovery_hint": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+          "resolved": false,
+          "disposition": null
+        }
+      ],
+      "metadata": {},
+      "dispositions": [],
+      "stage": "checked",
+      "stage_events": [
+        {
+          "kind": "checked",
+          "author": "Codex automated audit",
+          "date": "2026-10-20T04:51:24.748937+00:00",
+          "basis": "Actual pytest process exited0; receipt SHA256 b54f21f3ff4420f581ab8afa74f6876f63aeb332f5f6630a6dcf1c5783aa7dd1; no human acceptance asserted."
+        }
+      ],
+      "headline": false,
+      "role": null
+    }
+  ],
+  "scores": {
+    "OBS-UPSTREAM-ADAPTER-001": {
+      "claim_id": "OBS-UPSTREAM-ADAPTER-001",
+      "direct_score": 0.9,
+      "propagated_score": 0.9,
+      "band": "high",
+      "components": {
+        "evidence": 1.0,
+        "independence": 0.5,
+        "falsifiability": 1.0,
+        "boundary": 1.0,
+        "contradiction_penalty": 0
+      },
+      "declared_state": {
+        "status": "partially_supported",
+        "uncertainty": "low",
+        "severity": "medium",
+        "conflicts_with": []
+      },
+      "propagation": {
+        "status": "propagated",
+        "cycle_component": []
+      },
+      "notes": [
+        "Fewer than two independent supporting sources",
+        "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)"
+      ]
+    }
+  },
+  "verdicts": {},
+  "recoveries": [
+    {
+      "failure_id": "AEE-OBS-UPSTREAM-ADAPTER-001-VERIFIED-UNEXPLAINED",
+      "claim_id": "OBS-UPSTREAM-ADAPTER-001",
+      "strategy": "define_falsifier",
+      "action": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+      "priority": 3,
+      "verification": "A concrete observation that would refute the claim is documented."
+    }
+  ],
+  "metadata": {
+    "threshold": 0.7,
+    "input": "C:/Users/trist/Development/ElectroHire/electrohire-aee-release/work/benchmark-upstream-install/reports/aee-validation/current-20261020-upstream-install-01/claims.json",
+    "ledger": {
+      "mode": "custom",
+      "path": "C:/Users/trist/Development/ElectroHire/electrohire-aee-release/work/benchmark-upstream-install/reports/aee-validation/current-20261020-upstream-install-01/ledger.jsonl"
+    },
+    "evidence_verification": {
+      "checked": 1,
+      "findings": 0,
+      "unresolvable_offline": 0
+    },
+    "engine_version": "1.5.3"
+  },
+  "reported_statuses": {
+    "OBS-UPSTREAM-ADAPTER-001": "partially_supported"
+  },
+  "stage_caps": [],
+  "not_understood": [
+    "OBS-UPSTREAM-ADAPTER-001: verified but unexplained - no named human has explained this claim, so what the check establishes is narrower than the claim's wording suggests."
+  ],
+  "lanes": {
+    "lane_1": {
+      "label": "machine verification",
+      "outcome": "iterate",
+      "threshold": 0.7,
+      "claims_at_or_above_threshold": 1,
+      "claims_below_threshold": 0
+    },
+    "lane_2": {
+      "label": "human acceptance",
+      "stage_counts": {
+        "created": 0,
+        "checked": 1,
+        "explained": 0,
+        "accepted": 0,
+        "digested": 0
+      },
+      "claims_below_explained": 1,
+      "exposition_covered_claims": 0,
+      "exposition_missing_claims": 1,
+      "verified_unexplained_claims": 1,
+      "stage_capped_claims": 0,
+      "attribution_contested_claims": 0
+    },
+    "per_claim": {
+      "OBS-UPSTREAM-ADAPTER-001": {
+        "lane_1": {
+          "score": 0.9,
+          "direct_score": 0.9,
+          "author_status": "partially_supported",
+          "at_or_above_threshold": true
+        },
+        "lane_2": {
+          "stage": "checked",
+          "stored_stage": "checked",
+          "stage_capped": false,
+          "cap_reasons": [],
+          "exposition": false,
+          "explainers": [],
+          "verified_unexplained": true,
+          "attribution_contested": false
+        }
+      }
+    }
+  },
+  "digestion": {
+    "OBS-UPSTREAM-ADAPTER-001": {
+      "stage": "checked",
+      "exposition_present": false,
+      "explainers": []
+    }
+  }
+}
