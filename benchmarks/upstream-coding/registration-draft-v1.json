@@ -1,0 +1,114 @@
+{
+  "status": "DRAFT; NOT FROZEN OR ADMITTED; NO CODING INFERENCE",
+  "schema": "established-coding-economics-draft-v1",
+  "upstream": {
+    "FeatureBench": "8d4e347ec57546685c5a87e8676bf575db022ea6",
+    "FeatureBench_dataset": "Fast v1.1, revision76b4a4566e04f4bcc13c35125d4f301791efa736",
+    "SWE-EVO": "9b83d5af943ba7a17567336f5b18239f73960219",
+    "solver": "mini-swe-agent2.4.6 actual DefaultAgent/native tool parser/DockerEnvironment",
+    "grading": "Pinned original upstream graders and original author-required tests, independent of solver/AEE"
+  },
+  "selection": "Original pre-task-text hash selection; pre-solver resource feasibility amendments02/03. Preserve original candidates and failures. Four draft task endpoints; no solver-outcome task replacement.",
+  "tasks": [
+    {
+      "id": "pandas-dev__pandas.82fa2715.test_list_accessor.7ab0b2ea.lv1",
+      "kind": "FeatureBench independent cold start",
+      "image": "sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7"
+    },
+    {
+      "id": "astropy__astropy.b0db0daa.test_quantity_erfa_ufuncs.3fc54395.lv1",
+      "kind": "FeatureBench independent cold start",
+      "image": "sha256:9f8a3a78811972bb743714463c981f63d57f0f62955d6da3ebb9b817768332c1"
+    },
+    {
+      "id": "dask__dask_2023.6.0_2023.6.1",
+      "kind": "Dask sequence first release",
+      "base": "853a6b0db11c17c6b36a54057fbd9b240b747919",
+      "end": "85c99bc20abc382774cfb6e5bf5f2db76ac09378",
+      "image": "sha256:4fba37b32ea8912d23e96c64d9e2c3b4617f3701efdda7e4f0e3e60abbbe7e61"
+    },
+    {
+      "id": "dask__dask_2023.6.1_2023.7.0",
+      "kind": "Adapted Dask persistent-source second release",
+      "base": "85c99bc20abc382774cfb6e5bf5f2db76ac09378",
+      "end": "8523b3bae2ec0183d9d92cc536a3405f15189b7e",
+      "image": "sha256:68c740a93a737dceb3882aba624d9364a8c84c37715183ed72d660262c900d8f"
+    }
+  ],
+  "arms": [
+    "baseline",
+    "spec_kit",
+    "spec_kit_aee"
+  ],
+  "sampling": {
+    "model": "qwen3.8-27b",
+    "context": 32768,
+    "implementation_output": 8192,
+    "planning_output": 1536,
+    "thinking": false,
+    "seed": 20261019,
+    "timeout": 600
+  },
+  "proposed_caps_before_any_outcomes": {
+    "implementation_calls_per_task": 208,
+    "document_calls_per_phase": 4,
+    "baseline_document_phases": 1,
+    "structured_document_phases": 4,
+    "total_calls_per_task_maximum": 224,
+    "native_token_reservation_per_task": 24000000,
+    "total_task_wall_seconds": 14400,
+    "repairs": "Same224 totalcall ceiling/208implementation/24M tokens/14400second solverwindow. Cold baseline1x16 versus structured4x4 planning; warm baseline1x16 versus structured3x4, retaining priorconstitution with zero newmodelcalls. Unusedplanningcalls are not charges or inferred savings. No hidden-grade feedback, automatic retry or repair.",
+    "document_calls_per_arm_maximum": 16,
+    "baseline_document_calls_per_phase": 16,
+    "structured_document_calls_per_phase": 4,
+    "structured_warm_document_phases": 3
+  },
+  "proposed_snapshots": [
+    "before model work",
+    "after planning",
+    "implementation16",
+    "implementation32",
+    "implementation64",
+    "implementation128",
+    "final or implementation208"
+  ],
+  "failures": "First protocol/infra/identity/context/output-limit/hardblock or top-level tool failure halts generation immediately. Retain raw bytes, partial snapshots/costs/unknowns. Independent offline failed grades are outcomes, not fabricated hallucination labels.",
+  "persistent_boundary": "Carry actual first-release solver source/notes, never replace it with author gold. New dependency image may be used for second release after isolation. A different retained starting source makes the second endpoint an adapted persistent input to unchanged official tests, not an unmodified official standalone/leaderboard score. Revalidate this transfer and grading before final admission.",
+  "reporting": "Separate official cold/final grades from adapted persistent and intermediate checkpoints. Report retained correct work, regressions, rework, explicit completion positive/negative/unknown/ungraded, setup/failed/scored native prompt/output/cache/unknown costs and only observed quality-qualified payback. No extrapolated break-even or cheap failures as savings.",
+  "pending": [
+    "Final source-bound adapter checks and exact-head hosted CI",
+    "Clean task/input/resource/source archive freeze",
+    "Four fresh technical native original-tool/history/context/latency probes",
+    "One serial solver study",
+    "Independent original submitted-patch and retained checkpoint grade/audits/publication"
+  ],
+  "unadmitted_candidates": [
+    {
+      "id": "pydantic__pydantic_v2.7.1_v2.7.2",
+      "kind": "SWE-EVO standalone with within-task checkpoints",
+      "base": "26129479a06960af9d02d3a948e51985fe59ed4b",
+      "end": "70ac7a085ce5379e97bea10b61812204cb4ac344",
+      "image": "sha256:3b7d5aacc3d6e3b1c88882ef1629ddca6bc05c83b7811515deb9163494980169",
+      "reason": "All three unchanged author F2P targets pass on BASE in the prepared environment; negative probe21 fails admission. Full base20 stopped earlier on datetime failure. No solver work or outcome-based task replacement."
+    }
+  ],
+  "project_continuation": "Carry each arm actual source/tree and notes into second resource; trusted host SpecKit project reused, constitution retained as unaccepted data, new feature002 spec/plan/tasks. Baseline second ordinarybrief retains earlierbrief. No hidden grades before allgeneration ends.",
+  "independent_submission_projection": "Whole source retained; independent grade uses non-test projection excluding author-test directories/conftest/test-named scripts and declared workflow/patch artifacts. Original author tests/labels unchanged. SWE original grader functions use single atomic apply (no reject/fuzz/retries), original test operand and literal candidate content. Track source-test integrity and original submitted patch separately; no empty submission accepted from a good retained tree.",
+  "native_admission": {
+    "generation_calls": 4,
+    "cohort": "setup, separate from scored economics",
+    "original_tool": "mini-swe-agent 2.4.6 BASH_TOOL/parser/observation formatter",
+    "commands": [
+      "echo NATIVE_ADMISSION_01",
+      "echo NATIVE_ADMISSION_02",
+      "echo NATIVE_ADMISSION_03",
+      "echo NATIVE_ADMISSION_04"
+    ],
+    "probes": "Two short native tool delivery/history calls, then two inert technical filler contexts with 24000..24576 native prompt tokens,8192outputreserved,under600seconds each. Same source/model/seed/sampler; original receipts and actual owned Linux echo delivery. First failure halts; no automatic retry/restoration. No selected task/gold enters probe."
+  },
+  "submission": {
+    "measurements": "Retained workspace projection and original submitted patch independently graded. Empty original submission has no accepted delivery even if retained source passes. Full snapshot/test states kept separately.",
+    "test_integrity": "Protect initial author tests/test directories/conftest; tell model explicitly. Disposable diagnostics outside protected directories remain visible. Never change original independent tests/labels."
+  },
+  "grade_reuse": "Identical literal non-test patch for the SAME upstream task/image/grader may reuse a retained grade with original evidence hash/path. Cross-task grades never reused; no new inference. Seven planned checkpoints plus terminal stopped snapshot when applicable; not reached stays ungraded."
+}

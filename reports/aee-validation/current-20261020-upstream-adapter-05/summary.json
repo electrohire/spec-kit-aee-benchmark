@@ -1,0 +1,211 @@
+{
+  "tests": 61,
+  "test_exit": 0,
+  "machine_claims": 1,
+  "evidence_verification": {
+    "checked": 1,
+    "findings": 0,
+    "unresolvable_offline": 0
+  },
+  "aee_exit": 1,
+  "composition_exit": 1,
+  "composed": {
+    "schema_version": "1.0",
+    "evaluator": {
+      "id": "composed",
+      "version": "1.0",
+      "name": "Composed (strict)"
+    },
+    "phase": "after_implement",
+    "outcome": "iterate",
+    "summary": "1 evaluator(s) ran. Outcomes: aee=iterate. 1 finding(s) total. Lane 2 (human acceptance) lags lane 1 (machine verification) \u2014 aee: 1 residual unknown(s) not understood. A composed outcome is a checking-stage decision, not acceptance or digestion.",
+    "findings": [
+      {
+        "id": "aee:AEE-OBS-UPSTREAM-ADAPTER-001-VERIFIED-UNEXPLAINED",
+        "severity": "medium",
+        "kind": "other",
+        "subject": "tests/test_upstream_agent_adapter.py",
+        "description": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+        "evidence_refs": [
+          {
+            "ref": "reports/aee-validation/current-20261020-upstream-adapter-05/tests/execution.log",
+            "kind": "observed",
+            "description": "Actual captured pytest process output and matching JUnit count."
+          }
+        ],
+        "provenance_refs": [
+          "tests/test_upstream_agent_adapter.py"
+        ],
+        "uncertainty": "low",
+        "recommended_action": "iterate",
+        "rationale": "Verified but unexplained"
+      }
+    ],
+    "next_action": {
+      "kind": "iterate",
+      "target_phase": "implement",
+      "message": "Composed outcome: iterate."
+    },
+    "metadata": {
+      "timestamp": "2026-10-20T04:29:07Z",
+      "duration_ms": 0,
+      "artifacts_evaluated": [],
+      "deterministic": true,
+      "composition_strategy": "strict",
+      "evaluator_count": 1,
+      "contradictory_findings": [],
+      "evaluator_results": [
+        {
+          "evaluator_id": "aee",
+          "outcome": "iterate",
+          "findings_count": 1
+        }
+      ],
+      "invalid_results": [],
+      "duplicate_results_ignored": [],
+      "gating": true,
+      "lane_states": [
+        {
+          "evaluator_id": "aee",
+          "lane_1": {
+            "label": "machine verification",
+            "outcome": "iterate",
+            "threshold": 0.7,
+            "claims_at_or_above_threshold": 1,
+            "claims_below_threshold": 0
+          },
+          "lane_2": {
+            "label": "human acceptance",
+            "stage_counts": {
+              "created": 0,
+              "checked": 1,
+              "explained": 0,
+              "accepted": 0,
+              "digested": 0
+            },
+            "claims_below_explained": 1,
+            "exposition_covered_claims": 0,
+            "exposition_missing_claims": 1,
+            "verified_unexplained_claims": 1,
+            "stage_capped_claims": 0,
+            "attribution_contested_claims": 0
+          },
+          "not_understood": [
+            "OBS-UPSTREAM-ADAPTER-001: verified but unexplained - no named human has explained this claim, so what the check establishes is narrower than the claim's wording suggests."
+          ]
+        }
+      ]
+    },
+    "state": {
+      "aee": {
+        "aee": {
+          "project": "benchmark-mission",
+          "claims": [
+            {
+              "id": "OBS-UPSTREAM-ADAPTER-001",
+              "text": "The captured focused test invocation reported 61 passing cases.",
+              "kind": "observation",
+              "status": "partially_supported",
+              "boundary": [
+                "Only this recorded offline provider/control invocation. Canned wire replies and injected faults are synthetic; no model requests, benchmark correctness, efficacy, savings, full coverage or human acceptance is established."
+              ],
+              "depends_on": [],
+              "conflicts_with": [],
+              "evidence": [
+                {
+                  "ref": "reports/aee-validation/current-20261020-upstream-adapter-05/tests/execution.log",
+                  "kind": "observed",
+                  "direction": "supports",
+                  "source_quality": "test",
+                  "description": "Actual captured pytest process output and matching JUnit count.",
+                  "source_id": "recorded-upstream-adapter-tests",
+                  "independent_of": [],
+                  "observed_at": "2026-10-20T04:29:06.669950+00:00",
+                  "content_hash": "75a6c3d2a397cfe677f91da85a7dcb14c2fbb5eded0313f22d484e88dfe66798",
+                  "content_hash_status": "verified"
+                }
+              ],
+              "assumptions": [],
+              "alternatives": [],
+              "falsification_tests": [
+                "The recorded JUnit report has another count or a failed, errored or skipped case."
+              ],
+              "uncertainty": "low",
+              "severity": "medium",
+              "source_ref": "tests/test_upstream_agent_adapter.py",
+              "domain": "",
+              "confidence": 0.9,
+              "confidence_band": "high",
+              "failures": [
+                {
+                  "id": "AEE-OBS-UPSTREAM-ADAPTER-001-VERIFIED-UNEXPLAINED",
+                  "claim_id": "OBS-UPSTREAM-ADAPTER-001",
+                  "challenge": "Verified but unexplained",
+                  "breakpoint": "Claim is at stage 'checked' or beyond with no exposition evidence: machines have checked it, no named human has explained it (Spec 004 R3.3)",
+                  "severity": "medium",
+                  "category": "verified_unexplained",
+                  "recovery_hint": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+                  "resolved": false,
+                  "disposition": null
+                }
+              ],
+              "metadata": {},
+              "dispositions": [],
+              "stage": "checked",
+              "stage_events": [
+                {
+                  "kind": "checked",
+                  "author": "Codex automated audit",
+                  "date": "2026-10-20T04:29:06.668448+00:00",
+                  "basis": "Actual pytest process exited0; receipt SHA256 75a6c3d2a397cfe677f91da85a7dcb14c2fbb5eded0313f22d484e88dfe66798; no human acceptance asserted."
+                }
+              ],
+              "headline": false,
+              "role": null
+            }
+          ],
+          "scores": {
+            "OBS-UPSTREAM-ADAPTER-001": {
+              "claim_id": "OBS-UPSTREAM-ADAPTER-001",
+              "direct_score": 0.9,
+              "propagated_score": 0.9,
+              "band": "high",
+              "components": {
+                "evidence": 1.0,
+                "independence": 0.5,
+                "falsifiability": 1.0,
+                "boundary": 1.0,
+                "contradiction_penalty": 0
+              },
+              "declared_state": {
+                "status": "partially_supported",
+                "uncertainty": "low",
+                "severity": "medium",
+                "conflicts_with": []
+              },
+              "propagation": {
+                "status": "propagated",
+                "cycle_component": []
+              },
+              "notes": [
+                "Fewer than two independent supporting sources",
+                "Independence basis: inferred-from-references (distinct references counted as independent; may overstate independence when references share an origin)"
+              ]
+            }
+          },
+          "recoveries": [
+            {
+              "failure_id": "AEE-OBS-UPSTREAM-ADAPTER-001-VERIFIED-UNEXPLAINED",
+              "claim_id": "OBS-UPSTREAM-ADAPTER-001",
+              "strategy": "define_falsifier",
+              "action": "Record exposition evidence by a named human (an identity-registry id) explaining the claim, why the evidence supports it, and where its boundary lies.",
+              "priority": 3,
+              "verification": "A concrete observation that would refute the claim is documented."
+            }
+          ]
+        }
+      }
+    }
+  },
+  "limitation": "New narrow machine observation; Review180 approval remains concluded for its original scope. No new human exposition or campaign admission asserted."
+}
