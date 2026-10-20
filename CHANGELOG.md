@@ -1,5 +1,13 @@
 # Changelog
 
+## Audited matched classification and authorized completion, 2026-10-20
+
+* Publish 720 independently graded matched HaluEval/RAGTruth judgments, raw/gate views, paired cluster intervals and symmetric 693-row original-worker sensitivity. Results do not establish a consistent material AEE advantage or token payback.
+* Preserve original03's worker crash, 711 retained judgments, orphan draft and failed-request unknown. Restore only the existing profile under explicit approval; separately freeze and complete only 9 missing cells, 18 calls, after 3 bounded native checks. No original row is rerun; all 1,487 requests/at least 5,613,402 native tokens/1 usage unknown remain counted.
+* Repair 27 malformed bold labels across 10 presentation documents; preserve all measured numbers and non-README evidence bytes. Track presentation provenance and update only 3 README manifest entries. Add a guard for malformed generated bold labels.
+* Established coding economics remains pending; no release approval or completion-email claim.
+
+
 ## Unreleased — bounded native matched output v2
 
 * Retain attempt 01's first length stop: 72 graded/1 attempted-ungraded/647 unattempted rows, 185 calls/712,919 native tokens/0 usage unknowns and 54 actual AEE assessments. Model identity was correct; extended rationale exhausted the 1,024-token cap.

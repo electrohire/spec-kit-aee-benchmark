@@ -11,6 +11,8 @@ CURRENT_START="<!-- current-results:start -->"
 CURRENT_END="<!-- current-results:end -->"
 STOPPED_START="<!-- stopped-study02:start -->"
 STOPPED_END="<!-- stopped-study02:end -->"
+MATCHED_START="<!-- matched-recovery-results:start -->"
+MATCHED_END="<!-- matched-recovery-results:end -->"
 
 
 def stopped_table(report):
@@ -106,6 +108,19 @@ def main():
         _,after=rest.split(STOPPED_END)
         updated=before+STOPPED_START+stopped_table(json.loads(stopped.read_bytes()))+STOPPED_END+after
     updated = format_markdown(updated)
+    matched=ROOT/'reports/hallucinations/matched-03-recovered-20261020/independent-grade.json'
+    if matched.exists():
+        from publish_matched_recovery import compact_table
+        before,rest=updated.split(MATCHED_START);_,after=rest.split(MATCHED_END)
+        findings=('\n\n## Completed matched hallucination results\n\n'
+            +compact_table(json.loads(matched.read_bytes()))
+            +'\nAll 720 scheduled judgments are independently graded across original03 and its explicitly authorized nine-cell recovery04. '
+            'No consistent material AEE advantage is established: paired accuracy-difference intervals include zero; the same-original-worker sensitivity agrees. '
+            'All 240 AEE proposals remain gate-ineligible, separate from their raw classification scores. '
+            'All 1,487 physical requests retain at least 5,613,402 known native tokens and one unknown-usage failed request. '
+            'No token savings, accepted coding delivery or long-horizon payback is established. '
+            '[Full findings, costs, paired uncertainty, recovery limits and independent rows](reports/hallucinations/matched-03-recovered-20261020/README.md).\n\n')
+        updated=format_markdown(before+MATCHED_START+findings+MATCHED_END+after)
     if args.check:
         if updated != text:
             raise SystemExit("README results differ from measured artifacts")

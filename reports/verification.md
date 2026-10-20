@@ -1,6 +1,6 @@
 # Current verification scope
 
-Established upstream labels/graders are primary. Current harness architecture and release policy are in [the I/O guide](../docs/benchmark-harness.md) and [release contract](../docs/benchmark-release-gates.md). Complete external 01 is model-only; matched treatment and coding economics results remain pending. Thin-adapter functional/integrity checks are required, not 100% coverage. Release comparison fixtures are synthetic and never empirical product improvements.
+Established upstream labels/graders are primary. Current harness architecture and release policy are in [the I/O guide](../docs/benchmark-harness.md) and [release contract](../docs/benchmark-release-gates.md). Complete external01 is model-only. Matched03 plus authorized recovery04 now has720 independently graded rows, receipt/policy/AEE joins and same-original-worker sensitivity; no consistent material AEE benefit is established. Coding economics remains pending. Thin-adapter functional/integrity checks are required, not 100% coverage. Release comparison fixtures are synthetic and never empirical product improvements.
 
 The remainder is historical requirement/evidence bookkeeping. Its older readiness selection rules and suite counts do not supersede current protocols or active-run freezes. Preserve the underlying recorded artifacts unchanged.
 

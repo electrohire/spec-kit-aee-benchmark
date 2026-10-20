@@ -1,19 +1,33 @@
 # Spec Kit + AEE: established benchmark evidence
 
+<!-- matched-recovery-results:start -->
+
+## Completed matched hallucination results
+
+| Author-labelled response classification | Baseline | Spec Kit | Spec Kit + AEE |
+| --- | ---: | ---: | ---: |
+| HaluEval accuracy (120 each; abstentions count as incorrect) | 70.0% | 67.5% | 71.7% |
+| RAGTruth accuracy (120 each; abstentions count as incorrect) | 62.5% | 61.7% | 57.5% |
+
+All 720 scheduled judgments are independently graded across original03 and its explicitly authorized nine-cell recovery04. No consistent material AEE advantage is established: paired accuracy-difference intervals include zero; the same-original-worker sensitivity agrees. All 240 AEE proposals remain gate-ineligible, separate from their raw classification scores. All 1,487 physical requests retain at least 5,613,402 known native tokens and one unknown-usage failed request. No token savings, accepted coding delivery or long-horizon payback is established. [Full findings, costs, paired uncertainty, recovery limits and independent rows](reports/hallucinations/matched-03-recovered-20261020/README.md).
+
+<!-- matched-recovery-results:end -->
+
+
 This repository compares a generic agent, Spec Kit and Spec Kit+AEE on established upstream tasks. It owns the thin treatment/provenance/accounting adapter, not a replacement hallucination dataset or coding grader. No 100% coverage target.
 
 | Question | Evidence status | Interpretation |
 | --- | --- | --- |
 | Can the model detect supplied hallucinations? | [HaluEval 100/120; RAGTruth 97/120](reports/hallucinations/external-01-20261019/README.md) | Complete model-only subset results; 83.3%/80.8%, 213457 native tokens, 0 usage unknowns |
-| Does Spec Kit or AEE materially help? | Matched 03 running; complete paired results pending | No treatment-benefit claim yet |
-| When does workflow overhead pay back? | FeatureBench Fast v1.1 / SWE-EVO resources prepared, not executed | No observed short/long-horizon savings yet |
+| Does Spec Kit or AEE materially help? | 720 graded judgments; explicitly authorized nine-cell recovery; intervals cross zero | No consistent material advantage established |
+| When does workflow overhead pay back? | FeatureBench Fast v1.1 / SWE-EVO gold/resource controls prepared; solver study not executed | No observed short/long-horizon savings yet |
 | Can builds gate future releases? | Content-bound requests + strict comparison/verifier; no accepted release baseline yet | Release remains blocked without full audited exact-build approval |
 
 [Harness I/O diagram and results guide](docs/benchmark-harness.md) · [Release gate diagram and policy](docs/benchmark-release-gates.md) · [Long-horizon design](docs/long-horizon-economics-plan.md) · [Resume](START_HERE.md)
 
 [Optimizer extension evaluation plan](docs/optimizer-extension-evaluation-plan.md): test individual benefits, confirm finalists on held-out work, then decide whether to reuse extensions or compose a bundle. This is deferred work, not a change to the active benchmarks or evidence of savings.
 
-The active matched run stays frozen while documentation and release infrastructure are changed in a separate checkout. Retired custom task suites, synthetic factbooks and failed runs remain historical evidence; they are not rerun as active release benchmarks. Only thin adapter-integrity checks remain maintained by this repository. Tokens include all setup/failed/scored calls; API 0 excludes hardware, energy and labor. Detector labels, coding grades and AEE gate eligibility stay separate.
+Matched03 and authorized recovery04 are independently audited. Their frozen sources and original evidence remain unchanged; no detector inference is active. Retired custom task suites, synthetic factbooks and failed runs remain historical evidence; they are not rerun as active release benchmarks. Only thin adapter-integrity checks remain maintained by this repository. Tokens include all setup/failed/scored calls; API 0 excludes hardware, energy and labor. Detector labels, coding grades and AEE gate eligibility stay separate.
 
 ```mermaid
 flowchart LR

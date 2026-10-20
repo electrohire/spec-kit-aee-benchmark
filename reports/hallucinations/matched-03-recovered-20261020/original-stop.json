@@ -1,0 +1,77 @@
+{
+  "at": "2026-10-20T00:48:37.559893+00:00",
+  "status": "STOPPEDfirstinfrastructurefault;noresume/retry",
+  "rows_retained": 711,
+  "scheduled": 720,
+  "missing_rows": [
+    {
+      "arm": "spec_kit",
+      "index": 9
+    },
+    {
+      "arm": "baseline",
+      "index": 91
+    },
+    {
+      "arm": "spec_kit_aee",
+      "index": 99
+    },
+    {
+      "arm": "baseline",
+      "index": 184
+    },
+    {
+      "arm": "spec_kit",
+      "index": 160
+    },
+    {
+      "arm": "spec_kit",
+      "index": 72
+    },
+    {
+      "arm": "baseline",
+      "index": 41
+    },
+    {
+      "arm": "baseline",
+      "index": 110
+    },
+    {
+      "arm": "baseline",
+      "index": 201
+    }
+  ],
+  "accounting": {
+    "physical_requests": 1463,
+    "known_prompt_tokens": 5361167,
+    "known_completion_tokens": 201228,
+    "usage_known": 1462,
+    "usage_unknown": 1,
+    "known_native_tokens": 5562395
+  },
+  "errors": [
+    {
+      "file": "call-1462.json",
+      "metadata": {
+        "arm": "spec_kit",
+        "case_index": 9,
+        "cohort": "scored",
+        "dataset": "ragtruth_test",
+        "phase": "review"
+      },
+      "started_at": "2026-10-20T00:40:05.203090+00:00",
+      "ended_at": "2026-10-20T00:40:24.078165+00:00",
+      "error": "InfrastructureFailure('local infrastructure failure: /v1/chat/completions (transport_error,HTTPNone)')",
+      "request_sha256": "0cf19a107d5f3c7c1f98da88226a726b1f2691789f0885c472af69610b5214fc",
+      "raw_sha256": "caf944ff190e1996ac0eed6c247bf99dd658db3394852d45ad4371251ab78d46"
+    }
+  ],
+  "source339_current_and_archive_unchanged": true,
+  "raw_files": 32591,
+  "retained_inventory_sha256": "b09e7331d58f7ebe1a57b4dd8b1364245d56dbf8efa19815a6d849c664caa1f6",
+  "event_evidence": "worker-crash-event.json",
+  "event_sha256": "d8a67f8a389326a18b6cf4f13d62d3b5b2cba24c0af3d8c6b6fcdadc8bd35f32",
+  "underlying_crash_cause": "UNRESOLVED; Event1000ucrtbase/c0000409isobservedprocessfailure, not specific memory/CUDA/securitycause",
+  "no_complete_export": true,
+  "mission_complete": false
+}

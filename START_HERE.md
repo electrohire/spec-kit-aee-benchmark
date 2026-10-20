@@ -1,10 +1,10 @@
 # Continue the established benchmark mission
 
-Read the latest durable checkpoints outside this checkout before controlling the local worker. This file is a public roadmap, not authorization to start duplicate inference. Current matched 03 has a separate immutable source checkout; do not pull these documentation/release changes into it while generation is active.
+Read the latest durable checkpoints outside this checkout before controlling the local worker. This file is a public roadmap, not authorization to start duplicate inference. Original03 remains stopped and immutable; authorized recovery04 completed only its nine missing cells. No detector inference is active. Do not rerun completed tests.
 
 1. [Harness I/O and what the results mean](docs/benchmark-harness.md).
-2. [Matched hallucination protocol](benchmarks/hallucinations/MATCHED-PROTOCOL.md): HaluEval/RAGTruth author labels, same three arms and two-call draft/review, policy overhead/actual AEE preserved. Full paired results remain pending.
-3. [Short/long-horizon economics](docs/long-horizon-economics-plan.md): established FeatureBench Fast v1.1 and SWE-EVO; independent grades and registered checkpoints before coding inference. Neither has executed here yet.
+2. [Matched hallucination protocol](benchmarks/hallucinations/MATCHED-PROTOCOL.md): HaluEval/RAGTruth author labels, same three arms and two-call draft/review, policy overhead/actual AEE preserved. [The completed amended720-row comparison](reports/hallucinations/matched-03-recovered-20261020/README.md) is audited; paired intervals cross zero and no consistent AEE advantage is established.
+3. [Short/long-horizon economics](docs/long-horizon-economics-plan.md): established FeatureBench Fast v1.1 and SWE-EVO; independent grades and registered checkpoints before coding inference. Official gold/resource/isolation controls ran offline; no coding solver study has run.
 4. [Build requests and release gates](docs/benchmark-release-gates.md): exact candidate artifacts, accepted matched baseline, paired uncertainty, regression blocks and improvement summaries. No accepted release baseline exists yet.
 5. [Reproduction and maintained checks](docs/reproduction.md).
 6. [Optimizer extension comparison plan](docs/optimizer-extension-evaluation-plan.md): individual screening, held-out confirmation and bundle decisions after the current benchmark mission is complete; no changes to the active experiment.
