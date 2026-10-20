@@ -105,3 +105,12 @@ def test_older_green_ci_does_not_override_a_newer_failed_or_pending_run(monkeypa
         payload=dict(workflow_runs=[item(1,'completed','success'),item(2,status,conclusion)])
         monkeypatch.setattr(controller.subprocess,'check_output',lambda *a,**k:json.dumps(payload).encode())
         with pytest.raises(AdmissionError,match='latest exact-head'):controller.live_ci(head)
+
+
+@pytest.mark.parametrize('limit',[4,16,208])
+def test_phase_budget_notice_exposes_last_call_without_increasing_limits(limit):
+    from benchmark_runner.upstream_task_runner import phase_budget_notice
+    notice=phase_budget_notice('fixture',limit,limit-1,20,1234)
+    assert notice['phase_call_limit']==limit and notice['phase_calls_remaining_including_next']==1
+    assert notice['task_calls_remaining']==204 and notice['native_token_budget_remaining']==24000000-1234
+    assert 'not extra calls' in notice['instruction']
