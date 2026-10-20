@@ -85,3 +85,26 @@ def test_retained_host_helper_change_refuses_execution(tmp_path):
     with pytest.raises(WorkflowFailure,match='helper bytes changed'):
         Workflow(ROOT,tmp_path/'second','spec_kit','next release',continuity_root=tmp_path/'project',feature_number=2)
     assert not (tmp_path/'second/host-commands').exists()
+
+
+def test_baseline_scaffold_has_no_framework_or_hook_metadata(tmp_path):
+    from benchmark_runner.upstream_scaffold import files_for
+    w=Workflow(ROOT,tmp_path/'flow','baseline','public task')
+    assert files_for(w)==[]
+
+
+@pytest.mark.parametrize('arm',['spec_kit','spec_kit_aee'])
+def test_actor_scaffold_has_public_templates_not_controller_constitution(tmp_path,arm):
+    import base64
+    from benchmark_runner.upstream_scaffold import files_for
+    w=Workflow(ROOT,tmp_path/'flow',arm,'public task')
+    entries={v['path']:v for v in files_for(w)}
+    raw=lambda name:base64.b64decode(entries[name]['base64'])
+    assert raw('.specify/memory/constitution.md')==(ROOT/'.specify/templates/constitution-template.md').read_bytes()
+    assert raw('.specify/memory/constitution.md')!=(ROOT/'.specify/memory/constitution.md').read_bytes()
+    assert '.specify/extensions.yml' in entries
+    assert not any('/scripts/' in name or '/store/' in name for name in entries)
+    import yaml
+    config=yaml.safe_load(raw('.specify/extensions.yml'))
+    assert config['installed']==(['aee','evaluator'] if arm=='spec_kit_aee' else [])
+    assert all(w.paths[phase] in entries for phase in ['constitution','specify','plan','tasks'])

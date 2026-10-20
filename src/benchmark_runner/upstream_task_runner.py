@@ -17,6 +17,7 @@ import yaml
 from .upstream_agent_adapter import AdmissionError, Limits, NativeToolModel, ReceiptEnvironment, write_exclusive
 from .upstream_docker_transport import StdinDockerBridge
 from .upstream_snapshot import capture_snapshot
+from .upstream_scaffold import seed
 from .upstream_tree_transfer import export_tree
 from .upstream_workflow_adapter import Workflow, PHASES, capture_document
 
@@ -79,6 +80,12 @@ def run_task(*, upstream, transport, environment, source_root, out, arm, public_
     flow = Workflow(source_root, out/'workflow', arm, public_task,
                     continuity_root=continuity_root, prior_context=prior_context,
                     feature_number=feature_number)
+    setup=seed(flow,capture_bridge,out/'workflow-initialization',reader)
+    # Controller setup is retained separately from the pristine upstream tree
+    # and zero model calls. It must not be misattributed to solver code work.
+    prepared=capture_snapshot(capture_bridge,out/'workflow-initialization/snapshot',
+        baseline_commit=baseline_commit,literal_baseline_tree=literal_baseline_tree,reader_python=reader)
+    initial_files=_file_state(prepared)
     package = Path(inspect.getfile(upstream.DefaultAgent)).parents[1]
     config_path = package/'config/benchmarks/swebench.yaml'
     config_bytes = config_path.read_bytes()
