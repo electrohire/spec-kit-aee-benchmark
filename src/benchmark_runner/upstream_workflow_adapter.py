@@ -171,7 +171,7 @@ class Workflow:
         if len(self.phase_order)>=len(expected) or phase!=expected[len(self.phase_order)]:
             raise WorkflowFailure('out-of-order framework phase')
         task=dict(public_task=self.task,phase=phase,target=self.paths[phase],
-            instruction='Write a concise unaccepted draft, at most 3000 characters. Preserve uncertainty and prior unresolved requirements; no invented tests, human acceptance or independent verification. Trusted framework helpers are host-managed; do not execute their Python scripts in the task runtime. Submit only after writing the declared file.',
+            instruction='Write a concise unaccepted draft, at most 3000 characters. Preserve uncertainty and prior unresolved requirements; no invented tests, human acceptance or independent verification. Public framework templates, placeholder documents and arm-specific hook metadata are initialized in the task workspace before this phase. Trusted framework helpers and configured hooks are host-managed by the controller; do not execute their scripts or hooks in the task runtime. No human interaction is available; retain unresolved questions explicitly rather than inventing answers. Submit only after writing the declared file.',
             prior_documents=self.documents,prior_sequence_context=self.prior_context)
         if self.arm!='baseline':
             task['speckit_command']=(self.source_root/f'prompts/skills/speckit-{phase}.md').read_text(encoding='utf-8').replace('$ARGUMENTS',self.task)
