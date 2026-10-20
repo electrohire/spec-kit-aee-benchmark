@@ -18,8 +18,8 @@ Twelve synthetic closed-world factbooks were presented to the actual local `qwen
 
 ## Two label-quality issues, not established model hallucinations
 
-* **case-09:* * the claim presupposes a finished run, but the factbook explicitly says `finished=false`. The preregistered oracle returned unknown; the model returned contradicted because no finished run existed. That is a defensible reading of the supplied words.
-* **case-11:* * the inventory is marked incomplete, but an explicit different digest is provided for the named reference. The oracle returned unknown solely because the inventory was incomplete; the model used the supplied mismatch and returned contradicted. The mismatch supports its answer.
+* **case-09:** the claim presupposes a finished run, but the factbook explicitly says `finished=false`. The preregistered oracle returned unknown; the model returned contradicted because no finished run existed. That is a defensible reading of the supplied words.
+* **case-11:** the inventory is marked incomplete, but an explicit different digest is provided for the named reference. The oracle returned unknown solely because the inventory was incomplete; the model used the supplied mismatch and returned contradicted. The mismatch supports its answer.
 
 The original labels, responses and 10/12 agreement remain unchanged. These two findings were made after execution and are not preregistered exclusions. Do not interpret 10/12 as a reliable model factual-error rate. The tiny known-truth confusion matrix in `result.json` is bounded to eight synthetic controls and is not AEE detector precision/recall, spontaneous workflow hallucination prevalence, or evidence that one development workflow beats another. No corpus rerun or tuning followed the outcomes.
 

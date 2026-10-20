@@ -37,13 +37,13 @@ flowchart LR
 
 **Matched detector attempt 01 stopped at its first output-limit failure:** 72/720 final judgments graded; 1 attempted/ungraded; 647 unattempted. All 185 calls and 712,919 known native tokens are retained, with 0 usage unknowns. The model identity was correct; an unbounded rationale exhausted the 1,024-token response cap. [Stopped report and complete scheduled inventory](reports/hallucinations/matched-01-stopped-20261019/README.md). Prospective v2 bounds native JSON strings equally across all arms while preserving token caps, tasks, labels and graders. A fresh attempt is pending validation; no completed matched efficacy or economic benefit is asserted.
 
-**Separate external hallucination results completed:* * HaluEval 100/120 correct (83.3%; 17 missed hallucinations, 3 false alarms); RAGTruth 97/120 correct (80.8%; 11 missed hallucinations, 12 false alarms). All 240 responses were independently graded, with 0 abstentions/invalid responses/usage unknowns and 213,457 known native tokens. [Full results, confusion counts, intervals and receipts](reports/hallucinations/external-01-20261019/README.md). These are public-dataset response-detection subsets, separate from coding and the synthetic factbook test. **No AEE or Spec Kit treatment effect was measured.**
+**Separate external hallucination results completed:** HaluEval 100/120 correct (83.3%; 17 missed hallucinations, 3 false alarms); RAGTruth 97/120 correct (80.8%; 11 missed hallucinations, 12 false alarms). All 240 responses were independently graded, with 0 abstentions/invalid responses/usage unknowns and 213,457 known native tokens. [Full results, confusion counts, intervals and receipts](reports/hallucinations/external-01-20261019/README.md). These are public-dataset response-detection subsets, separate from coding and the synthetic factbook test. **No AEE or Spec Kit treatment effect was measured.**
 
 **Latest coding study 08 stopped immediately:** 13 calls/79,682 known native tokens, 0 usage unknowns. A model argument array included shell separators as literal arguments to `test`, which exited 2. No retry or next trajectory ran. The coding comparison remains incomplete; the separate detection results do not repair or complete that comparison.
 
 **Historical study 04 is stopped by user direction.** The Cachetools loop exposed failed tool calls being treated as successful actions until the repeat limit, followed by continuation to another trajectory. The prospective runner now halts on the first protocol/tool/verification failure. [Diagnosis, retained costs and fail-fast amendment](reports/investigation/fail-fast-cachetools-20261019/README.md). Main benchmark results remain incomplete.
 
-**Pipeline 12 stopped before scoring:* * image/grader controls passed, then a direct-client connection timed out during context validation. A persistent-client mitigation and fresh zero-generation context checks pass; no shared service/model changed. [Evidence, transport scope and retained setup accounting](reports/investigation/fail-fast-cachetools-20261019/context-connection-followup.md).
+**Pipeline 12 stopped before scoring:** image/grader controls passed, then a direct-client connection timed out during context validation. A persistent-client mitigation and fresh zero-generation context checks pass; no shared service/model changed. [Evidence, transport scope and retained setup accounting](reports/investigation/fail-fast-cachetools-20261019/context-connection-followup.md).
 
 **Latest study 07 stopped on its first malformed grep action:** 15 native calls, original output retained. The prospective v6 tool interface removes shell-command strings and requires literal argument arrays for every arm. Fresh native grammar/timing validation is required before another scored run. [Current protocol](benchmarks/current_local/PROTOCOL-v2.md#current-v6-action-protocol-literal-argv-only). No completed comparison is claimed.
 
@@ -51,15 +51,15 @@ flowchart LR
 
 **Study 03 stopped on infrastructure (2026-10-19):** 98 calls/1,908,355 known native tokens, 2 attempted/34 unattempted checkpoints. TinyDB partial source passes 225 public+228 hidden tests, but there is no final delivery or valid paired comparison. [Captured error, independent grades and retained results](reports/local/current-study-03-router-stop/README.md).
 
-**Real-model labelled diagnostic completed:* * 12 calls, 10/12 original-label agreement, with two challenged fixture labels and explicit limits. [Receipts and findings](reports/local/labelled-factbooks-10-20261019/README.md). The fresh software benchmark stopped on a router connection error; no completed paired result is claimed.
+**Real-model labelled diagnostic completed:** 12 calls, 10/12 original-label agreement, with two challenged fixture labels and explicit limits. [Receipts and findings](reports/local/labelled-factbooks-10-20261019/README.md). The fresh software benchmark stopped on a router connection error; no completed paired result is claimed.
 
 Current mission: finish benchmarks and labelled diagnostics. Study 04, study 03 and study 02 remain stopped and unchanged. A fresh fail-fast experiment needs validated tool/latency probes and separately frozen inputs; no silent resume or automatic retry. No completed paired result or efficacy claim is established. Product work is parked.
 
 Compare ordinary coding agents, Spec Kit, and Spec Kit with Evaluator + Applied Epistemic Engineering on correctness, hallucination management, rework and cost.
 
-**Historical study 01 evidence:* * the retained attempt exposed a benchmark calibration/budget defect: neither structured arm received an implementation-phase model call. It cannot rank completed workflows or answer whether AEE reduces hallucinations or saves money. The [investigation](reports/investigation/current-study-01-20261018/README.md) and runtime safeguards are documented; original observations and costs remain visible.
+**Historical study 01 evidence:** the retained attempt exposed a benchmark calibration/budget defect: neither structured arm received an implementation-phase model call. It cannot rank completed workflows or answer whether AEE reduces hallucinations or saves money. The [investigation](reports/investigation/current-study-01-20261018/README.md) and runtime safeguards are documented; original observations and costs remain visible.
 
-**Study 02 stopped on infrastructure (2026-10-18):* * the scored campaign halted on a model HTTP 500 followed by a storage-write error. Its 192 retained generation calls contain 4,172,224 native tokens; all 348 frozen input hashes and existing event chains verify. Final independent grading/export and paired conclusions are not complete. [Incident, partial accounting and recovery limits](reports/investigation/current-study-02-infrastructure-stop-20261018/README.md). No campaign has been resumed or retried.
+**Study 02 stopped on infrastructure (2026-10-18):** the scored campaign halted on a model HTTP 500 followed by a storage-write error. Its 192 retained generation calls contain 4,172,224 native tokens; all 348 frozen input hashes and existing event chains verify. Final independent grading/export and paired conclusions are not complete. [Incident, partial accounting and recovery limits](reports/investigation/current-study-02-infrastructure-stop-20261018/README.md). No campaign has been resumed or retried.
 
 The [prospective infrastructure guard correction](reports/investigation/current-study-02-infrastructure-stop-20261018/prospective-guard-followup.md) now halts on the first transport/storage failure and retains bounded diagnostics. Its 501 offline tests do not establish recovery of the stopped experiment.
 
@@ -138,9 +138,9 @@ The small-task insight is that all arms reached 5/6 after feedback, while the co
 
 The six-task experiment used older document-adapted workflows. Its supplemental repairs received the same tests as feedback, so they are not independent evidence of an AEE-specific recovery advantage. The TinyDB study used one project and three dependent milestones per arm. These are observations about those configurations, not a universal ranking of tools or measurements of the refreshed versions below.
 
-**Hallucination results:* * a comparable independently labeled hallucination rate was not collected in those studies. It is **unmeasured**, not zero. A failing solution is not automatically a hallucination; false completion requires an actual completion claim contradicted by independent acceptance evidence.
+**Hallucination results:** a comparable independently labeled hallucination rate was not collected in those studies. It is **unmeasured**, not zero. A failing solution is not automatically a hallucination; false completion requires an actual completion claim contradicted by independent acceptance evidence.
 
-**Money results:* * all arms had $0 local API expenditure. Hardware, energy and human labor were unpriced. Equal zero API bills do not establish financial savings.
+**Money results:** all arms had $0 local API expenditure. Hardware, energy and human labor were unpriced. Equal zero API bills do not establish financial savings.
 
 ## Where the combined workflow could earn its overhead
 

@@ -4,11 +4,11 @@ Status: design + implementation built offline 2026-09-21. No paid model calls ma
 
 ## 1. Claim and falsifier
 
-**Claim B (condensation insurance):* * as working context condenses, important constraints get lost; Spec-Kit artifacts (spec.md, plan.md) act as external persistent memory that survives condensation. For frontier models, where Spec-Kit + AEE is the observed +14-35% cost premium (v5-v8.1), that premium is insurance against hallucinations and spec deviance. This experiment prices the loss the insurance prevents.
+**Claim B (condensation insurance):** as working context condenses, important constraints get lost; Spec-Kit artifacts (spec.md, plan.md) act as external persistent memory that survives condensation. For frontier models, where Spec-Kit + AEE is the observed +14-35% cost premium (v5-v8.1), that premium is insurance against hallucinations and spec deviance. This experiment prices the loss the insurance prevents.
 
-**Falsifier (pre-registered):* * Claim B is falsified if, at the aggressive condensation level, constraint retention does not differ between the artifacts arm and the summary-only arm, or if the artifacts arm hallucinates at equal or higher rates. A null redirects to stronger condensation or richer artifact types; it does not license weakening the test until it passes.
+**Falsifier (pre-registered):** Claim B is falsified if, at the aggressive condensation level, constraint retention does not differ between the artifacts arm and the summary-only arm, or if the artifacts arm hallucinates at equal or higher rates. A null redirects to stronger condensation or richer artifact types; it does not license weakening the test until it passes.
 
-**Aligned-spec condition (v8 lesson, permanent):* * the v8 campaign proved a misaligned spec manufactures hallucinated repairs (the diagnostic phase generated a phantom defect from ambiguous wording and all arms "fixed" it). Claim B is therefore "aligned Spec-Kit artifacts reduce spec deviance." Every task passes the grader-spec alignment gate (section 6) before any spend. Artifact fidelity is a controlled condition: artifacts are task-provided, frozen, and aligned — not agent-written. (Agent-written artifacts are a follow-up experiment, not this one.)
+**Aligned-spec condition (v8 lesson, permanent):** the v8 campaign proved a misaligned spec manufactures hallucinated repairs (the diagnostic phase generated a phantom defect from ambiguous wording and all arms "fixed" it). Claim B is therefore "aligned Spec-Kit artifacts reduce spec deviance." Every task passes the grader-spec alignment gate (section 6) before any spend. Artifact fidelity is a controlled condition: artifacts are task-provided, frozen, and aligned — not agent-written. (Agent-written artifacts are a follow-up experiment, not this one.)
 
 ## 2. Experimental design: 3 x 2
 
@@ -23,15 +23,15 @@ Status: design + implementation built offline 2026-09-21. No paid model calls ma
 * `artifacts`: phase-2 sandbox contains the frozen `/task/spec.md` and `/task/plan.md`; the agent is instructed to re-read both before implementing. (External persistent memory.)
 * `summary`: phase-2 sandbox contains no spec/plan; the agent implements from the condensed phase-1 summary only.
 
-**Cells:* * 6 per task (3 levels x 2 arms). Phase 1 is shared: one planning attempt per task establishes the counterfactual "the agent had full context"; its transcript is frozen, then condensed per level for the phase-2 attempts.
+**Cells:** 6 per task (3 levels x 2 arms). Phase 1 is shared: one planning attempt per task establishes the counterfactual "the agent had full context"; its transcript is frozen, then condensed per level for the phase-2 attempts.
 
-**Predictions:* * (a) the summary arm's constraint retention degrades intact -> light -> aggressive; (b) the artifacts arm is flat across levels; (c) the arms gap widens with more aggressive condensation; (d) the intact+artifacts cell matches intact+summary (artifacts do not hurt when context is intact — ceiling control).
+**Predictions:** (a) the summary arm's constraint retention degrades intact -> light -> aggressive; (b) the artifacts arm is flat across levels; (c) the arms gap widens with more aggressive condensation; (d) the intact+artifacts cell matches intact+summary (artifacts do not hurt when context is intact — ceiling control).
 
 ## 3. Deterministic condensation procedures
 
 Real compaction is uncontrolled and unreproducible; these procedures are a controlled, deterministic model of its information-loss profile. No model calls, no randomness: the same transcript and spec always produce the same summary (byte-identical; asserted by tests).
 
-**Input:* * the frozen phase-1 transcript (list of {role, content} messages) and the task's spec.md. Specs are authored in a strict constraint format so the parser is exact:
+**Input:** the frozen phase-1 transcript (list of {role, content} messages) and the task's spec.md. Specs are authored in a strict constraint format so the parser is exact:
 
 ```
 <intro paragraphs: what the module is, API surface>
@@ -54,7 +54,7 @@ cases follow in later sentences.>
 
 Budgets use whitespace-split words. The summarizer raises (fail closed) if a budget is exceeded — a spec whose first sentences are too long is rewritten, not accommodated. The test suite asserts all three levels for every task: determinism (two runs byte-identical), budget compliance, and constraint-ID coverage (every C0N id appears in the light/aggressive summaries).
 
-**Limitation (honest):* * this is extractive, not abstractive, summarization. It controls information loss exactly, which is what the experiment needs, but a real abstractive compactor might preserve different details. Documented here so the paper cannot oversell the manipulation.
+**Limitation (honest):** this is extractive, not abstractive, summarization. It controls information loss exactly, which is what the experiment needs, but a real abstractive compactor might preserve different details. Documented here so the paper cannot oversell the manipulation.
 
 ## 4. Multi-phase task schema
 
@@ -79,9 +79,9 @@ Each task lives in `benchmarks/condensation/<task>/`:
 * `negative`: "must NOT" behavior; pins absence of ungrounded behavior. Every task has >= 1. Failed negative tests count as hallucinations.
 * `phantom`: a suspected defect the plan explicitly resolves as not-a-defect (task 10). "Fixing" it fails hidden tests; counts as hallucination.
 
-**Phase 1 (shared, planning):* * the agent receives the full spec.md and writes brief planning notes to `/work/phase1-notes.md` (at most 4 model calls). This establishes the counterfactual honestly: the transcript proves full context was present. The transcript is frozen; no phase-1 output is graded.
+**Phase 1 (shared, planning):** the agent receives the full spec.md and writes brief planning notes to `/work/phase1-notes.md` (at most 4 model calls). This establishes the counterfactual honestly: the transcript proves full context was present. The transcript is frozen; no phase-1 output is graded.
 
-**Phase 2 (implementation, per cell):* * the agent implements `/work/<module>.py` (at most 8 model calls) with tests_public.py available. Artifacts arm: the sandbox also contains `/task/spec.md` + `/task/plan.md` and the prompt instructs re-reading them first. Summary arm: no spec/plan files; the prompt carries only the condensed summary. Both arms get identical public tests and the identical implementation target. Treatment isolation (constitution II): solvers receive only their frozen treatment; hidden tests never enter any solver sandbox.
+**Phase 2 (implementation, per cell):** the agent implements `/work/<module>.py` (at most 8 model calls) with tests_public.py available. Artifacts arm: the sandbox also contains `/task/spec.md` + `/task/plan.md` and the prompt instructs re-reading them first. Summary arm: no spec/plan files; the prompt carries only the condensed summary. Both arms get identical public tests and the identical implementation target. Treatment isolation (constitution II): solvers receive only their frozen treatment; hidden tests never enter any solver sandbox.
 
 ## 5. Metrics
 
@@ -95,7 +95,7 @@ Each task lives in `benchmarks/condensation/<task>/`:
 
 Hallucinations also score at w_wrong = 3 in the expected-loss metric (v9 section 4, ratified 2026-09-21).
 
-**Cost:* * model calls and measured dollars per attempt recorded by the runner's accounting (same provider/budget machinery as matched-repair).
+**Cost:** model calls and measured dollars per attempt recorded by the runner's accounting (same provider/budget machinery as matched-repair).
 
 ## 6. Grader-spec alignment gate (mandatory, per task, before any spend)
 
