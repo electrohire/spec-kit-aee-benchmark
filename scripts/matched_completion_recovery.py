@@ -15,6 +15,7 @@ import shutil
 import subprocess
 import sys
 import types
+from concurrent.futures import ThreadPoolExecutor
 
 PARENT_HEAD = 'c72d54f4b876454ab2c11216d74959b123a72a09'
 TRANSPORT_SHA = '82d846121d7e280c6d4d89078ab6171628013b89d820388deed58b6a141e6ecc'
@@ -37,10 +38,13 @@ def verify_inventory(parent, inventory):
     actual = {p.relative_to(parent).as_posix() for p in parent.rglob('*') if p.is_file()}
     if actual != set(expected):
         raise ValueError('parent file membership changed')
-    for name, digest in expected.items():
+    def check(item):
+        name, digest = item
         path = (parent / name).resolve()
         if not path.is_relative_to(parent.resolve()) or sha(path) != digest:
             raise ValueError('parent retained bytes changed: ' + name)
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        list(pool.map(check, expected.items()))
     return len(expected)
 
 
