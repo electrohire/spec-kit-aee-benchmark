@@ -13,4 +13,4 @@ Shared diagnostic tokens are charged equally in treatment comparisons but counte
 
 Repair timing is exploratory: a roughly 25-second CPU-only selector calibration overlapped early generation. The repair experiment retained its original source freeze and selector. No overlapping model-generation calls occurred.
 
-**Interpretation:* * the sole extra guided-arm fix occurred without an AEE assessment. Only 1/16 diagnostics completed; both arms fixed that assessed case. This does not establish an AEE advantage. Read [the manual finding review](adjudication.md).
+**Interpretation:** the sole extra guided-arm fix occurred without an AEE assessment. Only 1/16 diagnostics completed; both arms fixed that assessed case. This does not establish an AEE advantage. Read [the manual finding review](adjudication.md).

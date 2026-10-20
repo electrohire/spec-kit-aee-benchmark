@@ -1,6 +1,6 @@
 # Repeated two-project local comparison
 
-**Audit qualification:* * [Read the interpretation and exposure limits](analysis.md). All 36 checkpoints were attempted, but the 24 structured checkpoints are ungraded collection errors (22 missing modules, two import-time NameErrors). Only six specification AEE assessments occurred; all 52 public-repair records made zero inference calls. Zero accepted deliveries is not a complete AEE workflow efficacy test.
+**Audit qualification:** [Read the interpretation and exposure limits](analysis.md). All 36 checkpoints were attempted, but the 24 structured checkpoints are ungraded collection errors (22 missing modules, two import-time NameErrors). Only six specification AEE assessments occurred; all 52 public-repair records made zero inference calls. Zero accepted deliveries is not a complete AEE workflow efficacy test.
 
 12 project trajectories; 36 dependent checkpoints, not independent tasks. All inference is local. API expenditure $0; hardware, energy and controller work unpriced.
 

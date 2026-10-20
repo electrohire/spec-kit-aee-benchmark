@@ -1,6 +1,6 @@
 # Study 02 infrastructure stop — incomplete
 
-**2026-10-19 follow-up:* * the [audited stopped-study export](../../local/current-study-02-stopped-postmortem/README.md) now includes all 36 rows and independent grades of two retained final snapshots. TinyDB's public pass did not survive its hidden grade; Cachetools collection was incomplete. Proxy categories are positive 0/negative 0/unknown 1/ungraded 35. This postmortem used no inference or campaign retry and is not a completed comparison.
+**2026-10-19 follow-up:** the [audited stopped-study export](../../local/current-study-02-stopped-postmortem/README.md) now includes all 36 rows and independent grades of two retained final snapshots. TinyDB's public pass did not survive its hidden grade; Cachetools collection was incomplete. Proxy categories are positive 0/negative 0/unknown 1/ungraded 35. This postmortem used no inference or campaign retry and is not a completed comparison.
 
 ## Original incident note
 

@@ -12,6 +12,7 @@ GLUED = re.compile(
     r"|(?<=%)(?=coverage\b)",
     re.IGNORECASE,
 )
+BROKEN_BOLD_LABEL = re.compile(r"\*\*[^*\n]+:\* \*(?:\s|$)")
 
 
 def documentation_paths(root=ROOT):
@@ -40,6 +41,8 @@ def check_text(text):
         if re.match(r"<!-- (historical-results|current-results|stopped-study02):start -->", line):
             generated = True
         if generated:
+            if BROKEN_BOLD_LABEL.search(PROTECTED.sub(" ", line)):
+                yield number, "close bold labels with '**', not '* *'"
             if re.match(r"<!-- (historical-results|current-results|stopped-study02):end -->", line):
                 generated = False
             continue
@@ -51,6 +54,8 @@ def check_text(text):
         if fence or line.startswith("    ") or line.lstrip().startswith("<!--"):
             continue
         prose = PROTECTED.sub(" ", line)
+        if BROKEN_BOLD_LABEL.search(prose):
+            yield number, "close bold labels with '**', not '* *'"
         if GLUED.search(prose):
             yield number, "separate prose words and measured numbers with spaces"
         if re.match(r"^\s*(?:>\s*)?[-+]\s+\S", line):

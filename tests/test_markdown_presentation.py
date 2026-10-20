@@ -7,6 +7,22 @@ from markdown_it import MarkdownIt
 from benchmark_runner.markdown_presentation import format_markdown, write_markdown
 
 
+@pytest.mark.parametrize('text', [
+    '**Cold start:* * measured cost.\n',
+    '<!-- current-results:start -->\n\n**Quality:* * measured result.\n\n<!-- current-results:end -->\n',
+])
+def test_malformed_bold_labels_fail_even_in_generated_results(text):
+    spec = importlib.util.spec_from_file_location('bold_docs', Path(__file__).resolve().parents[1] / 'scripts/check_docs.py')
+    module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    assert any('bold labels' in message for _, message in module.check_text(text))
+
+
+def test_literal_code_is_not_reformatted_as_a_bold_label():
+    spec = importlib.util.spec_from_file_location('bold_docs_literals', Path(__file__).resolve().parents[1] / 'scripts/check_docs.py')
+    module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    assert not list(module.check_text('Example `**Label:* * text` is literal.\n\n```text\n**Label:* * text\n```\n'))
+
+
 @pytest.mark.parametrize(("source", "expected"), [
     ("Read [the design](design.md) and\n[the contract](contract.md).\n",
      "Read [the design](design.md) and [the contract](contract.md).\n"),

@@ -45,7 +45,7 @@ Dependencies: foundation before US1/US2; tutorial can be developed independently
 * [x] Document separate upstream hallucination, coding correctness and all-call economics panels with Mermaid I/O and release diagrams.
 * [x] Register prospective practical margins/paired cluster policy; fail closed on incomplete/unmatched/unknown data and absent accepted baseline.
 * [x] Implement exact-build request packaging, protected index/hash verification and recomputed release decision; synthetic boundary tests are not empirical improvements.
-* [ ] Complete active matched 03 independent grading/audits and publish paired findings.
+* [x] Complete matched03 plus explicitly authorized nine-cell recovery04; independently audit all 720 rows, all-call costs, AEE joins and symmetric original-worker sensitivity. See reports/hallucinations/matched-03-recovered-20261020/README.md.
 * [ ] Validate upstream FeatureBench/SWE-EVO graders/resources and frozen candidate adapter, then execute established coding economics.
 * [ ] Admit first complete matched product baseline and connect serial local worker execution to queued exact-build requests.
 * [ ] Execute a real candidate release comparison and publish approval before any release is allowed.

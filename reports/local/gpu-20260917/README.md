@@ -1,6 +1,6 @@
 # Measured GPU exploration and repair supplement — 2026-09-17
 
-**Observed result:* * the document-adapted workflows used substantially more tokens and had fewer passing primary solutions in this six-task sample. After a shared repair policy all arms passed 5/6 of the now feedback-exposed upstream test suites. No superiority, token saving, or full Spec Kit integration claim is supported.
+**Observed result:** the document-adapted workflows used substantially more tokens and had fewer passing primary solutions in this six-task sample. After a shared repair policy all arms passed 5/6 of the now feedback-exposed upstream test suites. No superiority, token saving, or full Spec Kit integration claim is supported.
 
 Six public Exercism tasks, one attempt/task/arm: 18 primary attempts, not 18 tasks. Qwen2.5-Coder-14B-Instruct Q4_K_M, llama.cpp b11026, both NVIDIA GPUs, zero paid model API calls. The planned 20 x 3 x 3 SWE-bench pilot remains unrun.
 

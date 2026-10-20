@@ -53,3 +53,10 @@ Build requests and verification are usable infrastructure. Automatic local candi
 Pin both reusable workflow and helper-code checkout to immutable benchmark commits. The request workflow accepts only `engine` in the engine repo or `extension` in the extension repo on trusted main push/manual builds. It returns candidate SHA and bundle digest. A release pipeline calls `benchmark-release-gate.yml` with those values; release/publish jobs use `needs: benchmark-release-gate`. Evidence/index fetches are read-only public GitHub requests; no new cross-repository secret is required. Missing evidence intentionally fails rather than optimistically passing.
 
 [GitHub reusable-workflow documentation](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows) and [event/security guidance](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows) explain the supported triggers and trust boundaries.
+
+
+## Completed detector comparison and remaining coding work
+
+The [amended matched detector results](../reports/hallucinations/matched-03-recovered-20261020/README.md) cover all 720 scheduled judgments. Baseline / Spec Kit / Spec Kit + AEE accuracy is 70.0% / 67.5% / 71.7% on HaluEval and 62.5% / 61.7% / 57.5% on RAGTruth. All paired intervals cross zero; the same-original-worker sensitivity also does not establish a consistent benefit. Gate eligibility is separate: all 240 AEE proposals remain ineligible. These detector data do not establish coding delivery, spontaneous workflow hallucination prevalence or long-horizon payback.
+
+Original03 remains stopped after a worker crash with 711 retained judgments; the user authorized restoring only the existing profile and completing the missing 9 cells under a fresh frozen episode. The crash cause remains unresolved. All 1,487 physical requests, including technical readiness and the failed/orphan work, retain at least 5,613,402 native tokens and 1 unknown-usage request. This recovery is disclosed, not treated as an uninterrupted campaign, independent replication or a release-equivalence baseline.

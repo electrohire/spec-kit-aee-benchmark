@@ -1,5 +1,5 @@
 # Local exploratory campaign, 2026-09-17
-**PAUSED / DRAFT:* * User stopped this CPU plan before coding generation and asked to continue on a GPU machine. See gpu-machine-handoff.md. Runtime execution was interrupted during warmups; no completed measurement series exists. Model, runtime, scope and adapter below are proposals, not a frozen GPU protocol.
+**PAUSED / DRAFT:** User stopped this CPU plan before coding generation and asked to continue on a GPU machine. See gpu-machine-handoff.md. Runtime execution was interrupted during warmups; no completed measurement series exists. Model, runtime, scope and adapter below are proposals, not a frozen GPU protocol.
 
 
 User requested both runtime and coding comparisons with no paid inference. This is a separate campaign, not execution of the frozen SWE-bench pilot. No model results were inspected before selecting this protocol. API expenditure is zero; electricity, hardware, setup and human time are not zero and are not priced.
