@@ -16,7 +16,9 @@ from .isolation import DockerSandbox
 from .provider import OpenAIProvider, provider_spec, transport_policy
 from .local_provider import LocalProvider, check_local_server
 from .store import RunLock, Store, canonical, read_json, utc, write_json
-from .workflow import AEE_PHASES, assess, grounded_claims, phase_prompt, phases
+from .tripwires import record_tripwire
+from .workflow import (AEE_PHASES, assess, campaign_setup, gate_outcome_of,
+                       grounded_claims, phase_prompt, phases)
 
 
 class LimitHit(RuntimeError):
@@ -140,13 +142,33 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
     agent = DefaultAgent(model, environment, system_template="", instance_template="", cost_limit=0)
     agent.add_messages({"role": "system", "content": phase_prompt(root, "baseline", "solve")},
                        {"role": "user", "content": task["problem_statement"]})
-    outcome, repairs = None, 0
+    outcome, gate_outcome, repairs = None, None, 0
+    # PC-3: with campaign setup sharing enabled, the constitution
+    # phase is executed once per campaign and task and its frozen
+    # completion record is reused by later attempts in either Spec
+    # Kit arm, which then issue zero setup calls.
+    share_setup = bool(cfg.get("share_campaign_setup"))
+    setup_key = task.get("instance_id") or identity.get("task_id")
     for phase in phases(arm):
         model.phase = phase
         prompt = phase_prompt(root, arm, phase)
         if arm == "spec_kit_aee" and phase in AEE_PHASES:
             prompt += "\nAt phase completion include claims using this schema example (replace all example content):\n"
             prompt += (Path(root)/".specify/extensions/aee/templates/aee-claims.json").read_text()
+        if share_setup and phase == "constitution" and arm != "baseline":
+            frozen = campaign_setup(store, setup_key)
+            if frozen is not None:
+                record = frozen.get("record") or {}
+                summary = record.get("summary") if isinstance(record, dict) else None
+                agent.add_messages({"role": "user", "content": f"Current phase: {phase}\n{prompt}"},
+                                   {"role": "user", "content":
+                                    "Campaign setup (constitution) was frozen once for this task "
+                                    "and is reused; no new setup calls are made for it. "
+                                    "Frozen setup record: "+json.dumps(summary or record)})
+                store.append("phases", {**identity, "phase": phase, "timestamp": utc(),
+                                        "artifact": frozen["artifact"], "setup_reused": True,
+                                        "setup_source_attempt_id": frozen["attempt_id"]})
+                continue
         agent.add_messages({"role": "user", "content": f"Current phase: {phase}\n{prompt}"})
         recovery = 0
         while True:
@@ -168,18 +190,27 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             # Phase completion artifacts are explicit and retained, not inferred from prose.
             artifact = store.artifact(canonical(model.last))
             store.append("phases", {**identity, "phase": phase, "timestamp": utc(), "artifact": artifact})
+            if share_setup and phase == "constitution" and campaign_setup(store, setup_key) is None:
+                # Freeze the setup outcome once per campaign and task (PC-3).
+                store.append("campaign_setups", {**identity, "setup_key": setup_key,
+                                                 "artifact": artifact, "record": model.last,
+                                                 "timestamp": utc()})
             if arm != "spec_kit_aee" or phase not in AEE_PHASES:
                 break
             claims = grounded_claims(model.last.get("claims") or {}, store, identity["attempt_id"])
             result = assess(root, claims, phase, store, identity["attempt_id"])
             outcome = result["outcome"]
+            # PC-2: gate eligibility follows lane 1 (machine
+            # verification), not the blended headline outcome.
+            gate_outcome = gate_outcome_of(result)
             agent.add_messages({"role": "user", "content": "AEE/Evaluator result: "+json.dumps(result)})
-            if outcome in ("pass", "warn"):
+            if gate_outcome in ("pass", "warn"):
                 break
-            if outcome == "block" or recovery >= cfg["max_recovery_rounds"]:
+            if gate_outcome == "block" or recovery >= cfg["max_recovery_rounds"]:
                 # Preserve the patch and assessment for independent post-run disagreement analysis.
                 patch = sandbox.execute("git add -N . && git diff --binary HEAD", min(60, remaining(deadline)))
-                return {"patch": store.artifact(patch["stdout"].encode()), "assessment_outcome": outcome,
+                return {"patch": store.artifact(patch["stdout"].encode()), "assessment_outcome": gate_outcome,
+                        "assessment_headline_outcome": outcome,
                         "repair_count": repairs, "tool_calls": environment.tool_calls, "blocked": True}
             recovery += 1
             repairs += 1
@@ -187,7 +218,8 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
     patch = sandbox.execute("git add -N . && git diff --binary HEAD", min(60, remaining(deadline)))
     if patch["exit_code"]:
         raise RuntimeError("patch extraction failed")
-    return {"patch": store.artifact(patch["stdout"].encode()), "assessment_outcome": outcome,
+    return {"patch": store.artifact(patch["stdout"].encode()), "assessment_outcome": gate_outcome,
+            "assessment_headline_outcome": outcome,
             "repair_count": repairs, "tool_calls": environment.tool_calls}
 
 
@@ -291,6 +323,8 @@ def run(root, manifest, output, arm=None, smoke=False):
                 if outcomes[entry["attempt_id"]]["status"] == "started":
                     store.append("attempts", {**identity, "status": "infrastructure_failure",
                                               "reason": "interrupted; no automatic rerun", "timestamp": utc()})
+                    record_tripwire(store, identity, "infrastructure_failure",
+                                    "interrupted; no automatic rerun")
                 continue
             if entry["arm"] in REPAIR_DEPENDENT_ARMS and not diagnostic_available(
                     store, manifest, tasks[entry["task_id"]]):
@@ -304,6 +338,8 @@ def run(root, manifest, output, arm=None, smoke=False):
                                           "reason": "pre-skipped: diagnostic evidence not recorded; "
                                                     "no inference issued",
                                           "timestamp": utc()})
+                record_tripwire(store, identity, "skipped",
+                                "pre-skipped: diagnostic evidence not recorded; no inference issued")
                 continue
             store.append("attempts", {**identity, "status": "started", "timestamp": utc()})
             tick, result = time.monotonic(), {}
@@ -336,6 +372,9 @@ def run(root, manifest, output, arm=None, smoke=False):
                 status, reason = "error", error_reason(e)
             store.append("attempts", {**identity, **result, "status": status, "reason": reason,
                                       "timestamp": utc(), "duration_seconds": time.monotonic()-tick})
+            # PC-4: the halt is classified and recorded as a tripwire
+            # event; the classification changes no behavior here.
+            record_tripwire(store, identity, status, reason)
             if status in ("cancelled", "error"):
                 break  # Stop on uncertain infrastructure/provider errors; retain all charges.
     return store.events("attempts")

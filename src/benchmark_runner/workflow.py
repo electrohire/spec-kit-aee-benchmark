@@ -36,6 +36,226 @@ def grounded_claims(claims, store, attempt_id):
     return claims
 
 
+PIPELINE_ACTOR = "benchmark-pipeline"
+
+
+def _test_text(value):
+    return " ".join(str(value).lower().split())
+
+
+def _command_matches_tests(command, tests):
+    """The executed command is one of the claim's declared tests when
+    either text names the other (the engine's test-verdict reference
+    rule, applied to harness records). Returns the declared test text
+    it matches, or None."""
+    if not command:
+        return None
+    cmd = _test_text(command)
+    for test in tests:
+        text = _test_text(test)
+        if text and (text in cmd or cmd in text):
+            return test
+    return None
+
+
+# Commands that run a project's tests, for the citation link in
+# executed_tests: a claim's own verified citation can tie it to a
+# test run whose command does not textually name the declared test,
+# but never to a non-test artifact (a spec read, a file listing).
+_TEST_RUNNER_MARKERS = ("pytest", "unittest", "npm test", "yarn test", "go test",
+                        "cargo test", "jest", "mocha", "rspec", "phpunit",
+                        "mvn test", "gradle test", "ctest", "tox",
+                        "make test", "make check")
+
+
+def executed_tests(claims, store, attempt_id):
+    """Per-claim record of falsification tests actually executed in
+    this attempt (protocol amendment 2026-10-20, PC-1).
+
+    A test counts as executed when a tool artifact of this attempt is
+    tied to the claim in either of two inspectable ways: the artifact
+    records a command matching one of the claim's declared
+    falsification tests, or the claim's evidence cites the artifact,
+    the citation verifies against the store (the grounded_claims
+    predicate) and the artifact records a test-runner command.
+    ``passed`` is True only when every tied tool event exited 0; a
+    missing exit code is unknown, never a pass. ``acceptance`` names
+    the declared test a passing executed run was a run of, when one
+    was, with that run's artifact digest; only the command-match
+    link names a declared test, so only it can carry acceptance.
+    """
+    events = {}
+    for event in store.events("tools"):
+        if event.get("attempt_id") != attempt_id:
+            continue
+        artifact = event.get("artifact") or {}
+        if artifact.get("sha256"):
+            events[artifact["sha256"]] = event
+
+    def artifact_content(event):
+        path = store.root/event["artifact"]["path"]
+        if not path.is_file():
+            return {}
+        try:
+            content = read_json(path)
+        except (OSError, ValueError):
+            return {}
+        return content if isinstance(content, dict) else {}
+
+    executed = {}
+    for claim in claims.get("claims", []):
+        tests = [t for t in claim.get("falsification_tests", [])
+                 if isinstance(t, str) and t.strip()]
+        tied = {}
+        for digest, event in events.items():
+            if _command_matches_tests(artifact_content(event).get("command"), tests):
+                tied[digest] = event
+        for evidence in claim.get("evidence", []):
+            digest = evidence.get("source_id")
+            event = events.get(digest)
+            if not event or digest in tied:
+                continue
+            ref = event["artifact"]
+            path = store.root/ref["path"]
+            if (evidence.get("ref") != ref["path"] or not path.is_file()
+                    or sha(path.read_bytes()) != digest):
+                continue
+            command = _test_text(artifact_content(event).get("command"))
+            if any(marker in command for marker in _TEST_RUNNER_MARKERS):
+                tied[digest] = event
+        if not tied:
+            continue
+        artifacts = []
+        acceptance = None
+        for digest, event in sorted(tied.items()):
+            command = artifact_content(event).get("command")
+            artifacts.append(dict(sha256=digest, path=event["artifact"]["path"],
+                                  command=command, exit_code=event.get("exit_code")))
+            if acceptance is None and event.get("exit_code") == 0:
+                matched = _command_matches_tests(command, tests)
+                if matched:
+                    acceptance = dict(test=matched, sha256=digest)
+        executed[claim["id"]] = dict(
+            artifacts=artifacts,
+            passed=all(a["exit_code"] == 0 for a in artifacts),
+            acceptance=acceptance)
+    return executed
+
+
+def attach_verification_evidence(claims, executed):
+    """Attach the phase's real verification artifacts as distinct
+    evidence sources (PC-1): one observed item per executed artifact
+    on the claims that artifact verifies, unless the claim already
+    cites that artifact. The engine's independence component then
+    counts distinct real sources instead of one shared source."""
+    claims = json.loads(json.dumps(claims))
+    for claim in claims.get("claims", []):
+        record = executed.get(claim.get("id"))
+        if not record:
+            continue
+        cited = {e.get("source_id") for e in claim.get("evidence", [])}
+        for artifact in record["artifacts"]:
+            if artifact["sha256"] in cited:
+                continue
+            claim.setdefault("evidence", []).append(dict(
+                kind="observed", source_id=artifact["sha256"], ref=artifact["path"],
+                source_quality="test",
+                description="Phase verification artifact: "
+                            + (artifact["command"] or "tool run")
+                            + f" (exit code {artifact['exit_code']})"))
+            cited.add(artifact["sha256"])
+    return claims
+
+
+def composed_lanes(composed):
+    """The engine's lane pair carried through composition (Spec 004
+    R6.2): lane 1 machine verification, lane 2 human acceptance
+    state, verbatim — never blended, never rescored here."""
+    states = (composed.get("metadata") or {}).get("lane_states") or []
+    for state in states:
+        if isinstance(state, dict) and isinstance(state.get("lane_1"), dict):
+            return {"lane_1": state["lane_1"], "lane_2": state.get("lane_2")}
+    return {}
+
+
+def gate_outcome_of(result):
+    """Gate eligibility reads lane 1 (PC-2): the lane 1 outcome when
+    the result carries one, else the headline outcome."""
+    lanes = result.get("lanes") or composed_lanes(result)
+    lane_1 = lanes.get("lane_1") or {}
+    return lane_1.get("outcome") or result["outcome"]
+
+
+def campaign_setup(store, setup_key):
+    """The frozen campaign setup record for a task (PC-3), or None.
+    With setup sharing enabled, the first attempt that completes the
+    constitution phase freezes its completion record once per
+    campaign and task; later attempts reuse it."""
+    for event in store.events("campaign_setups"):
+        if event.get("setup_key") == setup_key:
+            return event
+    return None
+
+
+def record_phase_acts(bundle, claims, executed, phase, env):
+    """Recorded acts on the assessed bundle (PC-1), issued through
+    the engine's own recorded-act commands so every act carries its
+    basis type in the bundle and the acts ledger. The harness records
+    no human act and never records ``explained`` (a named human's
+    exposition); acceptance is recorded only on a test verdict, and
+    only where an executed passing run is the claim's own declared
+    acceptance test. A refused act is recorded, never hidden."""
+    acts = []
+    by_id = {c.get("id"): c for c in claims.get("claims", [])}
+    ledger = bundle.parent/"recorded-acts-ledger.jsonl"
+    for claim_id, record in executed.items():
+        claim = by_id.get(claim_id) or {}
+        tests = [t for t in claim.get("falsification_tests", [])
+                 if isinstance(t, str) and t.strip()]
+        first = record["artifacts"][0]
+        test_id = tests[0] if tests else (first["command"] or first["sha256"])
+        verdict = "pass" if record["passed"] else "fail"
+        commands = "; ".join(a["command"] or a["sha256"] for a in record["artifacts"])
+
+        def run(kind, *args, act_test_id=None, act_test_hash=None, act_verdict=None):
+            result = subprocess.run([sys.executable, "-m", "aee", *args],
+                                    capture_output=True, env=env, timeout=60)
+            entry = dict(claim_id=claim_id, kind=kind, basis_type="test-verdict",
+                         test_id=act_test_id or test_id,
+                         test_hash=act_test_hash or first["sha256"],
+                         test_result=act_verdict or verdict,
+                         exit_code=result.returncode)
+            if result.returncode:
+                entry["error"] = result.stderr.decode("utf-8", errors="replace").strip()[:300]
+            acts.append(entry)
+            return result.returncode == 0
+
+        stage_now = claim.get("stage") or "created"
+        if stage_now == "created":
+            if run("stage", "stage", str(bundle), "--claim", claim_id, "--to", "checked",
+                   "--basis", f"Phase {phase} executed falsification tests: {commands}",
+                   "--recorded-by", PIPELINE_ACTOR, "--basis-type", "test-verdict",
+                   "--test-id", test_id, "--test-hash", first["sha256"],
+                   "--test-result", verdict, "--ledger", str(ledger)):
+                stage_now = "checked"
+        if record["passed"] and (claim.get("status") or "draft") == "draft" and stage_now != "created":
+            run("ratify", "ratify", str(bundle), "--claim", claim_id, "--status", "supported",
+                "--basis", f"Phase {phase} checks passed: {commands}",
+                "--recorded-by", PIPELINE_ACTOR, "--basis-type", "test-verdict",
+                "--test-id", test_id, "--test-hash", first["sha256"],
+                "--test-result", "pass", "--ledger", str(ledger))
+        acceptance = record.get("acceptance")
+        if record["passed"] and acceptance and stage_now == "checked":
+            run("stage", "stage", str(bundle), "--claim", claim_id, "--to", "accepted",
+                "--basis", f"Acceptance test executed and passed in phase {phase}: {acceptance['test']}",
+                "--recorded-by", PIPELINE_ACTOR, "--basis-type", "test-verdict",
+                "--test-id", acceptance["test"], "--test-hash", acceptance["sha256"],
+                "--test-result", "pass", "--ledger", str(ledger),
+                act_test_id=acceptance["test"], act_test_hash=acceptance["sha256"],
+                act_verdict="pass")
+    return acts
+
+
 def phases(arm):
     if arm == "baseline":
         return ("solve",)
@@ -64,6 +284,11 @@ def _installed_evaluator_file(sandbox, path):
 def assess(root, claims, phase, store, attempt_id):
     if not isinstance(claims, dict) or not claims.get("claims"):
         raise ValueError("AEE phase must submit explicit claim JSON")
+    # PC-1: the phase's real verification artifacts are attached as
+    # distinct evidence sources before the assessment runs, so the
+    # engine scores independence from what the phase actually ran.
+    executed = executed_tests(claims, store, attempt_id)
+    claims = attach_verification_evidence(claims, executed)
     # Fresh project root prevents timestamp collisions and cross-attempt discovery.
     with tempfile.TemporaryDirectory(prefix="aee-assessment-") as folder:
         sandbox = Path(folder)
@@ -120,14 +345,45 @@ def assess(root, claims, phase, store, attempt_id):
         jsonschema.validate(composed, read_json(Path(root)/".specify/extensions/evaluator/schemas/evaluator-result.schema.json"))
         if composed["metadata"]["evaluator_count"] != 1:
             raise RuntimeError("composition did not consume the expected AEE result")
+        # PC-2: the lane pair rides on the returned result (never on
+        # the schema-valid composed record stored below); gate
+        # eligibility reads lane 1.
+        lanes = composed_lanes(composed)
+        gate_outcome = (lanes.get("lane_1") or {}).get("outcome") or composed["outcome"]
+        # PC-1: recorded acts land on the assessed bundle after the
+        # assessment, so the stored bundle carries the stage events,
+        # any ratification and the attached verification evidence.
+        acts = record_phase_acts(sandbox/"claims.json", claims, executed, phase, env) if executed else []
         refs = [store.artifact(p.read_bytes()) for p in sandbox.rglob("*.json")
                 if not _installed_evaluator_file(sandbox, p)]
+        acts_ledger = sandbox/"recorded-acts-ledger.jsonl"
+        if acts_ledger.is_file():
+            refs.append(store.artifact(acts_ledger.read_bytes()))
         refs.append(store.artifact(canonical(composed)))
-        report = f"# Evaluator report — after_{phase}\n\nOutcome: {composed['outcome']}\n\n"
+        report = f"# Evaluator report — after_{phase}\n\nOutcome: {composed['outcome']}\n"
+        report += f"Gate outcome (lane 1, machine verification): {gate_outcome}\n"
+        if lanes:
+            lane_2 = lanes.get("lane_2") or {}
+            report += ("Lane 2 (human acceptance): stages "
+                       + json.dumps(lane_2.get("stage_counts") or {}, sort_keys=True)
+                       + f"; claims below explained: {lane_2.get('claims_below_explained')}\n")
+        if acts:
+            report += (f"Recorded acts: {len(acts)} on a test-verdict basis "
+                       f"by {PIPELINE_ACTOR} (see the assessments record)\n")
+        report += "\n"
         report += "\n".join(json.dumps(f, sort_keys=True) for f in composed.get("findings", []))
         report += "\n\nNext action: " + json.dumps(composed.get("next_action")) + "\n"
         refs.append(store.artifact(report.encode()))
+        lane_2 = lanes.get("lane_2") or {}
         store.append("assessments", dict(attempt_id=attempt_id, phase=phase, timestamp=utc(),
                                           outcome=composed["outcome"],
+                                          gate_outcome=gate_outcome,
+                                          lane_1_outcome=(lanes.get("lane_1") or {}).get("outcome"),
+                                          lane_2_stage_counts=lane_2.get("stage_counts"),
+                                          recorded_acts=acts,
                                           aee_exit_code=result.returncode, artifacts=refs))
-        return composed
+        augmented = dict(composed)
+        augmented["gate_outcome"] = gate_outcome
+        if lanes:
+            augmented["lanes"] = lanes
+        return augmented

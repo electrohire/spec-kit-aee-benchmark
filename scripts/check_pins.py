@@ -44,13 +44,30 @@ def extension_version(base):
     return match.group(1)
 
 
+def engine_requirement(text):
+    """The engine requirement declared in pyproject text, as
+    (operator, version): the exact `==X.Y.Z` form, or the range
+    `>=X.Y.Z,<2` form adopted for the Spec 006 migration (protocol
+    amendment 2026-10-20, PC-5), whose floor is the recorded pin.
+    Returns None when no supported form is declared."""
+    match = re.search(r"applied-epistemic-engineering==([0-9.]+)", text)
+    if match:
+        return "==", match.group(1)
+    match = re.search(r"applied-epistemic-engineering>=([0-9.]+),\s*<\s*2", text)
+    if match:
+        return ">=", match.group(1)
+    return None
+
+
 def main():
     versions = json.loads((ROOT/"manifests/versions.json").read_text())
     errors = []
-    pin = re.search(r"applied-epistemic-engineering==([0-9.]+)",
-                    (ROOT/"pyproject.toml").read_text()).group(1)
-    if pin != versions["aee_engine"]:
-        errors.append(f"engine pin: pyproject requires =={pin}, "
+    requirement = engine_requirement((ROOT/"pyproject.toml").read_text())
+    if requirement is None:
+        errors.append("engine pin: pyproject declares no supported "
+                      "applied-epistemic-engineering requirement")
+    elif requirement[1] != versions["aee_engine"]:
+        errors.append(f"engine pin: pyproject requires {requirement[0]}{requirement[1]}, "
                       f"versions.json records {versions['aee_engine']}")
     registry = json.loads((ROOT/".specify/extensions/.registry").read_text())
     specify_pin = re.search(r"specify-cli==([0-9.]+)", (ROOT/"pyproject.toml").read_text())
