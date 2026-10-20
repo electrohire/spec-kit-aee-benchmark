@@ -1,5 +1,12 @@
 # Changelog
 
+## Audited stopped coding preparations, 2026-10-20
+
+* Publish the bounded four-attempt reconciliation: 23 physical requests, 241,913 known native tokens, 0 usage unknowns; setup and scored preparation remain separate.
+* Preserve frozen source/input/runtime/archive and receipt commitments, original incomplete required-test observations (1 pass / 3,519 unknown each), and all unattempted endpoints. No final delivery, scored AEE exposure, coding savings or payback is established.
+* Document the latest model path error and pending explicit stop-policy decision without changing solver files, benchmark policy or starting inference.
+
+
 ## Audited matched classification and authorized completion, 2026-10-20
 
 * Publish 720 independently graded matched HaluEval/RAGTruth judgments, raw/gate views, paired cluster intervals and symmetric 693-row original-worker sensitivity. Results do not establish a consistent material AEE advantage or token payback.

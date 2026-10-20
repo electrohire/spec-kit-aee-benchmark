@@ -49,3 +49,5 @@ Dependencies: foundation before US1/US2; tutorial can be developed independently
 * [ ] Validate upstream FeatureBench/SWE-EVO graders/resources and frozen candidate adapter, then execute established coding economics.
 * [ ] Admit first complete matched product baseline and connect serial local worker execution to queued exact-build requests.
 * [ ] Execute a real candidate release comparison and publish approval before any release is allowed.
+
+* [x] Publish bounded offline audit of stopped upstream episodes 01–04; preserve missing grades and all costs. This does not complete the coding economics comparison or authorize new inference.

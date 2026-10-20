@@ -13,6 +13,9 @@ All 720 scheduled judgments are independently graded across original03 and its e
 
 <!-- matched-recovery-results:end -->
 
+**Coding economics remains incomplete:** [four independently reconciled stopped attempts](reports/local/upstream-stopped-01-04-20261020/README.md) retained 23 physical requests and 241,913 native tokens, with 0 usage unknowns. Every attempt stopped in the first constitution phase; 11 later endpoints per attempt were unattempted and no scored AEE assessment occurred. No treatment savings or payback can be inferred. A proposed change to score model-failed trajectories and continue independent comparisons awaits an explicit human decision; no new inference is active.
+
+
 
 This repository compares a generic agent, Spec Kit and Spec Kit+AEE on established upstream tasks. It owns the thin treatment/provenance/accounting adapter, not a replacement hallucination dataset or coding grader. No 100% coverage target.
 
@@ -20,7 +23,7 @@ This repository compares a generic agent, Spec Kit and Spec Kit+AEE on establish
 | --- | --- | --- |
 | Can the model detect supplied hallucinations? | [HaluEval 100/120; RAGTruth 97/120](reports/hallucinations/external-01-20261019/README.md) | Complete model-only subset results; 83.3%/80.8%, 213457 native tokens, 0 usage unknowns |
 | Does Spec Kit or AEE materially help? | 720 graded judgments; explicitly authorized nine-cell recovery; intervals cross zero | No consistent material advantage established |
-| When does workflow overhead pay back? | Latest FeatureBench/SWE-EVO attempts stopped before implementation; no complete coding comparison | No observed short/long-horizon savings yet |
+| When does workflow overhead pay back? | [Four audited stopped attempts](reports/local/upstream-stopped-01-04-20261020/README.md); no complete coding comparison | No observed short/long-horizon savings yet |
 | Can builds gate future releases? | Content-bound requests + strict comparison/verifier; no accepted release baseline yet | Release remains blocked without full audited exact-build approval |
 
 [Harness I/O diagram and results guide](docs/benchmark-harness.md) · [Release gate diagram and policy](docs/benchmark-release-gates.md) · [Long-horizon design](docs/long-horizon-economics-plan.md) · [Resume](START_HERE.md)
