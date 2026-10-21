@@ -170,7 +170,10 @@ def test_phase_guard_call_cap_trips_even_when_tokens_are_small(tmp_path):
 
 
 def test_phase_guard_baseline_loop_is_unguarded(tmp_path):
-    script = {"solve": [("shell", 40000, 0)] * 45 + [("done", 100, 50)]}
+    # 45 shell calls and 1,350,000 charged tokens: past BOTH phase
+    # guard bounds (40 calls / 900,000 tokens), inside the attempt
+    # cap, which continues to apply to the baseline arm unchanged.
+    script = {"solve": [("shell", 30000, 0)] * 45 + [("done", 100, 50)]}
     store, provider, result = run_attempt(tmp_path, "baseline", script)
     assert "phase_exhausted" not in result
     assert len([c for c in store.events("calls") if c["phase"] == "solve"]) == 46
@@ -327,7 +330,8 @@ def test_busy_or_unprovable_worker_blocks_attempts_and_halts_at_three(
     store = run_campaign(tmp_path, monkeypatch,
                          [entry("TASK_A", "spec_kit", 1), entry("TASK_A", "spec_kit", 2),
                           entry("TASK_A", "baseline", 1), entry("TASK_A", "baseline", 2)],
-                         scripts, cfg_extra={"provider_backend": "local"},
+                         scripts, cfg_extra={"provider_backend": "local",
+                                             "worker_availability_probe": True},
                          probe=lambda policy=None: probe)
     assert [a for a in store.events("attempts") if a["status"] == "started"] == []
     kinds = [e["kind"] for e in store.events("worker_probes")]
@@ -339,7 +343,8 @@ def test_free_worker_probe_is_recorded_on_the_attempt(tmp_path, monkeypatch):
     scripts = {"TASK_A--campaign-setup": construction_script(),
                "TASK_A--baseline--r1": attempt_script()}
     store = run_campaign(tmp_path, monkeypatch, [entry("TASK_A", "baseline")],
-                         scripts, cfg_extra={"provider_backend": "local"},
+                         scripts, cfg_extra={"provider_backend": "local",
+                                             "worker_availability_probe": True},
                          probe=lambda policy=None: probe)
     started = [a for a in store.events("attempts") if a["status"] == "started"]
     assert started and started[0]["worker_probe"]["busy"] is False

@@ -752,8 +752,11 @@ def run(root, manifest, output, arm=None, smoke=False):
             # probe, which cannot prove the worker free) means the
             # attempt does not start and a premise event is recorded;
             # three blocks in a stage halt the stage for owner review.
+            # Like setup sharing, the probe is a declared campaign
+            # behavior: the manifest's config opts in (the Stage 1R
+            # freeze does); other harnesses' manifests are untouched.
             probe = None
-            if local_backend(cfg):
+            if local_backend(cfg) and cfg.get("worker_availability_probe"):
                 probe = probe_worker(transport_policy(cfg))
                 if probe.get("busy") or probe.get("error"):
                     blocks = sum(1 for e in store.events("worker_probes")
