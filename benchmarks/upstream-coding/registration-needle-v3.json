@@ -1,0 +1,1254 @@
+{
+  "schema": "needle-upstream-coding-registration-v3",
+  "status": "FROZEN - AMENDMENT 1 (setup by construction, phase guard, streamed transport, worker-availability probe, program budget guard; supersedes registration-needle-v2.json for the Stage 1R run; the v2 freeze, its tree, store, and records are never appended to or rewritten)",
+  "study": "Needle program Workstream B: coding-economics study, FeatureBench Fast v1.1 level-1, arms baseline/spec_kit/spec_kit_aee, seeds 20261021/20261022, 36 attempts task-major",
+  "dataset": {
+    "source": "Hugging Face LiberCoders/FeatureBench, split fast, data/fast-00000-of-00001.parquet",
+    "pinned_revision": "76b4a4566e04f4bcc13c35125d4f301791efa736",
+    "parquet_sha256": "d775855a031b0fb5932ff7fdf4512ce733fbc6716528395bf15cbad22df5d2c3",
+    "upstream_featurebench_commit": "8d4e347ec57546685c5a87e8676bf575db022ea6"
+  },
+  "selection_rule": "Order the Fast v1.1 level-1 instances by the SHA-256 of the string \"needle-01:\" + instance_id (UTF-8, ascending hex order), after applying the pre-named exclusions; take the first six that pass the pre-registered resource-feasibility check. An instance that proves infeasible before freeze is replaced by the next in hash order, with the reason recorded; after freeze, nothing is replaced.",
+  "selection_reexecution": {
+    "executed_on": "TRISTEN-DESKTOP, ~/needle-campaign (build_inputs.py)",
+    "full_98_match_prep": true,
+    "top13_match_prep": true,
+    "eligible_count": 98
+  },
+  "exclusions": [
+    {
+      "instance_id": "pandas-dev__pandas.82fa2715.test_list_accessor.7ab0b2ea.lv1",
+      "kind": "FeatureBench Fast v1.1 level-1 instance",
+      "reason": "Named endpoint of the stopped campaign (plan B1 exclusion 1)",
+      "sources": [
+        "benchmarks/upstream-coding/registration-draft-v1.json tasks[0]",
+        "scripts/prepare_upstream_coding_inputs.py EXPECTED_IDS[0]",
+        "reports/local/upstream-stopped-01-04-20261020 (stopped-campaign audit)"
+      ]
+    },
+    {
+      "instance_id": "astropy__astropy.b0db0daa.test_quantity_erfa_ufuncs.3fc54395.lv1",
+      "kind": "FeatureBench Fast v1.1 level-1 instance",
+      "reason": "Named endpoint of the stopped campaign (plan B1 exclusion 1)",
+      "sources": [
+        "benchmarks/upstream-coding/registration-draft-v1.json tasks[1]",
+        "scripts/prepare_upstream_coding_inputs.py EXPECTED_IDS[1]",
+        "reports/local/upstream-stopped-01-04-20261020 (stopped-campaign audit)"
+      ]
+    },
+    {
+      "instance_id": "dask__dask_2023.6.0_2023.6.1",
+      "kind": "SWE-EVO Dask sequence task (NOT a FeatureBench Fast instance; cannot intersect the level-1 pool)",
+      "reason": "Every Dask sequence task is excluded in advance (plan B1 exclusion 2)",
+      "sources": [
+        "benchmarks/upstream-coding/registration-draft-v1.json tasks[2]",
+        "scripts/prepare_upstream_coding_inputs.py EXPECTED_IDS[2]"
+      ]
+    },
+    {
+      "instance_id": "dask__dask_2023.6.1_2023.7.0",
+      "kind": "SWE-EVO Dask sequence task (NOT a FeatureBench Fast instance; cannot intersect the level-1 pool)",
+      "reason": "Every Dask sequence task is excluded in advance (plan B1 exclusion 2)",
+      "sources": [
+        "benchmarks/upstream-coding/registration-draft-v1.json tasks[3]",
+        "scripts/prepare_upstream_coding_inputs.py EXPECTED_IDS[3]"
+      ]
+    },
+    {
+      "instance_id": "pydantic__pydantic_v2.7.1_v2.7.2",
+      "kind": "SWE-EVO unadmitted candidate (NOT a FeatureBench Fast instance; cannot intersect the level-1 pool)",
+      "reason": "Instance appearing in an earlier campaign/study record in the repo (plan B1 exclusion 3)",
+      "sources": [
+        "benchmarks/upstream-coding/registration-draft-v1.json unadmitted_candidates[0]",
+        "docs/upstream-coding-adapter-readiness.md (Pydantic candidates discussion; note: the readiness doc speaks of two Pydantic candidates but only this one id is recorded anywhere in the repo)"
+      ]
+    }
+  ],
+  "replacements": [
+    {
+      "hash_rank": 1,
+      "instance_id": "scikit-learn__scikit-learn.5741bac9.test_arff_parser.ecde431a.lv1",
+      "reason": "Pre-freeze infeasible: offline preparation via the frozen TaskResource fails at initial snapshot capture (ValueError: upstream candidate file exceeds the frozen limit, benchmark_runner.upstream_tree_transfer). Replaced by the next feasible instances in hash order per plan B1."
+    },
+    {
+      "hash_rank": 6,
+      "instance_id": "mlflow__mlflow.93dab383.test_trace_correlation.53c200a6.lv1",
+      "reason": "Pre-freeze infeasible: TaskResource preparation itself succeeds but initial snapshot capture fails (bridge reader assertion: single candidate file limit). Same failure for every mlflow instance evaluated (ranks 6, 13, 15)."
+    },
+    {
+      "hash_rank": 13,
+      "instance_id": "mlflow__mlflow.93dab383.test_scorer_description.9163195a.lv1",
+      "reason": "Designated real-smoke nominee in the prep, but infeasible for the same mlflow snapshot-capture failure; the nominee role moves down the hash order by the same replacement rule."
+    },
+    {
+      "hash_rank": 15,
+      "instance_id": "mlflow__mlflow.93dab383.test_presigned_url_artifact_repo.8d57288e.lv1",
+      "reason": "Pre-freeze infeasible: same mlflow snapshot-capture failure."
+    }
+  ],
+  "selection_outcome": {
+    "selected_six_hash_ranks": [
+      2,
+      3,
+      4,
+      5,
+      7,
+      8
+    ],
+    "runners_up_hash_ranks": [
+      9,
+      10,
+      11,
+      12,
+      14,
+      16
+    ],
+    "real_smoke_nominee": {
+      "hash_rank": 17,
+      "instance_id": "pandas-dev__pandas.82fa2715.test_formats.05080a4e.lv1",
+      "note": "First feasible instance in hash order outside the selected six and the six runners-up; runs under the separate development manifest freeze-needle-smoke.json."
+    }
+  },
+  "tasks": [
+    {
+      "hash_rank": 2,
+      "instance_id": "pydantic__pydantic.e1dcaf9e.test_pipeline.c9b08962.lv1",
+      "repo": "pydantic/pydantic",
+      "base_commit": "4166ea100496ce14f7bf767b5144d01b080962b2",
+      "level": 1,
+      "selection_hash_sha256": "05226109407c4963901834f56026f46423b445ce475b40b943d0455a00d0552e",
+      "fail_to_pass_test_files": [
+        "tests/test_pipeline.py"
+      ],
+      "prepared_baseline_commit": "4166ea100496ce14f7bf767b5144d01b080962b2",
+      "prepared_baseline_tree": "b3c96e55ba5f3011fdd2ac0b00c1fbdcd781768e",
+      "raw_upstream_base_commit": "e1dcaf9e68fc89731b45235e53245447edf35084",
+      "raw_solver_image_reference": "docker.io/libercoders/featurebench-specs_pydantic-instance_78693714",
+      "raw_solver_image_id": "sha256:755c424c73170faf66d88006022ed2733f8e269446f330f301d762b0d0ab7d6b",
+      "raw_solver_image_repo_digests": [
+        "libercoders/featurebench-specs_pydantic-instance_78693714@sha256:755c424c73170faf66d88006022ed2733f8e269446f330f301d762b0d0ab7d6b"
+      ],
+      "solver_image_reference": "needle-prepared/pydantic-test_pipeline@sha256:b217eb3f2ce72bde8a3475949c4e88aefdb40213a39f01b65774d1940d19207c",
+      "solver_image_id": "sha256:b217eb3f2ce72bde8a3475949c4e88aefdb40213a39f01b65774d1940d19207c",
+      "solver_image_name": "needle-prepared/pydantic-test_pipeline"
+    },
+    {
+      "hash_rank": 3,
+      "instance_id": "astropy__astropy.b0db0daa.test_converter.2ef0539f.lv1",
+      "repo": "astropy/astropy",
+      "base_commit": "f76f0c1258fc7534c91fd6ef55cb3da38f58e1dd",
+      "level": 1,
+      "selection_hash_sha256": "05c7374b5d1ac92151034b5edbb309d31e9bce506e94b160e1ef15c5ca3cd7c5",
+      "fail_to_pass_test_files": [
+        "astropy/io/votable/tests/test_converter.py"
+      ],
+      "prepared_baseline_commit": "f76f0c1258fc7534c91fd6ef55cb3da38f58e1dd",
+      "prepared_baseline_tree": "164d1ff47e007aea7cbf5c0feaf8a430a836cc5c",
+      "raw_upstream_base_commit": "b0db0daac6b851596851cb43e5456fb6c916c071",
+      "raw_solver_image_reference": "docker.io/libercoders/featurebench-specs_astropy-instance_493bb78b",
+      "raw_solver_image_id": "sha256:4b5e7489d8bee8e20b53f94c74833e6d9ee0163673ac4a36eecb0372ef01fda2",
+      "raw_solver_image_repo_digests": [
+        "libercoders/featurebench-specs_astropy-instance_493bb78b@sha256:4b5e7489d8bee8e20b53f94c74833e6d9ee0163673ac4a36eecb0372ef01fda2"
+      ],
+      "solver_image_reference": "needle-prepared/astropy-test_converter@sha256:023c638292e008e250dade5b29c90b079e3cc2a7aad99d55956e8ab29ab892c9",
+      "solver_image_id": "sha256:023c638292e008e250dade5b29c90b079e3cc2a7aad99d55956e8ab29ab892c9",
+      "solver_image_name": "needle-prepared/astropy-test_converter"
+    },
+    {
+      "hash_rank": 4,
+      "instance_id": "pypa__hatch.ff4b4040.test_fmt.782c88a8.lv1",
+      "repo": "pypa/hatch",
+      "base_commit": "3b3b68136b0ffa7681ca5375def5e491b309ecc4",
+      "level": 1,
+      "selection_hash_sha256": "0707b1c848e5515f9364b1004dacfaa95e04e62a458e5b42821ff68a9dd16cd1",
+      "fail_to_pass_test_files": [
+        "tests/cli/fmt/test_fmt.py"
+      ],
+      "prepared_baseline_commit": "3b3b68136b0ffa7681ca5375def5e491b309ecc4",
+      "prepared_baseline_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+      "raw_upstream_base_commit": "ff4b4040fe84c9a5911137791695380d976577dc",
+      "raw_solver_image_reference": "docker.io/libercoders/featurebench-specs_hatch-instance_02086956",
+      "raw_solver_image_id": "sha256:70c443280ebe701fe0b6ca24d22c139f3b5c92817a5c1c16c2fc5762b67a4fb1",
+      "raw_solver_image_repo_digests": [
+        "libercoders/featurebench-specs_hatch-instance_02086956@sha256:70c443280ebe701fe0b6ca24d22c139f3b5c92817a5c1c16c2fc5762b67a4fb1"
+      ],
+      "solver_image_reference": "needle-prepared/hatch-test_fmt@sha256:2bf644053280686c990a9c18b382146be6ed1a0f18b58c61291cc13169ba9fb6",
+      "solver_image_id": "sha256:2bf644053280686c990a9c18b382146be6ed1a0f18b58c61291cc13169ba9fb6",
+      "solver_image_name": "needle-prepared/hatch-test_fmt"
+    },
+    {
+      "hash_rank": 5,
+      "instance_id": "sphinx-doc__sphinx.e347e59c.test_util_nodes.08cdc62d.lv1",
+      "repo": "sphinx-doc/sphinx",
+      "base_commit": "c9da82338ed2e3ae670f96d39c22470e666b9b35",
+      "level": 1,
+      "selection_hash_sha256": "074faa3a3b323c79869d4f4bff327c484bba5f75bfbd9d7927d719331a60710e",
+      "fail_to_pass_test_files": [
+        "tests/test_util/test_util_nodes.py"
+      ],
+      "prepared_baseline_commit": "c9da82338ed2e3ae670f96d39c22470e666b9b35",
+      "prepared_baseline_tree": "d4e0a359ff0427f1db28186a9b379e23bc288205",
+      "raw_upstream_base_commit": "e347e59ccc27a646c974526252e39a63870f6ea3",
+      "raw_solver_image_reference": "docker.io/libercoders/featurebench-specs_sphinx-instance_6191afb1",
+      "raw_solver_image_id": "sha256:15b434473e16386e33c864d8b7f4a3bddb9c5585961758c0ed0f06b51b3f0268",
+      "raw_solver_image_repo_digests": [
+        "libercoders/featurebench-specs_sphinx-instance_6191afb1@sha256:15b434473e16386e33c864d8b7f4a3bddb9c5585961758c0ed0f06b51b3f0268"
+      ],
+      "solver_image_reference": "needle-prepared/sphinx-test_util_nodes@sha256:9557356f2311c7201c54b56c449b55604fca1084e2c8d5046f90cde66cb80a5e",
+      "solver_image_id": "sha256:9557356f2311c7201c54b56c449b55604fca1084e2c8d5046f90cde66cb80a5e",
+      "solver_image_name": "needle-prepared/sphinx-test_util_nodes"
+    },
+    {
+      "hash_rank": 7,
+      "instance_id": "mwaskom__seaborn.7001ebe7.test_statistics.0f2ae277.lv1",
+      "repo": "mwaskom/seaborn",
+      "base_commit": "9d71708e64cc928182c3fe3b32c3b3f3334d79d7",
+      "level": 1,
+      "selection_hash_sha256": "08b949c84c746fe32d57b501aacbe8d8a9dae4a68cd05248db539f70a9fb507a",
+      "fail_to_pass_test_files": [
+        "tests/test_statistics.py"
+      ],
+      "prepared_baseline_commit": "9d71708e64cc928182c3fe3b32c3b3f3334d79d7",
+      "prepared_baseline_tree": "5f41a7cee113d60c31940f81683990e518ca07bf",
+      "raw_upstream_base_commit": "7001ebe72423238e99c0434a2ef0a0ebc9cb55c1",
+      "raw_solver_image_reference": "docker.io/libercoders/featurebench-specs_seaborn-instance_52738fbb",
+      "raw_solver_image_id": "sha256:fe27a1a5205fa0939453e79d0f40c74cb402bad8ea1d42fff7de5e2106e77ce1",
+      "raw_solver_image_repo_digests": [
+        "libercoders/featurebench-specs_seaborn-instance_52738fbb@sha256:fe27a1a5205fa0939453e79d0f40c74cb402bad8ea1d42fff7de5e2106e77ce1"
+      ],
+      "solver_image_reference": "needle-prepared/seaborn-test_statistics@sha256:23003b139a3d622dbb589dc093f5fcdae3c58e1fb05dc1c93cd4421d5e8796c2",
+      "solver_image_id": "sha256:23003b139a3d622dbb589dc093f5fcdae3c58e1fb05dc1c93cd4421d5e8796c2",
+      "solver_image_name": "needle-prepared/seaborn-test_statistics"
+    },
+    {
+      "hash_rank": 8,
+      "instance_id": "pydata__xarray.97f3a746.test_backends_chunks.fa55f68a.lv1",
+      "repo": "pydata/xarray",
+      "base_commit": "606a7ed75bf384009c5a763f4ca9b2e58381f783",
+      "level": 1,
+      "selection_hash_sha256": "08d27c5d57a15dfa1bff5a8328f6683651fbadce9f80e1c6ca2201feafcb36ce",
+      "fail_to_pass_test_files": [
+        "xarray/tests/test_backends_chunks.py"
+      ],
+      "prepared_baseline_commit": "606a7ed75bf384009c5a763f4ca9b2e58381f783",
+      "prepared_baseline_tree": "a88f5cf47fe2acc15115ae5b0638b203eecee428",
+      "raw_upstream_base_commit": "97f3a7465a66638f68129581b658853a3992dd89",
+      "raw_solver_image_reference": "docker.io/libercoders/featurebench-specs_xarray-instance_62de996a",
+      "raw_solver_image_id": "sha256:075803e6495efc4aa64c015effcae52986a62352655127f69a262dfbedfbb7d7",
+      "raw_solver_image_repo_digests": [
+        "libercoders/featurebench-specs_xarray-instance_62de996a@sha256:075803e6495efc4aa64c015effcae52986a62352655127f69a262dfbedfbb7d7"
+      ],
+      "solver_image_reference": "needle-prepared/xarray-test_backends_chunks@sha256:d01711950a830257f6523f83d094ddce30e941029cd582b22ff23f6dd9650680",
+      "solver_image_id": "sha256:d01711950a830257f6523f83d094ddce30e941029cd582b22ff23f6dd9650680",
+      "solver_image_name": "needle-prepared/xarray-test_backends_chunks"
+    }
+  ],
+  "evaluated_instances": [
+    {
+      "hash_rank": 1,
+      "instance_id": "scikit-learn__scikit-learn.5741bac9.test_arff_parser.ecde431a.lv1",
+      "repo": "scikit-learn/scikit-learn",
+      "base_commit": "5741bac9a1ccc9c43e3597a796e430ef9eeedc0f",
+      "level": 1,
+      "selection_hash_sha256": "030f043fff41d1a7d44a8bfaf5183f43451b721677cfafab7174ddb2040bc359",
+      "fail_to_pass_test_files": [
+        "sklearn/datasets/tests/test_arff_parser.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_scikit_learn-instance_d734ea34",
+      "solver_image_id": "sha256:a9bd4207ee63bfdc8e96f99b0867c6248c3bf2700fdc4deb2442d316ce6a3ade",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_scikit_learn-instance_d734ea34@sha256:a9bd4207ee63bfdc8e96f99b0867c6248c3bf2700fdc4deb2442d316ce6a3ade"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": false,
+        "prepared_baseline_commit": null,
+        "prepared_baseline_tree": null,
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": false,
+        "raw_image_git_status_lines": 3,
+        "raw_image_git_status_head": [
+          "?? =0.11.0",
+          "?? =0.16.0",
+          "?? =3.1.2"
+        ],
+        "grader_smoke": {
+          "grader_smoke_pass": true,
+          "basis": "plan B2.2 criterion: pristine not resolved; reference patch applied, all FAIL_TO_PASS succeed, pass_rate 1.0",
+          "upstream_resolved_flag_gold": true,
+          "pass_to_pass_failures_on_gold": [],
+          "pristine": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": false,
+            "pass_rate": 0.0,
+            "fail_to_pass_success": 0,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 0,
+            "pass_to_pass_failure": 0
+          },
+          "gold": {
+            "grade_execution_complete": true,
+            "resolved": true,
+            "patch_successfully_applied": true,
+            "pass_rate": 1.0,
+            "fail_to_pass_success": 10,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 433,
+            "pass_to_pass_failure": 0
+          }
+        },
+        "feasible": false,
+        "prep_error": "AdmissionError('upstream resource preparation failed; retain controller output')"
+      }
+    },
+    {
+      "hash_rank": 2,
+      "instance_id": "pydantic__pydantic.e1dcaf9e.test_pipeline.c9b08962.lv1",
+      "repo": "pydantic/pydantic",
+      "base_commit": "e1dcaf9e68fc89731b45235e53245447edf35084",
+      "level": 1,
+      "selection_hash_sha256": "05226109407c4963901834f56026f46423b445ce475b40b943d0455a00d0552e",
+      "fail_to_pass_test_files": [
+        "tests/test_pipeline.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_pydantic-instance_78693714",
+      "solver_image_id": "sha256:755c424c73170faf66d88006022ed2733f8e269446f330f301d762b0d0ab7d6b",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_pydantic-instance_78693714@sha256:755c424c73170faf66d88006022ed2733f8e269446f330f301d762b0d0ab7d6b"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": true,
+        "prepared_baseline_commit": "42993406b678764ca5ed64bb3dca4fd069e9d8dc",
+        "prepared_baseline_tree": "b3c96e55ba5f3011fdd2ac0b00c1fbdcd781768e",
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "raw_image_git_status_lines": 1,
+        "raw_image_git_status_head": [
+          "D tests/pydantic_core"
+        ],
+        "grader_smoke": {
+          "grader_smoke_pass": true,
+          "basis": "plan B2.2 criterion: pristine not resolved; reference patch applied, all FAIL_TO_PASS succeed, pass_rate 1.0",
+          "upstream_resolved_flag_gold": true,
+          "pass_to_pass_failures_on_gold": [],
+          "pristine": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": false,
+            "pass_rate": 0.0,
+            "fail_to_pass_success": 0,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 0,
+            "pass_to_pass_failure": 0
+          },
+          "gold": {
+            "grade_execution_complete": true,
+            "resolved": true,
+            "patch_successfully_applied": true,
+            "pass_rate": 1.0,
+            "fail_to_pass_success": 64,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 47,
+            "pass_to_pass_failure": 0
+          }
+        },
+        "feasible": true,
+        "prep_error": null
+      }
+    },
+    {
+      "hash_rank": 3,
+      "instance_id": "astropy__astropy.b0db0daa.test_converter.2ef0539f.lv1",
+      "repo": "astropy/astropy",
+      "base_commit": "b0db0daac6b851596851cb43e5456fb6c916c071",
+      "level": 1,
+      "selection_hash_sha256": "05c7374b5d1ac92151034b5edbb309d31e9bce506e94b160e1ef15c5ca3cd7c5",
+      "fail_to_pass_test_files": [
+        "astropy/io/votable/tests/test_converter.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_astropy-instance_493bb78b",
+      "solver_image_id": "sha256:4b5e7489d8bee8e20b53f94c74833e6d9ee0163673ac4a36eecb0372ef01fda2",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_astropy-instance_493bb78b@sha256:4b5e7489d8bee8e20b53f94c74833e6d9ee0163673ac4a36eecb0372ef01fda2"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": true,
+        "prepared_baseline_commit": "1b4cb7070082c28b0259c9d226809f39fb7b1435",
+        "prepared_baseline_tree": "164d1ff47e007aea7cbf5c0feaf8a430a836cc5c",
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "raw_image_git_status_lines": 0,
+        "raw_image_git_status_head": [],
+        "grader_smoke": {
+          "grader_smoke_pass": true,
+          "basis": "plan B2.2 criterion: pristine not resolved; reference patch applied, all FAIL_TO_PASS succeed, pass_rate 1.0",
+          "upstream_resolved_flag_gold": false,
+          "pass_to_pass_failures_on_gold": [
+            "astropy/coordinates/tests/test_finite_difference_velocities.py::test_gcrs_diffs"
+          ],
+          "pristine": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": false,
+            "pass_rate": 0.0,
+            "fail_to_pass_success": 0,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 0,
+            "pass_to_pass_failure": 0
+          },
+          "gold": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": true,
+            "pass_rate": 1.0,
+            "fail_to_pass_success": 27,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 53,
+            "pass_to_pass_failure": 1
+          }
+        },
+        "feasible": true,
+        "prep_error": null
+      }
+    },
+    {
+      "hash_rank": 4,
+      "instance_id": "pypa__hatch.ff4b4040.test_fmt.782c88a8.lv1",
+      "repo": "pypa/hatch",
+      "base_commit": "ff4b4040fe84c9a5911137791695380d976577dc",
+      "level": 1,
+      "selection_hash_sha256": "0707b1c848e5515f9364b1004dacfaa95e04e62a458e5b42821ff68a9dd16cd1",
+      "fail_to_pass_test_files": [
+        "tests/cli/fmt/test_fmt.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_hatch-instance_02086956",
+      "solver_image_id": "sha256:70c443280ebe701fe0b6ca24d22c139f3b5c92817a5c1c16c2fc5762b67a4fb1",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_hatch-instance_02086956@sha256:70c443280ebe701fe0b6ca24d22c139f3b5c92817a5c1c16c2fc5762b67a4fb1"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": true,
+        "prepared_baseline_commit": "e9564a645e611437976d94b3a26d82356cfa2b49",
+        "prepared_baseline_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "raw_image_git_status_lines": 0,
+        "raw_image_git_status_head": [],
+        "grader_smoke": {
+          "grader_smoke_pass": true,
+          "basis": "plan B2.2 criterion: pristine not resolved; reference patch applied, all FAIL_TO_PASS succeed, pass_rate 1.0",
+          "upstream_resolved_flag_gold": true,
+          "pass_to_pass_failures_on_gold": [],
+          "pristine": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": false,
+            "pass_rate": 0.0,
+            "fail_to_pass_success": 0,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 0,
+            "pass_to_pass_failure": 0
+          },
+          "gold": {
+            "grade_execution_complete": true,
+            "resolved": true,
+            "patch_successfully_applied": true,
+            "pass_rate": 1.0,
+            "fail_to_pass_success": 19,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 144,
+            "pass_to_pass_failure": 0
+          }
+        },
+        "feasible": true,
+        "prep_error": null
+      }
+    },
+    {
+      "hash_rank": 5,
+      "instance_id": "sphinx-doc__sphinx.e347e59c.test_util_nodes.08cdc62d.lv1",
+      "repo": "sphinx-doc/sphinx",
+      "base_commit": "e347e59ccc27a646c974526252e39a63870f6ea3",
+      "level": 1,
+      "selection_hash_sha256": "074faa3a3b323c79869d4f4bff327c484bba5f75bfbd9d7927d719331a60710e",
+      "fail_to_pass_test_files": [
+        "tests/test_util/test_util_nodes.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_sphinx-instance_6191afb1",
+      "solver_image_id": "sha256:15b434473e16386e33c864d8b7f4a3bddb9c5585961758c0ed0f06b51b3f0268",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_sphinx-instance_6191afb1@sha256:15b434473e16386e33c864d8b7f4a3bddb9c5585961758c0ed0f06b51b3f0268"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": true,
+        "prepared_baseline_commit": "5affd560d58b65a07ec3b4d494065a58b2dfaebc",
+        "prepared_baseline_tree": "d4e0a359ff0427f1db28186a9b379e23bc288205",
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "raw_image_git_status_lines": 2,
+        "raw_image_git_status_head": [
+          "M tests/roots/test-root/wrongenc.inc",
+          " M tests/roots/test-warnings/wrongenc.inc"
+        ],
+        "grader_smoke": {
+          "grader_smoke_pass": true,
+          "basis": "plan B2.2 criterion: pristine not resolved; reference patch applied, all FAIL_TO_PASS succeed, pass_rate 1.0",
+          "upstream_resolved_flag_gold": true,
+          "pass_to_pass_failures_on_gold": [],
+          "pristine": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": false,
+            "pass_rate": 0.0,
+            "fail_to_pass_success": 0,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 0,
+            "pass_to_pass_failure": 0
+          },
+          "gold": {
+            "grade_execution_complete": true,
+            "resolved": true,
+            "patch_successfully_applied": true,
+            "pass_rate": 1.0,
+            "fail_to_pass_success": 27,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 95,
+            "pass_to_pass_failure": 0
+          }
+        },
+        "feasible": true,
+        "prep_error": null
+      }
+    },
+    {
+      "hash_rank": 6,
+      "instance_id": "mlflow__mlflow.93dab383.test_trace_correlation.53c200a6.lv1",
+      "repo": "mlflow/mlflow",
+      "base_commit": "93dab383a1a3fc9882ebc32283ad2a05d79ff70f",
+      "level": 1,
+      "selection_hash_sha256": "079d516dd2c279d9603f4846b2f7173d543f86395de7b5b799e4bcef5cf0af25",
+      "fail_to_pass_test_files": [
+        "tests/store/analytics/test_trace_correlation.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_mlflow-instance_efffa87e",
+      "solver_image_id": "sha256:5a63b594bc99a6dcd876289974979606b276edd49e966020111db3590c40add4",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_mlflow-instance_efffa87e@sha256:5a63b594bc99a6dcd876289974979606b276edd49e966020111db3590c40add4"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": false,
+        "prepared_baseline_commit": null,
+        "prepared_baseline_tree": null,
+        "solver_image_audit_pass": false,
+        "prepared_tree_fail_to_pass_masked": null,
+        "raw_image_git_status_lines": null,
+        "raw_image_git_status_head": null,
+        "grader_smoke": {
+          "grader_smoke_pass": false,
+          "basis": "plan B2.2 criterion: pristine not resolved; reference patch applied, all FAIL_TO_PASS succeed, pass_rate 1.0",
+          "upstream_resolved_flag_gold": null,
+          "pass_to_pass_failures_on_gold": [],
+          "pristine": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": null,
+            "pass_rate": null,
+            "fail_to_pass_success": 0,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 0,
+            "pass_to_pass_failure": 0
+          },
+          "gold": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": null,
+            "pass_rate": null,
+            "fail_to_pass_success": 0,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 0,
+            "pass_to_pass_failure": 0
+          }
+        },
+        "feasible": false,
+        "prep_error": "AdmissionError('snapshot reader failed; preserve response and halt')"
+      }
+    },
+    {
+      "hash_rank": 7,
+      "instance_id": "mwaskom__seaborn.7001ebe7.test_statistics.0f2ae277.lv1",
+      "repo": "mwaskom/seaborn",
+      "base_commit": "7001ebe72423238e99c0434a2ef0a0ebc9cb55c1",
+      "level": 1,
+      "selection_hash_sha256": "08b949c84c746fe32d57b501aacbe8d8a9dae4a68cd05248db539f70a9fb507a",
+      "fail_to_pass_test_files": [
+        "tests/test_statistics.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_seaborn-instance_52738fbb",
+      "solver_image_id": "sha256:fe27a1a5205fa0939453e79d0f40c74cb402bad8ea1d42fff7de5e2106e77ce1",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_seaborn-instance_52738fbb@sha256:fe27a1a5205fa0939453e79d0f40c74cb402bad8ea1d42fff7de5e2106e77ce1"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": true,
+        "prepared_baseline_commit": "f0cc3768e967078f6fea0aab07efd4f969121770",
+        "prepared_baseline_tree": "5f41a7cee113d60c31940f81683990e518ca07bf",
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "raw_image_git_status_lines": 0,
+        "raw_image_git_status_head": [],
+        "grader_smoke": {
+          "grader_smoke_pass": true,
+          "basis": "plan B2.2 criterion: pristine not resolved; reference patch applied, all FAIL_TO_PASS succeed, pass_rate 1.0",
+          "upstream_resolved_flag_gold": true,
+          "pass_to_pass_failures_on_gold": [],
+          "pristine": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": false,
+            "pass_rate": 0.0,
+            "fail_to_pass_success": 0,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 0,
+            "pass_to_pass_failure": 0
+          },
+          "gold": {
+            "grade_execution_complete": true,
+            "resolved": true,
+            "patch_successfully_applied": true,
+            "pass_rate": 1.0,
+            "fail_to_pass_success": 69,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 321,
+            "pass_to_pass_failure": 0
+          }
+        },
+        "feasible": true,
+        "prep_error": null
+      }
+    },
+    {
+      "hash_rank": 8,
+      "instance_id": "pydata__xarray.97f3a746.test_backends_chunks.fa55f68a.lv1",
+      "repo": "pydata/xarray",
+      "base_commit": "97f3a7465a66638f68129581b658853a3992dd89",
+      "level": 1,
+      "selection_hash_sha256": "08d27c5d57a15dfa1bff5a8328f6683651fbadce9f80e1c6ca2201feafcb36ce",
+      "fail_to_pass_test_files": [
+        "xarray/tests/test_backends_chunks.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_xarray-instance_62de996a",
+      "solver_image_id": "sha256:075803e6495efc4aa64c015effcae52986a62352655127f69a262dfbedfbb7d7",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_xarray-instance_62de996a@sha256:075803e6495efc4aa64c015effcae52986a62352655127f69a262dfbedfbb7d7"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": true,
+        "prepared_baseline_commit": "42fad663fc58381b014bc6d33749d96f812f484d",
+        "prepared_baseline_tree": "a88f5cf47fe2acc15115ae5b0638b203eecee428",
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "raw_image_git_status_lines": 0,
+        "raw_image_git_status_head": [],
+        "grader_smoke": {
+          "grader_smoke_pass": true,
+          "basis": "plan B2.2 criterion: pristine not resolved; reference patch applied, all FAIL_TO_PASS succeed, pass_rate 1.0",
+          "upstream_resolved_flag_gold": true,
+          "pass_to_pass_failures_on_gold": [],
+          "pristine": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": false,
+            "pass_rate": 0.0,
+            "fail_to_pass_success": 0,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 0,
+            "pass_to_pass_failure": 0
+          },
+          "gold": {
+            "grade_execution_complete": true,
+            "resolved": true,
+            "patch_successfully_applied": true,
+            "pass_rate": 1.0,
+            "fail_to_pass_success": 18,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 101,
+            "pass_to_pass_failure": 0
+          }
+        },
+        "feasible": true,
+        "prep_error": null
+      }
+    },
+    {
+      "hash_rank": 9,
+      "instance_id": "pandas-dev__pandas.82fa2715.test_sample.5d2ba03e.lv1",
+      "repo": "pandas-dev/pandas",
+      "base_commit": "82fa27153e5b646ecdb78cfc6ecf3e1750443892",
+      "level": 1,
+      "selection_hash_sha256": "096f09d80e4f893d73ca7f2e223fdf973dcf4183e91bcac37ca0d657a72e8400",
+      "fail_to_pass_test_files": [
+        "pandas/tests/groupby/methods/test_sample.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_pandas-instance_15f634a6",
+      "solver_image_id": "sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_pandas-instance_15f634a6@sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": true,
+        "prepared_baseline_commit": "1def1bfd31f2f406b9438b04417ad45ca8446e02",
+        "prepared_baseline_tree": "4545153046c4b4a414d93ce1fb1dfa10745cebb7",
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "raw_image_git_status_lines": 0,
+        "raw_image_git_status_head": [],
+        "grader_smoke": {
+          "grader_smoke_pass": true,
+          "basis": "plan B2.2 criterion: pristine not resolved; reference patch applied, all FAIL_TO_PASS succeed, pass_rate 1.0",
+          "upstream_resolved_flag_gold": true,
+          "pass_to_pass_failures_on_gold": [],
+          "pristine": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": false,
+            "pass_rate": 0.0,
+            "fail_to_pass_success": 0,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 0,
+            "pass_to_pass_failure": 0
+          },
+          "gold": {
+            "grade_execution_complete": true,
+            "resolved": true,
+            "patch_successfully_applied": true,
+            "pass_rate": 1.0,
+            "fail_to_pass_success": 14,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 95,
+            "pass_to_pass_failure": 0
+          }
+        },
+        "feasible": true,
+        "prep_error": null
+      }
+    },
+    {
+      "hash_rank": 10,
+      "instance_id": "pandas-dev__pandas.82fa2715.test_iceberg.85771c70.lv1",
+      "repo": "pandas-dev/pandas",
+      "base_commit": "82fa27153e5b646ecdb78cfc6ecf3e1750443892",
+      "level": 1,
+      "selection_hash_sha256": "0da7f01efab7ad3ca128e7d50ee5f07f5f4dadea8137c245c0f97c99197eccc0",
+      "fail_to_pass_test_files": [
+        "pandas/tests/io/test_iceberg.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_pandas-instance_15f634a6",
+      "solver_image_id": "sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_pandas-instance_15f634a6@sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": true,
+        "prepared_baseline_commit": "21d6452e3b62f63098ec53911fd43eacb3e71892",
+        "prepared_baseline_tree": "f86576f415bca464c52c228bd5ac92e480f51b7c",
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "raw_image_git_status_lines": 0,
+        "raw_image_git_status_head": [],
+        "grader_smoke": null,
+        "feasible": true,
+        "prep_error": null
+      }
+    },
+    {
+      "hash_rank": 11,
+      "instance_id": "pydata__xarray.97f3a746.test_coordinate_transform.6cacb660.lv1",
+      "repo": "pydata/xarray",
+      "base_commit": "97f3a7465a66638f68129581b658853a3992dd89",
+      "level": 1,
+      "selection_hash_sha256": "10007fd13dc842557175de435d9b20acf1a768652e8dff8ba117b88175b66dfb",
+      "fail_to_pass_test_files": [
+        "xarray/tests/test_coordinate_transform.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_xarray-instance_62de996a",
+      "solver_image_id": "sha256:075803e6495efc4aa64c015effcae52986a62352655127f69a262dfbedfbb7d7",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_xarray-instance_62de996a@sha256:075803e6495efc4aa64c015effcae52986a62352655127f69a262dfbedfbb7d7"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": true,
+        "prepared_baseline_commit": "1425c7915e486d6de52e5c8b18b77980347067d7",
+        "prepared_baseline_tree": "92830e2e52af3c1d2c667aa56f0318a3b96f34e4",
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "raw_image_git_status_lines": 0,
+        "raw_image_git_status_head": [],
+        "grader_smoke": null,
+        "feasible": true,
+        "prep_error": null
+      }
+    },
+    {
+      "hash_rank": 12,
+      "instance_id": "pandas-dev__pandas.82fa2715.test_reduction.3ac3b298.lv1",
+      "repo": "pandas-dev/pandas",
+      "base_commit": "82fa27153e5b646ecdb78cfc6ecf3e1750443892",
+      "level": 1,
+      "selection_hash_sha256": "10366e58dcedc5d3aae044f70d42d52127b9063311fbd10b1edb82f11d82b1de",
+      "fail_to_pass_test_files": [
+        "pandas/tests/arrays/integer/test_reduction.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_pandas-instance_15f634a6",
+      "solver_image_id": "sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_pandas-instance_15f634a6@sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": true,
+        "prepared_baseline_commit": "9b43361e416e8f06f737cb81a3f4bfa103b9ad6d",
+        "prepared_baseline_tree": "e253eb95d597586f9e136fa9dcfafff066efe9d2",
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "raw_image_git_status_lines": 0,
+        "raw_image_git_status_head": [],
+        "grader_smoke": null,
+        "feasible": true,
+        "prep_error": null
+      }
+    },
+    {
+      "hash_rank": 13,
+      "instance_id": "mlflow__mlflow.93dab383.test_scorer_description.9163195a.lv1",
+      "repo": "mlflow/mlflow",
+      "base_commit": "93dab383a1a3fc9882ebc32283ad2a05d79ff70f",
+      "level": 1,
+      "selection_hash_sha256": "10561124a832a675b93df0e3b1d0b6a93f71838b362411db23256fcde994d92c",
+      "fail_to_pass_test_files": [
+        "tests/genai/scorers/test_scorer_description.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_mlflow-instance_efffa87e",
+      "solver_image_id": "sha256:5a63b594bc99a6dcd876289974979606b276edd49e966020111db3590c40add4",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_mlflow-instance_efffa87e@sha256:5a63b594bc99a6dcd876289974979606b276edd49e966020111db3590c40add4"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": false,
+        "prepared_baseline_commit": null,
+        "prepared_baseline_tree": null,
+        "solver_image_audit_pass": false,
+        "prepared_tree_fail_to_pass_masked": null,
+        "raw_image_git_status_lines": null,
+        "raw_image_git_status_head": null,
+        "grader_smoke": {
+          "grader_smoke_pass": false,
+          "basis": "plan B2.2 criterion: pristine not resolved; reference patch applied, all FAIL_TO_PASS succeed, pass_rate 1.0",
+          "upstream_resolved_flag_gold": null,
+          "pass_to_pass_failures_on_gold": [],
+          "pristine": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": null,
+            "pass_rate": null,
+            "fail_to_pass_success": 0,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 0,
+            "pass_to_pass_failure": 0
+          },
+          "gold": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": null,
+            "pass_rate": null,
+            "fail_to_pass_success": 0,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 0,
+            "pass_to_pass_failure": 0
+          }
+        },
+        "feasible": false,
+        "prep_error": "AdmissionError('snapshot reader failed; preserve response and halt')"
+      }
+    },
+    {
+      "hash_rank": 14,
+      "instance_id": "mwaskom__seaborn.7001ebe7.test_relational.f23eb542.lv1",
+      "repo": "mwaskom/seaborn",
+      "base_commit": "7001ebe72423238e99c0434a2ef0a0ebc9cb55c1",
+      "level": 1,
+      "selection_hash_sha256": "106bf1bc023cf91e452771aac8827494dc78fa4335bdc763de1113ded6671f2d",
+      "fail_to_pass_test_files": [
+        "tests/test_relational.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_seaborn-instance_52738fbb",
+      "solver_image_id": "sha256:fe27a1a5205fa0939453e79d0f40c74cb402bad8ea1d42fff7de5e2106e77ce1",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_seaborn-instance_52738fbb@sha256:fe27a1a5205fa0939453e79d0f40c74cb402bad8ea1d42fff7de5e2106e77ce1"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": true,
+        "prepared_baseline_commit": "dc8985f0337a85f937d55b3ad328cefe6c502dc5",
+        "prepared_baseline_tree": "724cdd7d70646091e9c2b30b197426bbd81b2318",
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "raw_image_git_status_lines": 0,
+        "raw_image_git_status_head": [],
+        "grader_smoke": null,
+        "feasible": true,
+        "prep_error": null
+      }
+    },
+    {
+      "hash_rank": 15,
+      "instance_id": "mlflow__mlflow.93dab383.test_presigned_url_artifact_repo.8d57288e.lv1",
+      "repo": "mlflow/mlflow",
+      "base_commit": "93dab383a1a3fc9882ebc32283ad2a05d79ff70f",
+      "level": 1,
+      "selection_hash_sha256": "11067a628809c1186844171537e2bf20aa1fb48e27a75f9024eec041a6c39c14",
+      "fail_to_pass_test_files": [
+        "tests/store/artifact/test_presigned_url_artifact_repo.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_mlflow-instance_efffa87e",
+      "solver_image_id": "sha256:5a63b594bc99a6dcd876289974979606b276edd49e966020111db3590c40add4",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_mlflow-instance_efffa87e@sha256:5a63b594bc99a6dcd876289974979606b276edd49e966020111db3590c40add4"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": false,
+        "prepared_baseline_commit": null,
+        "prepared_baseline_tree": null,
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": false,
+        "raw_image_git_status_lines": 6,
+        "raw_image_git_status_head": [
+          "T libs/skinny/LICENSE.txt",
+          " T libs/skinny/MANIFEST.in",
+          " D libs/skinny/mlflow",
+          " T libs/tracing/LICENSE.txt",
+          " T libs/tracing/MANIFEST.in",
+          " D libs/tracing/mlflow"
+        ],
+        "grader_smoke": null,
+        "feasible": false,
+        "prep_error": "AdmissionError('snapshot reader failed; preserve response and halt')"
+      }
+    },
+    {
+      "hash_rank": 16,
+      "instance_id": "astropy__astropy.b0db0daa.test_tilde_path.383d7c0c.lv1",
+      "repo": "astropy/astropy",
+      "base_commit": "b0db0daac6b851596851cb43e5456fb6c916c071",
+      "level": 1,
+      "selection_hash_sha256": "116401455e06102a91e84799c3ef147cf982d24cde08f32d403a28943a06236a",
+      "fail_to_pass_test_files": [
+        "astropy/io/fits/tests/test_tilde_path.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_astropy-instance_493bb78b",
+      "solver_image_id": "sha256:4b5e7489d8bee8e20b53f94c74833e6d9ee0163673ac4a36eecb0372ef01fda2",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_astropy-instance_493bb78b@sha256:4b5e7489d8bee8e20b53f94c74833e6d9ee0163673ac4a36eecb0372ef01fda2"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": true,
+        "prepared_baseline_commit": "ab7c403fd0d60100d86a6768c9a1046eac4abcda",
+        "prepared_baseline_tree": "ba9dc6d170d9cb70a5a8e7d7df2277857b3bb088",
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "raw_image_git_status_lines": 0,
+        "raw_image_git_status_head": [],
+        "grader_smoke": {
+          "grader_smoke_pass": true,
+          "basis": "plan B2.2 criterion: pristine not resolved; reference patch applied, all FAIL_TO_PASS succeed, pass_rate 1.0",
+          "upstream_resolved_flag_gold": true,
+          "pass_to_pass_failures_on_gold": [],
+          "pristine": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": false,
+            "pass_rate": 0.0,
+            "fail_to_pass_success": 0,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 0,
+            "pass_to_pass_failure": 0
+          },
+          "gold": {
+            "grade_execution_complete": true,
+            "resolved": true,
+            "patch_successfully_applied": true,
+            "pass_rate": 1.0,
+            "fail_to_pass_success": 33,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 824,
+            "pass_to_pass_failure": 0
+          }
+        },
+        "feasible": true,
+        "prep_error": null
+      }
+    },
+    {
+      "hash_rank": 17,
+      "instance_id": "pandas-dev__pandas.82fa2715.test_formats.05080a4e.lv1",
+      "repo": "pandas-dev/pandas",
+      "base_commit": "82fa27153e5b646ecdb78cfc6ecf3e1750443892",
+      "level": 1,
+      "selection_hash_sha256": "137320ab56426fa4ddd28c9fe5527b951c5236ed494274e1122da815762e305b",
+      "fail_to_pass_test_files": [
+        "pandas/tests/series/test_formats.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_pandas-instance_15f634a6",
+      "solver_image_id": "sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_pandas-instance_15f634a6@sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7"
+      ],
+      "feasibility": {
+        "image_pull": true,
+        "no_gpu": {
+          "ok": true,
+          "need_gpu": false
+        },
+        "offline_preparation_ok": true,
+        "prepared_baseline_commit": "5f16e07811e57d58da994270b39ae75d7329c5c4",
+        "prepared_baseline_tree": "e6c5f77b278261cf71b2b5b5741f2a00b3987d7b",
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "raw_image_git_status_lines": 0,
+        "raw_image_git_status_head": [],
+        "grader_smoke": {
+          "grader_smoke_pass": true,
+          "basis": "plan B2.2 criterion: pristine not resolved; reference patch applied, all FAIL_TO_PASS succeed, pass_rate 1.0",
+          "upstream_resolved_flag_gold": true,
+          "pass_to_pass_failures_on_gold": [],
+          "pristine": {
+            "grade_execution_complete": true,
+            "resolved": false,
+            "patch_successfully_applied": false,
+            "pass_rate": 0.0,
+            "fail_to_pass_success": 0,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 0,
+            "pass_to_pass_failure": 0
+          },
+          "gold": {
+            "grade_execution_complete": true,
+            "resolved": true,
+            "patch_successfully_applied": true,
+            "pass_rate": 1.0,
+            "fail_to_pass_success": 54,
+            "fail_to_pass_failure": 0,
+            "pass_to_pass_success": 218,
+            "pass_to_pass_failure": 0
+          }
+        },
+        "feasible": true,
+        "prep_error": null
+      }
+    },
+    {
+      "hash_rank": 18,
+      "instance_id": "pandas-dev__pandas.82fa2715.test_http_headers.aafb551e.lv1",
+      "repo": "pandas-dev/pandas",
+      "base_commit": "82fa27153e5b646ecdb78cfc6ecf3e1750443892",
+      "level": 1,
+      "selection_hash_sha256": "14ecc93e14a90eec164ef7bec42a9bb901412015196a739ad53fe5e887f3b9dd",
+      "fail_to_pass_test_files": [
+        "pandas/tests/io/test_http_headers.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "solver_image_reference": null,
+      "solver_image_id": null,
+      "solver_image_repo_digests": null,
+      "feasibility": {
+        "image_pull": false,
+        "no_gpu": null,
+        "offline_preparation_ok": null,
+        "prepared_baseline_commit": null,
+        "prepared_baseline_tree": null,
+        "solver_image_audit_pass": null,
+        "prepared_tree_fail_to_pass_masked": null,
+        "raw_image_git_status_lines": null,
+        "raw_image_git_status_head": null,
+        "grader_smoke": null,
+        "feasible": null,
+        "prep_error": null
+      }
+    }
+  ],
+  "freeze_deviations_and_notes": [
+    "Grader package manifest: the manifest file extracted from the pinned grader image has file-bytes sha256 4570be3c... (see grader.package_manifest_sha256_file_bytes), which differs from the historical FB_PACKAGE_SHA pin recorded for a different serialization; the operative repo check is dict equality of the 113 in-image package hashes, re-verified on every preparation and grade run (upstream_package_files_verified / grader_package_files_verified).",
+    "Astropy rank 3 grader smoke: the reference patch passes all 27 required FAIL_TO_PASS tests (pass_rate 1.0); the upstream resolved flag is False only because one PASS_TO_PASS test (astropy/coordinates/tests/test_finite_difference_velocities.py::test_gcrs_diffs) fails, and that failure reproduces on the untouched base tree (expired leap-second data in the offline image). Recorded in the instance's grader_smoke summary.",
+    "mlflow solver image digest: the first probe pull observed image id sha256:bfa78bf2... / repo digest sha256:5fa92cf4...; every later inspection (feasibility, docker images) shows image id and repo digest sha256:5a63b594bc99a6dcd876289974979606b276edd49e966020111db3590c40add4, with identical git HEAD (93dab383...). The registration records the later, stable identity; mlflow instances are infeasible regardless.",
+    "Raw solver images are the upstream repos at base_commit with the feature present; level-1 masking happens in preparation (TaskResource) and in the grader's own evaluation flow. Raw git status is not clean for ranks 1 (untracked build artifacts), 2 (deleted tests/pydantic_core submodule entry), 5 (two modified encoding-fixture files) and 6/13/15 (materialized symlinks); prepared trees are clean, single-commit, remote-free with FAIL_TO_PASS files masked, as the preparer's probes and the freeze's prepared-tree audits record per instance."
+  ],
+  "grader": {
+    "identity": "Pinned original upstream FeatureBench grader",
+    "grader_image_id": "sha256:d62c9102f060d774fcb2ab8c25854829c827ecf4049e9c31e351d69e9555fcf8",
+    "grader_image_tag": "horizon-featurebench-grader:preparation-01",
+    "package_files": 113,
+    "package_manifest_sha256_file_bytes": "4570be3cba608ac9880bce629798c599db6431579f070e1d75659c6d6b418048",
+    "package_manifest_note": "Manifest content extracted from the pinned grader image itself (113 files); prep/grade runs re-verify the in-image package hashes against this manifest on every invocation.",
+    "controller_script": "scripts/upstream_grade_featurebench.py (frozen tree)",
+    "preparer_script": "scripts/upstream_prepare_task.py (frozen tree)"
+  },
+  "candidate_engine": {
+    "repository": "electrohire/applied-epistemic-engineering",
+    "commit": "41e7cf0cce4a6043a6d18de945d66911c65789f7",
+    "version": "1.6.0",
+    "artifact_sha256": "86f1f1828a57191cb7bf6812c023792ee253e515114a8dbc395a00038937c225"
+  },
+  "model": {
+    "name": "qwen3.8-27b",
+    "context": 32768,
+    "served_at": "http://127.0.0.1:52301/v1 (llama.cpp worker, C:/Models/qwen3.8-27b.gguf)"
+  },
+  "revision": {
+    "revision": 2,
+    "amends": "registration-needle-v2.json",
+    "amendment": "Amendment 1 to the needle program plan, owner-approved 2026-10-21 14:39 EDT",
+    "package": "2026-10-21-needle-amendment-1.md (owner's approved package, incl. Implementation Notes)"
+  },
+  "campaign_manifest": "benchmarks/upstream-coding/freeze-needle-campaign-v3.json",
+  "smoke_manifest": "benchmarks/upstream-coding/freeze-needle-smoke-v3.json",
+  "harness_head": "57f85ced43f8e82e40208883fc902ee8070fce8f",
+  "amendment_1": {
+    "unchanged_by_name": [
+      "primary endpoint (accepted deliveries under the original independent grader) and tokens per accepted delivery",
+      "the needle bars (AEE deliveries >= Spec Kit; AEE tokens per delivery <= 1.10x Spec Kit)",
+      "release-gate policy-v1 margins (the gate ledger is completed only by a full gate-shaped run; Stage 1R fills none of it registrably by itself)",
+      "the six frozen tasks, solver images, and graders by digest",
+      "the stop policy (PC-8) and the nil-checkpoint discipline",
+      "the frozen October study inputs (never re-scored or re-run)",
+      "the 48,000,000 native-token program hard cap"
+    ],
+    "deltas": {
+      "R-A1_setup_by_construction": "Per task, before its first scored attempt, a dedicated construction step (not a scored attempt) runs the constitution phase once under a 900,000-token construction cap and freezes the setup record, the constitution workspace artifact (a tar of the /workflow tree, stored content-addressed), and the constitution file's SHA-256. Consumers place the frozen workspace and verify the constitution file hash before the reuse is recorded.",
+      "R-A2_setup_accounting": "Construction spend is its own line (call identity purpose campaign_setup); reporting.aggregate() emits the measured setup_cost; for the needle-bar computation the same per-task setup amount is added to both Spec Kit arms' totals; the baseline arm is untouched.",
+      "R-A3_phase_guard": "No phase of a phased arm may pass 900,000 charged tokens or 40 calls without its completion artifact; the implementation phase is exempt from the token guard (not the call cap); the baseline arm is unguarded.",
+      "R-A4_exhaustion_semantics": "Phase exhaustion ends the attempt with status limit and the protocol reason phase_budget_exhausted:<phase>, classified model_outcome/phase_budget_exhausted by an explicit classify_halt branch placed before the generic limit rules; the patch is graded as it stands. Construction failure is premise_equipment/task_setup_failed for that task; its attempts never start.",
+      "R-A5_streamed_transport": "Local calls stream; every call record carries first_token_seconds, last_token_at, stream_tokens_received, stream_chunks. 180 s without a token closes the call as TransportStallSuspected (usage unknown, reservation charged), records a transport_stall_suspected event, classifies premise/equipment, halts the study, and captures an observability bundle into the run store before any restart.",
+      "R-A6_worker_probe": "Declared by the campaign config (worker_availability_probe: true): before each scored attempt the runner probes the worker (identity + slot state). Busy, or a failed probe, means the attempt does not start and a premise event is recorded; three blocks in a stage halt the stage for owner review.",
+      "budget_guard_note_2": "The 18,000,000 Stage 1R sub-cap and the 48,000,000 program cap are enforced by machinery: the harness's BudgetGuard component (cumulative across the Stage 1 and Stage 1R stores, harness accounting semantics) drives the controller watcher, which cancels at the current attempt's end or at the stage boundary.",
+      "freeze_step_7": "Construction smoke on the disposable instance (the real smoke's spec_kit_aee attempt is preceded by construction for the nominee task) plus a scripted second attempt proving zero-call reuse from the frozen record."
+    },
+    "r_a7_worker_log_record": {
+      "branch": "log source exists and is named, tail included",
+      "worker_log_source": "C:\\Users\\trist\\Development\\ElectroHire\\noerelay\\.noerelay\\runtime\\router.stdout.log - the llama.cpp worker's stdout, redirected by deploy/host/start-local-router.ps1; it carries per-request slot lines (print_timing / release, task ids, token counts) for the worker behind the campaign endpoint, tagged with the endpoint's port [52301].",
+      "worker_stderr_source": "router.stderr.log in the same directory (server load and configuration lines).",
+      "harness_host_path": "/mnt/c/Users/trist/Development/ElectroHire/noerelay/.noerelay/runtime/router.stdout.log",
+      "log_tail_at_freeze": [
+        "",
+        "[52301] 2663.21.034.639 I slot print_timing: id  0 | task 282988 | n_gen =    960, tg =  19.04 t/s, tg_3s =  18.93 t/s",
+        "",
+        "[52301] 2663.24.057.059 I slot print_timing: id  0 | task 282988 | n_gen =   1017, tg =  19.03 t/s, tg_3s =  18.86 t/s",
+        "",
+        "[52301] 2663.26.311.164 I slot print_timing: id  0 | task 282988 | prompt eval time =     668.80 ms /    89 tokens (    7.51 ms per token,   133.07 tokens per second)",
+        "",
+        "[52301] 2663.26.311.176 I slot print_timing: id  0 | task 282988 |        eval time =   55640.81 ms /  1060 tokens (   52.54 ms per token,    19.03 tokens per second)",
+        "",
+        "[52301] 2663.26.311.178 I slot print_timing: id  0 | task 282988 |       total time =   56309.61 ms /  1149 tokens",
+        "",
+        "[52301] 2663.26.311.179 I slot print_timing: id  0 | task 282988 |    graphs reused =     278586",
+        "",
+        "[52301] 2663.26.312.251 I slot      release: id  0 | task 282988 | stop processing: n_tokens = 23394, truncated = 0",
+        ""
+      ],
+      "note": "The harness reads this log for transport bundles via LOCAL_MODEL_LOG_PATH in the supervisor environment. R-A5 streaming instrumentation is ALSO active on every call; the two are complements, not substitutes."
+    }
+  }
+}
