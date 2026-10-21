@@ -17,8 +17,9 @@ from .provider import OpenAIProvider, provider_spec, transport_policy
 from .local_provider import LocalProvider, check_local_server
 from .store import RunLock, Store, canonical, read_json, utc, write_json
 from .tripwires import record_tripwire
-from .workflow import (AEE_PHASES, assess, campaign_setup, gate_outcome_of,
-                       grounded_claims, phase_prompt, phases)
+from .workflow import (AEE_PHASES, DeltaFormatError, assess, campaign_setup,
+                       compact_feedback, gate_outcome_of, grounded_claims,
+                       phase_prompt, phases, resolve_claim_submission)
 
 
 class LimitHit(RuntimeError):
@@ -58,6 +59,41 @@ def remaining(deadline):
 LOCAL_CALL_TIMEOUT_SECONDS = 600
 LOCAL_WALL_TIME_SECONDS = 7200
 FRONTIER_CALL_TIMEOUT_SECONDS = 120
+
+
+# Needle program Workstream A3: claim-count discipline. The same
+# sentence is carried by prompts/adapter.md (so it is part of every
+# Spec Kit phase prompt) and by the claims instruction injected for
+# AEE phases below.
+CLAIM_DISCIPLINE = ("Claim discipline: one claim per independently falsifiable "
+                    "requirement; merge duplicates instead of restating a "
+                    "requirement; prefer few, load-bearing claims over many "
+                    "overlapping ones.")
+# A3 soft cap: a phase bundle above this many claims earns exactly
+# one in-phase consolidation request before it is assessed.
+CLAIM_SOFT_CAP = 12
+
+
+def claims_instruction(root, *, delta=False):
+    """The claims instruction a frozen AEE run actually carries,
+    injected at phase completion in execute_attempt. The first
+    assessed phase of an attempt takes a full bundle; every later
+    assessed phase (and every repair round) takes a delta against
+    the standing bundle (Workstream A2)."""
+    schema = (Path(root)/".specify/extensions/aee/templates/aee-claims.json").read_text()
+    if not delta:
+        return ("\nAt phase completion include claims using this schema example "
+                "(replace all example content):\n" + CLAIM_DISCIPLINE + "\n" + schema)
+    return ("\nAt phase completion submit a claims delta against the standing bundle "
+            "from the earlier assessed phases; do not re-draft the whole bundle. "
+            + CLAIM_DISCIPLINE + "\n"
+            'Delta form (replace all example content): include in your done JSON '
+            '"claims":{"schema_version":"1.0","delta":{"upsert":[<full claim objects '
+            'for new or changed claims, each carrying its claim id>],'
+            '"withdraw":["<claim id to withdraw>"]}}. Omit "upsert" when nothing '
+            "changes and \"withdraw\" when nothing is withdrawn. A repair round "
+            "uses the same delta form, scoped to the findings being addressed. "
+            "Claim objects inside \"upsert\" follow this schema example:\n" + schema)
 
 
 def local_backend(cfg):
@@ -143,6 +179,13 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
     agent.add_messages({"role": "system", "content": phase_prompt(root, "baseline", "solve")},
                        {"role": "user", "content": task["problem_statement"]})
     outcome, gate_outcome, repairs = None, None, 0
+    # Workstream A2/A3 state: the standing claims bundle for this
+    # attempt (later assessed phases and repair rounds submit deltas
+    # merged into it), a pending over-cap candidate awaiting its one
+    # consolidation revision, and the phases already asked to
+    # consolidate (never more than one request per phase).
+    standing_bundle, pending_candidate = None, None
+    consolidation_requested = set()
     # PC-3: with campaign setup sharing enabled, the constitution
     # phase is executed once per campaign and task and its frozen
     # completion record is reused by later attempts in either Spec
@@ -153,8 +196,7 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
         model.phase = phase
         prompt = phase_prompt(root, arm, phase)
         if arm == "spec_kit_aee" and phase in AEE_PHASES:
-            prompt += "\nAt phase completion include claims using this schema example (replace all example content):\n"
-            prompt += (Path(root)/".specify/extensions/aee/templates/aee-claims.json").read_text()
+            prompt += claims_instruction(root, delta=standing_bundle is not None)
         if share_setup and phase == "constitution" and arm != "baseline":
             frozen = campaign_setup(store, setup_key)
             if frozen is not None:
@@ -197,13 +239,52 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
                                                  "timestamp": utc()})
             if arm != "spec_kit_aee" or phase not in AEE_PHASES:
                 break
-            claims = grounded_claims(model.last.get("claims") or {}, store, identity["attempt_id"])
+            # Workstream A2: resolve this completion's submission
+            # against the standing bundle — a full bundle on the
+            # first assessed phase, a delta (merged here) on every
+            # later assessed phase and repair round. A malformed
+            # submission is a model outcome: the reason is fed back
+            # inside this phase's step flow and the model resubmits;
+            # it never escapes as a harness error.
+            base = pending_candidate if pending_candidate is not None else standing_bundle
+            try:
+                candidate = resolve_claim_submission(base, model.last.get("claims") or {})
+            except DeltaFormatError as exc:
+                agent.add_messages({"role": "user", "content":
+                    f"Claims submission rejected: {exc}. Resubmit this phase's completion "
+                    "with a well-formed submission: the first assessed phase takes a full "
+                    "claims bundle; later phases and repair rounds take a delta (changed or "
+                    "new claims as full claim objects under \"delta.upsert\", withdrawals "
+                    "by claim id under \"delta.withdraw\")."})
+                continue
+            # Workstream A3(b): one consolidation request per phase
+            # when the to-be-assessed bundle exceeds the soft cap;
+            # the model revises within the same phase before any
+            # assessment runs.
+            if (len(candidate.get("claims") or []) > CLAIM_SOFT_CAP
+                    and phase not in consolidation_requested):
+                consolidation_requested.add(phase)
+                pending_candidate = candidate
+                agent.add_messages({"role": "user", "content":
+                    f"Consolidation requested: this phase's claims bundle has "
+                    f"{len(candidate['claims'])} claims, above the soft cap of "
+                    f"{CLAIM_SOFT_CAP}. Before assessment, consolidate within this "
+                    "phase: merge duplicate claims, keep one claim per independently "
+                    "falsifiable requirement, and prefer few, load-bearing claims. "
+                    "Resubmit a revised full bundle. This request is made once per phase."})
+                continue
+            pending_candidate = None
+            claims = grounded_claims(candidate, store, identity["attempt_id"])
             result = assess(root, claims, phase, store, identity["attempt_id"])
+            standing_bundle = candidate
             outcome = result["outcome"]
             # PC-2: gate eligibility follows lane 1 (machine
             # verification), not the blended headline outcome.
             gate_outcome = gate_outcome_of(result)
-            agent.add_messages({"role": "user", "content": "AEE/Evaluator result: "+json.dumps(result)})
+            # Workstream A1: only the compact projection enters the
+            # persistent conversation; the full composed result
+            # remains in the run store (assessments record) for audit.
+            agent.add_messages({"role": "user", "content": "AEE/Evaluator result: "+json.dumps(compact_feedback(result))})
             if gate_outcome in ("pass", "warn"):
                 break
             if gate_outcome == "block" or recovery >= cfg["max_recovery_rounds"]:
@@ -214,7 +295,7 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
                         "repair_count": repairs, "tool_calls": environment.tool_calls, "blocked": True}
             recovery += 1
             repairs += 1
-            agent.add_messages({"role": "user", "content": "Address the result within this phase. Use only task-provided facts; no human assistance. Do not change model. Submit revised claims and evidence, or retain gaps."})
+            agent.add_messages({"role": "user", "content": "Address the result within this phase. Use only task-provided facts; no human assistance. Do not change model. Submit a claims delta scoped to the findings (changed claims as full claim objects under \"delta.upsert\", withdrawals by claim id under \"delta.withdraw\") with revised evidence, or retain gaps."})
     patch = sandbox.execute("git add -N . && git diff --binary HEAD", min(60, remaining(deadline)))
     if patch["exit_code"]:
         raise RuntimeError("patch extraction failed")

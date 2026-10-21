@@ -186,6 +186,136 @@ def gate_outcome_of(result):
     return lane_1.get("outcome") or result["outcome"]
 
 
+def compact_feedback(result):
+    """Compact projection of an assessment result for the persistent
+    conversation (needle program Workstream A1). The full composed
+    result stays in the run store for audit; only this projection is
+    appended to the conversation, where it is re-sent on every later
+    call. It mirrors matched_repair.compact_assessment's base keys
+    (outcome, findings, next_action, confidence, uncertainty),
+    extended with the Spec 006 additions: the gate outcome, the lane
+    pair slimmed to what a repair decision needs (lane 1 outcome;
+    lane 2 stage counts and claims below explained), and the
+    recorded-acts summary. The key set is exactly these eight keys."""
+    lanes = result.get("lanes") or composed_lanes(result)
+    lane_1 = lanes.get("lane_1") or {}
+    lane_2 = lanes.get("lane_2") or {}
+    summary = result.get("recorded_acts_summary")
+    if isinstance(summary, dict):
+        summary = {"count": summary.get("count", 0),
+                   "basis_types": summary.get("basis_types") or [],
+                   "actor": summary.get("actor") or PIPELINE_ACTOR}
+    else:
+        acts = result.get("recorded_acts") or []
+        summary = {"count": len(acts),
+                   "basis_types": sorted({a.get("basis_type") for a in acts
+                                          if isinstance(a, dict) and a.get("basis_type")}),
+                   "actor": PIPELINE_ACTOR}
+    return {
+        "outcome": result.get("outcome"),
+        "findings": result.get("findings"),
+        "next_action": result.get("next_action"),
+        "confidence": result.get("confidence"),
+        "uncertainty": result.get("uncertainty"),
+        "gate_outcome": result.get("gate_outcome") or lane_1.get("outcome")
+                        or result.get("outcome"),
+        "lanes": {"lane_1": {"outcome": lane_1.get("outcome")},
+                  "lane_2": {"stage_counts": lane_2.get("stage_counts"),
+                             "claims_below_explained": lane_2.get("claims_below_explained")}},
+        "recorded_acts_summary": summary,
+    }
+
+
+class DeltaFormatError(ValueError):
+    """A claims submission the harness cannot merge (needle program
+    Workstream A2). This is a model outcome: the runner feeds the
+    reason back inside the phase and the model resubmits; it is never
+    an infrastructure error."""
+
+
+def merge_claim_delta(standing, submission):
+    """Merge a delta submission into the standing bundle.
+
+    Delta form: {"delta": {"upsert": [full claim objects, each
+    carrying its claim id], "withdraw": [claim ids]}}. Upserts given
+    as an object keyed by claim id are also accepted, provided each
+    key equals its claim's id. Withdrawals are applied first, then
+    upserts (an upsert of a withdrawn id re-adds it). An upsert
+    replaces the standing claim with the same id in place; a new id
+    is appended. Raises DeltaFormatError on any malformed shape, on
+    an upsert without an id, and on a withdrawal naming an unknown
+    claim id."""
+    if not isinstance(standing, dict) or not isinstance(standing.get("claims"), list):
+        raise DeltaFormatError("no standing claims bundle to merge a delta into")
+    delta = submission.get("delta") if isinstance(submission, dict) else None
+    if not isinstance(delta, dict):
+        raise DeltaFormatError("claims delta must be an object with 'upsert' and/or 'withdraw'")
+    unknown = set(delta) - {"upsert", "withdraw"}
+    if unknown:
+        raise DeltaFormatError(f"unknown delta keys: {sorted(unknown)}")
+    upsert_raw = delta.get("upsert") or []
+    if isinstance(upsert_raw, dict):
+        upserts = []
+        for key, claim_obj in upsert_raw.items():
+            if not isinstance(claim_obj, dict) or claim_obj.get("id") != key:
+                raise DeltaFormatError(
+                    f"delta upsert keyed by {key!r} must be a full claim object with that id")
+            upserts.append(claim_obj)
+    elif isinstance(upsert_raw, list):
+        upserts = upsert_raw
+    else:
+        raise DeltaFormatError("delta 'upsert' must be a list of full claim objects")
+    for claim_obj in upserts:
+        if not isinstance(claim_obj, dict) or not claim_obj.get("id"):
+            raise DeltaFormatError("each delta upsert must be a full claim object with an 'id'")
+    withdraw_raw = delta.get("withdraw") or []
+    if (not isinstance(withdraw_raw, list)
+            or not all(isinstance(w, str) and w for w in withdraw_raw)):
+        raise DeltaFormatError("delta 'withdraw' must be a list of claim ids")
+    merged = json.loads(json.dumps(standing))
+    claims = merged["claims"]
+    index = {c.get("id"): i for i, c in enumerate(claims) if isinstance(c, dict)}
+    for claim_id in withdraw_raw:
+        if claim_id not in index:
+            raise DeltaFormatError(f"delta withdraws unknown claim id: {claim_id}")
+        claims.pop(index[claim_id])
+        index = {c.get("id"): i for i, c in enumerate(claims) if isinstance(c, dict)}
+    for claim_obj in upserts:
+        claim_id = claim_obj["id"]
+        if claim_id in index:
+            claims[index[claim_id]] = json.loads(json.dumps(claim_obj))
+        else:
+            index[claim_id] = len(claims)
+            claims.append(json.loads(json.dumps(claim_obj)))
+    return merged
+
+
+def resolve_claim_submission(base, submission):
+    """Resolve one phase's claims submission to the bundle to assess
+    (Workstream A2). A full bundle (a 'claims' list) replaces the
+    base; a delta merges into the base. ``base`` is the standing
+    bundle, or the pending consolidation candidate when a phase is
+    revising after a consolidation request. Raises DeltaFormatError
+    for malformed submissions, for a submission carrying both forms,
+    and for a delta with no base to merge into."""
+    if not isinstance(submission, dict) or not submission:
+        raise DeltaFormatError(
+            "claims submission must be an object: a full claims bundle or a delta")
+    if "delta" in submission:
+        if "claims" in submission:
+            raise DeltaFormatError(
+                "submit either a full claims bundle or a delta, not both")
+        if base is None:
+            raise DeltaFormatError(
+                "the first assessed phase must submit a full claims bundle; "
+                "a delta has no standing bundle to merge into")
+        return merge_claim_delta(base, submission)
+    if isinstance(submission.get("claims"), list):
+        return json.loads(json.dumps(submission))
+    raise DeltaFormatError(
+        "claims submission must carry a 'claims' list (full bundle) or a 'delta' object")
+
+
 def campaign_setup(store, setup_key):
     """The frozen campaign setup record for a task (PC-3), or None.
     With setup sharing enabled, the first attempt that completes the
@@ -381,9 +511,21 @@ def assess(root, claims, phase, store, attempt_id):
                                           lane_1_outcome=(lanes.get("lane_1") or {}).get("outcome"),
                                           lane_2_stage_counts=lane_2.get("stage_counts"),
                                           recorded_acts=acts,
+                                          # A3(c): per-phase claim count of the
+                                          # assessed bundle, so the next study
+                                          # can measure claim-count discipline.
+                                          claim_count=len(claims.get("claims") or []),
                                           aee_exit_code=result.returncode, artifacts=refs))
         augmented = dict(composed)
         augmented["gate_outcome"] = gate_outcome
         if lanes:
             augmented["lanes"] = lanes
+        # A1: a small recorded-acts summary rides on the returned
+        # augmentation only (the stored composed record above stays
+        # schema-valid and untouched), so the compact conversation
+        # projection can carry it without the full acts list.
+        augmented["recorded_acts_summary"] = {
+            "count": len(acts),
+            "basis_types": sorted({a.get("basis_type") for a in acts if a.get("basis_type")}),
+            "actor": PIPELINE_ACTOR}
         return augmented

@@ -11,3 +11,4 @@ After converge, implement any newly found work within the same remaining attempt
 budget, rerun convergence and state unresolved gaps. Do not claim tests ran without
 command evidence. Optional extension hooks are host-managed only for the AEE arm;
 core-only treatment must not invoke extensions.
+Claim discipline: one claim per independently falsifiable requirement; merge duplicates instead of restating a requirement; prefer few, load-bearing claims over many overlapping ones.
