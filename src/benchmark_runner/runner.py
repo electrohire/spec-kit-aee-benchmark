@@ -16,7 +16,8 @@ from .accounting import Budget, BudgetExceeded, TOKEN_FIELDS, attempt_token_usag
 from .experiment import verify_freeze
 from .isolation import DockerSandbox
 from .provider import OpenAIProvider, provider_spec, transport_policy
-from .local_provider import LocalProvider, base_url, check_local_server, probe_worker
+from .local_provider import (LocalProvider, base_url, check_local_server,
+                             probe_worker, server_root)
 from .store import RunLock, Store, canonical, read_json, sha, utc, write_json
 from .tripwires import HALT_STUDY, phase_exhaustion_reason, record_tripwire
 from .workflow import (AEE_PHASES, DeltaFormatError, assess, campaign_setup,
@@ -494,7 +495,7 @@ def capture_transport_bundle(store, identity, cfg, reason):
             bundle["worker_probe"] = {"error": type(e).__name__}
         for route in ("/slots", "/props", "/health"):
             try:
-                req = urllib.request.Request(base_url()+route, method="GET")
+                req = urllib.request.Request(server_root()+route, method="GET")
                 with urllib.request.urlopen(req, timeout=10) as handle:
                     bundle[route] = handle.read().decode("utf-8", errors="replace")[:4000]
             except Exception as e:

@@ -63,6 +63,15 @@ def base_url():
     return os.environ.get("LOCAL_MODEL_BASE_URL", "http://localhost:8080/v1").rstrip("/")
 
 
+def server_root():
+    """The llama.cpp server root: the configured OpenAI base URL
+    minus a trailing /v1 segment. The native routes (/slots, /props,
+    /health) live at the root, not under the OpenAI prefix — the
+    first live probe 404'd on /v1/slots while /slots answered 200."""
+    url = base_url()
+    return url[:-3] if url.endswith("/v1") else url
+
+
 def model_name():
     name = os.environ.get("LOCAL_MODEL_NAME")
     if not name:
@@ -157,7 +166,7 @@ def probe_worker(policy=None):
         reported = []
     try:
         paced_wait(policy)
-        req = urllib.request.Request(base_url() + "/slots", headers=_headers(), method="GET")
+        req = urllib.request.Request(server_root() + "/slots", headers=_headers(), method="GET")
         with urllib.request.urlopen(req, timeout=30) as handle:
             raw_slots = json.loads(handle.read().decode())
         if isinstance(raw_slots, list):
@@ -165,10 +174,13 @@ def probe_worker(policy=None):
                       "is_processing": entry.get("is_processing") if isinstance(entry, dict) else None}
                      for entry in raw_slots]
             busy = any(bool(slot["is_processing"]) for slot in slots)
-    except Exception as e:  # noqa: BLE001
+    except Exception:  # noqa: BLE001
+        # Slot state unavailable is a recorded None, not a probe
+        # failure: an endpoint that does not expose /slots must not
+        # block every attempt. A worker that cannot be identified at
+        # all already failed the /models fetch above, which is the
+        # failure that sets the probe error.
         slots, busy = None, None
-        if error is None:
-            error = type(e).__name__
     return {"probed_at": probed_at, "model_ok": expected in reported,
             "reported_models": reported, "busy": busy, "slots": slots,
             "error": error}

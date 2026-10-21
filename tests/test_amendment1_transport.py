@@ -71,7 +71,11 @@ class _Handler(BaseHTTPRequestHandler):
         if self.path.endswith("/models"):
             self._json({"data": [{"id": MODEL}]})
         elif self.path.endswith("/slots"):
-            if self.server.slots_mode == "missing":
+            if getattr(self.server, "strict_slots_path", False) and self.path != "/slots":
+                # The live endpoint's shape: native routes exist only
+                # at the server root, never under the /v1 prefix.
+                self._json({"error": "no slots"}, status=404)
+            elif self.server.slots_mode == "missing":
                 self._json({"error": "no slots"}, status=404)
             elif self.server.slots_mode == "processing":
                 self._json([{"id": 0, "is_processing": True},
@@ -142,9 +146,10 @@ class _Server(ThreadingHTTPServer):
 
 
 @contextmanager
-def stub_server(chat_mode="sse", slots_mode="processing"):
+def stub_server(chat_mode="sse", slots_mode="processing", strict_slots_path=False):
     server = _Server(("127.0.0.1", 0), _Handler)
     server.chat_mode, server.slots_mode = chat_mode, slots_mode
+    server.strict_slots_path = strict_slots_path
     server.last_payload = None
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -330,6 +335,24 @@ def test_probe_worker_slots_unavailable_gives_busy_none(tmp_path, monkeypatch):
     assert result["model_ok"] is True
     assert result["busy"] is None
     assert result["slots"] is None
+    # Unavailable slot state is not a probe failure: an endpoint that
+    # does not expose /slots must not block every attempt (the first
+    # live smoke attempt was blocked exactly this way).
+    assert result["error"] is None
+
+
+def test_probe_worker_finds_slots_at_the_server_root(tmp_path, monkeypatch):
+    # Regression for the first live smoke: the configured base URL
+    # ends in /v1, but /slots lives at the server root. The stub 404s
+    # /v1/slots exactly as the real endpoint does.
+    with stub_server("sse", slots_mode="processing",
+                     strict_slots_path=True) as (server, base_url):
+        assert base_url.endswith("/v1")
+        _env(monkeypatch, base_url)
+        result = probe_worker({"min_request_gap_seconds": 0})
+    assert result["model_ok"] is True
+    assert result["busy"] is True
+    assert result["error"] is None
 
 
 def test_probe_worker_idle_slots_not_busy(tmp_path, monkeypatch):
