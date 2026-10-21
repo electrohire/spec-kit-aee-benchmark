@@ -226,19 +226,20 @@ def test_assess_without_executed_tests_records_no_acts(tmp_path):
 # --- PC-3: campaign setup frozen once, reused across arms ---------------------
 
 class _Provider:
+    """Provider-protocol fake, typed exactly as the production providers
+    (provider.py / local_provider.py: query(messages, phase, timeout) ->
+    the action as a JSON string) and as tests/test_workflow.py's proven
+    FakeProvider. The phase arrives as an argument; it is never parsed
+    out of the messages."""
+
     def __init__(self):
         self.seen = []
 
-    def query(self, messages):
-        content = messages[-1].content
-        phase = (content.split("Current phase: ")[-1].split("\n")[0]
-                 if "Current phase: " in content else "solve")
+    def query(self, messages, phase, timeout):
         self.seen.append(phase)
-        return {"role": "assistant",
-                "content": json.dumps({"action": "done", "summary": phase + " done"})}
-
-    def set_thinking_tokens(self, tokens):
-        pass
+        return json.dumps({"action": "done", "summary": phase + " done",
+                           "claims": {"schema_version": "1.0",
+                                      "claims": [{"id": "REQ-X"}]}})
 
 
 class _Sandbox:
