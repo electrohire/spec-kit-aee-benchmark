@@ -16,7 +16,7 @@ from .isolation import DockerSandbox
 from .provider import OpenAIProvider, provider_spec, transport_policy
 from .local_provider import LocalProvider, check_local_server
 from .store import RunLock, Store, canonical, read_json, utc, write_json
-from .tripwires import record_tripwire
+from .tripwires import HALT_STUDY, record_tripwire
 from .workflow import (AEE_PHASES, DeltaFormatError, assess, campaign_setup,
                        compact_feedback, gate_outcome_of, grounded_claims,
                        phase_prompt, phases, resolve_claim_submission)
@@ -404,8 +404,14 @@ def run(root, manifest, output, arm=None, smoke=False):
                 if outcomes[entry["attempt_id"]]["status"] == "started":
                     store.append("attempts", {**identity, "status": "infrastructure_failure",
                                               "reason": "interrupted; no automatic rerun", "timestamp": utc()})
-                    record_tripwire(store, identity, "infrastructure_failure",
-                                    "interrupted; no automatic rerun")
+                    event = record_tripwire(store, identity, "infrastructure_failure",
+                                            "interrupted; no automatic rerun")
+                    # Stop policy (2026-10-21, PC-8): an interrupted
+                    # attempt's cause was never established, so its
+                    # class is unknown and the study halts after
+                    # recording it; no later attempt starts.
+                    if event is not None and event["behavior"] == HALT_STUDY:
+                        break
                 continue
             if entry["arm"] in REPAIR_DEPENDENT_ARMS and not diagnostic_available(
                     store, manifest, tasks[entry["task_id"]]):
@@ -414,7 +420,9 @@ def run(root, manifest, output, arm=None, smoke=False):
                 # repair arm cannot run. No inference is issued; the record
                 # is an honest skip rather than started-then-error.
                 # Downstream band selection fails closed on the missing
-                # attempts.
+                # attempts. The stop policy does not govern this admission
+                # decision (PC-8 exclusion): the schedule continues past
+                # a pre-skip exactly as before the revision.
                 store.append("attempts", {**identity, "status": "skipped",
                                           "reason": "pre-skipped: diagnostic evidence not recorded; "
                                                     "no inference issued",
@@ -453,9 +461,14 @@ def run(root, manifest, output, arm=None, smoke=False):
                 status, reason = "error", error_reason(e)
             store.append("attempts", {**identity, **result, "status": status, "reason": reason,
                                       "timestamp": utc(), "duration_seconds": time.monotonic()-tick})
-            # PC-4: the halt is classified and recorded as a tripwire
-            # event; the classification changes no behavior here.
-            record_tripwire(store, identity, status, reason)
-            if status in ("cancelled", "error"):
-                break  # Stop on uncertain infrastructure/provider errors; retain all charges.
+            # Stop policy (2026-10-21, PC-8): the halt is classified
+            # and recorded as a tripwire event, and behavior follows
+            # the classification. A proven model outcome stands as
+            # scored and the schedule continues to the next entry; a
+            # premise or equipment fault, an integrity fault, or
+            # anything unclassified halts the study here, retaining
+            # all charges.
+            event = record_tripwire(store, identity, status, reason)
+            if event is not None and event["behavior"] == HALT_STUDY:
+                break
     return store.events("attempts")

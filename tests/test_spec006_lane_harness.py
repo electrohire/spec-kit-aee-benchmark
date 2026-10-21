@@ -159,7 +159,11 @@ def test_record_tripwire_appends_only_for_halts(tmp_path):
     assert record_tripwire(store, identity, "completed", None) is None
     assert store.events("tripwires") == []
     event = record_tripwire(store, identity, "limit", "AEE recovery bound")
-    assert event["halt_class"] == "model_outcome" and event["behavior_changed"] is False
+    # PC-8 (2026-10-21): records written under the stop-policy revision
+    # name the behavior taken and carry behavior_changed True; under
+    # PC-4 this same record carried behavior_changed False.
+    assert event["halt_class"] == "model_outcome" and event["behavior_changed"] is True
+    assert event["behavior"] == "score_and_continue"
     assert store.events("tripwires") == [event]
 
 
