@@ -112,6 +112,15 @@ class _Handler(BaseHTTPRequestHandler):
                 self._sse_headers()
                 _sse(self, [_chunk("x")])
                 time.sleep(6)  # silence: the client must declare a stall first
+            elif mode in ("slow_headers", "silent_headers"):
+                # Prompt-processing silence: no headers at all until the
+                # delay passes (the live failure the first construction
+                # smoke hit — a 30 s slice used to kill the call here).
+                time.sleep(1.5 if mode == "slow_headers" else 6)
+                self._sse_headers()
+                _sse(self, [_chunk("ok"), _chunk(usage=USAGE)])
+                self.wfile.write(b"data: [DONE]\n\n")
+                self.wfile.flush()
             else:  # "json": the pre-Amendment non-streaming shape
                 self._json({"id": "chatcmpl-1", "model": MODEL,
                             "choices": [{"message": {"role": "assistant",
@@ -265,6 +274,40 @@ def test_flowing_stream_past_deadline_is_timeout_not_stall(tmp_path, monkeypatch
     assert event["input_tokens"] is None
     assert event["stream_tokens_received"] > 0
     assert store.events("transport_events") == []
+
+
+def test_slow_first_headers_within_stall_bound_complete(tmp_path, monkeypatch):
+    # Regression for the first construction smoke (2026-10-21): the
+    # worker sends no headers until prompt processing finishes. A
+    # pre-header silence shorter than the stall bound must not kill
+    # the call (it used to die at one 30 s read slice, TimeoutError).
+    monkeypatch.setattr(local_mod, "STALL_SECONDS", 10)
+    monkeypatch.setattr(local_mod, "_READ_SLICE_SECONDS", 0.5)
+    with stub_server("slow_headers") as (server, base_url):
+        provider, store = _provider(tmp_path, monkeypatch, base_url)
+        text = provider.query([{"role": "user", "content": "hi"}], "repair", 30)
+    assert text == "ok"
+    (event,) = store.events("calls")
+    assert event["error"] is None
+    assert event["stream_tokens_received"] == 1
+    assert store.events("transport_events") == []
+
+
+def test_silence_before_headers_past_stall_bound_is_a_stall(tmp_path, monkeypatch):
+    # The same silence, past the 180 s rule (patched down): the named
+    # stall event, premise accounting, never a bare TimeoutError.
+    monkeypatch.setattr(local_mod, "STALL_SECONDS", 2)
+    monkeypatch.setattr(local_mod, "_READ_SLICE_SECONDS", 0.5)
+    with stub_server("silent_headers") as (server, base_url):
+        provider, store = _provider(tmp_path, monkeypatch, base_url)
+        with pytest.raises(TransportStallError):
+            provider.query([{"role": "user", "content": "hi"}], "repair", 30)
+    (event,) = store.events("calls")
+    assert event["error"] == "TransportStallSuspected"
+    assert event["input_tokens"] is None
+    assert event["stream_tokens_received"] == 0
+    (stall,) = store.events("transport_events")
+    assert stall["kind"] == "transport_stall_suspected"
 
 
 def test_probe_worker_reports_busy_slot(tmp_path, monkeypatch):

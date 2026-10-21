@@ -17,6 +17,8 @@ silently run against the wrong checkpoint.
 import json
 import os
 import select
+import socket
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -39,6 +41,18 @@ _READ_SLICE_SECONDS = 30
 
 class TransportStallError(ProviderError):
     pass
+
+
+def _set_socket_timeout(handle, seconds):
+    """Best-effort socket-timeout adjustment on an opened response:
+    the opener runs with the full per-call deadline (a slow prompt
+    eval sends no headers for minutes), but the read machinery runs
+    on slice timeouts. A failure leaves the deadline in place; the
+    read loop's own clock checks still bound the call."""
+    try:
+        handle.fp.raw._sock.settimeout(seconds)
+    except (AttributeError, OSError, ValueError):
+        pass
 
 
 class _TransportStall(Exception):
@@ -171,6 +185,42 @@ class LocalProvider:
         self.policy = transport_policy(config)
         check_local_server(self.policy)  # Fail before any reservation, never mid-campaign.
 
+    @staticmethod
+    def _open_stream(req, tick, deadline_seconds, last_token_mono):
+        """Open a streaming response under the R-A5 clocks. The server
+        sends no headers until prompt processing finishes, which on
+        this worker legitimately takes longer than any read slice —
+        the first smoke construction died at one 30 s slice with a
+        plain TimeoutError before the stall machinery ever ran.
+        urlopen therefore runs with the full per-call deadline in a
+        daemon thread while this thread enforces both clocks from
+        byte zero: silence reaching STALL_SECONDS (counted from the
+        request start until the first token) raises the stall, and
+        the deadline bounds the whole call. A stall raised here
+        abandons the opener thread (a daemon; a transport stall halts
+        the study before anything else is sent)."""
+        holder = {}
+
+        def _open():
+            try:
+                holder["handle"] = urllib.request.urlopen(
+                    req, timeout=deadline_seconds)
+            except BaseException as e:  # surfaced in the calling thread
+                holder["error"] = e
+
+        opener = threading.Thread(target=_open, daemon=True)
+        opener.start()
+        while opener.is_alive():
+            opener.join(0.5)
+            now = time.monotonic()
+            if now - last_token_mono >= STALL_SECONDS:
+                raise _TransportStall()
+            if now - tick >= deadline_seconds:
+                raise TimeoutError("per-call deadline exceeded")
+        if "error" in holder:
+            raise holder["error"]
+        return holder["handle"]
+
     def query(self, messages, phase, timeout, retry=0):
         cfg = self.config
         # Same fail-fast telemetry discipline as the OpenAI provider: every
@@ -206,9 +256,13 @@ class LocalProvider:
                 req = urllib.request.Request(self.url + "/chat/completions",
                                              canonical(payload), _headers())
                 paced_wait(self.policy)  # The process-wide gap covers local traffic too.
-                with urllib.request.urlopen(req, timeout=_READ_SLICE_SECONDS) as handle:
+                with self._open_stream(req, tick, timeout, last_token_mono) as handle:
                     request_id = handle.headers.get("x-request-id")
                     content_type = handle.headers.get("Content-Type") or ""
+                    _set_socket_timeout(
+                        handle, _READ_SLICE_SECONDS
+                        if "text/event-stream" in str(content_type).lower()
+                        else timeout)
                     if "text/event-stream" not in str(content_type).lower():
                         # Compatibility fallback: a non-streaming endpoint
                         # (including the stub servers in the offline tests)
@@ -221,88 +275,137 @@ class LocalProvider:
                             error = "ModelIdentityMismatch"
                     else:
                         content_parts, reasoning_parts, usage_raw = [], [], None
-                        # Lines are assembled from read1() fills gated by
-                        # select() slices, never by a blocking readline():
-                        # a socket timeout poisons http.client's buffered
-                        # reader ("cannot read from timed out object"), so
-                        # a stalled stream could never be read again after
-                        # its first slice. select() waits in
-                        # _READ_SLICE_SECONDS slices without consuming, and
-                        # each slice expiry compares the two clocks: the
+                        # Lines are assembled from fills in _READ_SLICE_SECONDS
+                        # slices, never by a blocking readline(), for two
+                        # reasons in http.client's plumbing: (1) a socket
+                        # timeout poisons its buffered reader ("cannot read
+                        # from timed out object"), so after one slice a
+                        # stalled stream could never be read again; and
+                        # (2) header parsing may already have pulled the
+                        # first chunk(s) into that buffer, where select() on
+                        # the socket cannot see them. The fill therefore
+                        # peeks the buffer first: buffered bytes are served
+                        # by read1() with no raw read; an empty buffer makes
+                        # peek() itself the slice wait, and its timeout
+                        # proves the buffer is empty, so reading can safely
+                        # switch to a dup'd raw socket (plain socket
+                        # timeouts do not poison) for the remaining slices.
+                        # Every slice expiry compares the two clocks: the
                         # token gap (stall) vs the overall deadline.
                         buf, eof, done = b"", False, False
-                        while not done:
-                            # Overall per-call deadline: tokens still
-                            # flowing past it is a plain timeout, not a stall.
-                            if time.monotonic() - tick >= timeout:
-                                raise TimeoutError("per-call deadline exceeded")
-                            newline = buf.find(b"\n")
-                            if newline >= 0:
-                                raw_line, buf = buf[:newline], buf[newline + 1:]
-                            elif eof:
-                                if not buf:
-                                    break  # EOF: stream ended without [DONE].
-                                raw_line, buf = buf, b""
-                            else:
-                                try:
-                                    readable, _, _ = select.select(
-                                        [handle], [], [], _READ_SLICE_SECONDS)
-                                except (OSError, ValueError):
-                                    readable = [handle]
-                                if not readable:
-                                    now = time.monotonic()
-                                    if now - last_token_mono >= STALL_SECONDS:
-                                        raise _TransportStall() from None
-                                    if now - tick >= timeout:
-                                        raise TimeoutError(
-                                            "per-call deadline exceeded") from None
-                                    continue  # Next slice.
-                                try:
-                                    data = handle.read1(65536) \
-                                        if hasattr(handle, "read1") else handle.read(1)
-                                except TimeoutError:
-                                    now = time.monotonic()
-                                    if now - last_token_mono >= STALL_SECONDS:
-                                        raise _TransportStall() from None
-                                    raise
-                                if data in (b"", ""):
-                                    eof = True
-                                elif isinstance(data, bytes):
-                                    buf += data
+                        raw_sock = None
+                        try:
+                            while not done:
+                                # Overall per-call deadline: tokens still
+                                # flowing past it is a plain timeout, not a stall.
+                                if time.monotonic() - tick >= timeout:
+                                    raise TimeoutError("per-call deadline exceeded")
+                                newline = buf.find(b"\n")
+                                if newline >= 0:
+                                    raw_line, buf = buf[:newline], buf[newline + 1:]
+                                elif eof:
+                                    if not buf:
+                                        break  # EOF: stream ended without [DONE].
+                                    raw_line, buf = buf, b""
                                 else:
-                                    buf += data.encode()
-                                continue
-                            line = raw_line.decode("utf-8", errors="replace") \
-                                if isinstance(raw_line, bytes) else raw_line
-                            line = line.strip()
-                            if not line.startswith("data:"):
-                                continue
-                            data = line[len("data:"):].strip()
-                            if data == "[DONE]":
-                                done = True
-                                continue
-                            if not data:
-                                continue
-                            stream_chunks += 1
-                            chunk = json.loads(data)
-                            if chunk.get("model"):
-                                streamed_model = chunk["model"]
-                            if chunk.get("usage") is not None:
-                                usage_raw = chunk["usage"]
-                            choices = chunk.get("choices") or []
-                            delta = (choices[0].get("delta") or {}) if choices else {}
-                            piece, reasoning_piece = delta.get("content"), \
-                                delta.get("reasoning_content")
-                            if piece is not None or reasoning_piece is not None:
-                                now = time.monotonic()
-                                if first_token_seconds is None:
-                                    first_token_seconds = now - tick
-                                last_token_mono, last_token_at = now, utc()
-                                stream_tokens_received += 1
-                                if piece is not None:
-                                    content_parts.append(piece)
-                                if reasoning_piece is not None:
-                                    reasoning_parts.append(reasoning_piece)
+                                    if raw_sock is not None:
+                                        try:
+                                            data = raw_sock.recv(65536)
+                                        except TimeoutError:
+                                            now = time.monotonic()
+                                            if now - last_token_mono >= STALL_SECONDS:
+                                                raise _TransportStall() from None
+                                            if now - tick >= timeout:
+                                                raise
+                                            continue  # Next slice.
+                                    else:
+                                        fp = getattr(handle, "fp", None)
+                                        buffered = None
+                                        if fp is not None and hasattr(fp, "peek"):
+                                            try:
+                                                buffered = fp.peek(1)
+                                            except TimeoutError:
+                                                now = time.monotonic()
+                                                if now - last_token_mono >= STALL_SECONDS:
+                                                    raise _TransportStall() from None
+                                                if now - tick >= timeout:
+                                                    raise
+                                                # Buffer provably empty: take
+                                                # over the raw socket (dup'd fd).
+                                                raw_sock = socket.socket(
+                                                    fileno=os.dup(handle.fileno()))
+                                                raw_sock.settimeout(_READ_SLICE_SECONDS)
+                                                continue  # Next slice, raw mode.
+                                            except (OSError, ValueError):
+                                                buffered = None
+                                        if buffered:
+                                            data = handle.read1(65536)
+                                        elif buffered == b"":
+                                            eof = True
+                                            continue
+                                        else:
+                                            try:
+                                                readable, _, _ = select.select(
+                                                    [handle], [], [], _READ_SLICE_SECONDS)
+                                            except (OSError, ValueError):
+                                                readable = [handle]
+                                            if not readable:
+                                                now = time.monotonic()
+                                                if now - last_token_mono >= STALL_SECONDS:
+                                                    raise _TransportStall() from None
+                                                if now - tick >= timeout:
+                                                    raise TimeoutError(
+                                                        "per-call deadline exceeded") from None
+                                                continue  # Next slice.
+                                            try:
+                                                data = handle.read1(65536) \
+                                                    if hasattr(handle, "read1") else handle.read(1)
+                                            except TimeoutError:
+                                                now = time.monotonic()
+                                                if now - last_token_mono >= STALL_SECONDS:
+                                                    raise _TransportStall() from None
+                                                raise
+                                    if data in (b"", ""):
+                                        eof = True
+                                    elif isinstance(data, bytes):
+                                        buf += data
+                                    else:
+                                        buf += data.encode()
+                                    continue
+                                line = raw_line.decode("utf-8", errors="replace") \
+                                    if isinstance(raw_line, bytes) else raw_line
+                                line = line.strip()
+                                if not line.startswith("data:"):
+                                    continue
+                                data = line[len("data:"):].strip()
+                                if data == "[DONE]":
+                                    done = True
+                                    continue
+                                if not data:
+                                    continue
+                                stream_chunks += 1
+                                chunk = json.loads(data)
+                                if chunk.get("model"):
+                                    streamed_model = chunk["model"]
+                                if chunk.get("usage") is not None:
+                                    usage_raw = chunk["usage"]
+                                choices = chunk.get("choices") or []
+                                delta = (choices[0].get("delta") or {}) if choices else {}
+                                piece, reasoning_piece = delta.get("content"), \
+                                    delta.get("reasoning_content")
+                                if piece is not None or reasoning_piece is not None:
+                                    now = time.monotonic()
+                                    if first_token_seconds is None:
+                                        first_token_seconds = now - tick
+                                    last_token_mono, last_token_at = now, utc()
+                                    stream_tokens_received += 1
+                                    if piece is not None:
+                                        content_parts.append(piece)
+                                    if reasoning_piece is not None:
+                                        reasoning_parts.append(reasoning_piece)
+                        finally:
+                            if raw_sock is not None:
+                                raw_sock.close()
                         response = {"model": streamed_model,
                                     "choices": [{"message": {
                                         "content": "".join(content_parts),
@@ -322,7 +425,7 @@ class LocalProvider:
                 usage = {**{k: None for k in TOKEN_FIELDS},
                          "unknown_reason": "TransportStallSuspected"}
                 response, response_artifact = {}, None
-            except (urllib.error.URLError, TimeoutError, KeyError, ValueError) as e:
+            except (urllib.error.URLError, TimeoutError, KeyError, ValueError, OSError) as e:
                 error = type(e).__name__  # Never log headers or raw error bodies.
                 usage = {**{k: None for k in TOKEN_FIELDS}, "unknown_reason": error}
                 response, response_artifact = {}, None
