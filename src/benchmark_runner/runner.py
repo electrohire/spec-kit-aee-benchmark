@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import base64
+import io
 import json
 import os
 import shlex
 import subprocess
+import tarfile
 import time
 import tempfile
 import shutil
@@ -380,6 +382,35 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
     return result
 
 
+def freeze_workspace_artifact(store, tar_bytes):
+    """Freeze a /workflow tar as a store artifact. The store's
+    artifact path redaction-scans content as UTF-8 text, which would
+    mangle a binary tar (the first live reuse proof caught exactly
+    that corruption), so the tar travels base64-encoded, bound by
+    its own SHA-256, and is verified parseable before it freezes."""
+    try:
+        with tarfile.open(fileobj=io.BytesIO(tar_bytes)) as archive:
+            if not archive.getmembers():
+                raise RuntimeError("construction workspace capture is empty")
+    except tarfile.TarError as e:
+        raise RuntimeError(f"construction workspace capture is not a valid tar: {e}")
+    return {**store.artifact(base64.b64encode(tar_bytes)),
+            "encoding": "base64", "tar_sha256": sha(tar_bytes)}
+
+
+def read_workspace_artifact(store, workspace):
+    """Inverse of freeze_workspace_artifact: returns the tar bytes,
+    verified against the frozen tar hash."""
+    stored = (store.root/workspace["path"]).read_bytes()
+    try:
+        data = base64.b64decode(stored)
+    except ValueError:
+        raise RuntimeError("construction workspace artifact is not valid base64")
+    if sha(data) != workspace.get("tar_sha256", workspace["sha256"]):
+        raise RuntimeError("construction workspace artifact hash mismatch")
+    return data
+
+
 def place_construction_workspace(sandbox, store, frozen):
     """Place a construction-frozen /workflow tree into this attempt's
     sandbox (Amendment 1 R-A1) and verify the constitution file
@@ -389,9 +420,7 @@ def place_construction_workspace(sandbox, store, frozen):
     workspace = frozen.get("workspace_artifact")
     if not workspace:
         return {"setup_workspace": "not_recorded"}
-    data = (store.root/workspace["path"]).read_bytes()
-    if sha(data) != workspace["sha256"]:
-        raise RuntimeError("construction workspace artifact hash mismatch")
+    data = read_workspace_artifact(store, workspace)
     encoded = base64.b64encode(data).decode()
     sandbox.execute("rm -rf /workflow && mkdir -p /workflow && : > /tmp/workflow.tar.b64",
                     timeout=60)
@@ -401,7 +430,8 @@ def place_construction_workspace(sandbox, store, frozen):
         if moved["exit_code"]:
             raise RuntimeError("construction workspace transfer failed")
     placed = sandbox.execute(
-        "base64 -d /tmp/workflow.tar.b64 | tar -xf - -C / && rm -f /tmp/workflow.tar.b64",
+        "base64 -d /tmp/workflow.tar.b64 | tar -xf - -C / --no-same-owner"
+        " && rm -f /tmp/workflow.tar.b64",
         timeout=60)
     if placed["exit_code"]:
         raise RuntimeError("construction workspace placement failed")
@@ -412,7 +442,7 @@ def place_construction_workspace(sandbox, store, frozen):
     if digest["exit_code"] or not measured or (expected and measured != expected):
         raise RuntimeError("construction constitution file hash mismatch")
     return {"setup_workspace": "placed",
-            "setup_artifact_sha256": workspace["sha256"],
+            "setup_artifact_sha256": workspace.get("tar_sha256", workspace["sha256"]),
             "constitution_sha256": measured}
 
 
@@ -462,7 +492,8 @@ def execute_construction(root, task, provider, sandbox, store, identity, cfg):
     captured = sandbox.execute("tar -cf - -C / workflow | base64 -w0", timeout=120)
     if captured["exit_code"] or not captured["stdout"].strip():
         raise RuntimeError("construction workspace capture failed")
-    workspace_artifact = store.artifact(base64.b64decode(captured["stdout"].strip()))
+    tar_bytes = base64.b64decode(captured["stdout"].strip())
+    workspace_artifact = freeze_workspace_artifact(store, tar_bytes)
     digest = sandbox.execute(
         f"sha256sum /workflow/{CONSTITUTION_PATH} | cut -d' ' -f1", timeout=60)
     if digest["exit_code"] or not digest["stdout"].strip():

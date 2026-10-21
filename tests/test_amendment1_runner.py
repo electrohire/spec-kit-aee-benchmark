@@ -181,9 +181,34 @@ def test_phase_guard_baseline_loop_is_unguarded(tmp_path):
 
 # ---------------- execute_attempt level: construction reuse ----------------
 
+def binary_workflow_tar():
+    buffer = io.BytesIO()
+    with tarfile.open(fileobj=buffer, mode="w") as tar:
+        info = tarfile.TarInfo("workflow/.specify/memory/constitution.md")
+        info.size = len(CONSTITUTION)
+        tar.addfile(info, io.BytesIO(CONSTITUTION))
+        blob = bytes(range(256)) * 8  # not valid UTF-8: a .pyc-like member
+        info = tarfile.TarInfo("workflow/.specify/scripts/python/__pycache__/x.pyc")
+        info.size = len(blob)
+        tar.addfile(info, io.BytesIO(blob))
+    return buffer.getvalue()
+
+
+def test_workspace_artifact_round_trip_survives_the_text_store(tmp_path):
+    # The store redaction-scans artifacts as UTF-8 text; a binary tar
+    # stored raw comes back mangled (the first live reuse proof's
+    # failure). The base64 freeze must round-trip byte-identically.
+    store = Store(tmp_path)
+    tar_bytes = binary_workflow_tar()
+    record = runner.freeze_workspace_artifact(store, tar_bytes)
+    assert record["encoding"] == "base64"
+    assert record["tar_sha256"] == sha256(tar_bytes).hexdigest()
+    assert runner.read_workspace_artifact(store, record) == tar_bytes
+
+
 def test_reuse_places_the_frozen_workspace_and_issues_zero_calls(tmp_path):
     store = Store(tmp_path)
-    workspace = store.artifact(workflow_tar())
+    workspace = runner.freeze_workspace_artifact(store, workflow_tar())
     completion = store.artifact(b"{}")
     store.append("campaign_setups", {
         "attempt_id": "TASK--campaign-setup", "task_id": "TASK",
@@ -204,9 +229,12 @@ def test_reuse_places_the_frozen_workspace_and_issues_zero_calls(tmp_path):
     record = [p for p in store.events("phases") if p["phase"] == "constitution"][0]
     assert record["setup_reused"] is True
     assert record["setup_workspace"] == "placed"
-    assert record["setup_artifact_sha256"] == workspace["sha256"]
+    assert record["setup_artifact_sha256"] == workspace["tar_sha256"]
     assert record["constitution_sha256"] == CONSTITUTION_SHA
-    assert any("tar -xf" in c for c in sandbox.commands)
+    # --no-same-owner is load-bearing: the frozen tar carries the
+    # staging uid, and extraction as root in the sandbox cannot
+    # restore it (the first live reuse proof failed exactly there).
+    assert any("tar -xf" in c and "--no-same-owner" in c for c in sandbox.commands)
 
 
 # ---------------- run() level: construction gate, probe, taxonomy ----------
