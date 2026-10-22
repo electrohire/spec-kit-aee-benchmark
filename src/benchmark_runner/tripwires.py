@@ -47,6 +47,20 @@ explicit protocol reason ``phase_budget_exhausted:<phase>``,
 never via natural wording. Anything not established stays
 unknown and halts.
 
+Cycle 2 C2-F1 (2026-10-22) adds one more on the same basis: the
+attempt wall expiring — including mid-call, where the harness
+passes the wall remainder as the per-call deadline — is a scored
+model outcome, recognized ONLY via the explicit protocol reason
+``attempt_wall_expired``, through a classifier branch placed
+BEFORE the generic transport rules below (the Amendment 1 note-1
+lesson: never rely on reason wording — Cycle 1's fatal call died
+under exactly that remainder deadline and its generic transport
+wording classified it as an infrastructure halt). A wall expiry
+that reaches the classifier under any other status, or under
+natural wording, is NOT promoted by this branch. The stall
+(600 s of silence, R-A5 bundle) and the 7,200 s per-call outer
+bound keep their prior semantics unchanged.
+
 The pre-start diagnostic pre-skip is excluded from the policy: it is
 an admission decision before any attempt starts, not a halt. Its
 record carries ``behavior: "skip_and_continue"`` and
@@ -66,10 +80,21 @@ SKIP_AND_CONTINUE = "skip_and_continue"
 
 PHASE_BUDGET_EXHAUSTED = "phase_budget_exhausted"
 
+# Cycle 2 C2-F1: the protocol reason token for an attempt-wall
+# expiry (including a mid-call expiry under the wall-remainder
+# per-call deadline). Scored as a model outcome; the patch is
+# graded as it stands and the study proceeds to the next attempt.
+ATTEMPT_WALL_EXPIRED = "attempt_wall_expired"
+
 
 def phase_exhaustion_reason(phase):
     """The protocol reason token for a phase-budget exhaustion halt."""
     return f"{PHASE_BUDGET_EXHAUSTED}:{phase}"
+
+
+def attempt_wall_expiry_reason():
+    """The protocol reason token for an attempt-wall expiry halt."""
+    return ATTEMPT_WALL_EXPIRED
 
 
 _INTEGRITY_MARKERS = ("clean base checkout", "freeze", "resume configuration mismatch")
@@ -87,6 +112,19 @@ def classify_halt(status, reason):
     """
     text = " ".join(str(reason or "").split())
     low = text.lower()
+    # Cycle 2 C2-F1: the explicit attempt-wall-expiry branch, placed
+    # before every generic rule in this classifier — in particular
+    # before the generic transport rules in the "error" branch
+    # below, whose markers ("provider", "transport", ...) are what
+    # misclassified Cycle 1's wall-killed flowing call as an
+    # infrastructure halt. The branch fires ONLY on the exact
+    # protocol token under status "limit"; natural wording such as
+    # "attempt wall expired" never reaches it.
+    if status == "limit" and (
+            low == ATTEMPT_WALL_EXPIRED
+            or low.startswith(ATTEMPT_WALL_EXPIRED + ":")
+            or low.startswith(ATTEMPT_WALL_EXPIRED + " ")):
+        return MODEL_OUTCOME, ATTEMPT_WALL_EXPIRED
     if status == "limit":
         if (low == PHASE_BUDGET_EXHAUSTED
                 or low.startswith(PHASE_BUDGET_EXHAUSTED + ":")

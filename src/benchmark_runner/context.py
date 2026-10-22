@@ -3,6 +3,23 @@ accounting (C1-a), read-time observation masking (C1-b), and the
 write-time observation cap for drafting/construction histories
 (C1-A4).
 
+Cycle 2 C2-F2 (2026-10-22) adds authored-turn history discipline:
+model-authored turns from EARLIER phases are replaced in the
+assembled view by the phase artifact's identity (workspace path +
+hash + a bounded excerpt); the current phase's authored turns
+stay intact. The artifact itself lives in the workspace / run
+store, where later phases read it (the phase skills direct the
+model to the artifact files under /workflow, and the harness's own
+phase records carry the artifact identity — no harness code path
+re-reads an earlier phase's authored turns out of the history;
+see the Cycle 2 change record for the verification). The
+assembled <= wire-cap guarantee is restated over the COMBINED
+rule — observations masked (C1-b) + earlier authored turns
+externalized (C2-F2) + pins: when even that combined remainder
+exceeds the cap, the call record flags
+``unmaskable_remainder_over_cap`` as a named, countable finding
+instead of silently serving an over-cap history.
+
 The harness keeps one persistent conversation per attempt and re-sends
 the assembled history on every call, while the provider's wire cap is
 the frozen ``max_input_tokens``. Stage 1's fatal call assembled
@@ -24,8 +41,10 @@ recorded beside it.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import math
+import re
 
 # C1-b: the most recent K tool observations enter the sent history
 # intact. Older observations are replaced by one-line elisions. K is
@@ -43,6 +62,110 @@ OBSERVATION_WRITE_CAP_BYTES = 4096
 ESTIMATE_CHARS_PER_TOKEN = 4
 ESTIMATE_MESSAGE_OVERHEAD = 4
 ESTIMATE_FIXED_TOKENS = 3
+
+# C2-F2: the bounded excerpt of an externalized authored turn that
+# stays in the assembled view, in characters. A named constant,
+# overridable per freeze via the config key
+# ``authored_turn_excerpt_chars``.
+AUTHORED_TURN_EXCERPT_CHARS = 512
+
+_PHASE_MARKER_PREFIX = "Current phase:"
+_WORKSPACE_PATH_RE = re.compile(r"(/workflow/\S+|specs/\S+)")
+
+
+def phase_of_prompt(content):
+    """The phase named by a ``Current phase: <phase>`` prompt
+    message, or None when the content carries no such marker."""
+    if not isinstance(content, str) or not content.startswith(_PHASE_MARKER_PREFIX):
+        return None
+    rest = content[len(_PHASE_MARKER_PREFIX):].strip()
+    return rest.split()[0] if rest.split() else None
+
+
+def message_phases(messages):
+    """Attribute every message to the phase segment it sits in: a
+    message belongs to the phase named by the most recent
+    ``Current phase:`` prompt at or before it; messages before the
+    first marker belong to no phase (None) and are never
+    externalized (their phase cannot be established)."""
+    phases = []
+    current = None
+    for message in messages:
+        named = phase_of_prompt(_content_text(message))
+        if named is not None:
+            current = named
+        phases.append(current)
+    return phases
+
+
+def extract_workspace_path(text):
+    """The first workspace artifact path named in a text (the
+    adapter prompt requires each phase's done JSON to carry
+    artifact references), or None."""
+    match = _WORKSPACE_PATH_RE.search(text or "")
+    if not match:
+        return None
+    return match.group(1).rstrip("\"'`,.;)]}")
+
+
+_extract_workspace_path = extract_workspace_path
+
+
+def authored_turn_placeholder(message, phase, registry_entry=None,
+                              excerpt_chars=AUTHORED_TURN_EXCERPT_CHARS):
+    """The assembled-view replacement for one earlier-phase
+    authored turn: the phase artifact's identity — workspace path,
+    artifact hash, and a bounded excerpt of the turn — instead of
+    the turn's full text. The hash is the registry's artifact hash
+    when the harness recorded one for the phase (the run-store
+    artifact of the phase completion); otherwise it is the
+    SHA-256 of the turn's own content, so the identity is always
+    checkable against the full history the agent retains."""
+    content = _content_text(message)
+    entry = registry_entry or {}
+    placeholder = {
+        "externalized_authored_turn": True,
+        "phase": phase,
+        "workspace_path": entry.get("workspace_path")
+                          or _extract_workspace_path(content),
+        "artifact_sha256": entry.get("sha256")
+                           or hashlib.sha256(content.encode("utf-8")).hexdigest(),
+        "artifact_store_path": entry.get("store_path"),
+        "excerpt": content[:excerpt_chars],
+        "original_chars": len(content),
+        "note": "authored turn from an earlier phase externalized "
+                "(C2-F2); the phase artifact lives in the workspace "
+                "and the run store, where later phases read it",
+    }
+    return {"role": message.get("role", "assistant"),
+            "content": json.dumps(placeholder, sort_keys=True)}
+
+
+def externalize_authored_turns(messages, current_phase,
+                               artifact_registry=None,
+                               excerpt_chars=AUTHORED_TURN_EXCERPT_CHARS):
+    """Replace model-authored (assistant) turns attributed to
+    phases other than ``current_phase`` with their artifact
+    identity placeholders (C2-F2). The current phase's authored
+    turns stay byte-identical; non-authored messages are never
+    touched; turns whose phase cannot be attributed are kept. The
+    input list is never mutated. Returns (messages, count)."""
+    if current_phase is None:
+        return list(messages), 0
+    registry = artifact_registry or {}
+    attributed = message_phases(messages)
+    out = list(messages)
+    count = 0
+    for i, message in enumerate(messages):
+        if message.get("role") != "assistant":
+            continue
+        phase = attributed[i]
+        if phase is None or phase == current_phase:
+            continue
+        out[i] = authored_turn_placeholder(
+            message, phase, registry.get(phase), excerpt_chars)
+        count += 1
+    return out, count
 
 # Message markers that pin a message as a governing artifact: the
 # phase prompts and the frozen-setup record enter every later call
@@ -114,11 +237,15 @@ def elision_for(message):
 
 
 class MaskingResult:
-    def __init__(self, messages, masked_count, assembled_tokens, sent_tokens):
+    def __init__(self, messages, masked_count, assembled_tokens, sent_tokens,
+                 externalized_count=0, unmaskable_remainder_over_cap=False):
         self.messages = messages
         self.masked_count = masked_count
         self.assembled_tokens = assembled_tokens
         self.sent_tokens = sent_tokens
+        # C2-F2 combined-rule fields (zero/False under C1-b alone).
+        self.externalized_count = externalized_count
+        self.unmaskable_remainder_over_cap = unmaskable_remainder_over_cap
 
 
 def mask_history(messages, wire_cap_tokens, recent_k=OBSERVATION_MASK_RECENT_K):
@@ -157,6 +284,34 @@ def mask_history(messages, wire_cap_tokens, recent_k=OBSERVATION_MASK_RECENT_K):
                 masked[i] = elision_for(messages[i])
                 masked_count += 1
     return MaskingResult(masked, masked_count, assembled, estimate_tokens(masked))
+
+
+def assemble_history(messages, wire_cap_tokens, current_phase=None,
+                     recent_k=OBSERVATION_MASK_RECENT_K,
+                     artifact_registry=None,
+                     excerpt_chars=AUTHORED_TURN_EXCERPT_CHARS):
+    """The combined assembled view (C1-b + C2-F2): earlier phases'
+    authored turns are externalized to their artifact identities,
+    then older tool observations are masked, so the sent history
+    fits the wire cap whenever the combined remainder (pins +
+    current-phase turns + placeholders) fits on its own.
+
+    The guarantee is stated over the combined rule, and its failure
+    is never silent: when the sent estimate still exceeds
+    ``wire_cap_tokens`` after both mechanisms have done all they
+    can, the result's ``unmaskable_remainder_over_cap`` is True and
+    the calling model records that named flag on the call record,
+    where it is countable in the run store. ``assembled_tokens``
+    remains the estimate of the FULL history the harness built
+    (before either mechanism), preserving C1-a's meaning."""
+    assembled = estimate_tokens(messages)
+    externalized, externalized_count = externalize_authored_turns(
+        messages, current_phase, artifact_registry, excerpt_chars)
+    masked = mask_history(externalized, wire_cap_tokens, recent_k=recent_k)
+    return MaskingResult(
+        masked.messages, masked.masked_count, assembled, masked.sent_tokens,
+        externalized_count=externalized_count,
+        unmaskable_remainder_over_cap=masked.sent_tokens > wire_cap_tokens)
 
 
 def cap_observation_text(text, cap_bytes):

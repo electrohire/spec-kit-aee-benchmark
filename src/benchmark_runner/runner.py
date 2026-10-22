@@ -15,16 +15,20 @@ import urllib.request
 from pathlib import Path
 
 from .accounting import Budget, BudgetExceeded, TOKEN_FIELDS, attempt_token_usage
-from .context import (OBSERVATION_MASK_RECENT_K, OBSERVATION_WRITE_CAP_BYTES,
-                      cap_observation, history_digest, mask_history)
+from .context import (AUTHORED_TURN_EXCERPT_CHARS, OBSERVATION_MASK_RECENT_K,
+                      OBSERVATION_WRITE_CAP_BYTES, assemble_history,
+                      cap_observation, extract_workspace_path, history_digest,
+                      mask_history)
 from .experiment import verify_freeze
 from .isolation import DockerSandbox
-from .provider import OpenAIProvider, ProviderError, provider_spec, transport_policy
+from .provider import (AttemptWallExpiredError, OpenAIProvider, ProviderError,
+                       provider_spec, transport_policy)
 from .local_provider import (CALL_OUTER_BOUND_SECONDS, CallOuterBoundError,
                              LocalProvider, TransportStallError, base_url,
                              check_local_server, probe_worker, server_root)
 from .store import RunLock, Store, canonical, read_json, sha, utc, write_json
-from .tripwires import HALT_STUDY, phase_exhaustion_reason, record_tripwire
+from .tripwires import (HALT_STUDY, attempt_wall_expiry_reason,
+                        phase_exhaustion_reason, record_tripwire)
 from .workflow import (AEE_PHASES, DeltaFormatError, assess, campaign_setup,
                        compact_feedback, gate_outcome_of, grounded_claims,
                        phase_prompt, phases, resolve_claim_submission)
@@ -113,6 +117,36 @@ FINALIZE_INSTRUCTION = (
     "already in this conversation. Reply with exactly one JSON object "
     "{\"action\":\"done\",\"summary\":\"...\"} carrying the phase "
     "artifact in its usual completion form. No further shell calls.")
+
+# Cycle 2 C2-F1: the per-phase wall bound. No drafting phase may
+# consume more than this fraction of the attempt wall without
+# completing (mirrors the token guard's 60%; the implementation
+# phase is exempt, exactly as it is exempt from the token guard).
+# Expiry is handled exactly as a token-envelope expiry: a
+# force-advance phase spends its one reserved finalize call; any
+# other guarded drafting phase ends exhausted and the patch is
+# graded as it stands. Overridable per freeze via
+# ``phase_wall_fraction``.
+PHASE_WALL_FRACTION = 0.6
+
+
+def phase_wall_fraction(cfg):
+    return float(cfg.get("phase_wall_fraction", PHASE_WALL_FRACTION))
+
+
+def phase_wall_bound_seconds(cfg):
+    """The per-phase wall bound in seconds for this freeze."""
+    return phase_wall_fraction(cfg) * attempt_wall_seconds(cfg)
+
+
+def phase_wall_tripped(phase, elapsed_seconds, cfg):
+    """C2-F1 per-phase wall bound: drafting phases only; the
+    delivery phase (implement) is exempt, as under the token
+    guard, and non-drafting phases (the baseline loop) are
+    unguarded, also as under the token guard."""
+    if phase not in DRAFTING_PHASES or phase in PHASE_GUARD_TOKEN_EXEMPT:
+        return False
+    return elapsed_seconds >= phase_wall_bound_seconds(cfg)
 
 
 def construction_total_cap_tokens(cfg):
@@ -226,26 +260,54 @@ class MiniModel:
         self.provider, self.deadline, self.call_timeout = provider, deadline, call_timeout
         self.phase, self.last = None, None
         self.cfg = cfg
+        # Cycle 2 C2-F2: phase -> {"workspace_path", "sha256",
+        # "store_path"} for phases this attempt has completed,
+        # recorded by execute_attempt at each phase completion. The
+        # assembled view externalizes earlier phases' authored turns
+        # to exactly this identity.
+        self.phase_artifacts = {}
 
     def query(self, messages):
         cleaned = [{"role": m["role"], "content": m["content"]} for m in messages]
         if self.cfg is not None:
-            # Cycle 1 C1-b/C1-a: the assembled history is measured in
-            # full, then masked deterministically (read-time view;
-            # the agent's own history is untouched) so the history
-            # actually sent fits the frozen wire cap. The stats travel
+            # Cycle 1 C1-b/C1-a + Cycle 2 C2-F2: the assembled history
+            # is measured in full, then the combined view is built —
+            # earlier phases' authored turns externalized to their
+            # artifact identities, older observations masked — a
+            # read-time view (the agent's own history is untouched)
+            # so the history actually sent fits the frozen wire cap
+            # whenever the combined remainder fits. The stats travel
             # to the provider, which records assembled and wire sizes
-            # on the call event.
-            result = mask_history(
+            # — and, when even the combined remainder exceeds the
+            # cap, the named unmaskable_remainder_over_cap flag — on
+            # the call event.
+            result = assemble_history(
                 cleaned, int(self.cfg["max_input_tokens"]),
+                current_phase=self.phase,
                 recent_k=int(self.cfg.get("observation_mask_recent_k",
-                                           OBSERVATION_MASK_RECENT_K)))
+                                           OBSERVATION_MASK_RECENT_K)),
+                artifact_registry=self.phase_artifacts,
+                excerpt_chars=int(self.cfg.get("authored_turn_excerpt_chars",
+                                               AUTHORED_TURN_EXCERPT_CHARS)))
             self.provider.context_stats = {
                 "assembled_tokens": result.assembled_tokens,
                 "sent_tokens": result.sent_tokens,
-                "observations_masked": result.masked_count}
+                "observations_masked": result.masked_count,
+                "authored_turns_externalized": result.externalized_count,
+                "unmaskable_remainder_over_cap": result.unmaskable_remainder_over_cap}
             cleaned = result.messages
-        text = self.provider.query(cleaned, self.phase, min(remaining(self.deadline), self.call_timeout))
+        # C2-F1: name the binding deadline for the provider. When
+        # the wall remainder is the smaller bound, the per-call
+        # deadline IS the attempt wall: its expiry mid-call is a
+        # scored wall expiry, not a transport timeout.
+        wall_remaining = remaining(self.deadline)
+        timeout = min(wall_remaining, self.call_timeout)
+        try:
+            self.provider.call_deadline_kind = (
+                "attempt_wall" if wall_remaining <= self.call_timeout else "per_call")
+        except AttributeError:
+            pass
+        text = self.provider.query(cleaned, self.phase, timeout)
         try:
             action = json.loads(text)
             if not isinstance(action, dict) or action.get("action") not in ("shell", "done"):
@@ -342,6 +404,10 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
     for phase in phases(arm):
         model.phase = phase
         environment.phase = phase
+        # Cycle 2 C2-F1: this phase's wall clock starts when the
+        # phase starts; the per-phase wall bound is checked on the
+        # same loop cadence as the token envelope below.
+        phase_started = time.monotonic()
         # Cycle 1 C1-c: this phase's one reserved finalize call, spent
         # only if its envelope expires before it completes.
         finalize_attempted = False
@@ -367,6 +433,14 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
                                         "artifact": frozen["artifact"], "setup_reused": True,
                                         "setup_source_attempt_id": frozen["attempt_id"],
                                         **placed})
+                # C2-F2: register the reused phase's artifact
+                # identity so later phases' assembled views
+                # externalize this phase's authored turns to it.
+                model.phase_artifacts[phase] = {
+                    "workspace_path": f"/workflow/{CONSTITUTION_PATH}",
+                    "sha256": (frozen.get("constitution_file") or {}).get(
+                        "sha256") or frozen["artifact"]["sha256"],
+                    "store_path": frozen["artifact"]["path"]}
                 continue
         agent.add_messages({"role": "user", "content": f"Current phase: {phase}\n{prompt}"})
         recovery = 0
@@ -391,12 +465,19 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             # if that call fails to emit the artifact does the phase
             # end with the existing exhaustion classification.
             phase_calls = [c for c in calls if c.get("phase") == phase]
+            # Cycle 2 C2-F1: the per-phase wall bound, handled
+            # exactly as a token-envelope expiry — a force-advance
+            # phase spends its reserved finalize call; any other
+            # guarded drafting phase ends exhausted.
+            wall_tripped = phase_wall_tripped(
+                phase, time.monotonic() - phase_started, cfg)
             if phase in FORCE_ADVANCE_PHASES and not finalize_attempted:
-                if drafting_envelope_tripped(phase, calls, cfg, len(drafting_completed)):
+                if drafting_envelope_tripped(phase, calls, cfg, len(drafting_completed)) \
+                        or wall_tripped:
                     finalize_attempted = True
                     agent.add_messages({"role": "user", "content":
                                         FINALIZE_INSTRUCTION})
-            elif phase_guard_tripped(arm, phase, phase_calls, cfg):
+            elif phase_guard_tripped(arm, phase, phase_calls, cfg) or wall_tripped:
                 phase_exhausted = phase
                 break
             if used+cfg["max_input_tokens"]+cfg["max_output_tokens"] > cfg["token_cap"]:
@@ -410,9 +491,11 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
                     raise
                 # The reserved finalize call itself failed: the phase
                 # ends with the existing exhaustion classification.
-                # Transport stalls and the outer bound keep their own
-                # named semantics and are never reclassified here.
-                if isinstance(exc, (TransportStallError, CallOuterBoundError)):
+                # Transport stalls, the outer bound, and (C2-F1) an
+                # attempt-wall expiry keep their own named semantics
+                # and are never reclassified here.
+                if isinstance(exc, (TransportStallError, CallOuterBoundError,
+                                    AttemptWallExpiredError)):
                     raise
                 phase_exhausted = phase
                 break
@@ -429,6 +512,15 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             store.append("phases", {**identity, "phase": phase, "timestamp": utc(),
                                     "artifact": artifact,
                                     **({"force_advanced": True} if finalize_attempted else {})})
+            # Cycle 2 C2-F2: register this phase's artifact identity
+            # (workspace path + hash) so later phases' assembled
+            # views replace this phase's authored turns with it.
+            model.phase_artifacts[phase] = {
+                "workspace_path": (
+                    f"/workflow/{CONSTITUTION_PATH}" if phase == "constitution"
+                    else extract_workspace_path(json.dumps(model.last, sort_keys=True))),
+                "sha256": artifact["sha256"],
+                "store_path": artifact["path"]}
             if phase in FORCE_ADVANCE_PHASES:
                 drafting_completed.add(phase)
             if share_setup and phase == "constitution" and campaign_setup(store, setup_key) is None:
@@ -1094,6 +1186,14 @@ def run(root, manifest, output, arm=None, smoke=False):
                             result["phase_exhausted"])
             except (BudgetExceeded, LimitHit) as e:
                 status, reason = "limit", str(e)
+            except AttemptWallExpiredError:
+                # Cycle 2 C2-F1: the attempt wall expired, including
+                # mid-call under the wall-remainder per-call deadline
+                # (Cycle 1's fatal shape). A scored limit outcome
+                # via the explicit classifier branch — the partial
+                # patch extracted above is graded as it stands and
+                # the study proceeds to the next scheduled attempt.
+                status, reason = "limit", attempt_wall_expiry_reason()
             except CallOuterBoundError:
                 # Cycle 1 C1-A3: a flowing call reached the hard
                 # outer bound — a named, disclosed limit (the partial

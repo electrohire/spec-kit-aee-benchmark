@@ -27,6 +27,7 @@ import pytest
 
 from benchmark_runner.store import Store
 from benchmark_runner.tripwires import (
+    ATTEMPT_WALL_EXPIRED,
     HALT_STUDY,
     INTEGRITY,
     MODEL_OUTCOME,
@@ -34,6 +35,7 @@ from benchmark_runner.tripwires import (
     PREMISE_EQUIPMENT,
     SCORE_AND_CONTINUE,
     UNKNOWN,
+    attempt_wall_expiry_reason,
     behavior_for,
     classify_halt,
     phase_exhaustion_reason,
@@ -97,6 +99,78 @@ def test_natural_wording_phase_budget_exhausted_is_not_protocol_token():
     assert (halt_class, halt_kind) != (MODEL_OUTCOME, "phase_budget_exhausted")
     assert (halt_class, halt_kind, behavior) == (
         PREMISE_EQUIPMENT, "campaign_budget_exceeded", HALT_STUDY)
+
+
+# --- Cycle 2 C2-F1: the attempt-wall-expiry protocol token -------------------
+#
+# The branch order is pinned here: the wall token classifies as a
+# scored model outcome through its explicit branch, placed before
+# the generic transport rules — the rules whose markers classified
+# Cycle 1's wall-killed flowing call (an "error" record carrying
+# provider/transport wording) as an infrastructure halt.
+
+def test_attempt_wall_expired_constant_and_helper():
+    assert ATTEMPT_WALL_EXPIRED == "attempt_wall_expired"
+    assert attempt_wall_expiry_reason() == "attempt_wall_expired"
+
+
+def test_attempt_wall_expired_is_model_outcome_and_continues():
+    assert _classify_and_behavior("limit", "attempt_wall_expired") == (
+        MODEL_OUTCOME, "attempt_wall_expired", SCORE_AND_CONTINUE)
+
+
+@pytest.mark.parametrize("reason", [
+    "attempt_wall_expired: plan",
+    "attempt_wall_expired plan",
+    "ATTEMPT_WALL_EXPIRED",
+    "  attempt_wall_expired  ",
+])
+def test_attempt_wall_expired_protocol_variants(reason):
+    assert _classify_and_behavior("limit", reason) == (
+        MODEL_OUTCOME, "attempt_wall_expired", SCORE_AND_CONTINUE)
+
+
+def test_attempt_wall_token_wins_over_budget_wording():
+    # Branch order within "limit": the explicit wall branch fires
+    # before the campaign-budget rule even when the reason carries
+    # budget wording after the token.
+    assert _classify_and_behavior(
+        "limit", "attempt_wall_expired: budget of wall time spent") == (
+            MODEL_OUTCOME, "attempt_wall_expired", SCORE_AND_CONTINUE)
+
+
+def test_attempt_wall_natural_wording_is_not_the_protocol_token():
+    # "attempt wall expired" (spaces, no underscores) must NOT
+    # reach the wall branch: as a limit it falls through to the
+    # generic disclosed limit (a different kind), and as an error
+    # carrying transport wording it still hits the generic
+    # transport rules and halts — the token is load-bearing.
+    assert _classify_and_behavior("limit", "attempt wall expired") == (
+        MODEL_OUTCOME, "disclosed_limit_reached", SCORE_AND_CONTINUE)
+    assert _classify_and_behavior(
+        "error", "attempt wall expired: transport timeout from provider") == (
+            PREMISE_EQUIPMENT, "infrastructure_error", HALT_STUDY)
+
+
+def test_attempt_wall_token_under_error_status_is_not_promoted():
+    # The branch is scoped to status "limit": the same token on an
+    # error record does not become a model outcome.
+    halt_class, halt_kind, behavior = _classify_and_behavior(
+        "error", "attempt_wall_expired")
+    assert (halt_class, halt_kind) != (MODEL_OUTCOME, "attempt_wall_expired")
+    assert behavior == HALT_STUDY
+
+
+def test_record_tripwire_attempt_wall_expired(tmp_path):
+    store = Store(tmp_path / "run")
+    identity = {"attempt_id": "att-1", "arm": "spec_kit", "task_id": "task-1"}
+    event = record_tripwire(store, identity, "limit",
+                            attempt_wall_expiry_reason())
+    assert event["halt_class"] == MODEL_OUTCOME
+    assert event["halt_kind"] == "attempt_wall_expired"
+    assert event["behavior"] == SCORE_AND_CONTINUE
+    (stored,) = store.events("tripwires")
+    assert stored["halt_kind"] == "attempt_wall_expired"
 
 
 # --- Pre-existing limit classifications, unchanged ---------------------------

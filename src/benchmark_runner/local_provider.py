@@ -29,7 +29,8 @@ from .accounting import TOKEN_FIELDS, native_usage
 from .context import estimate_tokens
 from .store import canonical, utc
 from .schema import validate_call, validate_identity
-from .provider import ProviderError, paced_wait, transport_policy
+from .provider import (AttemptWallExpiredError, ProviderError, paced_wait,
+                       transport_policy)
 
 # Amendment 1 R-A5 streamed transport, with the per-call deadline made
 # inactivity-aware by Cycle 1 C1-A3 (2026-10-21): a call dies as a
@@ -72,6 +73,14 @@ def _set_socket_timeout(handle, seconds):
 
 class _TransportStall(Exception):
     """Internal control-flow signal: the stall path builds its own event."""
+
+
+class _AttemptWallExpired(Exception):
+    """Internal control-flow signal (Cycle 2 C2-F1): the per-call
+    deadline the caller passed was the attempt-wall remainder and
+    it elapsed mid-call. The wall path builds its own event, with
+    the partial stream recorded, exactly as the outer-bound path
+    does — but it is a scored attempt limit, not a transport event."""
 
 
 def base_url():
@@ -213,7 +222,8 @@ class LocalProvider:
         check_local_server(self.policy)  # Fail before any reservation, never mid-campaign.
 
     @staticmethod
-    def _open_stream(req, tick, deadline_seconds, last_token_mono):
+    def _open_stream(req, tick, deadline_seconds, last_token_mono,
+                     deadline_is_wall=False):
         """Open a streaming response under the R-A5 clocks. The server
         sends no headers until prompt processing finishes, which on
         this worker legitimately takes longer than any read slice —
@@ -246,6 +256,8 @@ class LocalProvider:
                     and now - tick >= CALL_OUTER_BOUND_SECONDS:
                 raise _CallOuterBound()
             if now - tick >= deadline_seconds:
+                if deadline_is_wall:
+                    raise _AttemptWallExpired()
                 raise TimeoutError("per-call deadline exceeded")
         if "error" in holder:
             raise holder["error"]
@@ -266,12 +278,19 @@ class LocalProvider:
         # the stall state must survive the finally block's scope.
         stall = False
         outer_bound = False
+        wall_expired = False
         # C1-a: context stats handed in by the calling model (assembled
         # size before read-time masking, masked count, sent size).
         # Absent (direct provider use), the assembled size is estimated
         # from the messages as received.
         context_stats = getattr(self, "context_stats", None) or {}
         self.context_stats = None
+        # C2-F1: the calling model names the binding deadline. When
+        # it is the attempt wall ("attempt_wall"), the per-call
+        # deadline expiring mid-call is a wall expiry (scored),
+        # never the generic per-call timeout (premise/equipment).
+        deadline_is_wall = getattr(self, "call_deadline_kind", None) == "attempt_wall"
+        self.call_deadline_kind = None
         try:
             started, tick = utc(), time.monotonic()
             payload = dict(model=self.model, messages=messages,
@@ -301,13 +320,16 @@ class LocalProvider:
                         and now - tick >= CALL_OUTER_BOUND_SECONDS:
                     return _CallOuterBound()
                 if now - tick >= timeout:
+                    if deadline_is_wall:
+                        return _AttemptWallExpired()
                     return TimeoutError("per-call deadline exceeded")
                 return None
             try:
                 req = urllib.request.Request(self.url + "/chat/completions",
                                              canonical(payload), _headers())
                 paced_wait(self.policy)  # The process-wide gap covers local traffic too.
-                with self._open_stream(req, tick, timeout, last_token_mono) as handle:
+                with self._open_stream(req, tick, timeout, last_token_mono,
+                                       deadline_is_wall=deadline_is_wall) as handle:
                     request_id = handle.headers.get("x-request-id")
                     content_type = handle.headers.get("Content-Type") or ""
                     _set_socket_timeout(
@@ -500,6 +522,28 @@ class LocalProvider:
                             "usage": None, "partial": True,
                             "limit_kind": "call_outer_bound"}
                 response_artifact = self.store.artifact(canonical(response))
+            except _AttemptWallExpired:
+                # C2-F1: the wall remainder the harness passed as
+                # this call's deadline elapsed while the call was
+                # flowing (the stall clock, checked first at every
+                # slice, never fired). The partial stream is
+                # recorded as the response artifact and the call is
+                # charged at its reservation, exactly as for the
+                # outer bound — but the outcome is the scored
+                # attempt-wall expiry, so NO transport event is
+                # written: this is not a transport failure and no
+                # R-A5 bundle attaches to it.
+                wall_expired = True
+                error = "AttemptWallExpired"
+                usage = {**{k: None for k in TOKEN_FIELDS},
+                         "unknown_reason": "AttemptWallExpired"}
+                response = {"model": streamed_model,
+                            "choices": [{"message": {
+                                "content": "".join(content_parts),
+                                "reasoning_content": "".join(reasoning_parts)}}],
+                            "usage": None, "partial": True,
+                            "limit_kind": "attempt_wall_expired"}
+                response_artifact = self.store.artifact(canonical(response))
             except (urllib.error.URLError, TimeoutError, KeyError, ValueError, OSError) as e:
                 error = type(e).__name__  # Never log headers or raw error bodies.
                 usage = {**{k: None for k in TOKEN_FIELDS}, "unknown_reason": error}
@@ -538,7 +582,12 @@ class LocalProvider:
                          and assembled_tokens > cfg["max_input_tokens"]),
                      "sent_tokens": context_stats.get("sent_tokens"),
                      "observations_masked": context_stats.get("observations_masked"),
-                     "limit_kind": "call_outer_bound" if outer_bound else None,
+                     "authored_turns_externalized": context_stats.get(
+                         "authored_turns_externalized"),
+                     "unmaskable_remainder_over_cap": bool(
+                         context_stats.get("unmaskable_remainder_over_cap")),
+                     "limit_kind": ("attempt_wall_expired" if wall_expired
+                                    else "call_outer_bound" if outer_bound else None),
                      "reasoning_fallback": reasoning_fallback,
                      "think_stripped": think_stripped,
                      "artifacts": {"request": request_artifact, "response": response_artifact}}
@@ -570,6 +619,8 @@ class LocalProvider:
             raise TransportStallError("TransportStallSuspected")
         if outer_bound:
             raise CallOuterBoundError("CallOuterBound")
+        if wall_expired:
+            raise AttemptWallExpiredError("AttemptWallExpired")
         if error:
             raise ProviderError(error)
         return text

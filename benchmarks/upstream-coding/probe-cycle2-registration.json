@@ -1,0 +1,331 @@
+{
+  "schema": "needle-cycle2-probe-registration-v1",
+  "status": "DESIGN FROZEN (Cycle 2 offline phase; no probe inference has run or is authorized by this file \u2014 the coordinator runs the probe under its own freeze)",
+  "probe": "Cycle 2 capability probe (discriminator D3): direct implementation vs standalone specification, same frozen model, same tasks",
+  "derivation": {
+    "rule": "Order the Fast v1.1 level-1 instances by the SHA-256 of \"needle-01:\" + instance_id (UTF-8, ascending hex), after the pre-named exclusions; take the first instances passing the recorded resource-feasibility check; the campaign took the first six \u2014 the probe takes the NEXT six in the same order (extended past the campaign set), disjoint from the campaign's six.",
+    "source_registration": "registration-needle-v2.json",
+    "campaign_hash_ranks": [
+      2,
+      3,
+      4,
+      5,
+      7,
+      8
+    ],
+    "probe_hash_ranks": [
+      9,
+      10,
+      11,
+      12,
+      14,
+      16
+    ],
+    "selection_hashes_reverified": true,
+    "skipped_in_hash_order": [
+      {
+        "hash_rank": 1,
+        "instance_id": "scikit-learn__scikit-learn.5741bac9.test_arff_parser.ecde431a.lv1",
+        "reason": "recorded feasibility check did not pass"
+      },
+      {
+        "hash_rank": 2,
+        "instance_id": "pydantic__pydantic.e1dcaf9e.test_pipeline.c9b08962.lv1",
+        "reason": "campaign task (probe set is disjoint)"
+      },
+      {
+        "hash_rank": 3,
+        "instance_id": "astropy__astropy.b0db0daa.test_converter.2ef0539f.lv1",
+        "reason": "campaign task (probe set is disjoint)"
+      },
+      {
+        "hash_rank": 4,
+        "instance_id": "pypa__hatch.ff4b4040.test_fmt.782c88a8.lv1",
+        "reason": "campaign task (probe set is disjoint)"
+      },
+      {
+        "hash_rank": 5,
+        "instance_id": "sphinx-doc__sphinx.e347e59c.test_util_nodes.08cdc62d.lv1",
+        "reason": "campaign task (probe set is disjoint)"
+      },
+      {
+        "hash_rank": 6,
+        "instance_id": "mlflow__mlflow.93dab383.test_trace_correlation.53c200a6.lv1",
+        "reason": "recorded feasibility check did not pass"
+      },
+      {
+        "hash_rank": 7,
+        "instance_id": "mwaskom__seaborn.7001ebe7.test_statistics.0f2ae277.lv1",
+        "reason": "campaign task (probe set is disjoint)"
+      },
+      {
+        "hash_rank": 8,
+        "instance_id": "pydata__xarray.97f3a746.test_backends_chunks.fa55f68a.lv1",
+        "reason": "campaign task (probe set is disjoint)"
+      },
+      {
+        "hash_rank": 13,
+        "instance_id": "mlflow__mlflow.93dab383.test_scorer_description.9163195a.lv1",
+        "reason": "recorded feasibility check did not pass"
+      },
+      {
+        "hash_rank": 15,
+        "instance_id": "mlflow__mlflow.93dab383.test_presigned_url_artifact_repo.8d57288e.lv1",
+        "reason": "recorded feasibility check did not pass"
+      },
+      {
+        "hash_rank": 17,
+        "instance_id": "pandas-dev__pandas.82fa2715.test_formats.05080a4e.lv1",
+        "reason": "past the probe set in hash order"
+      },
+      {
+        "hash_rank": 18,
+        "instance_id": "pandas-dev__pandas.82fa2715.test_http_headers.aafb551e.lv1",
+        "reason": "recorded feasibility check did not pass"
+      }
+    ],
+    "note": "Instances whose feasibility was never evaluated (feasible is not True in the records) are not eligible: the probe freezes only on instances the records prove feasible. Problem statements and prepared solver images for the probe tasks are produced at the coordinator's probe freeze from the pinned dataset, exactly as the campaign freeze produced them for the campaign six; they are not part of the campaign registration's evaluated records and are not invented here."
+  },
+  "tasks": [
+    {
+      "instance_id": "pandas-dev__pandas.82fa2715.test_sample.5d2ba03e.lv1",
+      "hash_rank": 9,
+      "selection_hash_sha256": "096f09d80e4f893d73ca7f2e223fdf973dcf4183e91bcac37ca0d657a72e8400",
+      "repo": "pandas-dev/pandas",
+      "level": 1,
+      "raw_base_commit": "82fa27153e5b646ecdb78cfc6ecf3e1750443892",
+      "prepared_baseline_commit": "1def1bfd31f2f406b9438b04417ad45ca8446e02",
+      "prepared_baseline_tree": "4545153046c4b4a414d93ce1fb1dfa10745cebb7",
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_pandas-instance_15f634a6",
+      "solver_image_id": "sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_pandas-instance_15f634a6@sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7"
+      ],
+      "fail_to_pass_test_files": [
+        "pandas/tests/groupby/methods/test_sample.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "feasibility": {
+        "feasible": true,
+        "offline_preparation_ok": true,
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "grader_smoke_pass": true
+      }
+    },
+    {
+      "instance_id": "pandas-dev__pandas.82fa2715.test_iceberg.85771c70.lv1",
+      "hash_rank": 10,
+      "selection_hash_sha256": "0da7f01efab7ad3ca128e7d50ee5f07f5f4dadea8137c245c0f97c99197eccc0",
+      "repo": "pandas-dev/pandas",
+      "level": 1,
+      "raw_base_commit": "82fa27153e5b646ecdb78cfc6ecf3e1750443892",
+      "prepared_baseline_commit": "21d6452e3b62f63098ec53911fd43eacb3e71892",
+      "prepared_baseline_tree": "f86576f415bca464c52c228bd5ac92e480f51b7c",
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_pandas-instance_15f634a6",
+      "solver_image_id": "sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_pandas-instance_15f634a6@sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7"
+      ],
+      "fail_to_pass_test_files": [
+        "pandas/tests/io/test_iceberg.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "feasibility": {
+        "feasible": true,
+        "offline_preparation_ok": true,
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "grader_smoke_pass": null
+      }
+    },
+    {
+      "instance_id": "pydata__xarray.97f3a746.test_coordinate_transform.6cacb660.lv1",
+      "hash_rank": 11,
+      "selection_hash_sha256": "10007fd13dc842557175de435d9b20acf1a768652e8dff8ba117b88175b66dfb",
+      "repo": "pydata/xarray",
+      "level": 1,
+      "raw_base_commit": "97f3a7465a66638f68129581b658853a3992dd89",
+      "prepared_baseline_commit": "1425c7915e486d6de52e5c8b18b77980347067d7",
+      "prepared_baseline_tree": "92830e2e52af3c1d2c667aa56f0318a3b96f34e4",
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_xarray-instance_62de996a",
+      "solver_image_id": "sha256:075803e6495efc4aa64c015effcae52986a62352655127f69a262dfbedfbb7d7",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_xarray-instance_62de996a@sha256:075803e6495efc4aa64c015effcae52986a62352655127f69a262dfbedfbb7d7"
+      ],
+      "fail_to_pass_test_files": [
+        "xarray/tests/test_coordinate_transform.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "feasibility": {
+        "feasible": true,
+        "offline_preparation_ok": true,
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "grader_smoke_pass": null
+      }
+    },
+    {
+      "instance_id": "pandas-dev__pandas.82fa2715.test_reduction.3ac3b298.lv1",
+      "hash_rank": 12,
+      "selection_hash_sha256": "10366e58dcedc5d3aae044f70d42d52127b9063311fbd10b1edb82f11d82b1de",
+      "repo": "pandas-dev/pandas",
+      "level": 1,
+      "raw_base_commit": "82fa27153e5b646ecdb78cfc6ecf3e1750443892",
+      "prepared_baseline_commit": "9b43361e416e8f06f737cb81a3f4bfa103b9ad6d",
+      "prepared_baseline_tree": "e253eb95d597586f9e136fa9dcfafff066efe9d2",
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_pandas-instance_15f634a6",
+      "solver_image_id": "sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_pandas-instance_15f634a6@sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7"
+      ],
+      "fail_to_pass_test_files": [
+        "pandas/tests/arrays/integer/test_reduction.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "feasibility": {
+        "feasible": true,
+        "offline_preparation_ok": true,
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "grader_smoke_pass": null
+      }
+    },
+    {
+      "instance_id": "mwaskom__seaborn.7001ebe7.test_relational.f23eb542.lv1",
+      "hash_rank": 14,
+      "selection_hash_sha256": "106bf1bc023cf91e452771aac8827494dc78fa4335bdc763de1113ded6671f2d",
+      "repo": "mwaskom/seaborn",
+      "level": 1,
+      "raw_base_commit": "7001ebe72423238e99c0434a2ef0a0ebc9cb55c1",
+      "prepared_baseline_commit": "dc8985f0337a85f937d55b3ad328cefe6c502dc5",
+      "prepared_baseline_tree": "724cdd7d70646091e9c2b30b197426bbd81b2318",
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_seaborn-instance_52738fbb",
+      "solver_image_id": "sha256:fe27a1a5205fa0939453e79d0f40c74cb402bad8ea1d42fff7de5e2106e77ce1",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_seaborn-instance_52738fbb@sha256:fe27a1a5205fa0939453e79d0f40c74cb402bad8ea1d42fff7de5e2106e77ce1"
+      ],
+      "fail_to_pass_test_files": [
+        "tests/test_relational.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "feasibility": {
+        "feasible": true,
+        "offline_preparation_ok": true,
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "grader_smoke_pass": null
+      }
+    },
+    {
+      "instance_id": "astropy__astropy.b0db0daa.test_tilde_path.383d7c0c.lv1",
+      "hash_rank": 16,
+      "selection_hash_sha256": "116401455e06102a91e84799c3ef147cf982d24cde08f32d403a28943a06236a",
+      "repo": "astropy/astropy",
+      "level": 1,
+      "raw_base_commit": "b0db0daac6b851596851cb43e5456fb6c916c071",
+      "prepared_baseline_commit": "ab7c403fd0d60100d86a6768c9a1046eac4abcda",
+      "prepared_baseline_tree": "ba9dc6d170d9cb70a5a8e7d7df2277857b3bb088",
+      "solver_image_reference": "docker.io/libercoders/featurebench-specs_astropy-instance_493bb78b",
+      "solver_image_id": "sha256:4b5e7489d8bee8e20b53f94c74833e6d9ee0163673ac4a36eecb0372ef01fda2",
+      "solver_image_repo_digests": [
+        "libercoders/featurebench-specs_astropy-instance_493bb78b@sha256:4b5e7489d8bee8e20b53f94c74833e6d9ee0163673ac4a36eecb0372ef01fda2"
+      ],
+      "fail_to_pass_test_files": [
+        "astropy/io/fits/tests/test_tilde_path.py"
+      ],
+      "pass_to_pass_test_file_count": 5,
+      "feasibility": {
+        "feasible": true,
+        "offline_preparation_ok": true,
+        "solver_image_audit_pass": true,
+        "prepared_tree_fail_to_pass_masked": true,
+        "grader_smoke_pass": true
+      }
+    }
+  ],
+  "configs": {
+    "probe_i_direct_implementation": {
+      "model": "qwen3.8-27b",
+      "provider_backend": "local",
+      "context_tokens": 32768,
+      "max_input_tokens": 24576,
+      "max_output_tokens": 8192,
+      "per_attempt_cap_tokens": 400000,
+      "tasks": [
+        "pandas-dev__pandas.82fa2715.test_sample.5d2ba03e.lv1",
+        "pandas-dev__pandas.82fa2715.test_iceberg.85771c70.lv1",
+        "pydata__xarray.97f3a746.test_coordinate_transform.6cacb660.lv1",
+        "pandas-dev__pandas.82fa2715.test_reduction.3ac3b298.lv1",
+        "mwaskom__seaborn.7001ebe7.test_relational.f23eb542.lv1",
+        "astropy__astropy.b0db0daa.test_tilde_path.383d7c0c.lv1"
+      ],
+      "probe": "direct_implementation",
+      "arm": "baseline",
+      "phases": [
+        "solve"
+      ],
+      "loop": "plain",
+      "test_feedback": true,
+      "measures": [
+        "completion_rate",
+        "time_to_first_edit",
+        "tokens_per_completion"
+      ]
+    },
+    "probe_ii_standalone_specification": {
+      "model": "qwen3.8-27b",
+      "provider_backend": "local",
+      "context_tokens": 32768,
+      "max_input_tokens": 24576,
+      "max_output_tokens": 8192,
+      "per_attempt_cap_tokens": 400000,
+      "tasks": [
+        "pandas-dev__pandas.82fa2715.test_sample.5d2ba03e.lv1",
+        "pandas-dev__pandas.82fa2715.test_iceberg.85771c70.lv1",
+        "pydata__xarray.97f3a746.test_coordinate_transform.6cacb660.lv1",
+        "pandas-dev__pandas.82fa2715.test_reduction.3ac3b298.lv1",
+        "mwaskom__seaborn.7001ebe7.test_relational.f23eb542.lv1",
+        "astropy__astropy.b0db0daa.test_tilde_path.383d7c0c.lv1"
+      ],
+      "probe": "standalone_specification",
+      "arm": "spec_kit",
+      "phases": [
+        "constitution",
+        "specify"
+      ],
+      "loop": "constitution+specify only",
+      "test_feedback": false,
+      "completion_judge": "mechanical_specification_checklist",
+      "checklist": {
+        "constitution_required_sections": [
+          "Core Principles",
+          "Governance"
+        ],
+        "specification_required_sections": [
+          "User Scenarios & Testing",
+          "Requirements",
+          "Functional Requirements",
+          "Success Criteria"
+        ],
+        "min_section_content_chars": 10,
+        "self_termination": "each phase ended by the model's own done action",
+        "judge": "benchmark_runner.probe.judge_specification_completion"
+      },
+      "measures": [
+        "completion_rate",
+        "cost_distribution_censoring_aware"
+      ]
+    }
+  },
+  "budget": {
+    "per_attempt_cap_tokens": 400000,
+    "probe_attempts": 12,
+    "worst_case_probe_tokens": 4800000,
+    "probe_sub_bound_tokens": 4800000,
+    "worst_case_within_sub_bound": true,
+    "program_cap_tokens": 48000000,
+    "accounting": "Probe spend is charged through benchmark_runner.budget_guard.BudgetGuard with the probe store as the stage store (stage cap = the probe sub-bound) and all prior program stores as prior stores (program cap = 48,000,000): probe tokens count against BOTH caps. See benchmark_runner.probe.probe_budget_verdict."
+  },
+  "does_not_establish": "Anything about the campaign arms' relative merit \u2014 the probe locates the model's ceiling so Cycle 3 spends on the binding constraint."
+}
