@@ -56,6 +56,7 @@ except ImportError:
     dc = None  # Secure Vault connector unavailable on this host; env fallback.
 
 from .accounting import TOKEN_FIELDS, cost, native_usage, request_prices
+from .context import estimate_tokens
 from .store import canonical, utc
 from .schema import validate_call, validate_identity
 
@@ -519,6 +520,14 @@ class OpenAIProvider:
         if cfg.get("temperature") is not None:
             payload["temperature"] = cfg["temperature"]
         request_artifact = self.store.artifact(canonical(payload))
+        # C1-a wire-vs-assembled accounting (see local_provider): the
+        # assembled size handed in by the calling model, the wire size
+        # from each physical request's reported usage, and the
+        # over-cap flag against the frozen wire cap.
+        context_stats = getattr(self, "context_stats", None) or {}
+        self.context_stats = None
+        assembled_tokens = context_stats.get(
+            "assembled_tokens", estimate_tokens(messages))
 
         waited, attempt_index, terminal_error = 0.0, 0, None
         while True:
@@ -556,6 +565,11 @@ class OpenAIProvider:
                          "currency": "USD", "cost": str(charge) if charge is not None else None,
                          "retry": retry + attempt_index, "physical_attempt": attempt_index,
                          "error": error,
+                         "assembled_tokens": assembled_tokens,
+                         "wire_tokens": usage.get("input_tokens"),
+                         "assembled_over_wire_cap": assembled_tokens > cfg["max_input_tokens"],
+                         "sent_tokens": context_stats.get("sent_tokens"),
+                         "observations_masked": context_stats.get("observations_masked"),
                          "artifacts": {"request": request_artifact, "response": response_artifact}}
                 validate_call(event)
                 self.store.append("calls", event)

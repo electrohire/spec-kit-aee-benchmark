@@ -15,11 +15,14 @@ import urllib.request
 from pathlib import Path
 
 from .accounting import Budget, BudgetExceeded, TOKEN_FIELDS, attempt_token_usage
+from .context import (OBSERVATION_MASK_RECENT_K, OBSERVATION_WRITE_CAP_BYTES,
+                      cap_observation, history_digest, mask_history)
 from .experiment import verify_freeze
 from .isolation import DockerSandbox
-from .provider import OpenAIProvider, provider_spec, transport_policy
-from .local_provider import (LocalProvider, base_url, check_local_server,
-                             probe_worker, server_root)
+from .provider import OpenAIProvider, ProviderError, provider_spec, transport_policy
+from .local_provider import (CALL_OUTER_BOUND_SECONDS, CallOuterBoundError,
+                             LocalProvider, TransportStallError, base_url,
+                             check_local_server, probe_worker, server_root)
 from .store import RunLock, Store, canonical, read_json, sha, utc, write_json
 from .tripwires import HALT_STUDY, phase_exhaustion_reason, record_tripwire
 from .workflow import (AEE_PHASES, DeltaFormatError, assess, campaign_setup,
@@ -93,6 +96,47 @@ CONSTRUCTION_CAP_TOKENS = 900_000  # R-A1: per-task construction cap
 WORKER_BLOCK_LIMIT = 3             # R-A6: busy blocks per stage -> halt
 CONSTITUTION_PATH = ".specify/memory/constitution.md"
 
+# Cycle 1 (2026-10-21) reconciled plan: C1-A2 banked construction —
+# the per-draw cap above is one installment; construction completes
+# across at most this many installments under this per-task total on
+# the setup line. C1-A4/C1-b: the drafting phases whose histories get
+# write-time observation caps; C1-c: the drafting phases governed by
+# envelopes with rollover and force-advance (constitution is handled
+# by the banked construction structure, not by force-advance).
+CONSTRUCTION_TOTAL_CAP_TOKENS = 1_800_000  # C1-A2: per-task total
+CONSTRUCTION_MAX_INSTALLMENTS = 3          # C1-A2: installments per task
+DRAFTING_PHASES = frozenset({"constitution", "specify", "plan", "tasks"})
+FORCE_ADVANCE_PHASES = frozenset({"specify", "plan", "tasks"})
+FINALIZE_INSTRUCTION = (
+    "Phase envelope reached (Cycle 1 force-advance): stop drafting and "
+    "emit this phase's completion artifact NOW, from the draft state "
+    "already in this conversation. Reply with exactly one JSON object "
+    "{\"action\":\"done\",\"summary\":\"...\"} carrying the phase "
+    "artifact in its usual completion form. No further shell calls.")
+
+
+def construction_total_cap_tokens(cfg):
+    return int(cfg.get("construction_total_cap_tokens", CONSTRUCTION_TOTAL_CAP_TOKENS))
+
+
+def construction_max_installments(cfg):
+    return int(cfg.get("construction_max_installments", CONSTRUCTION_MAX_INSTALLMENTS))
+
+
+def drafting_envelope_tripped(phase, calls, cfg, drafting_completed):
+    """C1-c envelope for a force-advance drafting phase: the
+    Amendment 1 placeholders (60% guard, 40-call bound), with the
+    token envelope cumulative across drafting phases — unused
+    envelope from completed drafting phases rolls forward, so a
+    phase may spend its own envelope plus every earlier drafting
+    phase's unspent remainder."""
+    phase_calls = [c for c in calls if c.get("phase") == phase]
+    if len(phase_calls) >= phase_guard_calls(cfg):
+        return True
+    drafting_calls = [c for c in calls if c.get("phase") in FORCE_ADVANCE_PHASES]
+    envelope = phase_guard_tokens(cfg) * (drafting_completed + 1)
+    return attempt_token_usage(drafting_calls, cfg) >= envelope
+
 
 def phase_guard_tokens(cfg):
     return int(cfg.get("phase_guard_tokens", PHASE_GUARD_TOKENS))
@@ -159,18 +203,48 @@ def call_timeout_seconds(cfg):
     return LOCAL_CALL_TIMEOUT_SECONDS if local_backend(cfg) else FRONTIER_CALL_TIMEOUT_SECONDS
 
 
+def workflow_call_timeout_seconds(cfg):
+    """Per-call timeout for the phase workflow (execute_attempt and
+    construction). Cycle 1 C1-A3: on the local backend a call's
+    deadline is the inactivity-aware outer bound — silence declares a
+    stall at 600 s and a flowing call may run to 7,200 s — not the
+    600 s wall that killed Stage 1R's flowing astropy call. The
+    matched-repair protocol keeps call_timeout_seconds unchanged."""
+    if local_backend(cfg):
+        return CALL_OUTER_BOUND_SECONDS
+    return call_timeout_seconds(cfg)
+
+
 def attempt_wall_seconds(cfg):
     return LOCAL_WALL_TIME_SECONDS if local_backend(cfg) else cfg["timeout_seconds"]
 
 
 class MiniModel:
     """mini's Model protocol with observable requests and explicit JSON actions."""
-    def __init__(self, provider, deadline, call_timeout=FRONTIER_CALL_TIMEOUT_SECONDS):
+    def __init__(self, provider, deadline, call_timeout=FRONTIER_CALL_TIMEOUT_SECONDS,
+                 cfg=None):
         self.provider, self.deadline, self.call_timeout = provider, deadline, call_timeout
         self.phase, self.last = None, None
+        self.cfg = cfg
 
     def query(self, messages):
         cleaned = [{"role": m["role"], "content": m["content"]} for m in messages]
+        if self.cfg is not None:
+            # Cycle 1 C1-b/C1-a: the assembled history is measured in
+            # full, then masked deterministically (read-time view;
+            # the agent's own history is untouched) so the history
+            # actually sent fits the frozen wire cap. The stats travel
+            # to the provider, which records assembled and wire sizes
+            # on the call event.
+            result = mask_history(
+                cleaned, int(self.cfg["max_input_tokens"]),
+                recent_k=int(self.cfg.get("observation_mask_recent_k",
+                                           OBSERVATION_MASK_RECENT_K)))
+            self.provider.context_stats = {
+                "assembled_tokens": result.assembled_tokens,
+                "sent_tokens": result.sent_tokens,
+                "observations_masked": result.masked_count}
+            cleaned = result.messages
         text = self.provider.query(cleaned, self.phase, min(remaining(self.deadline), self.call_timeout))
         try:
             action = json.loads(text)
@@ -195,9 +269,11 @@ class MiniModel:
 
 
 class MiniEnvironment:
-    def __init__(self, sandbox, deadline, store, identity):
+    def __init__(self, sandbox, deadline, store, identity, cfg=None):
         self.sandbox, self.deadline, self.store, self.identity = sandbox, deadline, store, identity
         self.tool_calls = 0
+        self.phase = None
+        self.cfg = cfg or {}
 
     def execute(self, action):
         self.tool_calls += 1
@@ -206,6 +282,16 @@ class MiniEnvironment:
         self.store.append("tools", {**self.identity, "timestamp": utc(), "artifact": artifact,
                                     "exit_code": result["exit_code"]})
         # Full output retained as artifact; bounded observation prevents context explosion.
+        if self.phase in DRAFTING_PHASES:
+            # Cycle 1 C1-A4: observations entering a construction or
+            # drafting-phase history are capped at write time,
+            # deterministically, with byte counts recorded on the
+            # observation itself.
+            observation = cap_observation(
+                result, int(self.cfg.get("observation_write_cap_bytes",
+                                         OBSERVATION_WRITE_CAP_BYTES)))
+            return {**observation,
+                    "evidence_ref": artifact["path"], "source_id": artifact["sha256"]}
         return {**result, "stdout": result["stdout"][-24000:], "stderr": result["stderr"][-8000:],
                 "evidence_ref": artifact["path"], "source_id": artifact["sha256"]}
 
@@ -228,12 +314,15 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
     if arm != "baseline":
         sandbox.stage_workflow(root)
     deadline = time.monotonic()+attempt_wall_seconds(cfg)
-    model = MiniModel(provider, deadline, call_timeout_seconds(cfg))
-    environment = MiniEnvironment(sandbox, deadline, store, identity)
+    model = MiniModel(provider, deadline, workflow_call_timeout_seconds(cfg), cfg=cfg)
+    environment = MiniEnvironment(sandbox, deadline, store, identity, cfg=cfg)
     agent = DefaultAgent(model, environment, system_template="", instance_template="", cost_limit=0)
     agent.add_messages({"role": "system", "content": phase_prompt(root, "baseline", "solve")},
                        {"role": "user", "content": task["problem_statement"]})
     outcome, gate_outcome, repairs = None, None, 0
+    # Cycle 1 C1-c: force-advance drafting phases already completed
+    # (their unspent envelope rolls forward into later envelopes).
+    drafting_completed = set()
     # Workstream A2/A3 state: the standing claims bundle for this
     # attempt (later assessed phases and repair rounds submit deltas
     # merged into it), a pending over-cap candidate awaiting its one
@@ -252,6 +341,10 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
     phase_exhausted = None
     for phase in phases(arm):
         model.phase = phase
+        environment.phase = phase
+        # Cycle 1 C1-c: this phase's one reserved finalize call, spent
+        # only if its envelope expires before it completes.
+        finalize_attempted = False
         prompt = phase_prompt(root, arm, phase)
         if arm == "spec_kit_aee" and phase in AEE_PHASES:
             prompt += claims_instruction(root, delta=standing_bundle is not None)
@@ -291,20 +384,53 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             # about the model. Tripping ends the phase and, because
             # every guarded phase's artifact is consumed downstream,
             # the attempt; the patch is graded as it stands.
+            # Cycle 1 C1-c: a force-advance drafting phase whose
+            # envelope expires does not die here — it spends its one
+            # reserved finalize call to emit the phase artifact from
+            # the current draft state, and the attempt proceeds. Only
+            # if that call fails to emit the artifact does the phase
+            # end with the existing exhaustion classification.
             phase_calls = [c for c in calls if c.get("phase") == phase]
-            if phase_guard_tripped(arm, phase, phase_calls, cfg):
+            if phase in FORCE_ADVANCE_PHASES and not finalize_attempted:
+                if drafting_envelope_tripped(phase, calls, cfg, len(drafting_completed)):
+                    finalize_attempted = True
+                    agent.add_messages({"role": "user", "content":
+                                        FINALIZE_INSTRUCTION})
+            elif phase_guard_tripped(arm, phase, phase_calls, cfg):
                 phase_exhausted = phase
                 break
             if used+cfg["max_input_tokens"]+cfg["max_output_tokens"] > cfg["token_cap"]:
                 raise LimitHit("next request token reservation exceeds attempt cap")
             if agent.n_calls >= cfg["max_calls"]:
                 raise LimitHit("call limit")
-            agent.step()
+            try:
+                agent.step()
+            except ProviderError as exc:
+                if not finalize_attempted:
+                    raise
+                # The reserved finalize call itself failed: the phase
+                # ends with the existing exhaustion classification.
+                # Transport stalls and the outer bound keep their own
+                # named semantics and are never reclassified here.
+                if isinstance(exc, (TransportStallError, CallOuterBoundError)):
+                    raise
+                phase_exhausted = phase
+                break
+            if finalize_attempted and model.last["action"] != "done":
+                # The reserved finalize call did not emit the phase
+                # artifact: the phase ends with the existing
+                # exhaustion classification — no retry loops.
+                phase_exhausted = phase
+                break
             if model.last["action"] != "done":
                 continue
             # Phase completion artifacts are explicit and retained, not inferred from prose.
             artifact = store.artifact(canonical(model.last))
-            store.append("phases", {**identity, "phase": phase, "timestamp": utc(), "artifact": artifact})
+            store.append("phases", {**identity, "phase": phase, "timestamp": utc(),
+                                    "artifact": artifact,
+                                    **({"force_advanced": True} if finalize_attempted else {})})
+            if phase in FORCE_ADVANCE_PHASES:
+                drafting_completed.add(phase)
             if share_setup and phase == "constitution" and campaign_setup(store, setup_key) is None:
                 # Freeze the setup outcome once per campaign and task (PC-3).
                 store.append("campaign_setups", {**identity, "setup_key": setup_key,
@@ -366,6 +492,11 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
                 return {"patch": store.artifact(patch["stdout"].encode()), "assessment_outcome": gate_outcome,
                         "assessment_headline_outcome": outcome,
                         "repair_count": repairs, "tool_calls": environment.tool_calls, "blocked": True}
+            if finalize_attempted:
+                # A force-advanced phase ends after its one artifact
+                # and its assessment; recovery rounds belong to
+                # phases that completed inside their envelope.
+                break
             recovery += 1
             repairs += 1
             agent.add_messages({"role": "user", "content": "Address the result within this phase. Use only task-provided facts; no human assistance. Do not change model. Submit a claims delta scoped to the findings (changed claims as full claim objects under \"delta.upsert\", withdrawals by claim id under \"delta.withdraw\") with revised evidence, or retain gaps."})
@@ -411,16 +542,10 @@ def read_workspace_artifact(store, workspace):
     return data
 
 
-def place_construction_workspace(sandbox, store, frozen):
-    """Place a construction-frozen /workflow tree into this attempt's
-    sandbox (Amendment 1 R-A1) and verify the constitution file
-    against its frozen hash. Returns the extra fields for the phases
-    record. A setup record without a workspace artifact (the
-    pre-amendment PC-3 form) places nothing and records that."""
-    workspace = frozen.get("workspace_artifact")
-    if not workspace:
-        return {"setup_workspace": "not_recorded"}
-    data = read_workspace_artifact(store, workspace)
+def transfer_workspace_tar(sandbox, data):
+    """Transfer a /workflow tar into the sandbox and extract it at
+    the filesystem root (shared by setup reuse and by Cycle 1 C1-A2
+    banked-construction continuation)."""
     encoded = base64.b64encode(data).decode()
     sandbox.execute("rm -rf /workflow && mkdir -p /workflow && : > /tmp/workflow.tar.b64",
                     timeout=60)
@@ -435,6 +560,19 @@ def place_construction_workspace(sandbox, store, frozen):
         timeout=60)
     if placed["exit_code"]:
         raise RuntimeError("construction workspace placement failed")
+
+
+def place_construction_workspace(sandbox, store, frozen):
+    """Place a construction-frozen /workflow tree into this attempt's
+    sandbox (Amendment 1 R-A1) and verify the constitution file
+    against its frozen hash. Returns the extra fields for the phases
+    record. A setup record without a workspace artifact (the
+    pre-amendment PC-3 form) places nothing and records that."""
+    workspace = frozen.get("workspace_artifact")
+    if not workspace:
+        return {"setup_workspace": "not_recorded"}
+    data = read_workspace_artifact(store, workspace)
+    transfer_workspace_tar(sandbox, data)
     digest = sandbox.execute(
         f"sha256sum /workflow/{CONSTITUTION_PATH} | cut -d' ' -f1", timeout=60)
     measured = digest["stdout"].strip()
@@ -446,14 +584,30 @@ def place_construction_workspace(sandbox, store, frozen):
             "constitution_sha256": measured}
 
 
-def execute_construction(root, task, provider, sandbox, store, identity, cfg):
-    """Run the constitution phase once for a task as campaign setup
-    (Amendment 1 R-A1): not a scored attempt, charged to the
-    construction identity (purpose campaign_setup, R-A2) under the
-    construction cap. On completion, freeze the campaign setup
-    record, the /workflow workspace artifact, and the constitution
-    file hash. Raises on any failure; the caller records it as a
-    task-level premise fault (task_setup_failed, R-A4)."""
+def capture_construction_workspace(sandbox, store):
+    """Capture the sandbox's /workflow tree as a frozen store
+    artifact (shared by construction completion and C1-A2 banking)."""
+    captured = sandbox.execute("tar -cf - -C / workflow | base64 -w0", timeout=120)
+    if captured["exit_code"] or not captured["stdout"].strip():
+        raise RuntimeError("construction workspace capture failed")
+    tar_bytes = base64.b64decode(captured["stdout"].strip())
+    return freeze_workspace_artifact(store, tar_bytes)
+
+
+def execute_construction(root, task, provider, sandbox, store, identity, cfg,
+                         draw_cap=None, bank=None, installment=1):
+    """Run ONE construction installment for a task (Amendment 1 R-A1
+    as amended by Cycle 1 C1-A2): the constitution phase as campaign
+    setup, not a scored attempt, charged to the construction identity
+    (purpose campaign_setup, R-A2) under this draw's cap.
+
+    Returns ("completed", payload) when the completion artifact is
+    emitted, or ("banked", bank_record) when the draw reaches its cap
+    without completing: the full state — workspace tree, assembled
+    history, and a construction_banked phase record — is banked in
+    the store instead of discarded, and a continuation installment
+    resumes from it. Any other failure raises; the caller records it
+    as a task-level premise fault (task_setup_failed, R-A4)."""
     global_config = Path(tempfile.mkdtemp(prefix="mini-clean-config-"))
     os.environ["MSWEA_GLOBAL_CONFIG_DIR"] = str(global_config)
     os.environ["MSWEA_SILENT_STARTUP"] = "1"
@@ -461,25 +615,72 @@ def execute_construction(root, task, provider, sandbox, store, identity, cfg):
     shutil.rmtree(global_config)
     sandbox.stage_workflow(root)
     deadline = time.monotonic()+attempt_wall_seconds(cfg)
-    model = MiniModel(provider, deadline, call_timeout_seconds(cfg))
-    environment = MiniEnvironment(sandbox, deadline, store, identity)
+    model = MiniModel(provider, deadline, workflow_call_timeout_seconds(cfg), cfg=cfg)
+    environment = MiniEnvironment(sandbox, deadline, store, identity, cfg=cfg)
     agent = DefaultAgent(model, environment, system_template="", instance_template="", cost_limit=0)
-    agent.add_messages({"role": "system", "content": phase_prompt(root, "baseline", "solve")},
-                       {"role": "user", "content": task["problem_statement"]})
     phase = "constitution"
     model.phase = phase
-    agent.add_messages({"role": "user", "content":
-                        f"Current phase: {phase}\n{phase_prompt(root, 'spec_kit', phase)}"})
-    cap = construction_cap_tokens(cfg)
+    environment.phase = phase
+    if bank is not None:
+        # Resume from the banked state: the banked workspace goes
+        # back into the sandbox and the banked assembled history
+        # becomes this draw's starting history, verbatim — the
+        # continuation's first assembled history therefore carries
+        # the banked digest by construction.
+        data = read_workspace_artifact(store, bank["workspace_artifact"])
+        transfer_workspace_tar(sandbox, data)
+        history = json.loads((store.root/bank["history_artifact"]["path"]).read_bytes())
+        agent.add_messages(*history)
+        if history_digest(agent.messages) != bank["history_digest"]:
+            raise RuntimeError("banked construction history digest mismatch")
+    else:
+        agent.add_messages({"role": "system", "content": phase_prompt(root, "baseline", "solve")},
+                           {"role": "user", "content": task["problem_statement"]})
+        agent.add_messages({"role": "user", "content":
+                            f"Current phase: {phase}\n{phase_prompt(root, 'spec_kit', phase)}"})
+    cap = draw_cap if draw_cap is not None else construction_cap_tokens(cfg)
+    calls_before = len([c for c in store.events("calls")
+                        if c["attempt_id"] == identity["attempt_id"]])
+
+    def draw_calls():
+        calls = [c for c in store.events("calls")
+                 if c["attempt_id"] == identity["attempt_id"]]
+        return calls[calls_before:]
+
     completion = None
     while True:
         if (store.root/"CANCEL").exists():
             raise KeyboardInterrupt
         remaining(deadline)
-        calls = [c for c in store.events("calls") if c["attempt_id"] == identity["attempt_id"]]
-        used = attempt_token_usage(calls, cfg)
+        used = attempt_token_usage(draw_calls(), cfg)
         if used+cfg["max_input_tokens"]+cfg["max_output_tokens"] > cap:
-            raise LimitHit("campaign setup construction token reservation exceeds construction cap")
+            # C1-A2: the draw is capped without its completion
+            # artifact — bank the full state instead of discarding it.
+            # The banked history is the assembled form (role/content
+            # only, exactly what the model assembles per call), so a
+            # continuation's first assembled history carries this
+            # digest verbatim.
+            workspace_artifact = capture_construction_workspace(sandbox, store)
+            history = [{"role": m["role"], "content": m["content"]}
+                       for m in agent.messages]
+            history_artifact = store.artifact(canonical(history))
+            digest = history_digest(history)
+            installments = list((bank or {}).get("installments") or [])
+            installments.append({"installment": installment, "tokens": used})
+            store.append("phases", {**identity, "phase": phase, "timestamp": utc(),
+                                    "construction": True, "construction_banked": True,
+                                    "installment": installment,
+                                    "history_digest": digest,
+                                    "draw_tokens": used})
+            bank_record = {**identity, "setup_key": identity["task_id"],
+                           "installment": installment,
+                           "workspace_artifact": workspace_artifact,
+                           "history_artifact": history_artifact,
+                           "history_digest": digest,
+                           "draw_tokens": used, "installments": installments,
+                           "timestamp": utc()}
+            store.append("construction_banks", bank_record)
+            return "banked", bank_record
         if agent.n_calls >= cfg["max_calls"]:
             raise LimitHit("call limit")
         agent.step()
@@ -488,25 +689,19 @@ def execute_construction(root, task, provider, sandbox, store, identity, cfg):
             break
     artifact = store.artifact(canonical(completion))
     store.append("phases", {**identity, "phase": phase, "timestamp": utc(),
-                            "artifact": artifact, "construction": True})
-    captured = sandbox.execute("tar -cf - -C / workflow | base64 -w0", timeout=120)
-    if captured["exit_code"] or not captured["stdout"].strip():
-        raise RuntimeError("construction workspace capture failed")
-    tar_bytes = base64.b64decode(captured["stdout"].strip())
-    workspace_artifact = freeze_workspace_artifact(store, tar_bytes)
+                            "artifact": artifact, "construction": True,
+                            **({"installment": installment,
+                                "resumed_from_bank": True} if bank is not None else {})})
+    workspace_artifact = capture_construction_workspace(sandbox, store)
     digest = sandbox.execute(
         f"sha256sum /workflow/{CONSTITUTION_PATH} | cut -d' ' -f1", timeout=60)
     if digest["exit_code"] or not digest["stdout"].strip():
         raise RuntimeError("construction constitution file missing")
-    calls = [c for c in store.events("calls") if c["attempt_id"] == identity["attempt_id"]]
-    tokens = attempt_token_usage(calls, cfg)
-    event = {**identity, "setup_key": identity["task_id"], "artifact": artifact,
-             "record": completion, "workspace_artifact": workspace_artifact,
-             "constitution_file": {"path": CONSTITUTION_PATH,
-                                   "sha256": digest["stdout"].strip()},
-             "construction_tokens": tokens, "timestamp": utc()}
-    store.append("campaign_setups", event)
-    return event
+    payload = {"completion": completion, "artifact": artifact,
+               "workspace_artifact": workspace_artifact,
+               "constitution_sha256": digest["stdout"].strip(),
+               "draw_tokens": attempt_token_usage(draw_calls(), cfg)}
+    return "completed", payload
 
 
 def capture_transport_bundle(store, identity, cfg, reason):
@@ -561,14 +756,47 @@ def run_construction(root, task, store, cfg, manifest):
                 "purpose": "campaign_setup", "construction": True}
     budget = Budget(store, cfg["global_cap_usd"], cfg["attempt_cap_usd"])
     tick, reason = time.monotonic(), None
+    # Cycle 1 C1-A2: construction proceeds in installments. Each draw
+    # is capped at the per-draw cap; a capped draw banks its state and
+    # the next draw resumes from the bank, across at most
+    # CONSTRUCTION_MAX_INSTALLMENTS draws and a per-task total on the
+    # setup line. A bank already in the store (an earlier admission
+    # pass in this same store) is resumed, never restarted.
+    total_cap = construction_total_cap_tokens(cfg)
+    max_installments = construction_max_installments(cfg)
+    banks = [e for e in store.events("construction_banks")
+             if e.get("setup_key") == setup_key]
+    bank = banks[-1] if banks else None
+    completed_payload = None
     try:
-        with DockerSandbox(task["image"]) as sandbox:
-            check = sandbox.execute("git rev-parse HEAD && git status --porcelain")
-            if check["exit_code"] or check["stdout"].strip() != task["base_commit"]:
-                raise RuntimeError("solver image does not contain a clean base checkout")
-            store.append("images", {**identity, **sandbox.details})
-            provider = make_provider(cfg, store, budget, identity)
-            execute_construction(root, task, provider, sandbox, store, identity, cfg)
+        while completed_payload is None:
+            charged = attempt_token_usage(
+                [c for c in store.events("calls")
+                 if c["attempt_id"] == identity["attempt_id"]], cfg)
+            installments_done = len((bank or {}).get("installments") or [])
+            if installments_done >= max_installments or charged >= total_cap:
+                raise LimitHit(
+                    "campaign setup construction exhausted: "
+                    f"{installments_done} installments, {charged} of "
+                    f"{total_cap} construction tokens charged")
+            draw_cap = min(construction_cap_tokens(cfg), total_cap - charged)
+            if draw_cap <= cfg["max_input_tokens"] + cfg["max_output_tokens"]:
+                raise LimitHit(
+                    "campaign setup construction total budget exhausted")
+            with DockerSandbox(task["image"]) as sandbox:
+                check = sandbox.execute("git rev-parse HEAD && git status --porcelain")
+                if check["exit_code"] or check["stdout"].strip() != task["base_commit"]:
+                    raise RuntimeError("solver image does not contain a clean base checkout")
+                store.append("images", {**identity, **sandbox.details})
+                provider = make_provider(cfg, store, budget, identity)
+                outcome, payload = execute_construction(
+                    root, task, provider, sandbox, store, identity, cfg,
+                    draw_cap=draw_cap, bank=bank,
+                    installment=installments_done + 1)
+            if outcome == "completed":
+                completed_payload = payload
+            else:
+                bank = payload
     except (BudgetExceeded, LimitHit) as e:
         reason = str(e)
     except KeyboardInterrupt:
@@ -576,8 +804,30 @@ def run_construction(root, task, store, cfg, manifest):
     except Exception as e:
         reason = error_reason(e)
     if reason is None:
+        # Freeze the single registered setup record (R-A2 shape
+        # preserved): its provenance lists every installment and its
+        # charge, and the installment charges sum exactly to the
+        # construction line, which is the sum of this identity's
+        # charged calls.
+        calls = [c for c in store.events("calls")
+                 if c["attempt_id"] == identity["attempt_id"]]
+        total_tokens = attempt_token_usage(calls, cfg)
+        installments = list((bank or {}).get("installments") or [])
+        installments.append({"installment": len(installments) + 1,
+                               "tokens": completed_payload["draw_tokens"]})
+        event = {**identity, "setup_key": setup_key,
+                 "artifact": completed_payload["artifact"],
+                 "record": completed_payload["completion"],
+                 "workspace_artifact": completed_payload["workspace_artifact"],
+                 "constitution_file": {"path": CONSTITUTION_PATH,
+                                       "sha256": completed_payload["constitution_sha256"]},
+                 "construction_tokens": total_tokens,
+                 "installments": installments,
+                 "timestamp": utc()}
+        store.append("campaign_setups", event)
         store.append("construction", {**identity, "setup_key": setup_key,
                                       "status": "completed", "timestamp": utc(),
+                                      "installments": installments,
                                       "duration_seconds": time.monotonic()-tick})
         return True
     store.append("construction", {**identity, "setup_key": setup_key,
@@ -703,6 +953,13 @@ def run(root, manifest, output, arm=None, smoke=False):
 
         def ensure_setup(entry):
             if not construction_enabled(cfg):
+                return "proceed"
+            # Cycle 1 C1-A1: baseline carve-out. Construction gating
+            # applies only to arms whose phase plan consumes the
+            # campaign setup; a baseline attempt is admitted on task
+            # readiness alone, never triggers construction, and never
+            # reads the setup record.
+            if entry["arm"] == "baseline":
                 return "proceed"
             task = tasks[entry["task_id"]]
             setup_key = task.get("instance_id") or entry["task_id"]
@@ -837,6 +1094,11 @@ def run(root, manifest, output, arm=None, smoke=False):
                             result["phase_exhausted"])
             except (BudgetExceeded, LimitHit) as e:
                 status, reason = "limit", str(e)
+            except CallOuterBoundError:
+                # Cycle 1 C1-A3: a flowing call reached the hard
+                # outer bound — a named, disclosed limit (the partial
+                # stream is recorded on the call event).
+                status, reason = "limit", "call_outer_bound"
             except KeyboardInterrupt:
                 status, reason = "cancelled", "operator interrupt"
             except Exception as e:
