@@ -893,6 +893,19 @@ def run_construction(root, task, store, cfg, manifest):
         reason = str(e)
     except KeyboardInterrupt:
         raise
+    except ImportError:
+        # Cycle 2 test-hygiene fix (2026-10-22): an ImportError here
+        # is a broken harness installation (e.g. the deferred
+        # minisweagent import in execute_attempt running outside the
+        # locked environment), never a property of the task, the
+        # model, or the worker. Converting it into task_setup_failed
+        # pre-skips scored arms and lets a study proceed on a
+        # manufactured admission outcome — it is exactly how the
+        # Cycle 2 F1 wall-expiry path was shadowed by a construction
+        # pre-skip whenever the suite ran without the locked
+        # dependencies. Fail loudly instead; no setup record, no
+        # pre-skip, no scored data from a broken harness.
+        raise
     except Exception as e:
         reason = error_reason(e)
     if reason is None:

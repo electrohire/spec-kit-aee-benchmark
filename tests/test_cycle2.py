@@ -214,6 +214,31 @@ def test_f1_run_level_wall_expiry_scores_and_study_continues(
     assert terminal["TASK_A--baseline--r1"]["status"] == "completed"
 
 
+def test_f1_construction_import_error_is_not_masked_as_setup_failure(
+        tmp_path, monkeypatch):
+    # Regression for the Cycle 2 verification failure: running
+    # outside the locked environment, the deferred minisweagent
+    # import inside execute_attempt raised ModuleNotFoundError
+    # during construction, run_construction's catch-all recorded it
+    # as an ordinary construction failure, and the spec_kit attempt
+    # above was pre-skipped (``skipped``) before the wall-expiry
+    # path was ever reached. A harness ImportError is a broken
+    # installation, not a task property: it must propagate loudly,
+    # and the store must gain NO task_setup_failed record and NO
+    # pre-skipped attempt from it.
+    def factory(cfg_, store, budget, identity):
+        raise ModuleNotFoundError("No module named 'minisweagent'")
+
+    with pytest.raises(ModuleNotFoundError):
+        run_campaign_custom(tmp_path, monkeypatch,
+                            [entry("TASK_A", "spec_kit")], factory)
+    store = Store(tmp_path / "store")
+    assert store.events("campaign_setups") == []
+    assert not any(e.get("halt_kind") == "task_setup_failed"
+                   for e in store.events("tripwires"))
+    assert not any(a["status"] == "skipped" for a in store.events("attempts"))
+
+
 # ---------------- C2-F1: the per-phase wall bound ---------------------------
 
 def test_f1_phase_wall_bound_pure_rules():
