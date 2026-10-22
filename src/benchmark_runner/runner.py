@@ -4,6 +4,7 @@ from __future__ import annotations
 import base64
 import io
 import json
+import math
 import os
 import re
 import shlex
@@ -223,6 +224,73 @@ def drafting_sub_cap_tripped(calls, cfg):
     if sub_cap is None:
         return False
     return drafting_tokens_used(calls, cfg) >= sub_cap
+
+
+# Stage A (2026-10-22) edit-conversion scaffold, plan requirements
+# H1-H3. Like the Cycle 5 drafting reserve, every piece is
+# FREEZE-CONFIGURED: a behavior applies exactly when the freeze
+# config carries its key, and a config without the keys keeps the
+# pre-Stage-A semantics bit-for-bit.
+#
+# H1 phase-forcing (plain loop only): cfg keys
+# ``edit_switch_fraction`` (the plan's registered value is 0.40)
+# and ``verify_nudge_fraction`` (0.55). Active only in the baseline
+# arm's single ``solve`` phase. The attempt's binding budgets are
+# cfg["token_cap"] (charged tokens in this phase, read from the
+# calls ledger on the harness's own accounting, the way
+# drafting_tokens_used reads it) and cfg["max_calls"] (steps in
+# this phase). A threshold fires when EITHER measure first reaches
+# its fraction; when both cross at the same step the calls measure
+# is recorded as the one that fired. Each threshold fires at most
+# once per attempt, the verify nudge only after the edit switch
+# (the switch is checked first when both would fire at one step),
+# and each firing is recorded on the ``scaffold_events`` stream so
+# a live probe's records show the firings exactly.
+#
+# H2 empty-patch gate: cfg key ``empty_patch_gate`` (true). Active
+# only in the ``solve`` phase and only on the natural-done
+# completion path: a submission whose current diff is empty is
+# rejected once with a retry instruction and the phase continues;
+# a second empty submission completes and scores empty, as before.
+# The gate never fires on finalize/exhaustion/wall paths.
+#
+# H3 probe solve instruction: cfg key ``solve_instruction_path``
+# (a root-relative path, the probe freezes carry
+# "prompts/probe-solve.md"). When present, that file's text is the
+# baseline arm's initial system content instead of the
+# phase_prompt(root, "baseline", "solve") result.
+#
+# H4 no self-critique: by construction — this scaffold adds no
+# critique/reflection step anywhere; the exclusion is stated in
+# the Stage A stage record.
+EDIT_SWITCH_INSTRUCTION = (
+    "Edit mode (Stage A phase-forcing): stop exploring. Write the fix "
+    "into the repository files now, using what you have learned. If "
+    "your reproduction script is not written yet, write it first, "
+    "then edit the source.")
+VERIFY_NUDGE_INSTRUCTION = (
+    "Verify now (Stage A phase-forcing): rerun your reproduction "
+    "script and the relevant existing tests now. Fix what they show "
+    "before submitting.")
+EMPTY_PATCH_GATE_INSTRUCTION = (
+    "Your submission has an empty diff: nothing in the repository "
+    "changed, and a done with no changes scores as an empty result. "
+    "Produce the fix now: edit the source, rerun your reproduction, "
+    "then submit done again.")
+
+
+def scaffold_threshold_fired_by(steps_done, phase_charged, fraction, cfg):
+    """Which budget measure first reaches ``fraction`` of its bound,
+    or None. Steps: steps_done >= ceil(fraction * max_calls).
+    Tokens: phase_charged >= fraction * token_cap. When both hold,
+    the calls measure is reported (the step count is the plainer
+    reading of "first" at a single observation point)."""
+    if steps_done >= math.ceil(fraction * int(cfg["max_calls"])):
+        return "calls"
+    token_cap = cfg.get("token_cap")
+    if token_cap is not None and phase_charged >= fraction * token_cap:
+        return "tokens"
+    return None
 
 
 def phase_guard_tokens(cfg):
@@ -709,7 +777,15 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
     model = MiniModel(provider, deadline, workflow_call_timeout_seconds(cfg), cfg=cfg)
     environment = MiniEnvironment(sandbox, deadline, store, identity, cfg=cfg)
     agent = DefaultAgent(model, environment, system_template="", instance_template="", cost_limit=0)
-    agent.add_messages({"role": "system", "content": phase_prompt(root, "baseline", "solve")},
+    # Stage A H3: a freeze may carry ``solve_instruction_path``
+    # (root-relative); its file text then replaces the baseline
+    # solve prompt as the initial system content. Absent the key,
+    # the phase_prompt result is used unchanged.
+    solve_instruction = phase_prompt(root, "baseline", "solve")
+    if cfg.get("solve_instruction_path"):
+        solve_instruction = (Path(root) / cfg["solve_instruction_path"]).read_text(
+            encoding="utf-8")
+    agent.add_messages({"role": "system", "content": solve_instruction},
                        {"role": "user", "content": task["problem_statement"]})
     outcome, gate_outcome, repairs = None, None, 0
     # Cycle 1 C1-c: force-advance drafting phases already completed
@@ -720,6 +796,23 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
     # skipped and the attempt proceeds to implementation on the
     # reserved remainder.
     drafting_force_advanced = None
+    # Stage A scaffold state: the H1 kinds that already fired this
+    # attempt (each fires at most once), and whether the H2
+    # empty-patch gate already fired this attempt (it fires once).
+    scaffold_fired = set()
+    empty_patch_gate_fired = False
+
+    def record_scaffold_event(kind, phase, step_index, phase_charged, fired_by):
+        """Stage A: record one scaffold firing on the
+        ``scaffold_events`` stream — attempt identity, phase, the
+        step index and phase charged tokens read from the calls
+        ledger at firing time, and which budget measure fired."""
+        event = {**identity, "kind": kind, "phase": phase, "timestamp": utc(),
+                 "step_index": step_index,
+                 "phase_charged_tokens": phase_charged,
+                 "fired_by": fired_by}
+        store.append("scaffold_events", event)
+        return event
 
     def record_drafting_force_advance(phase, calls):
         """C5-F1: record the drafting force-advance event for the
@@ -853,6 +946,41 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             elif phase_guard_tripped(arm, phase, phase_calls, cfg) or wall_tripped:
                 phase_exhausted = phase
                 break
+            # Stage A H1 phase-forcing (plain loop only): freeze-
+            # configured fractions of the phase's step/token budgets,
+            # checked on the same loop cadence and the same calls
+            # ledger as the envelope checks above. The edit switch is
+            # checked first; the verify nudge fires only once the
+            # switch has fired (including at this same step). Keys
+            # absent -> nothing here runs and behavior is unchanged.
+            if phase == "solve":
+                phase_charged = attempt_token_usage(phase_calls, cfg)
+                steps_done = len(phase_calls)
+                if "edit_switch_fraction" in cfg \
+                        and "edit_switch" not in scaffold_fired:
+                    fired_by = scaffold_threshold_fired_by(
+                        steps_done, phase_charged,
+                        float(cfg["edit_switch_fraction"]), cfg)
+                    if fired_by is not None:
+                        scaffold_fired.add("edit_switch")
+                        record_scaffold_event(
+                            "edit_switch", phase, steps_done, phase_charged,
+                            fired_by)
+                        agent.add_messages(
+                            {"role": "user", "content": EDIT_SWITCH_INSTRUCTION})
+                if "verify_nudge_fraction" in cfg \
+                        and "edit_switch" in scaffold_fired \
+                        and "verify_nudge" not in scaffold_fired:
+                    fired_by = scaffold_threshold_fired_by(
+                        steps_done, phase_charged,
+                        float(cfg["verify_nudge_fraction"]), cfg)
+                    if fired_by is not None:
+                        scaffold_fired.add("verify_nudge")
+                        record_scaffold_event(
+                            "verify_nudge", phase, steps_done, phase_charged,
+                            fired_by)
+                        agent.add_messages(
+                            {"role": "user", "content": VERIFY_NUDGE_INSTRUCTION})
             if used+cfg["max_input_tokens"]+cfg["max_output_tokens"] > cfg["token_cap"]:
                 raise LimitHit("next request token reservation exceeds attempt cap")
             if agent.n_calls >= cfg["max_calls"]:
@@ -901,6 +1029,36 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
                 break
             if model.last["action"] != "done":
                 continue
+            # Stage A H2 empty-patch gate: on the natural-done
+            # completion path only (never on finalize/exhaustion/
+            # wall paths, which never reach this point), a freeze
+            # carrying ``empty_patch_gate`` rejects a first empty
+            # submission: the current diff is extracted exactly as
+            # the final patch extraction does, and when it is empty
+            # the gate records its event, injects the retry
+            # instruction, and the phase continues without recording
+            # a completion. A non-empty diff, or the gate already
+            # fired once this attempt, proceeds unchanged — a second
+            # empty done completes and scores empty.
+            if phase == "solve" and cfg.get("empty_patch_gate") \
+                    and not empty_patch_gate_fired:
+                gate_patch = sandbox.execute(
+                    "git add -N . && git diff --binary HEAD",
+                    min(60, remaining(deadline)))
+                if gate_patch["exit_code"]:
+                    raise RuntimeError("patch extraction failed")
+                if not gate_patch["stdout"]:
+                    empty_patch_gate_fired = True
+                    calls_now = [c for c in store.events("calls")
+                                 if c["attempt_id"] == identity["attempt_id"]]
+                    gate_phase_calls = [c for c in calls_now
+                                        if c.get("phase") == phase]
+                    record_scaffold_event(
+                        "empty_patch_gate", phase, len(gate_phase_calls),
+                        attempt_token_usage(gate_phase_calls, cfg), None)
+                    agent.add_messages(
+                        {"role": "user", "content": EMPTY_PATCH_GATE_INSTRUCTION})
+                    continue
             # Phase completion artifacts are explicit and retained, not inferred from prose.
             artifact = store.artifact(canonical(model.last))
             store.append("phases", {**identity, "phase": phase, "timestamp": utc(),

@@ -298,6 +298,19 @@ class LocalProvider:
                            stream=True, stream_options={"include_usage": True})
             if cfg.get("temperature") is not None:
                 payload["temperature"] = cfg["temperature"]
+            # Stage A H5-P (2026-10-22): freeze-configured passthrough
+            # for Pair D's registered serving — grammar-constrained
+            # tool calls and chat-template kwargs (e.g.
+            # preserve_thinking). Each key is copied verbatim into
+            # the payload exactly when the freeze config carries it;
+            # absent keys introduce no defaults and the payload is
+            # byte-identical to the pre-change payload. Whether the
+            # server honors these fields is a serve-time question,
+            # not decided here.
+            if "request_grammar" in cfg:
+                payload["grammar"] = cfg["request_grammar"]
+            if "chat_template_kwargs" in cfg:
+                payload["chat_template_kwargs"] = cfg["chat_template_kwargs"]
             request_artifact = self.store.artifact(canonical(payload))
             response, request_id, error, response_artifact = {}, None, None, None
             # Streamed-transport telemetry (R-A5), recorded on EVERY call
