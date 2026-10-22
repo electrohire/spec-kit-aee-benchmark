@@ -112,6 +112,24 @@ def _headers():
     return headers
 
 
+def _coalesce_same_role(messages):
+    """Merge consecutive messages that share a role into one message
+    (string contents joined by a blank line). Non-string contents and
+    role changes pass through untouched; message order is preserved.
+    Pure: the input list and its dicts are never mutated."""
+    merged = []
+    for message in messages:
+        if (merged and merged[-1].get("role") == message.get("role")
+                and isinstance(merged[-1].get("content"), str)
+                and isinstance(message.get("content"), str)):
+            merged[-1] = {**merged[-1],
+                          "content": merged[-1]["content"] + "\n\n"
+                                     + message["content"]}
+        else:
+            merged.append(message)
+    return merged
+
+
 def _extract_text(message):
     """Action text from a chat-completion message, hardened for reasoning models.
 
@@ -293,6 +311,16 @@ class LocalProvider:
         self.call_deadline_kind = None
         try:
             started, tick = utc(), time.monotonic()
+            # Stage A bridge (2026-10-22): strict chat templates (the
+            # Mistral family serving Pair B) reject consecutive
+            # same-role messages with a server-side template error —
+            # an equipment failure, never a model behavior. Under the
+            # freeze-configured flag, consecutive same-role string
+            # messages are coalesced for the wire only; the recorded
+            # conversation is unchanged. Absent the flag the payload
+            # is byte-identical to the pre-change payload.
+            if cfg.get("coalesce_same_role_messages"):
+                messages = _coalesce_same_role(messages)
             payload = dict(model=self.model, messages=messages,
                            max_completion_tokens=cfg["max_output_tokens"],
                            stream=True, stream_options={"include_usage": True})
