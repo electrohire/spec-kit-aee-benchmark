@@ -308,7 +308,14 @@ def test_construction_runs_once_and_both_attempts_reuse_it(tmp_path, monkeypatch
 
 
 def test_construction_failure_skips_the_task_and_the_run_continues(tmp_path, monkeypatch):
+    # Cycle 1 C1-A1 supersedes this test's original baseline
+    # expectation: construction gating applies only to arms whose
+    # phase plan consumes the setup. The baseline attempt is admitted
+    # on task readiness alone and runs; the spec arm still pre-skips
+    # with task_setup_failed. (This replay is also C1-A1's acceptance
+    # test; see tests/test_cycle1.py.)
     scripts = {"TASK_A--campaign-setup": {"constitution": [("raise",)]},
+               "TASK_A--baseline--r1": attempt_script(),
                "TASK_B--campaign-setup": construction_script(),
                "TASK_B--spec_kit--r1": attempt_script()}
     store = run_campaign(tmp_path, monkeypatch,
@@ -317,10 +324,12 @@ def test_construction_failure_skips_the_task_and_the_run_continues(tmp_path, mon
     attempts = store.events("attempts")
     a_terminal = [a for a in attempts if a["task_id"] == "TASK_A" and a["status"] != "started"]
     assert len(a_terminal) == 2
-    assert all(a["status"] == "skipped" and "task_setup_failed" in a["reason"]
-               for a in a_terminal)
+    by_arm = {a["arm"]: a for a in a_terminal}
+    assert by_arm["baseline"]["status"] == "completed"
+    assert by_arm["spec_kit"]["status"] == "skipped"
+    assert "task_setup_failed" in by_arm["spec_kit"]["reason"]
     kinds = [e["halt_kind"] for e in store.events("tripwires")]
-    assert kinds.count("task_setup_failed") == 3  # construction + two admissions
+    assert kinds.count("task_setup_failed") == 2  # construction + spec admission
     b_terminal = [a for a in attempts if a["task_id"] == "TASK_B" and a["status"] != "started"]
     assert [a["status"] for a in b_terminal] == ["completed"]
 

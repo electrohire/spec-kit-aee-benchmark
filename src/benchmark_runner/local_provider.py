@@ -26,21 +26,36 @@ import uuid
 from decimal import Decimal
 
 from .accounting import TOKEN_FIELDS, native_usage
+from .context import estimate_tokens
 from .store import canonical, utc
 from .schema import validate_call, validate_identity
 from .provider import ProviderError, paced_wait, transport_policy
 
-# Amendment 1 R-A5 streamed transport: a call with no token for this many
-# consecutive seconds is a suspected transport stall (premise/equipment),
-# not a slow generation. Reads run in slices of this many seconds so the
-# stall clock and the overall per-call deadline can both be observed while
-# a streamed response is in flight.
-STALL_SECONDS = 180
+# Amendment 1 R-A5 streamed transport, with the per-call deadline made
+# inactivity-aware by Cycle 1 C1-A3 (2026-10-21): a call dies as a
+# suspected transport stall (premise/equipment) only after this many
+# consecutive seconds with no streamed token. While tokens flow, a call
+# may run to the hard outer bound below, where it ends as the named
+# call_outer_bound limit with its partial stream recorded. Reads run in
+# slices of this many seconds so both clocks can be observed while a
+# streamed response is in flight.
+STALL_SECONDS = 600
+CALL_OUTER_BOUND_SECONDS = 7200
 _READ_SLICE_SECONDS = 30
 
 
 class TransportStallError(ProviderError):
     pass
+
+
+class CallOuterBoundError(ProviderError):
+    """A flowing call reached the hard outer bound (C1-A3): a named,
+    disclosed limit, not a stall and not an invisible timeout."""
+
+
+class _CallOuterBound(Exception):
+    """Internal control-flow signal: the outer-bound path builds its
+    own event, with the partial stream recorded."""
 
 
 def _set_socket_timeout(handle, seconds):
@@ -227,6 +242,9 @@ class LocalProvider:
             now = time.monotonic()
             if now - last_token_mono >= STALL_SECONDS:
                 raise _TransportStall()
+            if deadline_seconds >= CALL_OUTER_BOUND_SECONDS \
+                    and now - tick >= CALL_OUTER_BOUND_SECONDS:
+                raise _CallOuterBound()
             if now - tick >= deadline_seconds:
                 raise TimeoutError("per-call deadline exceeded")
         if "error" in holder:
@@ -247,6 +265,13 @@ class LocalProvider:
         # raised) after the try/finally below settles the reservation, so
         # the stall state must survive the finally block's scope.
         stall = False
+        outer_bound = False
+        # C1-a: context stats handed in by the calling model (assembled
+        # size before read-time masking, masked count, sent size).
+        # Absent (direct provider use), the assembled size is estimated
+        # from the messages as received.
+        context_stats = getattr(self, "context_stats", None) or {}
+        self.context_stats = None
         try:
             started, tick = utc(), time.monotonic()
             payload = dict(model=self.model, messages=messages,
@@ -263,7 +288,21 @@ class LocalProvider:
             last_token_mono = tick
             stream_tokens_received, stream_chunks = 0, 0
             streamed_model, fallback = None, False
+            content_parts, reasoning_parts = [], []
             usage = {**{k: None for k in TOKEN_FIELDS}, "unknown_reason": None}
+
+            def _bound_error():
+                """The elapsed-time bound that applies right now
+                (C1-A3): the hard outer bound when the caller granted
+                it, otherwise the caller's own deadline. Stall is
+                checked separately at every slice, before this."""
+                now = time.monotonic()
+                if timeout >= CALL_OUTER_BOUND_SECONDS \
+                        and now - tick >= CALL_OUTER_BOUND_SECONDS:
+                    return _CallOuterBound()
+                if now - tick >= timeout:
+                    return TimeoutError("per-call deadline exceeded")
+                return None
             try:
                 req = urllib.request.Request(self.url + "/chat/completions",
                                              canonical(payload), _headers())
@@ -308,10 +347,12 @@ class LocalProvider:
                         raw_sock = None
                         try:
                             while not done:
-                                # Overall per-call deadline: tokens still
-                                # flowing past it is a plain timeout, not a stall.
-                                if time.monotonic() - tick >= timeout:
-                                    raise TimeoutError("per-call deadline exceeded")
+                                # Overall per-call bound: tokens still
+                                # flowing past it is a plain timeout (or
+                                # the C1-A3 outer bound), not a stall.
+                                bound = _bound_error()
+                                if bound is not None:
+                                    raise bound
                                 newline = buf.find(b"\n")
                                 if newline >= 0:
                                     raw_line, buf = buf[:newline], buf[newline + 1:]
@@ -327,8 +368,9 @@ class LocalProvider:
                                             now = time.monotonic()
                                             if now - last_token_mono >= STALL_SECONDS:
                                                 raise _TransportStall() from None
-                                            if now - tick >= timeout:
-                                                raise
+                                            bound = _bound_error()
+                                            if bound is not None:
+                                                raise bound from None
                                             continue  # Next slice.
                                     else:
                                         fp = getattr(handle, "fp", None)
@@ -340,8 +382,9 @@ class LocalProvider:
                                                 now = time.monotonic()
                                                 if now - last_token_mono >= STALL_SECONDS:
                                                     raise _TransportStall() from None
-                                                if now - tick >= timeout:
-                                                    raise
+                                                bound = _bound_error()
+                                                if bound is not None:
+                                                    raise bound from None
                                                 # Buffer provably empty: take
                                                 # over the raw socket (dup'd fd).
                                                 raw_sock = socket.socket(
@@ -365,9 +408,9 @@ class LocalProvider:
                                                 now = time.monotonic()
                                                 if now - last_token_mono >= STALL_SECONDS:
                                                     raise _TransportStall() from None
-                                                if now - tick >= timeout:
-                                                    raise TimeoutError(
-                                                        "per-call deadline exceeded") from None
+                                                bound = _bound_error()
+                                                if bound is not None:
+                                                    raise bound from None
                                                 continue  # Next slice.
                                             try:
                                                 data = handle.read1(65536) \
@@ -376,6 +419,9 @@ class LocalProvider:
                                                 now = time.monotonic()
                                                 if now - last_token_mono >= STALL_SECONDS:
                                                     raise _TransportStall() from None
+                                                bound = _bound_error()
+                                                if bound is not None:
+                                                    raise bound from None
                                                 raise
                                     if data in (b"", ""):
                                         eof = True
@@ -437,6 +483,23 @@ class LocalProvider:
                 usage = {**{k: None for k in TOKEN_FIELDS},
                          "unknown_reason": "TransportStallSuspected"}
                 response, response_artifact = {}, None
+            except _CallOuterBound:
+                # C1-A3: a demonstrably flowing call reached the hard
+                # outer bound. The partial stream is recorded as the
+                # response artifact; usage is unknown, so the call is
+                # charged at its reservation, as for any unknown-usage
+                # call. This is a named limit, not a stall.
+                outer_bound = True
+                error = "CallOuterBound"
+                usage = {**{k: None for k in TOKEN_FIELDS},
+                         "unknown_reason": "CallOuterBound"}
+                response = {"model": streamed_model,
+                            "choices": [{"message": {
+                                "content": "".join(content_parts),
+                                "reasoning_content": "".join(reasoning_parts)}}],
+                            "usage": None, "partial": True,
+                            "limit_kind": "call_outer_bound"}
+                response_artifact = self.store.artifact(canonical(response))
             except (urllib.error.URLError, TimeoutError, KeyError, ValueError, OSError) as e:
                 error = type(e).__name__  # Never log headers or raw error bodies.
                 usage = {**{k: None for k in TOKEN_FIELDS}, "unknown_reason": error}
@@ -446,6 +509,14 @@ class LocalProvider:
             if fallback:
                 first_token_seconds, last_token_at = duration, ended_at
                 stream_tokens_received, stream_chunks = 0, 0
+            # C1-a wire-vs-assembled accounting: the assembled size of
+            # the history the harness built for this call, the wire
+            # size the provider actually processed (its reported input
+            # usage; None when usage is unknown), and the over-cap
+            # flag against the frozen wire cap.
+            assembled_tokens = context_stats.get(
+                "assembled_tokens", estimate_tokens(messages))
+            wire_tokens = usage.get("input_tokens")
             response_model = response.get("model") if response else streamed_model
             message = (response.get("choices") or [{}])[0].get("message") or {}
             text, reasoning_fallback, think_stripped = _extract_text(message)
@@ -460,6 +531,14 @@ class LocalProvider:
                      "last_token_at": last_token_at,
                      "stream_tokens_received": stream_tokens_received,
                      "stream_chunks": stream_chunks,
+                     "assembled_tokens": assembled_tokens,
+                     "wire_tokens": wire_tokens,
+                     "assembled_over_wire_cap": bool(
+                         cfg.get("max_input_tokens") is not None
+                         and assembled_tokens > cfg["max_input_tokens"]),
+                     "sent_tokens": context_stats.get("sent_tokens"),
+                     "observations_masked": context_stats.get("observations_masked"),
+                     "limit_kind": "call_outer_bound" if outer_bound else None,
                      "reasoning_fallback": reasoning_fallback,
                      "think_stripped": think_stripped,
                      "artifacts": {"request": request_artifact, "response": response_artifact}}
@@ -474,11 +553,23 @@ class LocalProvider:
                     "last_token_at": last_token_at,
                     "stream_tokens_received": stream_tokens_received,
                     "timestamp": utc()})
+            if outer_bound:
+                self.store.append("transport_events", {
+                    "kind": "call_outer_bound",
+                    **self.identity, "phase": phase, "call_id": call_id,
+                    "outer_bound_seconds": CALL_OUTER_BOUND_SECONDS,
+                    "first_token_seconds": first_token_seconds,
+                    "last_token_at": last_token_at,
+                    "stream_tokens_received": stream_tokens_received,
+                    "partial_stream_recorded": True,
+                    "timestamp": utc()})
         finally:
             # Settle the zero reservation even when telemetry validation fails.
             self.budget.settle(call_id, charge)
         if stall:
             raise TransportStallError("TransportStallSuspected")
+        if outer_bound:
+            raise CallOuterBoundError("CallOuterBound")
         if error:
             raise ProviderError(error)
         return text
