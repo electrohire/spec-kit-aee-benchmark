@@ -5,6 +5,7 @@ import base64
 import io
 import json
 import os
+import re
 import shlex
 import subprocess
 import tarfile
@@ -253,6 +254,224 @@ def attempt_wall_seconds(cfg):
     return LOCAL_WALL_TIME_SECONDS if local_backend(cfg) else cfg["timeout_seconds"]
 
 
+# Cycle 3 C3-F1 — native-format bridge for the plain-loop adapter.
+#
+# Characterization from the recorded probe-(i) responses (Cycle 2
+# freeze store ``probe-c2-i``, all 257 response artifacts, extracted
+# exactly as the adapter saw them, i.e. after the local provider's
+# text extraction): 243 of 257 responses failed the strict JSON
+# parse. 229 of them carry the served model's native tool-call
+# markup and 14 are a bare JSON action object preceded by prose
+# (the seaborn attempt; no markup — NOT bridged, see below). The
+# markup family, as recorded (never the canonical OpenAI
+# name/arguments form, which appears nowhere in the records):
+#
+#   [optional prose] <tool_call> PAYLOAD [stray closers] [</tool_call>]
+#
+# - PAYLOAD is a flat two-key JSON object naming the action in one
+#   of two recorded key styles: {"action": "shell", "command": ...}
+#   (155 of the 212 payloads that parse) or {"function": "shell",
+#   "command": ...} (57). Every parseable payload in probe (i) is a
+#   shell action; the Cycle 1 store additionally records one
+#   {"action": "done", "summary": ...} payload in this markup.
+# - The closing is unstable: a clean </tool_call> (88 of the dead
+#   markup responses), a hybrid tail "</parameter> </function>
+#   </tool_call>" (141), or — the Cycle 1 store's dominant forms —
+#   stray closers with NO </tool_call> at all ("</parameter>
+#   </function>", "</function>", "</parameter> </invoke>").
+# - 31 of the 229 markup payloads are not valid JSON at all: the
+#   command string contains UNESCAPED double quotes (e.g. an
+#   embedded echo "---"), so json parsing fails mid-string. The
+#   envelope (kind key, then the payload field key, then a final
+#   '" }') is still intact in those records, and the command is
+#   recoverable deterministically as everything between the field
+#   key's opening quote and that final quote-brace — the only
+#   reading consistent with the recorded envelope.
+# - Two further recorded terminations replace the closing
+#   quote-brace: a literal "</command>" closing the command field
+#   (probe (i)'s test_reduction attempt), and — Cycle 1 store — the
+#   value running straight into the stray-tag tail. Both are
+#   recovered by the envelope rule in _envelope_action. A payload
+#   with NO termination at all (the value runs off the end of the
+#   response) is NOT recoverable and remains a format correction,
+#   exactly as before.
+#
+# The bridge below accepts exactly this recorded family: the first
+# <tool_call> segment in the response (the adapter protocol is one
+# action per response, as on the JSON path), its payload parsed
+# strictly when possible and by the envelope rule when the payload's
+# inner quotes defeat strict parsing. It produces the same action
+# dicts the JSON path produces — same validation (shell requires a
+# string command), same preservation of extra payload fields — so
+# execution, accounting, and limits downstream are unchanged. The
+# JSON path is tried first and is untouched; a response parseable
+# by neither path (including bare-JSON-in-prose, which is not the
+# native markup) remains {"action": "invalid"} — a format
+# correction, exactly as today.
+_TOOL_CALL_OPEN = "<tool_call>"
+_TOOL_CALL_CLOSE = "</tool_call>"
+# Stray closing tags the recorded markup leaves after the payload
+# object (inside or instead of </tool_call>).
+_STRAY_SEGMENT_TAGS = ("</parameter>", "</function>", "</invoke>",
+                       "</command>", "</arguments>", "</name>")
+
+
+def _payload_to_action(payload):
+    """One recorded native payload -> the JSON path's action dict.
+
+    Accepts the two recorded key styles (``action`` and
+    ``function``); a function-keyed payload is re-keyed to
+    ``action`` with every other field preserved. Validation is the
+    JSON path's own: the kind must be shell or done, and a shell
+    action's command must be a string. Returns None when the
+    payload is not an executable action of either style."""
+    if not isinstance(payload, dict):
+        return None
+    if "action" in payload:
+        action = dict(payload)
+    elif "function" in payload:
+        action = {"action": payload.get("function")}
+        action.update({k: v for k, v in payload.items() if k != "function"})
+    else:
+        return None
+    if action.get("action") not in ("shell", "done"):
+        return None
+    if action["action"] == "shell" and not isinstance(action.get("command"), str):
+        return None
+    return action
+
+
+def _first_json_object(segment):
+    """The first JSON object in a markup segment, parsed strictly.
+
+    raw_decode stops at the object's closing brace, so stray
+    closing tags trailing the payload are ignored by construction.
+    Returns None when no strict object parses (the recorded
+    unescaped-inner-quotes family lands here)."""
+    start = segment.find("{")
+    if start < 0:
+        return None
+    try:
+        obj, _end = json.JSONDecoder().raw_decode(segment[start:])
+    except ValueError:
+        return None
+    return obj
+
+
+def _strip_stray_segment_tail(segment):
+    """Remove trailing stray closing tags (and whitespace) the
+    recorded markup leaves after the payload object."""
+    text = segment.strip()
+    changed = True
+    while changed:
+        changed = False
+        for tag in _STRAY_SEGMENT_TAGS + (_TOOL_CALL_CLOSE,):
+            if text.endswith(tag):
+                text = text[: -len(tag)].strip()
+                changed = True
+    return text
+
+
+def _envelope_action(segment):
+    """Recover an action whose payload defeats strict JSON parsing
+    because the command/summary text contains unescaped quotes.
+
+    The recorded envelope is fixed: an opening brace, the kind key
+    (``action`` or ``function``) naming shell/done, then the field
+    key (``command`` for shell, ``summary`` for done) opening a
+    string. Two recorded terminations for the field value:
+
+    - the payload's final '"}' (the value is everything between the
+      opening quote and that final quote-brace — deterministic, and
+      the only reading the envelope admits), or
+    - a markup closing tag where the closing quote/brace should be:
+      the records close the command field with a literal
+      ``</command>`` (and, in the Cycle 1 store, run the value
+      straight into the stray ``</parameter>``/``</function>``/
+      ``</invoke>`` tail). Inside this markup those tags are
+      structural, never payload content, so the value runs to the
+      first of them.
+
+    A segment with neither termination (the value runs off the end
+    of the response) is truncated and is NOT recovered (returns
+    None), nor is a segment whose kind/field envelope never opens."""
+    field_anchor = re.search(r'"(command|summary)"\s*:\s*"', segment)
+    if field_anchor is None:
+        return None
+    field = field_anchor.group(1)
+    # One recorded payload writes the kind with an equals sign in
+    # place of the key's closing quote and colon —
+    # {"function="shell","command":...} — so the key's closing
+    # quote is optional and the separator is ':' or '='. Nothing
+    # else about the envelope varies.
+    kind_match = re.search(r'"(?:action|function)"?\s*[:=]\s*"?(shell|done)"',
+                           segment[: field_anchor.start()])
+    if kind_match is None:
+        return None
+    kind = kind_match.group(1)
+    if (kind == "shell") != (field == "command"):
+        return None
+    stripped = _strip_stray_segment_tail(segment)
+    if stripped.startswith("{") and stripped.endswith('"}'):
+        anchor = re.search(r'"' + field + r'"\s*:\s*"', stripped)
+        if anchor is not None:
+            return {"action": kind, field: stripped[anchor.end(): -2]}
+    rest = segment[field_anchor.end():]
+    ends = [rest.find(tag) for tag in _STRAY_SEGMENT_TAGS]
+    ends = [e for e in ends if e >= 0]
+    if not ends:
+        return None
+    value = rest[: min(ends)].rstrip()
+    if not value:
+        return None
+    return {"action": kind, field: value}
+
+
+def parse_native_tool_call(text):
+    """Parse the first recorded native <tool_call> segment in a
+    response into the JSON path's action dict, or None.
+
+    The segment runs from the first ``<tool_call>`` to its
+    ``</tool_call>`` when one is present, else to the end of the
+    response (the Cycle 1 store's dominant closing forms omit
+    ``</tool_call>`` entirely). Prose before the segment is ignored,
+    exactly as the recorded responses present it."""
+    if not isinstance(text, str):
+        return None
+    start = text.find(_TOOL_CALL_OPEN)
+    if start < 0:
+        return None
+    segment = text[start + len(_TOOL_CALL_OPEN):]
+    end = segment.find(_TOOL_CALL_CLOSE)
+    if end >= 0:
+        segment = segment[:end]
+    action = _payload_to_action(_first_json_object(segment))
+    if action is not None:
+        return action
+    return _envelope_action(segment)
+
+
+def parse_model_action(text):
+    """The plain-loop adapter's full parse: the frozen JSON path
+    first (byte-for-byte its original rule), then the Cycle 3
+    native-format bridge, then invalid — a format correction,
+    exactly as a response parseable by neither path behaved before
+    the bridge."""
+    try:
+        action = json.loads(text)
+        if not isinstance(action, dict) or action.get("action") not in ("shell", "done"):
+            raise ValueError("expected shell or done")
+        if action["action"] == "shell" and not isinstance(action.get("command"), str):
+            raise ValueError("shell command must be string")
+        return action
+    except (ValueError, TypeError):
+        pass
+    bridged = parse_native_tool_call(text)
+    if bridged is not None:
+        return bridged
+    return {"action": "invalid"}
+
+
 class MiniModel:
     """mini's Model protocol with observable requests and explicit JSON actions."""
     def __init__(self, provider, deadline, call_timeout=FRONTIER_CALL_TIMEOUT_SECONDS,
@@ -308,16 +527,10 @@ class MiniModel:
         except AttributeError:
             pass
         text = self.provider.query(cleaned, self.phase, timeout)
-        try:
-            action = json.loads(text)
-            if not isinstance(action, dict) or action.get("action") not in ("shell", "done"):
-                raise ValueError("expected shell or done")
-            if action["action"] == "shell" and not isinstance(action.get("command"), str):
-                raise ValueError("shell command must be string")
-            self.last = action
-        except (ValueError, TypeError):
-            self.last = {"action": "invalid"}
-            action = self.last
+        # Cycle 3 C3-F1: parse_model_action is the frozen JSON rule,
+        # then the native-format bridge, then invalid (see above).
+        action = parse_model_action(text)
+        self.last = action
         return {"role": "assistant", "content": text,
                 "extra": {"actions": [action] if action["action"] == "shell" else []}}
 
