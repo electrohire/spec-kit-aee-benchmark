@@ -1,22 +1,27 @@
 """Thin mini-SWE-agent adapter; one persistent agent and budget per attempt."""
 from __future__ import annotations
 
+import base64
+import io
 import json
 import os
 import shlex
 import subprocess
+import tarfile
 import time
 import tempfile
 import shutil
+import urllib.request
 from pathlib import Path
 
 from .accounting import Budget, BudgetExceeded, TOKEN_FIELDS, attempt_token_usage
 from .experiment import verify_freeze
 from .isolation import DockerSandbox
 from .provider import OpenAIProvider, provider_spec, transport_policy
-from .local_provider import LocalProvider, check_local_server
-from .store import RunLock, Store, canonical, read_json, utc, write_json
-from .tripwires import HALT_STUDY, record_tripwire
+from .local_provider import (LocalProvider, base_url, check_local_server,
+                             probe_worker, server_root)
+from .store import RunLock, Store, canonical, read_json, sha, utc, write_json
+from .tripwires import HALT_STUDY, phase_exhaustion_reason, record_tripwire
 from .workflow import (AEE_PHASES, DeltaFormatError, assess, campaign_setup,
                        compact_feedback, gate_outcome_of, grounded_claims,
                        phase_prompt, phases, resolve_claim_submission)
@@ -72,6 +77,56 @@ CLAIM_DISCIPLINE = ("Claim discipline: one claim per independently falsifiable "
 # A3 soft cap: a phase bundle above this many claims earns exactly
 # one in-phase consolidation request before it is assessed.
 CLAIM_SOFT_CAP = 12
+
+
+# Amendment 1 (2026-10-21): phase guard, setup by construction,
+# worker-availability probe. The numbers are the amendment's frozen
+# values; a campaign manifest may carry the same keys in its config
+# (the Stage 1R freeze does), in which case the frozen values govern.
+PHASE_GUARD_TOKENS = 900_000   # R-A3: 60% of the 1,500,000 attempt cap
+PHASE_GUARD_CALLS = 40         # R-A3: per-phase call cap
+# The delivery phase is exempt from the token guard (not the call
+# cap): bounding the phase that creates the value, tighter than the
+# attempt cap, has no observational basis (Amendment 1 §3).
+PHASE_GUARD_TOKEN_EXEMPT = frozenset({"implement"})
+CONSTRUCTION_CAP_TOKENS = 900_000  # R-A1: per-task construction cap
+WORKER_BLOCK_LIMIT = 3             # R-A6: busy blocks per stage -> halt
+CONSTITUTION_PATH = ".specify/memory/constitution.md"
+
+
+def phase_guard_tokens(cfg):
+    return int(cfg.get("phase_guard_tokens", PHASE_GUARD_TOKENS))
+
+
+def phase_guard_calls(cfg):
+    return int(cfg.get("phase_guard_calls", PHASE_GUARD_CALLS))
+
+
+def construction_cap_tokens(cfg):
+    return int(cfg.get("construction_cap_tokens", CONSTRUCTION_CAP_TOKENS))
+
+
+def construction_enabled(cfg):
+    """Setup by construction (R-A1) applies when the campaign shares
+    setup and the manifest does not opt out. The opt-out exists so a
+    pre-amendment manifest keeps its recorded semantics; the Stage 1R
+    freeze opts in explicitly."""
+    return bool(cfg.get("share_campaign_setup")) and bool(
+        cfg.get("campaign_setup_construction", True))
+
+
+def phase_guard_tripped(arm, phase, phase_calls, cfg):
+    """R-A3: a phase of a phased arm that reaches the token guard or
+    the call cap without a completion artifact ends. The baseline
+    arm's single loop is the treatment and is unguarded; the delivery
+    phase (implement) is exempt from the token guard only."""
+    if arm == "baseline":
+        return False
+    if len(phase_calls) >= phase_guard_calls(cfg):
+        return True
+    if phase in PHASE_GUARD_TOKEN_EXEMPT:
+        return False
+    return attempt_token_usage(phase_calls, cfg) >= phase_guard_tokens(cfg)
 
 
 def claims_instruction(root, *, delta=False):
@@ -192,6 +247,9 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
     # Kit arm, which then issue zero setup calls.
     share_setup = bool(cfg.get("share_campaign_setup"))
     setup_key = task.get("instance_id") or identity.get("task_id")
+    # Amendment 1 R-A3: set when the phase guard ends this attempt;
+    # the patch is then extracted and graded as it stands.
+    phase_exhausted = None
     for phase in phases(arm):
         model.phase = phase
         prompt = phase_prompt(root, arm, phase)
@@ -202,6 +260,11 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             if frozen is not None:
                 record = frozen.get("record") or {}
                 summary = record.get("summary") if isinstance(record, dict) else None
+                # Amendment 1 R-A1: a construction-produced setup also
+                # freezes the constitution workspace; place it into
+                # this attempt's workspace and verify the constitution
+                # file against the frozen hash before reuse.
+                placed = place_construction_workspace(sandbox, store, frozen)
                 agent.add_messages({"role": "user", "content": f"Current phase: {phase}\n{prompt}"},
                                    {"role": "user", "content":
                                     "Campaign setup (constitution) was frozen once for this task "
@@ -209,7 +272,8 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
                                     "Frozen setup record: "+json.dumps(summary or record)})
                 store.append("phases", {**identity, "phase": phase, "timestamp": utc(),
                                         "artifact": frozen["artifact"], "setup_reused": True,
-                                        "setup_source_attempt_id": frozen["attempt_id"]})
+                                        "setup_source_attempt_id": frozen["attempt_id"],
+                                        **placed})
                 continue
         agent.add_messages({"role": "user", "content": f"Current phase: {phase}\n{prompt}"})
         recovery = 0
@@ -222,6 +286,15 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             # their full reservation, so the ceiling stays enforceable; a
             # transient provider failure never kills the attempt here.
             used = attempt_token_usage(calls, cfg)
+            # Amendment 1 R-A3: the phase guard, read from the same
+            # calls ledger — a harness-side fact, never an inference
+            # about the model. Tripping ends the phase and, because
+            # every guarded phase's artifact is consumed downstream,
+            # the attempt; the patch is graded as it stands.
+            phase_calls = [c for c in calls if c.get("phase") == phase]
+            if phase_guard_tripped(arm, phase, phase_calls, cfg):
+                phase_exhausted = phase
+                break
             if used+cfg["max_input_tokens"]+cfg["max_output_tokens"] > cfg["token_cap"]:
                 raise LimitHit("next request token reservation exceeds attempt cap")
             if agent.n_calls >= cfg["max_calls"]:
@@ -296,12 +369,239 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             recovery += 1
             repairs += 1
             agent.add_messages({"role": "user", "content": "Address the result within this phase. Use only task-provided facts; no human assistance. Do not change model. Submit a claims delta scoped to the findings (changed claims as full claim objects under \"delta.upsert\", withdrawals by claim id under \"delta.withdraw\") with revised evidence, or retain gaps."})
+        if phase_exhausted is not None:
+            break
     patch = sandbox.execute("git add -N . && git diff --binary HEAD", min(60, remaining(deadline)))
     if patch["exit_code"]:
         raise RuntimeError("patch extraction failed")
-    return {"patch": store.artifact(patch["stdout"].encode()), "assessment_outcome": gate_outcome,
-            "assessment_headline_outcome": outcome,
-            "repair_count": repairs, "tool_calls": environment.tool_calls}
+    result = {"patch": store.artifact(patch["stdout"].encode()), "assessment_outcome": gate_outcome,
+              "assessment_headline_outcome": outcome,
+              "repair_count": repairs, "tool_calls": environment.tool_calls}
+    if phase_exhausted is not None:
+        result["phase_exhausted"] = phase_exhausted
+    return result
+
+
+def freeze_workspace_artifact(store, tar_bytes):
+    """Freeze a /workflow tar as a store artifact. The store's
+    artifact path redaction-scans content as UTF-8 text, which would
+    mangle a binary tar (the first live reuse proof caught exactly
+    that corruption), so the tar travels base64-encoded, bound by
+    its own SHA-256, and is verified parseable before it freezes."""
+    try:
+        with tarfile.open(fileobj=io.BytesIO(tar_bytes)) as archive:
+            if not archive.getmembers():
+                raise RuntimeError("construction workspace capture is empty")
+    except tarfile.TarError as e:
+        raise RuntimeError(f"construction workspace capture is not a valid tar: {e}")
+    return {**store.artifact(base64.b64encode(tar_bytes)),
+            "encoding": "base64", "tar_sha256": sha(tar_bytes)}
+
+
+def read_workspace_artifact(store, workspace):
+    """Inverse of freeze_workspace_artifact: returns the tar bytes,
+    verified against the frozen tar hash."""
+    stored = (store.root/workspace["path"]).read_bytes()
+    try:
+        data = base64.b64decode(stored)
+    except ValueError:
+        raise RuntimeError("construction workspace artifact is not valid base64")
+    if sha(data) != workspace.get("tar_sha256", workspace["sha256"]):
+        raise RuntimeError("construction workspace artifact hash mismatch")
+    return data
+
+
+def place_construction_workspace(sandbox, store, frozen):
+    """Place a construction-frozen /workflow tree into this attempt's
+    sandbox (Amendment 1 R-A1) and verify the constitution file
+    against its frozen hash. Returns the extra fields for the phases
+    record. A setup record without a workspace artifact (the
+    pre-amendment PC-3 form) places nothing and records that."""
+    workspace = frozen.get("workspace_artifact")
+    if not workspace:
+        return {"setup_workspace": "not_recorded"}
+    data = read_workspace_artifact(store, workspace)
+    encoded = base64.b64encode(data).decode()
+    sandbox.execute("rm -rf /workflow && mkdir -p /workflow && : > /tmp/workflow.tar.b64",
+                    timeout=60)
+    for offset in range(0, len(encoded), 60_000):
+        chunk = encoded[offset:offset+60_000]
+        moved = sandbox.execute(f"printf %s '{chunk}' >> /tmp/workflow.tar.b64", timeout=60)
+        if moved["exit_code"]:
+            raise RuntimeError("construction workspace transfer failed")
+    placed = sandbox.execute(
+        "base64 -d /tmp/workflow.tar.b64 | tar -xf - -C / --no-same-owner"
+        " && rm -f /tmp/workflow.tar.b64",
+        timeout=60)
+    if placed["exit_code"]:
+        raise RuntimeError("construction workspace placement failed")
+    digest = sandbox.execute(
+        f"sha256sum /workflow/{CONSTITUTION_PATH} | cut -d' ' -f1", timeout=60)
+    measured = digest["stdout"].strip()
+    expected = (frozen.get("constitution_file") or {}).get("sha256")
+    if digest["exit_code"] or not measured or (expected and measured != expected):
+        raise RuntimeError("construction constitution file hash mismatch")
+    return {"setup_workspace": "placed",
+            "setup_artifact_sha256": workspace.get("tar_sha256", workspace["sha256"]),
+            "constitution_sha256": measured}
+
+
+def execute_construction(root, task, provider, sandbox, store, identity, cfg):
+    """Run the constitution phase once for a task as campaign setup
+    (Amendment 1 R-A1): not a scored attempt, charged to the
+    construction identity (purpose campaign_setup, R-A2) under the
+    construction cap. On completion, freeze the campaign setup
+    record, the /workflow workspace artifact, and the constitution
+    file hash. Raises on any failure; the caller records it as a
+    task-level premise fault (task_setup_failed, R-A4)."""
+    global_config = Path(tempfile.mkdtemp(prefix="mini-clean-config-"))
+    os.environ["MSWEA_GLOBAL_CONFIG_DIR"] = str(global_config)
+    os.environ["MSWEA_SILENT_STARTUP"] = "1"
+    from minisweagent.agents.default import DefaultAgent
+    shutil.rmtree(global_config)
+    sandbox.stage_workflow(root)
+    deadline = time.monotonic()+attempt_wall_seconds(cfg)
+    model = MiniModel(provider, deadline, call_timeout_seconds(cfg))
+    environment = MiniEnvironment(sandbox, deadline, store, identity)
+    agent = DefaultAgent(model, environment, system_template="", instance_template="", cost_limit=0)
+    agent.add_messages({"role": "system", "content": phase_prompt(root, "baseline", "solve")},
+                       {"role": "user", "content": task["problem_statement"]})
+    phase = "constitution"
+    model.phase = phase
+    agent.add_messages({"role": "user", "content":
+                        f"Current phase: {phase}\n{phase_prompt(root, 'spec_kit', phase)}"})
+    cap = construction_cap_tokens(cfg)
+    completion = None
+    while True:
+        if (store.root/"CANCEL").exists():
+            raise KeyboardInterrupt
+        remaining(deadline)
+        calls = [c for c in store.events("calls") if c["attempt_id"] == identity["attempt_id"]]
+        used = attempt_token_usage(calls, cfg)
+        if used+cfg["max_input_tokens"]+cfg["max_output_tokens"] > cap:
+            raise LimitHit("campaign setup construction token reservation exceeds construction cap")
+        if agent.n_calls >= cfg["max_calls"]:
+            raise LimitHit("call limit")
+        agent.step()
+        if model.last["action"] == "done":
+            completion = model.last
+            break
+    artifact = store.artifact(canonical(completion))
+    store.append("phases", {**identity, "phase": phase, "timestamp": utc(),
+                            "artifact": artifact, "construction": True})
+    captured = sandbox.execute("tar -cf - -C / workflow | base64 -w0", timeout=120)
+    if captured["exit_code"] or not captured["stdout"].strip():
+        raise RuntimeError("construction workspace capture failed")
+    tar_bytes = base64.b64decode(captured["stdout"].strip())
+    workspace_artifact = freeze_workspace_artifact(store, tar_bytes)
+    digest = sandbox.execute(
+        f"sha256sum /workflow/{CONSTITUTION_PATH} | cut -d' ' -f1", timeout=60)
+    if digest["exit_code"] or not digest["stdout"].strip():
+        raise RuntimeError("construction constitution file missing")
+    calls = [c for c in store.events("calls") if c["attempt_id"] == identity["attempt_id"]]
+    tokens = attempt_token_usage(calls, cfg)
+    event = {**identity, "setup_key": identity["task_id"], "artifact": artifact,
+             "record": completion, "workspace_artifact": workspace_artifact,
+             "constitution_file": {"path": CONSTITUTION_PATH,
+                                   "sha256": digest["stdout"].strip()},
+             "construction_tokens": tokens, "timestamp": utc()}
+    store.append("campaign_setups", event)
+    return event
+
+
+def capture_transport_bundle(store, identity, cfg, reason):
+    """The observability bundle Amendment 1 R-A5 requires on any
+    transport halt, captured before anything is restarted: a fresh
+    worker probe, the endpoint's slot/props/health state where it
+    exposes them, and the worker's server-log tail where one exists
+    on the harness host. Absence is recorded explicitly, never
+    silently — an unobserved window must not read as an observed one."""
+    bundle = {"reason": reason, "captured_at": utc(),
+              "attempt_id": identity.get("attempt_id"),
+              "task_id": identity.get("task_id"), "arm": identity.get("arm")}
+    if local_backend(cfg):
+        try:
+            bundle["worker_probe"] = probe_worker(transport_policy(cfg))
+        except Exception as e:  # the bundle records, never raises
+            bundle["worker_probe"] = {"error": type(e).__name__}
+        for route in ("/slots", "/props", "/health"):
+            try:
+                req = urllib.request.Request(server_root()+route, method="GET")
+                with urllib.request.urlopen(req, timeout=10) as handle:
+                    bundle[route] = handle.read().decode("utf-8", errors="replace")[:4000]
+            except Exception as e:
+                bundle[route] = {"unavailable": type(e).__name__}
+    log_path = os.environ.get("LOCAL_MODEL_LOG_PATH")
+    if log_path and Path(log_path).is_file():
+        lines = Path(log_path).read_text(encoding="utf-8", errors="replace").splitlines()
+        bundle["worker_log_tail"] = lines[-50:]
+    else:
+        bundle["worker_log_tail"] = None
+        bundle["worker_log_tail_reason"] = (
+            "no per-request worker log on the harness host "
+            "(LOCAL_MODEL_LOG_PATH unset or file absent)")
+    artifact = store.artifact(canonical(bundle))
+    store.append("transport_bundles", {**identity, "artifact": artifact,
+                                       "reason": reason, "timestamp": utc()})
+    return artifact
+
+
+def run_construction(root, task, store, cfg, manifest):
+    """Execute one task's setup construction (Amendment 1 R-A1) in
+    its own sandbox, under the construction identity. Returns True
+    when the frozen setup record now exists. Any failure is recorded
+    as a construction record plus a tripwire event carrying R-A4's
+    kind (task_setup_failed, premise/equipment, admission semantics);
+    a transport failure also captures the R-A5 bundle."""
+    setup_key = task.get("instance_id")
+    identity = {"task_id": setup_key, "arm": "spec_kit", "repeat": 1,
+                "attempt_id": f"{setup_key}--campaign-setup",
+                "experiment_id": manifest["freeze_id"],
+                "run_id": manifest["freeze_id"][:16],
+                "purpose": "campaign_setup", "construction": True}
+    budget = Budget(store, cfg["global_cap_usd"], cfg["attempt_cap_usd"])
+    tick, reason = time.monotonic(), None
+    try:
+        with DockerSandbox(task["image"]) as sandbox:
+            check = sandbox.execute("git rev-parse HEAD && git status --porcelain")
+            if check["exit_code"] or check["stdout"].strip() != task["base_commit"]:
+                raise RuntimeError("solver image does not contain a clean base checkout")
+            store.append("images", {**identity, **sandbox.details})
+            provider = make_provider(cfg, store, budget, identity)
+            execute_construction(root, task, provider, sandbox, store, identity, cfg)
+    except (BudgetExceeded, LimitHit) as e:
+        reason = str(e)
+    except KeyboardInterrupt:
+        raise
+    except Exception as e:
+        reason = error_reason(e)
+    if reason is None:
+        store.append("construction", {**identity, "setup_key": setup_key,
+                                      "status": "completed", "timestamp": utc(),
+                                      "duration_seconds": time.monotonic()-tick})
+        return True
+    store.append("construction", {**identity, "setup_key": setup_key,
+                                  "status": "failed", "reason": reason,
+                                  "timestamp": utc(),
+                                  "duration_seconds": time.monotonic()-tick})
+    store.append("tripwires", {**identity, "status": "construction_failed",
+                                "reason": reason, "halt_class": "premise_equipment",
+                                "halt_kind": "task_setup_failed",
+                                "behavior": "skip_and_continue",
+                                "behavior_changed": False, "timestamp": utc()})
+    if transport_halt(store, identity, reason):
+        capture_transport_bundle(store, identity, cfg, reason)
+    return False
+
+
+def transport_halt(store, identity, reason):
+    """Whether this halt is a transport halt for R-A5 bundle
+    purposes: a recorded transport event (e.g. a stall) for the
+    identity, or a transport-named reason."""
+    if any(e.get("attempt_id") == identity.get("attempt_id")
+           for e in store.events("transport_events")):
+        return True
+    return "transport" in str(reason or "").lower()
 
 
 def make_provider(cfg, store, budget, identity):
@@ -393,6 +693,34 @@ def run(root, manifest, output, arm=None, smoke=False):
         budget = Budget(store, cfg["global_cap_usd"], cfg["attempt_cap_usd"])
         outcomes = {e["attempt_id"]: e for e in store.events("attempts")}
         tasks = {t["instance_id"]: t for t in manifest["tasks"]["tasks"]}
+        # Amendment 1 R-A1/R-A4: the construction gate. Construction
+        # runs lazily, once per task, before that task's first scored
+        # attempt of any arm — so the frozen setup exists before its
+        # first consumer by construction, and a stage only pays for
+        # the tasks it actually reaches. A failed construction is a
+        # task-level premise fault: the task's attempts never start.
+        construction_state = {}
+
+        def ensure_setup(entry):
+            if not construction_enabled(cfg):
+                return "proceed"
+            task = tasks[entry["task_id"]]
+            setup_key = task.get("instance_id") or entry["task_id"]
+            if not any(e["task_id"] == entry["task_id"] and e["arm"] != "baseline"
+                       for e in manifest["schedule"]):
+                return "proceed"
+            if setup_key not in construction_state:
+                # R-A4's all-tasks-failed case needs no special halt:
+                # every task's construction is tried on its own first
+                # entry, and if all fail the loop simply scores
+                # nothing — the manufactured-nil path at the gate.
+                if campaign_setup(store, setup_key) is not None:
+                    construction_state[setup_key] = True
+                else:
+                    construction_state[setup_key] = run_construction(
+                        root, task, store, cfg, manifest)
+            return "proceed" if construction_state[setup_key] else "skip"
+
         for entry in manifest["schedule"]:
             if arm and arm != entry["arm"]:
                 continue
@@ -430,7 +758,55 @@ def run(root, manifest, output, arm=None, smoke=False):
                 record_tripwire(store, identity, "skipped",
                                 "pre-skipped: diagnostic evidence not recorded; no inference issued")
                 continue
-            store.append("attempts", {**identity, "status": "started", "timestamp": utc()})
+            try:
+                gate = ensure_setup(entry)
+            except KeyboardInterrupt:
+                break
+            if gate == "skip":
+                # The task's setup construction failed: this attempt
+                # never starts. The record mirrors the pre-skip's
+                # admission semantics (PC-8 exclusion) but carries
+                # R-A4's named kind, task_setup_failed.
+                skip_reason = ("pre-skipped: campaign setup construction failed "
+                               "(task_setup_failed); no inference issued")
+                store.append("attempts", {**identity, "status": "skipped",
+                                          "reason": skip_reason, "timestamp": utc()})
+                store.append("tripwires", {**identity, "status": "skipped",
+                                           "reason": skip_reason,
+                                           "halt_class": "premise_equipment",
+                                           "halt_kind": "task_setup_failed",
+                                           "behavior": "skip_and_continue",
+                                           "behavior_changed": False,
+                                           "timestamp": utc()})
+                continue
+            # Amendment 1 R-A6: probe the shared worker immediately
+            # before the attempt starts. A busy worker (or a failed
+            # probe, which cannot prove the worker free) means the
+            # attempt does not start and a premise event is recorded;
+            # three blocks in a stage halt the stage for owner review.
+            # Like setup sharing, the probe is a declared campaign
+            # behavior: the manifest's config opts in (the Stage 1R
+            # freeze does); other harnesses' manifests are untouched.
+            probe = None
+            if local_backend(cfg) and cfg.get("worker_availability_probe"):
+                probe = probe_worker(transport_policy(cfg))
+                if probe.get("busy") or probe.get("error"):
+                    blocks = sum(1 for e in store.events("worker_probes")
+                                 if e.get("kind") == "worker_busy_block")
+                    store.append("worker_probes", {**identity,
+                                                   "kind": "worker_busy_block",
+                                                   "probe": probe, "timestamp": utc()})
+                    if blocks + 1 >= WORKER_BLOCK_LIMIT:
+                        store.append("worker_probes", {**identity,
+                                                       "kind": "worker_busy_stage_halt",
+                                                       "blocks": blocks + 1,
+                                                       "timestamp": utc()})
+                        break
+                    continue
+            started = {**identity, "status": "started", "timestamp": utc()}
+            if probe is not None:
+                started["worker_probe"] = probe
+            store.append("attempts", started)
             tick, result = time.monotonic(), {}
             status, reason = "completed", None
             try:
@@ -453,6 +829,12 @@ def run(root, manifest, output, arm=None, smoke=False):
                         raise
                     if result.get("blocked"):
                         status, reason = "limit", "AEE recovery bound"
+                    if result.get("phase_exhausted"):
+                        # Amendment 1 R-A3/R-A4: the protocol reason
+                        # classifies via classify_halt's explicit
+                        # phase-exhaustion branch (a model outcome).
+                        status, reason = "limit", phase_exhaustion_reason(
+                            result["phase_exhausted"])
             except (BudgetExceeded, LimitHit) as e:
                 status, reason = "limit", str(e)
             except KeyboardInterrupt:
@@ -469,6 +851,13 @@ def run(root, manifest, output, arm=None, smoke=False):
             # anything unclassified halts the study here, retaining
             # all charges.
             event = record_tripwire(store, identity, status, reason)
+            # Amendment 1 R-A5: on a transport halt, capture the
+            # observability bundle into the run store before
+            # anything is restarted.
+            if (event is not None and event["behavior"] == HALT_STUDY
+                    and event["halt_class"] == "premise_equipment"
+                    and transport_halt(store, identity, reason)):
+                capture_transport_bundle(store, identity, cfg, reason)
             if event is not None and event["behavior"] == HALT_STUDY:
                 break
     return store.events("attempts")
