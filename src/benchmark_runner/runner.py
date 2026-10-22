@@ -173,6 +173,58 @@ def drafting_envelope_tripped(phase, calls, cfg, drafting_completed):
     return attempt_token_usage(drafting_calls, cfg) >= envelope
 
 
+# Cycle 5 C5-F1 (2026-10-22): the drafting reserve. Cycle 4's
+# confirmation attempt completed specify and plan and still funded
+# implementation with 0 tokens — the three drafting phases consumed
+# 100% of the 1,500,000 attempt cap between them (31% / 33% / 36%).
+# Within the unchanged attempt cap, the drafting phases (specify +
+# plan + tasks) hold a cumulative hard sub-cap of 750,000 tokens; on
+# exhaustion the attempt force-advances to implementation with
+# whatever artifacts exist, and implementation + assessment hold
+# the reserved remainder. A drafting force-advance is NOT
+# phase_budget_exhausted: no finalize call is spent past the
+# sub-cap (the reserve is the point), the phase's partial draft
+# state — its workspace files plus every completed drafting phase's
+# registered artifact identity — carries into implementation, and
+# the advance is recorded as a ``drafting_force_advanced`` phase
+# event with the exact drafting charge at the advance.
+#
+# The sub-cap is a FREEZE-CONFIGURED bound, like the campaign-setup
+# sharing opt-in: it applies exactly when the freeze config carries
+# ``drafting_sub_cap_tokens`` (the Cycle 5 freeze carries 750000).
+# A config without the key keeps the recorded pre-Cycle-5 semantics
+# bit-for-bit — a frozen manifest must reproduce its recorded
+# behavior, and the Cycle 1 envelope tests pin those semantics for
+# reserve-less configs (this discipline was forced by exactly those
+# tests failing against a code-level default: the runaway shapes
+# force-advanced at 750,000 before their 900,000 envelopes could
+# act, and a phase-exhaustion shape completed instead of scoring).
+DRAFTING_SUB_CAP_TOKENS = 750_000
+
+
+def drafting_sub_cap_tokens(cfg):
+    """The freeze-configured drafting sub-cap, or None when this
+    freeze carries no drafting reserve."""
+    if "drafting_sub_cap_tokens" not in cfg:
+        return None
+    return int(cfg["drafting_sub_cap_tokens"])
+
+
+def drafting_tokens_used(calls, cfg):
+    """Charged tokens across the drafting phases (specify + plan +
+    tasks) — the C5-F1 sub-cap's meter, on the harness's own
+    accounting, identical to the envelope meter's."""
+    drafting_calls = [c for c in calls if c.get("phase") in FORCE_ADVANCE_PHASES]
+    return attempt_token_usage(drafting_calls, cfg)
+
+
+def drafting_sub_cap_tripped(calls, cfg):
+    sub_cap = drafting_sub_cap_tokens(cfg)
+    if sub_cap is None:
+        return False
+    return drafting_tokens_used(calls, cfg) >= sub_cap
+
+
 def phase_guard_tokens(cfg):
     return int(cfg.get("phase_guard_tokens", PHASE_GUARD_TOKENS))
 
@@ -308,6 +360,29 @@ def attempt_wall_seconds(cfg):
 # by neither path (including bare-JSON-in-prose, which is not the
 # native markup) remains {"action": "invalid"} — a format
 # correction, exactly as today.
+#
+# Cycle 5 C5-A1 (2026-10-22): the Cycle 4 phase-path store recorded
+# a further markup family the Cycle 3 bridge does not reach — 13 of
+# its 16 still-dead responses (plan 5, tasks 8). The payload is
+# SPLIT across two objects: a complete header object carrying the
+# kind with an UNQUOTED value ({"function": shell}), then a second
+# object opening the payload field ({"command":) whose value is
+# RAW text — never a quoted JSON string — running to the family's
+# recorded terminations: the stray-tag tail (</parameter>
+# </function> </tool_call>, 11 of 13), a final '"}' before
+# </tool_call> (1), or a final '"}' at the end of the response with
+# no closing tag at all (1). Neither strict parsing (the header's
+# unquoted value defeats it) nor the envelope rule (which requires
+# the field value to open with a quote) reaches this shape.
+# _split_payload_action below recovers exactly it, under the same
+# structural assumption the envelope rule already makes: inside
+# this markup the stray closing tags are structural, never payload
+# content. A split payload with no termination stays dead. The
+# other two Cycle 4 dead classes are NOT this family and stay dead
+# by design: prose-prefixed bare JSON (the family Cycle 3
+# adjudicated out of the bridge's scope, pinned in
+# tests/test_cycle3.py) and a truncated response with no payload
+# at all.
 _TOOL_CALL_OPEN = "<tool_call>"
 _TOOL_CALL_CLOSE = "</tool_call>"
 # Stray closing tags the recorded markup leaves after the payload
@@ -427,6 +502,45 @@ def _envelope_action(segment):
     return {"action": kind, field: value}
 
 
+_SPLIT_HEADER_RE = re.compile(
+    r'\s*\{\s*"(?:action|function)"\s*:\s*"?(shell|done)"?\s*\}'
+    r'\s*\{\s*"(command|summary)"\s*:\s?')
+
+
+def _split_payload_action(segment):
+    """Cycle 5 C5-A1: recover the Cycle 4 phase path's split-payload
+    markup family. The segment opens with a complete header object
+    naming the kind (``action``/``function`` key, quoted or unquoted
+    shell/done value), immediately followed by a second object that
+    opens the payload field (``command`` for shell, ``summary`` for
+    done); the field's value is the raw remainder — it is never a
+    quoted JSON string in this family. Terminations, mirroring the
+    envelope rule's: the first stray closing tag (structural inside
+    this markup, never payload content), else a final '"}' at the
+    end of the segment. No termination, a kind/field mismatch, or
+    an empty value returns None — the response stays dead."""
+    match = _SPLIT_HEADER_RE.match(segment)
+    if match is None:
+        return None
+    kind, field = match.group(1), match.group(2)
+    if (kind == "shell") != (field == "command"):
+        return None
+    rest = segment[match.end():]
+    ends = [rest.find(tag) for tag in _STRAY_SEGMENT_TAGS]
+    ends = [e for e in ends if e >= 0]
+    if ends:
+        value = rest[: min(ends)].rstrip()
+    else:
+        value = rest.rstrip()
+        if value.endswith('"}'):
+            value = value[: -2].rstrip()
+        else:
+            return None
+    if not value:
+        return None
+    return {"action": kind, field: value}
+
+
 def parse_native_tool_call(text):
     """Parse the first recorded native <tool_call> segment in a
     response into the JSON path's action dict, or None.
@@ -448,7 +562,10 @@ def parse_native_tool_call(text):
     action = _payload_to_action(_first_json_object(segment))
     if action is not None:
         return action
-    return _envelope_action(segment)
+    action = _envelope_action(segment)
+    if action is not None:
+        return action
+    return _split_payload_action(segment)
 
 
 def parse_model_action(text):
@@ -598,6 +715,31 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
     # Cycle 1 C1-c: force-advance drafting phases already completed
     # (their unspent envelope rolls forward into later envelopes).
     drafting_completed = set()
+    # Cycle 5 C5-F1: set to the recorded advance event when the
+    # drafting sub-cap exhausts; remaining drafting phases are then
+    # skipped and the attempt proceeds to implementation on the
+    # reserved remainder.
+    drafting_force_advanced = None
+
+    def record_drafting_force_advance(phase, calls):
+        """C5-F1: record the drafting force-advance event for the
+        phase the sub-cap caught, carrying the artifacts that exist
+        at the advance — every completed drafting phase's registered
+        artifact identity, plus the caught phase's partial draft,
+        which lives in the shared workspace implementation reads."""
+        event = {**identity, "phase": phase, "timestamp": utc(),
+                 "drafting_force_advanced": True,
+                 "drafting_tokens_at_advance": drafting_tokens_used(calls, cfg),
+                 "drafting_sub_cap_tokens": drafting_sub_cap_tokens(cfg),
+                 "artifact_carried": {
+                     "completed_phases": {
+                         p: model.phase_artifacts[p]
+                         for p in sorted(drafting_completed)
+                         if p in model.phase_artifacts},
+                     "partial_phase": phase,
+                     "partial_workspace": "/workflow"}}
+        store.append("phases", event)
+        return event
     # Workstream A2/A3 state: the standing claims bundle for this
     # attempt (later assessed phases and repair rounds submit deltas
     # merged into it), a pending over-cap candidate awaiting its one
@@ -615,6 +757,11 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
     # the patch is then extracted and graded as it stands.
     phase_exhausted = None
     for phase in phases(arm):
+        if drafting_force_advanced is not None and phase in FORCE_ADVANCE_PHASES:
+            # C5-F1: the drafting sub-cap already advanced this
+            # attempt to implementation; no further drafting phase
+            # is entered (or charged) after the advance.
+            continue
         model.phase = phase
         environment.phase = phase
         # Cycle 2 C2-F1: this phase's wall clock starts when the
@@ -678,6 +825,19 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             # if that call fails to emit the artifact does the phase
             # end with the existing exhaustion classification.
             phase_calls = [c for c in calls if c.get("phase") == phase]
+            # Cycle 5 C5-F1: the drafting reserve is checked before
+            # every other phase bound — it is the attempt-level
+            # bound that funds implementation. On exhaustion the
+            # attempt force-advances: no finalize call is spent
+            # (that would spend the reserve), the phase's partial
+            # artifacts carry, and the advance is recorded. This is
+            # not phase_budget_exhausted; that classification keeps
+            # its existing semantics below.
+            if phase in FORCE_ADVANCE_PHASES and drafting_force_advanced is None \
+                    and drafting_sub_cap_tripped(calls, cfg):
+                drafting_force_advanced = record_drafting_force_advance(
+                    phase, calls)
+                break
             # Cycle 2 C2-F1: the per-phase wall bound, handled
             # exactly as a token-envelope expiry — a force-advance
             # phase spends its reserved finalize call; any other
@@ -710,12 +870,33 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
                 if isinstance(exc, (TransportStallError, CallOuterBoundError,
                                     AttemptWallExpiredError)):
                     raise
+                calls_now = [c for c in store.events("calls")
+                             if c["attempt_id"] == identity["attempt_id"]]
+                if phase in FORCE_ADVANCE_PHASES \
+                        and drafting_sub_cap_tripped(calls_now, cfg):
+                    # C5-F1: the failed finalize call was itself the
+                    # spend that exhausted the drafting sub-cap — the
+                    # outcome is the drafting force-advance, not
+                    # phase exhaustion.
+                    drafting_force_advanced = record_drafting_force_advance(
+                        phase, calls_now)
+                    break
                 phase_exhausted = phase
                 break
             if finalize_attempted and model.last["action"] != "done":
                 # The reserved finalize call did not emit the phase
                 # artifact: the phase ends with the existing
-                # exhaustion classification — no retry loops.
+                # exhaustion classification — no retry loops. C5-F1:
+                # unless that call exhausted the drafting sub-cap,
+                # in which case the attempt force-advances to
+                # implementation instead of ending exhausted.
+                calls_now = [c for c in store.events("calls")
+                             if c["attempt_id"] == identity["attempt_id"]]
+                if phase in FORCE_ADVANCE_PHASES \
+                        and drafting_sub_cap_tripped(calls_now, cfg):
+                    drafting_force_advanced = record_drafting_force_advance(
+                        phase, calls_now)
+                    break
                 phase_exhausted = phase
                 break
             if model.last["action"] != "done":
@@ -815,6 +996,8 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
               "repair_count": repairs, "tool_calls": environment.tool_calls}
     if phase_exhausted is not None:
         result["phase_exhausted"] = phase_exhausted
+    if drafting_force_advanced is not None:
+        result["drafting_force_advanced"] = drafting_force_advanced
     return result
 
 
