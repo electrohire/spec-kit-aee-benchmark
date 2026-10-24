@@ -163,3 +163,76 @@ def test_reusable_workflows_pin_helpers_and_keep_inference_off_hosted_builds():
         assert 'llama-server' not in text and 'self-hosted' not in text and 'job_workflow_sha' not in text
     text=(workflows/'benchmark-release-input.yml').read_text()
     assert text.index('--metadata-only') < text.index('gh run download') < text.index('--folder candidate')
+
+
+def governance_fixtures(fault=None):
+    import hashlib
+    revision='e'*40
+    repo='electrohire/applied-epistemic-engineering'; commit='c'*40; artifact='c'*64
+    policy=dict(schema='release-governance-policy-v2',decision_record='benchmarks/releases/governance-2026-10-24.md',limitations='fixture limitation')
+    record=b'# fixture decision record\n'
+    fields=dict(outcome='iterate',
+        lane_1=dict(outcome='iterate',threshold=0.7,claims_at_or_above_threshold=1,claims_below_threshold=0),
+        direct_score=0.9,propagated_score=0.9,band='high',
+        components=dict(evidence=1.0,independence=0.5,falsifiability=1.0,boundary=1.0,contradiction_penalty=0),
+        notes=['note one','note two'],
+        evidence_verification=dict(checked=1,findings=0,unresolvable_offline=0),aee_exit=1,composition_exit=1)
+    bundles=[]; blobs={}; raw={}
+    for i in range(5):
+        claim=f'OBS-FIXTURE-{i}'
+        composed=dict(outcome='iterate',metadata=dict(lane_states=[dict(lane_1=fields['lane_1'])]),
+            state=dict(aee=dict(aee=dict(scores={claim:dict(direct_score=0.9,propagated_score=0.9,band='high',components=fields['components'],notes=fields['notes'])}))))
+        summary=dict(evidence_verification=fields['evidence_verification'],aee_exit=1,composition_exit=1)
+        cpath=f'reports/aee-validation/fixture-{i}/composed.json'; spath=f'reports/aee-validation/fixture-{i}/summary.json'
+        cb=json.dumps(composed).encode(); sb=json.dumps(summary).encode()
+        if fault=='frozen_changed' and i==0: cb=b'{"outcome": "pass"}'
+        raw[cpath]=cb; raw[spath]=sb
+        bundles.append(dict(bundle=f'fixture-{i}',claim_id=claim,
+            frozen_records=dict(composed=dict(path=cpath,sha256=hashlib.sha256(cb).hexdigest()),
+                                summary=dict(path=spath,sha256=hashlib.sha256(sb).hexdigest())),
+            frozen_fields=fields,rescore_fields=fields,rescore_exact_match=fault!='rescore_mismatch'))
+    evidence=dict(schema='release-governance-evidence-v2',standard='policy-v2-governance',
+        component=dict(repository=repo,commit=commit,artifact_sha256=artifact),
+        governance=dict(policy='benchmarks/releases/policy-v2.json',decision_record='benchmarks/releases/governance-2026-10-24.md',
+                        decision_record_sha256=hashlib.sha256(record).hexdigest()),
+        build=dict(build_run_id=123,artifact_name='benchmark-candidate-'+commit),
+        detector_battery=dict(bundles=bundles),
+        suites=dict(harness_suite=dict(lineage_commit='d'*40,passed=1064,failed=0)))
+    epath='reports/releases/governance-fixture/evidence.json'; eb=json.dumps(evidence).encode(); raw[epath]=eb
+    entry=dict(repository=repo,commit=commit,artifact_sha256=artifact,
+        standard='policy-v9' if fault=='unknown_standard' else 'policy-v2-governance',
+        policy_sha256='f'*64 if fault=='policy_substituted' else canonical_sha(policy),
+        evidence=dict(path=epath,sha256=hashlib.sha256(eb).hexdigest()))
+    blobs['benchmarks/releases/approvals.json']=dict(approvals=[entry])
+    blobs['benchmarks/releases/policy-v2.json']=policy
+    raw['benchmarks/releases/governance-2026-10-24.md']=record
+    run=dict(repository=dict(full_name=repo),head_sha=commit,head_branch='main',
+             path='.github/workflows/benchmark-candidate.yml',event='push',status='completed',
+             conclusion='failure' if fault=='build_not_successful' else 'success')
+    def get(url):
+        if url.endswith('/commits/main'): return json.dumps(dict(sha=revision)).encode()
+        if '/compare/' in url: return json.dumps(dict(status='ahead',ahead_by=3,behind_by=1 if fault=='lineage_not_contained' else 0)).encode()
+        if url.endswith('/actions/runs/123/artifacts'): return json.dumps(dict(artifacts=[dict(name='benchmark-candidate-'+commit,expired=False)])).encode()
+        if url.endswith('/actions/runs/123'): return json.dumps(run).encode()
+        if 'spec-kit-aee-benchmark/actions/runs?' in url: return json.dumps(dict(workflow_runs=[dict(head_sha=revision,event='push',path='.github/workflows/ci.yml',status='completed',conclusion='failure')])).encode()
+        if '/actions/runs?' in url: return json.dumps(dict(workflow_runs=[dict(head_sha=commit,path='.github/workflows/ci.yml',status='completed',conclusion='success')])).encode()
+        name=url.split('/'+revision+'/')[1]
+        return raw[name] if name in raw else json.dumps(blobs[name]).encode()
+    return repo,commit,artifact,get
+
+
+def test_governance_approval_resolves_under_its_own_standard():
+    repo,commit,artifact,get=governance_fixtures()
+    result=verifier.resolve(repo,commit,artifact,get)
+    assert result['decision']['release_allowed'] and result['decision']['standard']=='policy-v2-governance'
+    assert result['decision']['checks']['detector_bundles']==5
+    # Benchmark CI is red at the fixture revision (the unpublished-pin failure
+    # the standard documents); the governance path records it, not gates on it.
+    assert result['decision']['benchmark_ci_at_revision']=='failure'
+
+
+@pytest.mark.parametrize('fault',['policy_substituted','build_not_successful','frozen_changed','rescore_mismatch','lineage_not_contained','unknown_standard'])
+def test_governance_approval_blocks_on_tampered_or_unproven_evidence(fault):
+    repo,commit,artifact,get=governance_fixtures(fault)
+    with pytest.raises(ValueError):
+        verifier.resolve(repo,commit,artifact,get)
