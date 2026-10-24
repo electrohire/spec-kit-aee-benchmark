@@ -20,7 +20,9 @@ sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
 from benchmark_runner import runner
 from benchmark_runner.store import Store, read_json
-from benchmark_runner.workflow import assess, compact_feedback, phase_prompt
+from benchmark_runner.workflow import (DeltaFormatError, assess, compact_feedback,
+                                       grounded_claims, phase_prompt,
+                                       resolve_claim_submission)
 
 ROOT = Path(__file__).parents[1]
 
@@ -416,3 +418,93 @@ def test_real_assess_records_claim_count_and_acts_summary(tmp_path):
     compact = compact_feedback(result)
     assert set(compact) == COMPACT_KEYS
     assert len(json.dumps(compact)) < len(json.dumps(result))
+
+
+# ---------------------------------------------------------------------------
+# Regression: malformed submission entry shapes (Stage B attempt-8 defect)
+#
+# In the Stage B candidate leg (2026-10-23), attempt 8 (pytest-5809,
+# spec_kit_aee) died with AttributeError: 'str' object has no attribute
+# 'get' — classified unknown/unclassified_error, halting the study. The
+# A2 design intent (CHANGELOG, 2026-10-21) is that a malformed claims
+# submission is a model outcome fed back in-phase, never an unhandled
+# harness exception; delta submissions already enforce that through
+# DeltaFormatError, but the full-bundle path validated only that
+# "claims" is a list — not the shapes of its entries — so a bundle
+# whose claim entries, evidence entries, or evidence field are strings
+# (or an evidence field that is not a list at all) reached
+# grounded_claims and raised the unclassified AttributeError. These
+# tests pin the defined behavior for every such shape.
+# ---------------------------------------------------------------------------
+
+def _assert_format_error(submission, base=None):
+    try:
+        resolve_claim_submission(base, submission)
+    except DeltaFormatError:
+        return
+    raise AssertionError(f"submission was accepted: {submission!r}")
+
+
+def test_string_claim_entries_are_format_errors():
+    _assert_format_error({"claims": ["Requirement C1 holds"]})
+    _assert_format_error({"claims": [claim("C1"), "Requirement C2 holds"]})
+
+
+def test_string_evidence_entries_are_format_errors():
+    bad = claim("C1")
+    bad["evidence"] = ["ran the tests"]
+    _assert_format_error({"claims": [bad]})
+
+
+def test_non_list_evidence_field_is_a_format_error():
+    as_string = claim("C1")
+    as_string["evidence"] = "ran the tests"
+    _assert_format_error({"claims": [as_string]})
+    as_object = claim("C1")
+    as_object["evidence"] = {"kind": "observed"}
+    _assert_format_error({"claims": [as_object]})
+
+
+def test_delta_upsert_with_malformed_evidence_is_a_format_error():
+    bad = claim("C2")
+    bad["evidence"] = "ran the tests"
+    _assert_format_error({"delta": {"upsert": [bad]}},
+                         base=bundle(claim("C1")))
+
+
+def test_wellformed_entry_shapes_still_resolve():
+    with_evidence = claim("C1")
+    with_evidence["evidence"] = [{"kind": "observed", "source_id": "x",
+                                  "ref": "y", "description": "d"}]
+    resolved = resolve_claim_submission(None, bundle(with_evidence, claim("C2")))
+    assert [c["id"] for c in resolved["claims"]] == ["C1", "C2"]
+
+
+def test_grounded_claims_rejects_malformed_bundle_shapes(tmp_path):
+    store = Store(tmp_path / "run")
+    for bad_bundle in ({"claims": ["Requirement C1 holds"]},
+                       {"claims": "Requirement C1 holds"},
+                       {"claims": None},
+                       {"claims": [{"id": "C1", "evidence": "ran the tests"}]}):
+        try:
+            grounded_claims(bad_bundle, store, "att-x")
+        except DeltaFormatError:
+            continue
+        raise AssertionError(f"grounded_claims accepted: {bad_bundle!r}")
+
+
+def test_malformed_full_bundle_is_model_feedback_not_harness_error(tmp_path, monkeypatch):
+    recorder = AssessRecorder()
+    provider = ScriptedProvider(full_script(
+        specify=[{"schema_version": "1.0",
+                  "claims": ["Requirement C1 holds"]},          # malformed
+                 bundle(claim("C1"))]))                          # resubmission
+    result, _ = run_attempt(tmp_path, monkeypatch, provider, recorder)
+    # The attempt completed normally: no exception escaped, the
+    # malformed submission was fed back as a format rejection, and
+    # only the well-formed resubmission was assessed.
+    assert result["patch"]["sha256"] and not result.get("blocked")
+    assert provider.first_appearances("Claims submission rejected") == 1
+    specify_bundles = [b for phase, b in recorder.bundles if phase == "specify"]
+    assert len(specify_bundles) == 1
+    assert [c["id"] for c in specify_bundles[0]["claims"]] == ["C1"]

@@ -13,6 +13,47 @@ PHASES = ("constitution", "specify", "plan", "tasks", "implement", "converge")
 AEE_PHASES = {"specify", "plan", "tasks", "implement"}
 
 
+def _require_bundle_entry_shapes(bundle):
+    """Entry shapes of an assessed bundle: the bundle is an object,
+    its claims are objects, and a claim's evidence — when the key is
+    present — is a list of objects. Anything else is a malformed
+    submission (DeltaFormatError: a model outcome, fed back in-phase),
+    never an AttributeError out of the mapping joins in grounding and
+    the executed-tests join, which read claim and evidence fields with
+    .get. A string claim entry, a string evidence entry, or an
+    evidence field that is not a list is exactly the shape that
+    escaped those joins in the Stage B candidate leg (attempt 8,
+    2026-10-23: AttributeError: 'str' object has no attribute 'get',
+    classified unclassified_error and halting the study); this check
+    rejects that class at the boundary, before any join reads it."""
+    if not isinstance(bundle, dict):
+        raise DeltaFormatError(
+            "claims bundle must be an object carrying a 'claims' list")
+    if "claims" not in bundle:
+        return
+    claims = bundle["claims"]
+    if not isinstance(claims, list):
+        raise DeltaFormatError(
+            "claims bundle 'claims' must be a list of claim objects")
+    for entry in claims:
+        if not isinstance(entry, dict):
+            raise DeltaFormatError(
+                "each claims entry must be a full claim object, "
+                f"not {type(entry).__name__}")
+        if "evidence" not in entry:
+            continue
+        evidence = entry["evidence"]
+        if not isinstance(evidence, list):
+            raise DeltaFormatError(
+                f"claim {entry.get('id')!r}: 'evidence' must be a list "
+                "of evidence objects")
+        for item in evidence:
+            if not isinstance(item, dict):
+                raise DeltaFormatError(
+                    f"claim {entry.get('id')!r}: each evidence entry must "
+                    f"be an object, not {type(item).__name__}")
+
+
 def grounded_claims(claims, store, attempt_id):
     """A model cannot promote invented evidence to a recorded observation.
 
@@ -21,6 +62,7 @@ def grounded_claims(claims, store, attempt_id):
     downgraded to an asserted model claim, whatever kind it declared.
     Kind labels confer no exemption.
     """
+    _require_bundle_entry_shapes(claims)
     claims = json.loads(json.dumps(claims))
     allowed = {e["artifact"]["sha256"]: e["artifact"] for e in store.events("tools")
                if e.get("attempt_id") == attempt_id}
@@ -309,8 +351,11 @@ def resolve_claim_submission(base, submission):
             raise DeltaFormatError(
                 "the first assessed phase must submit a full claims bundle; "
                 "a delta has no standing bundle to merge into")
-        return merge_claim_delta(base, submission)
+        merged = merge_claim_delta(base, submission)
+        _require_bundle_entry_shapes(merged)
+        return merged
     if isinstance(submission.get("claims"), list):
+        _require_bundle_entry_shapes(submission)
         return json.loads(json.dumps(submission))
     raise DeltaFormatError(
         "claims submission must carry a 'claims' list (full bundle) or a 'delta' object")
