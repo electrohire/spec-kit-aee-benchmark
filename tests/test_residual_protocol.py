@@ -46,8 +46,10 @@ def brief():
 
 
 def observation(i, size=200):
+    # A distinct body character per step, so a test can tell one
+    # observation's body from another's in a joined view.
     return {"role": "user", "content": json.dumps(
-        {"stdout": f"OBS-{i}-SENTINEL " + ("x" * size),
+        {"stdout": f"OBS-{i}-SENTINEL " + (chr(ord("a") + i) * size),
          "stderr": "", "exit_code": 0,
          "evidence_ref": f"calls/art-{i}.json", "source_id": f"sha-{i}"})}
 
@@ -141,7 +143,8 @@ def test_later_views_carry_references_not_resends():
     # in the step index.
     joined = "".join(m["content"] for m in view)
     assert observation(0, 400)["content"] not in joined
-    assert "x" * 150 not in joined
+    assert "a" * 150 not in joined
+    assert "e" * 150 in joined  # the newest step's body, in the delta
     assert all(len(s.get("first_line", "")) <= 100 for s in block["steps"])
     first_obs_id = residual.entry_id(observation(0, 400))
     assert any(s["id"] == first_obs_id for s in block["steps"])
