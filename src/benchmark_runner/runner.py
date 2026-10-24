@@ -23,6 +23,7 @@ from .context import (AUTHORED_TURN_EXCERPT_CHARS, OBSERVATION_MASK_RECENT_K,
                       mask_history)
 from .experiment import verify_freeze
 from .isolation import DockerSandbox
+from .residual import ResidualSession
 from .provider import (AttemptWallExpiredError, OpenAIProvider, ProviderError,
                        provider_spec, transport_policy)
 from .local_provider import (CALL_OUTER_BOUND_SECONDS, CallOuterBoundError,
@@ -670,6 +671,11 @@ class MiniModel:
         # assembled view externalizes earlier phases' authored turns
         # to exactly this identity.
         self.phase_artifacts = {}
+        # Probe-path residual protocol (2026-10-24): the per-attempt
+        # synchronized-state session, created lazily on the first
+        # query when the freeze config carries residual_protocol.
+        # None (and never created) in every other configuration.
+        self._residual = None
 
     def query(self, messages):
         cleaned = [{"role": m["role"], "content": m["content"]} for m in messages]
@@ -685,14 +691,39 @@ class MiniModel:
             # — and, when even the combined remainder exceeds the
             # cap, the named unmaskable_remainder_over_cap flag — on
             # the call event.
-            result = assemble_history(
-                cleaned, int(self.cfg["max_input_tokens"]),
-                current_phase=self.phase,
-                recent_k=int(self.cfg.get("observation_mask_recent_k",
-                                           OBSERVATION_MASK_RECENT_K)),
-                artifact_registry=self.phase_artifacts,
-                excerpt_chars=int(self.cfg.get("authored_turn_excerpt_chars",
-                                               AUTHORED_TURN_EXCERPT_CHARS)))
+            if self.cfg.get("residual_protocol"):
+                # Probe-path residual protocol (2026-10-24): the
+                # synchronized shared state replaces full-history
+                # resends — the brief and each step cross in full
+                # exactly once, later calls carry a state block
+                # (brief by reference, problem statement verbatim,
+                # step index with digests) plus the newest step as
+                # the delta. The session verifies sender/receiver
+                # digest sync before every send and raises an
+                # integrity error on any divergence. Identical
+                # stats shape; everything downstream is unchanged.
+                if self._residual is None:
+                    self._residual = ResidualSession(
+                        store=getattr(self.provider, "store", None),
+                        identity=getattr(self.provider, "identity", None))
+                result = self._residual.view(
+                    cleaned, int(self.cfg["max_input_tokens"]),
+                    current_phase=self.phase,
+                    recent_k=int(self.cfg.get("observation_mask_recent_k",
+                                               OBSERVATION_MASK_RECENT_K)),
+                    artifact_registry=self.phase_artifacts,
+                    excerpt_chars=int(self.cfg.get("authored_turn_excerpt_chars",
+                                                   AUTHORED_TURN_EXCERPT_CHARS)),
+                    phase=self.phase)
+            else:
+                result = assemble_history(
+                    cleaned, int(self.cfg["max_input_tokens"]),
+                    current_phase=self.phase,
+                    recent_k=int(self.cfg.get("observation_mask_recent_k",
+                                               OBSERVATION_MASK_RECENT_K)),
+                    artifact_registry=self.phase_artifacts,
+                    excerpt_chars=int(self.cfg.get("authored_turn_excerpt_chars",
+                                                   AUTHORED_TURN_EXCERPT_CHARS)))
             self.provider.context_stats = {
                 "assembled_tokens": result.assembled_tokens,
                 "sent_tokens": result.sent_tokens,
