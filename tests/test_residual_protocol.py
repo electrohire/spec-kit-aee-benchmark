@@ -76,7 +76,8 @@ class CaptureProvider:
 
     def query(self, messages, phase, timeout):
         self.payloads.append([dict(m) for m in messages])
-        return json.dumps({"action": "shell", "command": "true"})
+        return json.dumps({"action": "shell",
+                           "command": f"run-step-{len(self.payloads) - 1}"})
 
 
 def drive_model(cfg, steps, size=200):
@@ -135,9 +136,13 @@ def test_later_views_carry_references_not_resends():
     # The problem statement is the pinned payload: verbatim every call.
     assert block["problem_statement"] == PROBLEM
     # An early observation is present only as a reference: its full
-    # sentinel text is absent, its entry id is in the step index.
+    # text is absent (only the bounded first-line digest in the
+    # index may show its opening characters), and its entry id is
+    # in the step index.
     joined = "".join(m["content"] for m in view)
-    assert "OBS-0-SENTINEL" not in joined
+    assert observation(0, 400)["content"] not in joined
+    assert "x" * 150 not in joined
+    assert all(len(s.get("first_line", "")) <= 100 for s in block["steps"])
     first_obs_id = residual.entry_id(observation(0, 400))
     assert any(s["id"] == first_obs_id for s in block["steps"])
     # The latest observation is the delta: in full.

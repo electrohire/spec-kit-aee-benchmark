@@ -188,12 +188,25 @@ def reconstruct_state(views):
         block = _parse_state_block(view[0]) if view else None
         if block is None:
             raise _divergence("a later view carries no state block")
-        # SKELETON: declared-vs-replayed verification lands in the
-        # next build step (see PROBE-TEST-RECORD.md).
-        delta = view[1:]
+        if block.get("version") != STATE_BLOCK_VERSION:
+            raise _divergence("state block version mismatch")
+        if block.get("brief_sha256") != brief_digest(entries[:blen]):
+            raise _divergence("brief reference does not match the "
+                              "transmitted brief")
+        declared_steps = [{"id": s.get("id"), "kind": s.get("kind")}
+                          for s in block.get("steps") or []]
+        if declared_steps != entries[blen:]:
+            raise _divergence("step index does not match the "
+                              "transmitted step sequence")
         entries = entries + [
             {"id": entry_id(m), "kind": classify_transmitted(m)}
-            for m in delta]
+            for m in view[1:]]
+        if block.get("entries_total") != len(entries):
+            raise _divergence("declared entry count does not match "
+                              "the replayed sequence")
+        if block.get("state_digest") != state_digest(entries):
+            raise _divergence("declared state digest does not match "
+                              "the replayed state")
     return entries, state_digest(entries)
 
 
@@ -281,8 +294,25 @@ class ResidualSession:
 
     def _later_view(self, messages, wire_cap_tokens, phase):
         # Prefix stability: history positions already transmitted
-        # must still carry the content they were transmitted with.
-        # (Skeleton: derivation checks land in the next build step.)
+        # must still carry the content they were transmitted with —
+        # the recorded transmitted form is recomputed from the
+        # current history and compared ("frozen" positions are the
+        # genesis view's before-path output, recorded verbatim and
+        # not recomputed). Any mismatch is a divergence: the state
+        # the receiver holds no longer matches the sender's history.
+        if len(messages) < self._full_sent:
+            raise _divergence("history shrank below the transmitted "
+                              "prefix")
+        for pos in range(self._full_sent):
+            form = self._forms[pos]
+            if form == "frozen":
+                continue
+            expected = (messages[pos] if form == "full"
+                        else elision_for(messages[pos]))
+            if entry_id(expected) != self._entries[pos]["id"]:
+                raise _divergence(
+                    f"history position {pos} no longer matches its "
+                    "transmitted form")
         delta_start = self._full_sent
         # Decide the delta's transmitted forms: full, unless the
         # assembled view would exceed the wire cap — then elide
@@ -331,7 +361,17 @@ class ResidualSession:
                     delta[j] = elision_for(m)
                     delta_forms[j] = "elided"
                     candidate, new_entries = build_candidate()
-        # SKELETON: the pre-send replay check lands in the next step.
+        # Pre-send digest sync: replay the receiver's reconstruction
+        # over every view actually sent plus this candidate, and
+        # require it to reproduce the canonical entry sequence and
+        # digest exactly. A divergence raises here — the candidate
+        # is never transmitted and no inference is spent on it.
+        replayed, replay_digest = reconstruct_state(
+            self.sent_views + [candidate])
+        if ([e["id"] for e in replayed] != [e["id"] for e in new_entries]
+                or replay_digest != state_digest(new_entries)):
+            raise _divergence("receiver replay does not reproduce "
+                              "the canonical state")
         result = MaskingResult(
             candidate,
             masked_count=sum(1 for e in self._entries[self._brief_len:]
