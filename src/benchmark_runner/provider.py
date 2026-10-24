@@ -56,6 +56,7 @@ except ImportError:
     dc = None  # Secure Vault connector unavailable on this host; env fallback.
 
 from .accounting import TOKEN_FIELDS, cost, native_usage, request_prices
+from .context import estimate_tokens
 from .store import canonical, utc
 from .schema import validate_call, validate_identity
 
@@ -256,6 +257,17 @@ def resolve_auth(spec=None):
 
 class ProviderError(RuntimeError):
     pass
+
+
+class AttemptWallExpiredError(ProviderError):
+    """Cycle 2 C2-F1: the attempt wall expired mid-call — the
+    per-call deadline the harness passed was the wall remainder
+    (see MiniModel's ``call_deadline_kind`` hand-off), and that
+    remainder elapsed while the call was in flight. A disclosed
+    attempt limit, scored as a model outcome via the explicit
+    ``attempt_wall_expired`` classifier branch; never a transport
+    failure. Distinct from a stall (silence) and from the hard
+    per-call outer bound, which keep their own semantics."""
 
 
 # ---------------------------------------------------------------------------
@@ -519,6 +531,20 @@ class OpenAIProvider:
         if cfg.get("temperature") is not None:
             payload["temperature"] = cfg["temperature"]
         request_artifact = self.store.artifact(canonical(payload))
+        # C1-a wire-vs-assembled accounting (see local_provider): the
+        # assembled size handed in by the calling model, the wire size
+        # from each physical request's reported usage, and the
+        # over-cap flag against the frozen wire cap.
+        context_stats = getattr(self, "context_stats", None) or {}
+        self.context_stats = None
+        assembled_tokens = context_stats.get(
+            "assembled_tokens", estimate_tokens(messages))
+        # C2-F1: the calling model names the binding deadline. When
+        # it is the attempt wall ("attempt_wall"), a TimeoutError
+        # from the request — whose urlopen timeout IS that passed
+        # deadline — is a wall expiry, not a transport failure.
+        deadline_is_wall = getattr(self, "call_deadline_kind", None) == "attempt_wall"
+        self.call_deadline_kind = None
 
         waited, attempt_index, terminal_error = 0.0, 0, None
         while True:
@@ -543,6 +569,12 @@ class OpenAIProvider:
                     response_artifact = None
                     if isinstance(exc, urllib.error.HTTPError):
                         error = "HTTPError:%d" % exc.code
+                    elif isinstance(exc, TimeoutError) and deadline_is_wall:
+                        # C2-F1: the passed per-call deadline was the
+                        # attempt-wall remainder and it elapsed
+                        # mid-call: a wall expiry, scored — never a
+                        # generic transport timeout.
+                        error = "AttemptWallExpired"
                     else:
                         error = type(exc).__name__
                     usage = {**{k: None for k in TOKEN_FIELDS}, "unknown_reason": error}
@@ -556,6 +588,16 @@ class OpenAIProvider:
                          "currency": "USD", "cost": str(charge) if charge is not None else None,
                          "retry": retry + attempt_index, "physical_attempt": attempt_index,
                          "error": error,
+                         "assembled_tokens": assembled_tokens,
+                         "wire_tokens": usage.get("input_tokens"),
+                         "assembled_over_wire_cap": assembled_tokens > cfg["max_input_tokens"],
+                         "sent_tokens": context_stats.get("sent_tokens"),
+                         "observations_masked": context_stats.get("observations_masked"),
+                         "authored_turns_externalized": context_stats.get(
+                             "authored_turns_externalized"),
+                         "unmaskable_remainder_over_cap": bool(
+                             context_stats.get("unmaskable_remainder_over_cap")),
+                         "limit_kind": "attempt_wall_expired" if error == "AttemptWallExpired" else None,
                          "artifacts": {"request": request_artifact, "response": response_artifact}}
                 validate_call(event)
                 self.store.append("calls", event)
@@ -575,6 +617,8 @@ class OpenAIProvider:
             _sleep(wait)
             waited, attempt_index = waited + wait, attempt_index + 1
         if terminal_error is not None:
+            if terminal_error == "AttemptWallExpired":
+                raise AttemptWallExpiredError(terminal_error)
             raise ProviderError(terminal_error)
         if response.get("model") != cfg["model"]:
             raise ProviderError("provider returned a different model snapshot")

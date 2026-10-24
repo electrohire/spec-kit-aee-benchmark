@@ -44,7 +44,8 @@ from .accounting import TOKEN_FIELDS, attempt_token_usage, request_prices
 from .experiment import frozen_paths, source_hash
 from .isolation import docker_args
 from .store import Store, canonical, read_json, sha, utc, write_json
-from .workflow import AEE_PHASES, assess, grounded_claims, phase_prompt, phases
+from .workflow import (AEE_PHASES, assess, gate_outcome_of, grounded_claims,
+                       phase_prompt, phases)
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -943,10 +944,12 @@ def run_workflow_repair(root, task, provider, sandbox, store, identity, cfg, man
         if in_aee and summary["done"]:
             claims = grounded_claims(summary["done"].get("claims") or {}, store, identity["attempt_id"])
             result = assess(root, claims, phase, store, identity["attempt_id"])
-            assessment_outcome = result["outcome"]
+            # PC-2: recovery and blocking follow lane 1 (machine
+            # verification); the recorded outcome is the gate outcome.
+            assessment_outcome = gate_outcome_of(result)
             agent.add_messages({"role": "user", "content": "AEE/Evaluator result: " + json.dumps(result)})
             recovery = 0
-            while result["outcome"] == "block" and recovery < cfg["max_recovery_rounds"]:
+            while gate_outcome_of(result) == "block" and recovery < cfg["max_recovery_rounds"]:
                 recovery += 1
                 recoveries += 1
                 agent.add_messages({"role": "user", "content": (
@@ -962,9 +965,9 @@ def run_workflow_repair(root, task, provider, sandbox, store, identity, cfg, man
                 claims = grounded_claims(summary["done"].get("claims") or {}, store,
                                          identity["attempt_id"])
                 result = assess(root, claims, phase, store, identity["attempt_id"])
-                assessment_outcome = result["outcome"]
+                assessment_outcome = gate_outcome_of(result)
                 agent.add_messages({"role": "user", "content": "AEE/Evaluator result: " + json.dumps(result)})
-            if result["outcome"] == "block":
+            if gate_outcome_of(result) == "block":
                 blocked = True
                 phase_summaries.append(summary)
                 break

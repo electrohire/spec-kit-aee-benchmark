@@ -49,6 +49,129 @@ def archived_runs(store):
     return {"count": len(runs), "attempts": sum(r["attempts"] for r in runs), "runs": runs}
 
 
+def _freeze_reservation(store):
+    """Charged-token reservation for one call from the frozen config:
+    max_input_tokens + max_output_tokens, or None when no usable freeze
+    config is available (unknown usage is then never fabricated)."""
+    path = store.root/"freeze.json"
+    if not path.exists():
+        return None
+    try:
+        frozen = read_json(path)
+    except (ValueError, OSError):
+        return None
+    config = frozen.get("config") if isinstance(frozen, dict) else None
+    if not isinstance(config, dict):
+        return None
+    max_input, max_output = config.get("max_input_tokens"), config.get("max_output_tokens")
+    if type(max_input) is int and type(max_output) is int:
+        return max_input + max_output
+    return None
+
+
+def _charged_tokens(call, reservation):
+    """Input + output for one call: measured usage when both counters
+    are ints, otherwise the freeze reservation (which may be None)."""
+    input_tokens, output_tokens = call.get("input_tokens"), call.get("output_tokens")
+    if type(input_tokens) is int and type(output_tokens) is int:
+        return input_tokens + output_tokens
+    return reservation
+
+
+def campaign_setup_line(store):
+    """The measured campaign-setup line (Amendment 1 R-A2).
+
+    Construction calls are the calls whose identity purpose is
+    "campaign_setup". Each is charged input + output when both are
+    known, otherwise its freeze reservation; if any such call has
+    unknown usage and no freeze config is available the line's tokens
+    are None rather than fabricated. Construction completions are the
+    records in the "campaign_setups" stream (one per frozen setup,
+    keyed by setup_key). A store with no construction at all returns
+    zeros and an empty per-task mapping, never an error."""
+    reservation = _freeze_reservation(store)
+    per_task, total, unknown = {}, 0, False
+    setup_calls = [c for c in store.events("calls") if c.get("purpose") == "campaign_setup"]
+    for call in setup_calls:
+        charged = _charged_tokens(call, reservation)
+        task_id = call.get("task_id")
+        if charged is None:
+            unknown = True
+            per_task[task_id] = None
+        elif task_id not in per_task:
+            per_task[task_id] = charged
+            total += charged
+        elif per_task[task_id] is not None:
+            per_task[task_id] += charged
+            total += charged
+    return {"tokens": None if unknown else total, "calls": len(setup_calls),
+            "per_task": per_task,
+            "construction_records": len(store.events("campaign_setups"))}
+
+
+def arm_token_totals(store, *, setup_share=False):
+    """Charged tokens per arm over scored calls only.
+
+    Calls with purpose "campaign_setup" are construction, never scored,
+    and are excluded here. With setup_share=True the symmetric R-A2
+    treatment applies: each task's setup tokens are added once to each
+    Spec Kit arm ("spec_kit" and "spec_kit_aee" carry the same per-task
+    setup amount); the baseline arm is untouched. An arm whose scored
+    calls (or, when shared, the setup line) contain unknown usage with
+    no freeze reservation to charge reports None, never a guess."""
+    reservation = _freeze_reservation(store)
+    arms = {}
+    for call in store.events("calls"):
+        if call.get("purpose") == "campaign_setup":
+            continue
+        arm = call.get("arm")
+        charged = _charged_tokens(call, reservation)
+        if charged is None:
+            arms[arm] = None
+        elif arm not in arms:
+            arms[arm] = charged
+        elif arms[arm] is not None:
+            arms[arm] += charged
+    line = campaign_setup_line(store)
+    if setup_share:
+        for arm in ("spec_kit", "spec_kit_aee"):
+            if arm not in arms:
+                continue
+            if arms[arm] is None or line["tokens"] is None:
+                arms[arm] = None
+            else:
+                arms[arm] += line["tokens"]
+    return {"arms": arms, "setup_applied": bool(setup_share),
+            "setup_tokens": line["tokens"]}
+
+
+_PHASE_CATEGORIES = {"constitution": "setup", "specify": "specification",
+                     "plan": "specification", "tasks": "specification",
+                     "implement": "implementation", "converge": "assessment_and_repair",
+                     "solve": "implementation"}
+
+
+def _category_tokens(calls, reservation):
+    """Charged-token split by category over every call, each call
+    counted exactly once: a construction call (purpose
+    "campaign_setup") counts to "setup" regardless of its phase,
+    otherwise the phase decides, and an unknown phase is "other". A
+    category containing an unchargeable unknown-usage call is None."""
+    categories = {"setup": 0, "specification": 0, "implementation": 0,
+                  "assessment_and_repair": 0, "other": 0}
+    for call in calls:
+        if call.get("purpose") == "campaign_setup":
+            category = "setup"
+        else:
+            category = _PHASE_CATEGORIES.get(call.get("phase"), "other")
+        charged = _charged_tokens(call, reservation)
+        if charged is None:
+            categories[category] = None
+        elif categories[category] is not None:
+            categories[category] += charged
+    return categories
+
+
 def ratio(n, d):
     return None if d == 0 or n is None else float(n/d)
 
@@ -145,14 +268,28 @@ def aggregate(store, *, synthetic=False):
             "task_cluster_bootstrap": paired_bootstrap(rows, a, b)}
     frozen = read_json(store.root/"freeze.json") if (store.root/"freeze.json").exists() else None
     unattempted = [s["attempt_id"] for s in frozen["schedule"] if s["attempt_id"] not in latest] if frozen else []
+    # Amendment 1 R-A2: campaign setup is a measured line once any
+    # construction happened; a construction-free store keeps the
+    # historical unattributable setup_cost exactly.
+    setup_line = campaign_setup_line(store)
+    if setup_line["calls"] > 0 or setup_line["construction_records"] > 0:
+        setup_cost = setup_line["tokens"]
+        setup_cost_reason = ("campaign construction tokens charged to the setup line "
+                             "(calls with purpose campaign_setup); controller session "
+                             "usage and human time excluded")
+    else:
+        setup_cost = None
+        setup_cost_reason = "controller session usage and human time not attributable"
     return {"status": "synthetic_fixture" if synthetic else ("not_run" if not rows else "observed"),
             "unattempted_ids": unattempted, "unattempted_count": len(unattempted),
             "integrity": {"streams": streams, "verified_grades": len(grades),
                           "unverified_grade_attempts": sorted(unverified_grades)},
             "archived_runs": archived_runs(store),
             "cost_basis": "list_price_estimate", "currency": "USD", "arms": arms,
-            "comparisons": comparisons, "setup_cost": None,
-            "setup_cost_reason": "controller session usage and human time not attributable",
+            "comparisons": comparisons, "setup_cost": setup_cost,
+            "setup_cost_reason": setup_cost_reason,
+            "campaign_setup": setup_line,
+            "category_tokens": _category_tokens(calls, _freeze_reservation(store)),
             "amortized_cost": None, "amortized_cost_reason": "requires measured setup cost and declared reuse count"}
 
 
