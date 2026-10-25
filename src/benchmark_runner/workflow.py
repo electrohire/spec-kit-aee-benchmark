@@ -13,10 +13,11 @@ PHASES = ("constitution", "specify", "plan", "tasks", "implement", "converge")
 AEE_PHASES = {"specify", "plan", "tasks", "implement"}
 
 
-def _require_bundle_entry_shapes(bundle):
+def _require_bundle_entry_shapes(bundle, require_id=False):
     """Entry shapes of an assessed bundle: the bundle is an object,
-    its claims are objects, and a claim's evidence — when the key is
-    present — is a list of objects. Anything else is a malformed
+    its claims are objects, and a claim's
+    evidence — when the key is present — is a list of objects whose
+    join-consumed fields are strings. Anything else is a malformed
     submission (DeltaFormatError: a model outcome, fed back in-phase),
     never an AttributeError out of the mapping joins in grounding and
     the executed-tests join, which read claim and evidence fields with
@@ -25,7 +26,26 @@ def _require_bundle_entry_shapes(bundle):
     escaped those joins in the Stage B candidate leg (attempt 8,
     2026-10-23: AttributeError: 'str' object has no attribute 'get',
     classified unclassified_error and halting the study); this check
-    rejects that class at the boundary, before any join reads it."""
+    rejects that class at the boundary, before any join reads it.
+
+    Field audit extension (B-1, 2026-10-25): the joins also consume
+    field *values* — a claim's id is a dict key and an index target
+    (executed-tests, recorded acts), an evidence item's source_id is
+    a dict key in both joins, and its description is concatenated
+    during grounding. A list- or dict-typed value in any of those
+    fields raised TypeError (unhashable) or a concatenation
+    TypeError — the same crash class, one field over. A claim's
+    falsification_tests, when present, must be a list: consumers
+    iterate it filtering for strings, so a bare string was silently
+    iterated character by character. Every field a join consumes is
+    therefore shape-checked here, at the one boundary both the full
+    bundle and the merged delta pass through.
+
+    ``require_id`` is set by the boundaries whose joins key claims
+    by id (submission resolution; the executed-tests join). The
+    grounding join does not consume ids — harness-built bundles
+    without claim ids are a suite-pinned legitimate input to it
+    (tests/test_workflow.py) — so it checks shapes only."""
     if not isinstance(bundle, dict):
         raise DeltaFormatError(
             "claims bundle must be an object carrying a 'claims' list")
@@ -40,18 +60,37 @@ def _require_bundle_entry_shapes(bundle):
             raise DeltaFormatError(
                 "each claims entry must be a full claim object, "
                 f"not {type(entry).__name__}")
+        claim_id = entry.get("id")
+        if require_id and (not isinstance(claim_id, str)
+                           or not claim_id):
+            raise DeltaFormatError(
+                "each claims entry must carry a non-empty string 'id', "
+                f"not {claim_id!r}")
+        if not isinstance(claim_id, str) or not claim_id:
+            claim_id = "<unnamed>"
+        if "falsification_tests" in entry and not isinstance(
+                entry["falsification_tests"], list):
+            raise DeltaFormatError(
+                f"claim {claim_id!r}: 'falsification_tests' must be a "
+                "list of test descriptions")
         if "evidence" not in entry:
             continue
         evidence = entry["evidence"]
         if not isinstance(evidence, list):
             raise DeltaFormatError(
-                f"claim {entry.get('id')!r}: 'evidence' must be a list "
+                f"claim {claim_id!r}: 'evidence' must be a list "
                 "of evidence objects")
         for item in evidence:
             if not isinstance(item, dict):
                 raise DeltaFormatError(
-                    f"claim {entry.get('id')!r}: each evidence entry must "
+                    f"claim {claim_id!r}: each evidence entry must "
                     f"be an object, not {type(item).__name__}")
+            for field in ("source_id", "ref", "description", "kind",
+                          "source_quality"):
+                if field in item and not isinstance(item[field], str):
+                    raise DeltaFormatError(
+                        f"claim {claim_id!r}: evidence {field!r} must "
+                        f"be a string, not {type(item[field]).__name__}")
 
 
 def grounded_claims(claims, store, attempt_id):
@@ -126,6 +165,11 @@ def executed_tests(claims, store, attempt_id):
     was, with that run's artifact digest; only the command-match
     link names a declared test, so only it can carry acceptance.
     """
+    # B-1 (2026-10-25): this join indexes claims by id and evidence
+    # by source_id; it validates the bundle itself rather than
+    # trusting that every caller arrived via a validated path
+    # (assess is importable and callable directly).
+    _require_bundle_entry_shapes(claims, require_id=True)
     events = {}
     for event in store.events("tools"):
         if event.get("attempt_id") != attempt_id:
@@ -308,8 +352,12 @@ def merge_claim_delta(standing, submission):
     else:
         raise DeltaFormatError("delta 'upsert' must be a list of full claim objects")
     for claim_obj in upserts:
-        if not isinstance(claim_obj, dict) or not claim_obj.get("id"):
-            raise DeltaFormatError("each delta upsert must be a full claim object with an 'id'")
+        if (not isinstance(claim_obj, dict)
+                or not isinstance(claim_obj.get("id"), str)
+                or not claim_obj["id"]):
+            raise DeltaFormatError(
+                "each delta upsert must be a full claim object with a "
+                "non-empty string 'id'")
     withdraw_raw = delta.get("withdraw") or []
     if (not isinstance(withdraw_raw, list)
             or not all(isinstance(w, str) and w for w in withdraw_raw)):
@@ -352,10 +400,10 @@ def resolve_claim_submission(base, submission):
                 "the first assessed phase must submit a full claims bundle; "
                 "a delta has no standing bundle to merge into")
         merged = merge_claim_delta(base, submission)
-        _require_bundle_entry_shapes(merged)
+        _require_bundle_entry_shapes(merged, require_id=True)
         return merged
     if isinstance(submission.get("claims"), list):
-        _require_bundle_entry_shapes(submission)
+        _require_bundle_entry_shapes(submission, require_id=True)
         return json.loads(json.dumps(submission))
     raise DeltaFormatError(
         "claims submission must carry a 'claims' list (full bundle) or a 'delta' object")
