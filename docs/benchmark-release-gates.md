@@ -73,9 +73,9 @@ The evidence, from the engine 1.6.0 publication (October 2025): the built-in wor
 
 Standing instructions for the next release:
 
-- Provision the release credential with the workflow grant from the start.
-- Prefer the fine-grained form — a single repository, Contents and Workflows permissions — as the least-privilege option. That exact form has not yet been tested; verify it on first use and update this note with the result.
-- If a classic token is used, give it a short expiry and revoke it immediately after publication verifies.
-- Write credential specifications from the known-working credential's actual grant set, not from the previous specification.
+* Provision the release credential with the workflow grant from the start.
+* Prefer the fine-grained form — a single repository, Contents and Workflows permissions — as the least-privilege option. That exact form has not yet been tested; verify it on first use and update this note with the result.
+* If a classic token is used, give it a short expiry and revoke it immediately after publication verifies.
+* Write credential specifications from the known-working credential's actual grant set, not from the previous specification.
 
 The full record is in the governance amendment files: `benchmarks/releases/governance-amendment-2026-10-25.md`, `benchmarks/releases/governance-amendment-2026-10-25-credential-swap.md`, and `benchmarks/releases/governance-amendment-2026-10-25-scope-correction.md`.
