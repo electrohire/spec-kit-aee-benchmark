@@ -671,6 +671,24 @@ RESIDUAL_MEASURED_PHASES = frozenset(
     {"specify", "plan", "tasks", "solve"})
 
 
+# B-2's gate-loop budget, ratified default value (Defaults
+# Tournament, 2026-10-26): the separate sub-budget for
+# assessment-gate resubmission churn, in calls. The tournament's
+# kill rule would have removed the mechanism on its zero corpus
+# main effect; the protective-mechanism carve-out retained it —
+# the failure mode it bounds is real (the October attempt that
+# motivated B-2, and the adversarial infinite-resubmission
+# stream, which terminates on a budget of 6–8 against this
+# default), its unbounded cost is a whole phase, and its
+# carrying cost is one config key. Freezes carry the key
+# explicitly (gate_loop_budget_calls); this constant is the
+# ratified value a freeze adopts, and the drift pins hold it.
+# execute_attempt's key-absent semantics are unchanged: no key,
+# no gate budget (the pre-B-2 behavior, pinned by the B-2
+# control test).
+GATE_LOOP_BUDGET_DEFAULT_CALLS = 20
+
+
 class MiniModel:
     """mini's Model protocol with observable requests and explicit JSON actions."""
     def __init__(self, provider, deadline, call_timeout=FRONTIER_CALL_TIMEOUT_SECONDS,
@@ -741,15 +759,32 @@ class MiniModel:
                     # session carried across the boundary would
                     # meet a history it never transmitted and raise
                     # a divergence. The boundary view is the new
-                    # segment's genesis, paid in full once exactly
-                    # as the uncompressed path sends it, and the
-                    # fresh session indexes from there. On the
-                    # probe path the phase never changes inside an
-                    # attempt, so this remains the original single
-                    # session, byte-identical.
+                    # segment's genesis, and the fresh session
+                    # indexes from there. On the probe path the
+                    # phase never changes inside an attempt, so
+                    # this remains the original single session,
+                    # byte-identical.
+                    #
+                    # The genesis is transmitted with preamble
+                    # suppression (Defaults Tournament F1, ratified
+                    # 2026-10-26): system text in full, the problem
+                    # statement verbatim, every other standing brief
+                    # message as a digest reference line — the form
+                    # the tournament's factorial priced at 250,829
+                    # sent tokens below the unsuppressed genesis
+                    # over the campaign corpus. This wiring default
+                    # is the ratified default stack (see
+                    # docs/default-stack.md); a freeze config
+                    # carrying genesis_preamble_suppression: false
+                    # restores the unsuppressed genesis, paid in
+                    # full once exactly as the uncompressed path
+                    # sends it, byte-for-byte.
                     self._residual = ResidualSession(
                         store=getattr(self.provider, "store", None),
-                        identity=getattr(self.provider, "identity", None))
+                        identity=getattr(self.provider, "identity", None),
+                        genesis_suppression=bool(
+                            self.cfg.get(
+                                "genesis_preamble_suppression", True)))
                     self._residual_phase = self.phase
                 result = self._residual.view(
                     cleaned, int(self.cfg["max_input_tokens"]),

@@ -120,7 +120,13 @@ def test_flag_absent_and_false_payloads_byte_identical():
 # ---------- wire shape with the protocol on ----------
 
 def test_first_view_is_the_full_brief_paid_once():
-    on = drive_model({**CFG, "residual_protocol": True}, 3)
+    # This pin predates the Defaults Tournament F1 ratification:
+    # the wiring default now suppresses the preamble at genesis,
+    # so the full-brief first view is pinned through the
+    # tournament's freeze opt-out (genesis_preamble_suppression:
+    # false restores the unsuppressed genesis byte-for-byte).
+    on = drive_model({**CFG, "residual_protocol": True,
+                      "genesis_preamble_suppression": False}, 3)
     off = drive_model(CFG, 3)
     assert on.payloads[0] == off.payloads[0]
 

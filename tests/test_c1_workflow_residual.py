@@ -142,8 +142,15 @@ def test_freeze_config_can_opt_a_class_in():
 
 
 def test_phase_boundary_reanchors_instead_of_diverging():
+    # The boundary pin is stated for the unsuppressed genesis;
+    # since the Defaults Tournament F1 ratification the wiring
+    # default suppresses the preamble at genesis, so this test
+    # drives the freeze opt-out (genesis_preamble_suppression:
+    # false). Suppression at a boundary genesis is pinned by
+    # tests/test_f1_genesis_suppression.py.
     model, provider = make_model(
-        {"max_input_tokens": CAP, "residual_protocol": True})
+        {"max_input_tokens": CAP, "residual_protocol": True,
+         "genesis_preamble_suppression": False})
     model.phase = "specify"
     history = step(model, brief(), '{"exit_code": 0, "stdout": "ok"}')
     history = step(model, history, '{"exit_code": 0, "stdout": "ok"}')
