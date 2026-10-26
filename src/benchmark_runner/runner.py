@@ -658,6 +658,19 @@ def parse_model_action(text):
     return {"action": "invalid"}
 
 
+# C-4 (Benchmarking Improvement Program, 2026-10-25): the
+# residual transform applies per phase class only where replay
+# evidence shows it saving. The Phase 2 replay measured specify,
+# plan and tasks on recorded Stage B traffic (savings 83.8% /
+# 79.8% / 57.7%); the probe path's solve class carries the probe
+# test's own live measurement. Every other class abstains by
+# default — its views are the plain assembled views — until it
+# is measured; a freeze config may opt classes in explicitly
+# with residual_phases (the list then replaces this default).
+RESIDUAL_MEASURED_PHASES = frozenset(
+    {"specify", "plan", "tasks", "solve"})
+
+
 class MiniModel:
     """mini's Model protocol with observable requests and explicit JSON actions."""
     def __init__(self, provider, deadline, call_timeout=FRONTIER_CALL_TIMEOUT_SECONDS,
@@ -671,11 +684,26 @@ class MiniModel:
         # assembled view externalizes earlier phases' authored turns
         # to exactly this identity.
         self.phase_artifacts = {}
-        # Probe-path residual protocol (2026-10-24): the per-attempt
-        # synchronized-state session, created lazily on the first
-        # query when the freeze config carries residual_protocol.
-        # None (and never created) in every other configuration.
+        # Residual protocol (2026-10-24, probe path; 2026-10-25,
+        # workflow path): the synchronized-state session, created
+        # lazily on the first query when the freeze config carries
+        # residual_protocol, and re-anchored at every phase change
+        # (see query()). None (and never created) in every other
+        # configuration.
         self._residual = None
+        self._residual_phase = None
+
+    def _residual_applies(self):
+        """C-4 abstain rule: the transform applies to this
+        model's current phase class only when the class is
+        measured (RESIDUAL_MEASURED_PHASES) or the freeze
+        config's residual_phases list opts it in."""
+        if self.phase is None:
+            return True
+        opted = (self.cfg or {}).get("residual_phases")
+        if opted is not None:
+            return self.phase in opted
+        return self.phase in RESIDUAL_MEASURED_PHASES
 
     def query(self, messages):
         cleaned = [{"role": m["role"], "content": m["content"]} for m in messages]
@@ -691,7 +719,8 @@ class MiniModel:
             # — and, when even the combined remainder exceeds the
             # cap, the named unmaskable_remainder_over_cap flag — on
             # the call event.
-            if self.cfg.get("residual_protocol"):
+            if self.cfg.get("residual_protocol") \
+                    and self._residual_applies():
                 # Probe-path residual protocol (2026-10-24): the
                 # synchronized shared state replaces full-history
                 # resends — the brief and each step cross in full
@@ -702,10 +731,26 @@ class MiniModel:
                 # digest sync before every send and raises an
                 # integrity error on any divergence. Identical
                 # stats shape; everything downstream is unchanged.
-                if self._residual is None:
+                if self._residual is None \
+                        or self.phase != self._residual_phase:
+                    # Re-anchor at a phase boundary (Benchmarking
+                    # Improvement Program C-1, 2026-10-25): the
+                    # workflow driver edits its history when a
+                    # phase completes — the phase's terminal action
+                    # is replaced by its artifact record — so a
+                    # session carried across the boundary would
+                    # meet a history it never transmitted and raise
+                    # a divergence. The boundary view is the new
+                    # segment's genesis, paid in full once exactly
+                    # as the uncompressed path sends it, and the
+                    # fresh session indexes from there. On the
+                    # probe path the phase never changes inside an
+                    # attempt, so this remains the original single
+                    # session, byte-identical.
                     self._residual = ResidualSession(
                         store=getattr(self.provider, "store", None),
                         identity=getattr(self.provider, "identity", None))
+                    self._residual_phase = self.phase
                 result = self._residual.view(
                     cleaned, int(self.cfg["max_input_tokens"]),
                     current_phase=self.phase,
@@ -827,6 +872,11 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
     # skipped and the attempt proceeds to implementation on the
     # reserved remainder.
     drafting_force_advanced = None
+    # B-2 (2026-10-25): phases whose assessment-gate loop ended on
+    # its own budget (freeze-configured gate_loop_budget_calls);
+    # the attempt proceeds past such a phase with the artifacts
+    # that exist, and the exhaustion is recorded per phase.
+    gate_loop_exhausted = []
     # Stage A scaffold state: the H1 kinds that already fired this
     # attempt (each fires at most once), and whether the H2
     # empty-patch gate already fired this attempt (it fires once).
@@ -928,6 +978,13 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
                 continue
         agent.add_messages({"role": "user", "content": f"Current phase: {phase}\n{prompt}"})
         recovery = 0
+        # B-2 (2026-10-25): the assessment-gate loop budget state,
+        # per phase. Inert unless the freeze config carries
+        # gate_loop_budget_calls (see the loop-top accounting).
+        gate_loop_budget = cfg.get("gate_loop_budget_calls")
+        gate_spent = 0
+        gate_open_at = None
+        productive_calls = None
         while True:
             if (store.root/"CANCEL").exists():
                 raise KeyboardInterrupt
@@ -949,6 +1006,34 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             # if that call fails to emit the artifact does the phase
             # end with the existing exhaustion classification.
             phase_calls = [c for c in calls if c.get("phase") == phase]
+            # B-2 (2026-10-25): gate-loop accounting, read from the
+            # same calls ledger. A gate iteration opens when a
+            # claims submission is rejected or the gate blocks and
+            # sends the model back to repair; every call after the
+            # first opening is a gate-loop call (the step loop only
+            # continues through gate iterations once a submission
+            # exists), so the productive prefix of the phase's calls
+            # is fixed at the first opening. Gate-loop calls draw on
+            # gate_loop_budget_calls, never on the phase guard: the
+            # guard below reads the productive prefix only. The
+            # attempt cap and the drafting envelope are unchanged —
+            # they keep counting every call. When the key is absent
+            # from the freeze config, none of this runs and the
+            # recorded semantics are bit-for-bit the pre-B-2 ones.
+            if gate_loop_budget is not None:
+                if gate_open_at is not None:
+                    gate_spent = len(phase_calls) - gate_open_at
+                if gate_spent >= int(gate_loop_budget):
+                    store.append("phases", {
+                        **identity, "phase": phase,
+                        "kind": "gate_loop_exhausted",
+                        "gate_calls": gate_spent,
+                        "gate_loop_budget_calls": int(gate_loop_budget),
+                        "timestamp": utc()})
+                    gate_loop_exhausted.append(phase)
+                    break
+            guard_calls = phase_calls if productive_calls is None \
+                else phase_calls[:productive_calls]
             # Cycle 5 C5-F1: the drafting reserve is checked before
             # every other phase bound — it is the attempt-level
             # bound that funds implementation. On exhaustion the
@@ -974,7 +1059,7 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
                     finalize_attempted = True
                     agent.add_messages({"role": "user", "content":
                                         FINALIZE_INSTRUCTION})
-            elif phase_guard_tripped(arm, phase, phase_calls, cfg) or wall_tripped:
+            elif phase_guard_tripped(arm, phase, guard_calls, cfg) or wall_tripped:
                 phase_exhausted = phase
                 break
             # Stage A H1 phase-forcing (plain loop only): freeze-
@@ -1124,6 +1209,10 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
             try:
                 candidate = resolve_claim_submission(base, model.last.get("claims") or {})
             except DeltaFormatError as exc:
+                if gate_loop_budget is not None and gate_open_at is None:
+                    if productive_calls is None:
+                        productive_calls = len(phase_calls) + 1
+                    gate_open_at = len(phase_calls) + 1
                 agent.add_messages({"role": "user", "content":
                     f"Claims submission rejected: {exc}. Resubmit this phase's completion "
                     "with a well-formed submission: the first assessed phase takes a full "
@@ -1174,6 +1263,10 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
                 break
             recovery += 1
             repairs += 1
+            if gate_loop_budget is not None and gate_open_at is None:
+                if productive_calls is None:
+                    productive_calls = len(phase_calls) + 1
+                gate_open_at = len(phase_calls) + 1
             agent.add_messages({"role": "user", "content": "Address the result within this phase. Use only task-provided facts; no human assistance. Do not change model. Submit a claims delta scoped to the findings (changed claims as full claim objects under \"delta.upsert\", withdrawals by claim id under \"delta.withdraw\") with revised evidence, or retain gaps."})
         if phase_exhausted is not None:
             break
@@ -1185,6 +1278,8 @@ def execute_attempt(root, task, arm, provider, sandbox, store, identity, cfg, ma
               "repair_count": repairs, "tool_calls": environment.tool_calls}
     if phase_exhausted is not None:
         result["phase_exhausted"] = phase_exhausted
+    if gate_loop_exhausted:
+        result["gate_loop_exhausted"] = gate_loop_exhausted
     if drafting_force_advanced is not None:
         result["drafting_force_advanced"] = drafting_force_advanced
     return result
