@@ -1,4 +1,5 @@
-"""Token-router wiring (Window 4 Phase 1, 2026-10-26).
+"""Token-router wiring (Window 4 Phase 1, 2026-10-26; Window 5
+Phase 1 exit-contract fix, 2026-10-26).
 
 Opt-in observation shaping behind the freeze keys ``token_router``
 (bool), ``token_router_script`` (absolute path) and
@@ -22,17 +23,36 @@ Delivery rules (fail-closed; there is no silent raw fallback):
   text is delivered verbatim;
 - empty combined text skips routing, fields unchanged;
 - an ``auto_candidates`` report delivers the router's packet
-  verbatim;
+  verbatim; an ``auto_full`` report likewise (its packet is the
+  whole decoded source);
 - a ``needs_targeted_read`` report triggers the targeted read: the
   raw text is retrieved from the digest-addressed artifact, its
   digest re-verified twice (file bytes against the artifact
   record, rebuilt combined text against the in-hand combined
   text), and the combined text is delivered;
+- a ``bypass`` report delivers the combined text verbatim (the
+  tool rejected the profile and returned no packet; ordinary
+  delivery is the documented meaning);
 - any router error, timeout, version/hash mismatch, unparseable
   report, unexpected status, or a report with model_called not
   False raises TokenRouterFreezeError — an integrity error whose
   message always carries the freeze marker, so the tripwire
   taxonomy classifies it INTEGRITY and the attempt dies.
+
+The tool's contract is status-first (its README status table):
+``auto_full``/``auto_candidates``/``fallback`` exit 0,
+``needs_targeted_read``/``bypass``/``usage_error`` exit 2,
+``error`` exits 1. Dispatch is on the report's status; the
+process exit code is cross-checked against that table and a
+status/exit mismatch is itself a freeze violation. (The Window 4
+wiring checked ``returncode != 0`` before reading the report, so
+every genuine ``needs_targeted_read`` — the dominant live
+status — raised a false freeze violation; Window 4 halted on it
+at its smoke gate. The Window 5 fix dispatches on status.)
+``fallback`` is a freeze violation here: it belongs to the
+tool's optional model-selector path, which this wiring never
+enables, so its appearance under the pinned invocation is
+genuinely unexpected and fails closed.
 """
 from __future__ import annotations
 
@@ -50,6 +70,20 @@ ROUTER_VERSION = "token-router 2.8.1"
 ROUTER_TERMS = ("ERROR", "Error", "error:", "FAILED", "Traceback",
                 "AssertionError")
 ROUTER_TIMEOUT_SECONDS = 60
+
+# The pinned tool's documented status/exit contract (its README
+# status table). Dispatch is on the report's status; the process
+# exit code is cross-checked against this table, and a mismatch
+# is a freeze violation.
+STATUS_EXIT_CODES = {
+    "auto_full": 0,
+    "auto_candidates": 0,
+    "fallback": 0,
+    "needs_targeted_read": 2,
+    "bypass": 2,
+    "usage_error": 2,
+    "error": 1,
+}
 
 _FREEZE_MARK = "token_router freeze violation"
 
@@ -215,14 +249,18 @@ def route_observation(result, artifact, cfg, *, store=None,
                 f"{ROUTER_TIMEOUT_SECONDS}s") from exc
         except OSError as exc:
             raise _freeze_error(f"router invocation failed: {exc}") from exc
-        if proc.returncode != 0:
-            raise _freeze_error(
-                f"router exited {proc.returncode}")
+        # Status-first dispatch (the Window 5 fix): the report is
+        # read and parsed BEFORE any exit-code judgment, because
+        # exit 2 is the documented code for the dominant live
+        # statuses (needs_targeted_read, bypass). The exit code
+        # is then cross-checked against the documented contract
+        # for the reported status; a mismatch is the violation.
         try:
             report = json.loads(report_path.read_text(encoding="utf-8"))
         except (OSError, ValueError) as exc:
             raise _freeze_error(
-                f"router report unparseable: {exc}") from exc
+                f"router report unparseable (process exited "
+                f"{proc.returncode}): {exc}") from exc
         if not isinstance(report, dict):
             raise _freeze_error("router report is not a JSON object")
         if report.get("model_called") is not False:
@@ -230,11 +268,29 @@ def route_observation(result, artifact, cfg, *, store=None,
                 f"router report model_called is "
                 f"{report.get('model_called')!r}, not False")
         status = report.get("status")
-        if status == "auto_candidates":
+        expected_exit = STATUS_EXIT_CODES.get(status)
+        if expected_exit is None:
+            raise _freeze_error(
+                f"router returned unexpected status {status!r}")
+        if proc.returncode != expected_exit:
+            raise _freeze_error(
+                f"router status/exit mismatch: status {status!r} "
+                f"documents exit {expected_exit}, process exited "
+                f"{proc.returncode}")
+        if status in ("error", "usage_error"):
+            raise _freeze_error(
+                f"router reported {status}: "
+                f"{report.get('reason') or report.get('reason_codes')}")
+        if status == "fallback":
+            raise _freeze_error(
+                "router reported fallback: the optional model "
+                "selector path is never enabled by this wiring, so "
+                "fallback is unexpected under the pinned invocation")
+        if status in ("auto_candidates", "auto_full"):
             packet = proc.stdout.decode("utf-8", errors="replace")
             new_result = {**result, "stdout": packet, "stderr": ""}
             return new_result, _event(
-                "auto_candidates", packet, "",
+                status, packet, "",
                 packet_bytes=len(packet.encode("utf-8")),
                 packet=packet)
         if status == "needs_targeted_read":
@@ -243,5 +299,8 @@ def route_observation(result, artifact, cfg, *, store=None,
             return new_result, _event(
                 "needs_targeted_read", delivered, "",
                 targeted_read=True)
-        raise _freeze_error(f"router returned unexpected status "
-                            f"{status!r}")
+        # status == "bypass": the tool rejected the profile and
+        # returned no packet; the documented meaning is ordinary
+        # handling, so the combined text is delivered verbatim.
+        new_result = {**result, "stdout": combined, "stderr": ""}
+        return new_result, _event("bypass", combined, "")
