@@ -30,6 +30,7 @@ from .local_provider import (CALL_OUTER_BOUND_SECONDS, CallOuterBoundError,
                              LocalProvider, TransportStallError, base_url,
                              check_local_server, probe_worker, server_root)
 from .store import RunLock, Store, canonical, read_json, sha, utc, write_json
+from .token_router import route_observation
 from .tripwires import (HALT_STUDY, attempt_wall_expiry_reason,
                         phase_exhaustion_reason, record_tripwire)
 from .workflow import (AEE_PHASES, DeltaFormatError, assess, campaign_setup,
@@ -845,6 +846,11 @@ class MiniEnvironment:
         self.tool_calls = 0
         self.phase = None
         self.cfg = cfg or {}
+        # Window 4 token-router wiring: per-environment router
+        # verification state (the pinned tool is verified once, on
+        # this environment's first routed observation). Inert —
+        # never read — unless the freeze carries token_router: true.
+        self._router_state = {"verified": False}
 
     def execute(self, action):
         self.tool_calls += 1
@@ -852,6 +858,21 @@ class MiniEnvironment:
         artifact = self.store.artifact(canonical({"command": action["command"], **result}))
         self.store.append("tools", {**self.identity, "timestamp": utc(), "artifact": artifact,
                                     "exit_code": result["exit_code"]})
+        # Window 4 token-router wiring (freeze key token_router):
+        # with the flag absent/false the statements below execute
+        # on the original result untouched — no subprocess, no file
+        # I/O, no router stream. With the flag on, a COPY of the
+        # result is routed (the stored artifact and the tools event
+        # above are always the original output) and the shaping
+        # branches shape the delivered text exactly as they shape
+        # raw text. The observation's evidence_ref/source_id still
+        # come from the raw artifact.
+        shaped = result
+        if self.cfg.get("token_router"):
+            shaped, router_event = route_observation(
+                result, artifact, self.cfg, store=self.store,
+                identity=self.identity, state=self._router_state)
+            self.store.append("router", router_event)
         # Full output retained as artifact; bounded observation prevents context explosion.
         if self.phase in DRAFTING_PHASES:
             # Cycle 1 C1-A4: observations entering a construction or
@@ -859,11 +880,11 @@ class MiniEnvironment:
             # deterministically, with byte counts recorded on the
             # observation itself.
             observation = cap_observation(
-                result, int(self.cfg.get("observation_write_cap_bytes",
+                shaped, int(self.cfg.get("observation_write_cap_bytes",
                                          OBSERVATION_WRITE_CAP_BYTES)))
             return {**observation,
                     "evidence_ref": artifact["path"], "source_id": artifact["sha256"]}
-        return {**result, "stdout": result["stdout"][-24000:], "stderr": result["stderr"][-8000:],
+        return {**shaped, "stdout": shaped["stdout"][-24000:], "stderr": shaped["stderr"][-8000:],
                 "evidence_ref": artifact["path"], "source_id": artifact["sha256"]}
 
     def get_template_vars(self):
