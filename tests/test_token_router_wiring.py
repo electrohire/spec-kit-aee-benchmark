@@ -1,14 +1,22 @@
 """Window 4 Phase 1: token-router wiring (freeze-gated, fail-closed).
+Window 5 Phase 1: the double now reproduces the real tool's
+status/exit contract, and real-tool pins cover the unplanted leg.
 
 The router is exercised through a test DOUBLE: a small script the
 tests write to tmp that mimics the pinned token-router v2.8.1 CLI
 (error_log mode, literal-search selection emitting the recorded
 packet shape, a report JSON with model_called, --version printing
-the pinned version string). Knobs ride in environment variables so
-one double serves every variant (model_called true, non-zero exit,
-wrong version, forced empty selection). The double's SHA-256 is
-computed by the tests and passed in the freeze config, exactly as
-the Phase 2 freeze will pin the real script's digest.
+the pinned version string). The double returns the REAL tool's
+documented exit code for the status it reports (0 for
+auto_candidates, 2 for needs_targeted_read, 1 for error, ...):
+Window 4's double returned 0 for every status, which — together
+with a battery that planted the search terms into every output —
+hid the wiring's exit-code defect until the live smoke. Knobs
+ride in environment variables so one double serves every variant
+(model_called true, forced status, forced exit, wrong version,
+forced empty selection). The double's SHA-256 is computed by the
+tests and passed in the freeze config, exactly as the Phase 2
+freeze will pin the real script's digest.
 
 E-1 wired drills reuse the shapes of the tournament filters run
 (scripts/run_filters.py): workflow.grounded_claims downgrades a
@@ -19,6 +27,7 @@ path as a repo input.
 """
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -49,8 +58,6 @@ def main(argv):
         sys.stdout.write(os.environ.get(
             "TR_DOUBLE_VERSION", "token-router 2.8.1") + "\\n")
         return 0
-    if os.environ.get("TR_DOUBLE_EXIT"):
-        return int(os.environ["TR_DOUBLE_EXIT"])
     target = argv[argv.index("error_log") + 1]
     report_path = argv[argv.index("--report-json") + 1]
     terms = [argv[i + 1] for i, a in enumerate(argv)
@@ -79,13 +86,26 @@ def main(argv):
                 parts.append("%d: %s\\n" % (n + 1, lines[n]))
             parts.append("--- [END OF SLICE] ---\\n")
         packet = "".join(parts)
+    forced = os.environ.get("TR_DOUBLE_FORCE_STATUS")
+    if forced:
+        status = forced
+        if forced == "auto_full":
+            packet = text
+        elif forced != "auto_candidates":
+            packet = ""
     report = {"status": status, "schema_version": 1,
               "model_called":
                   os.environ.get("TR_DOUBLE_MODEL_CALLED") == "1"}
     with open(report_path, "w", encoding="utf-8") as fh:
         json.dump(report, fh)
     sys.stdout.write(packet)
-    return 0
+    if os.environ.get("TR_DOUBLE_EXIT"):
+        return int(os.environ["TR_DOUBLE_EXIT"])
+    # The real tool's documented status/exit contract (its README
+    # status table) — the double reproduces it per status.
+    return {"auto_full": 0, "auto_candidates": 0, "fallback": 0,
+            "needs_targeted_read": 2, "bypass": 2,
+            "usage_error": 2, "error": 1}[status]
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))
@@ -382,11 +402,98 @@ def test_model_called_report_raises(tmp_path, double, monkeypatch):
     assert "freeze" in str(excinfo.value)
 
 
-def test_router_nonzero_exit_raises(tmp_path, double, monkeypatch):
+def test_router_exit_outside_contract_raises(tmp_path, double,
+                                             monkeypatch):
+    # Exit 3 documents no status: the report in hand is a valid
+    # auto_candidates, so the status/exit cross-check is what
+    # raises — not a blanket non-zero rule (exit 2 is documented
+    # and routine; see the targeted-read tests, which now run
+    # against a double that returns it).
     env, _store = _routed_env(tmp_path, router_cfg(double), monkeypatch,
                               TR_DOUBLE_EXIT="3")
-    with pytest.raises(TokenRouterFreezeError, match="freeze"):
+    with pytest.raises(TokenRouterFreezeError, match="status/exit"):
         env.execute({"command": "run tests"})
+
+
+def test_router_status_exit_mismatch_raises(tmp_path, double,
+                                            monkeypatch):
+    # needs_targeted_read documents exit 2; exit 0 for it is a
+    # mismatch and raises.
+    monkeypatch.setenv("TR_DOUBLE_EXIT", "0")
+    result = {"exit_code": 0, "stdout": QUIET_TEXT, "stderr": ""}
+    env, _store = make_env(tmp_path, result, router_cfg(double),
+                           phase="solve")
+    with pytest.raises(TokenRouterFreezeError, match="status/exit"):
+        env.execute({"command": "cat file"})
+    # The mirror: auto_candidates documents exit 0; exit 2 for it
+    # is equally a mismatch.
+    monkeypatch.setenv("TR_DOUBLE_EXIT", "2")
+    result = {"exit_code": 0, "stdout": SELECTION_TEXT, "stderr": ""}
+    env, _store = make_env(tmp_path, result, router_cfg(double),
+                           phase="solve")
+    with pytest.raises(TokenRouterFreezeError, match="status/exit"):
+        env.execute({"command": "run tests"})
+
+
+def test_router_error_status_raises_on_its_status(tmp_path, double,
+                                                  monkeypatch):
+    # status error / exit 1 is contract-consistent, so the
+    # cross-check passes and the raise is on the status itself.
+    env, _store = _routed_env(tmp_path, router_cfg(double), monkeypatch,
+                              TR_DOUBLE_FORCE_STATUS="error")
+    with pytest.raises(TokenRouterFreezeError, match="reported error"):
+        env.execute({"command": "run tests"})
+
+
+def test_router_usage_error_raises_despite_documented_exit(
+        tmp_path, double, monkeypatch):
+    # usage_error shares exit 2 with needs_targeted_read: dispatch
+    # is on the report's status, so this raises on a code that —
+    # read as a bare exit code — is routine.
+    env, _store = _routed_env(tmp_path, router_cfg(double), monkeypatch,
+                              TR_DOUBLE_FORCE_STATUS="usage_error")
+    with pytest.raises(TokenRouterFreezeError,
+                       match="reported usage_error"):
+        env.execute({"command": "run tests"})
+
+
+def test_router_fallback_status_raises(tmp_path, double, monkeypatch):
+    # fallback belongs to the tool's optional model-selector path,
+    # never enabled here; it fails closed.
+    env, _store = _routed_env(tmp_path, router_cfg(double), monkeypatch,
+                              TR_DOUBLE_FORCE_STATUS="fallback")
+    with pytest.raises(TokenRouterFreezeError, match="fallback"):
+        env.execute({"command": "run tests"})
+
+
+def test_router_bypass_status_delivers_combined_verbatim(
+        tmp_path, double, monkeypatch):
+    # bypass / exit 2: the tool rejected the profile and returned
+    # no packet; the combined text is delivered verbatim.
+    env, store = _routed_env(tmp_path, router_cfg(double), monkeypatch,
+                             TR_DOUBLE_FORCE_STATUS="bypass")
+    observation = env.execute({"command": "run tests"})
+    assert observation["stdout"] == SELECTION_TEXT
+    assert observation["stderr"] == ""
+    (event,) = router_events(store)
+    assert event["status"] == "bypass"
+    assert event["targeted_read"] is False
+    assert event["packet_bytes"] == 0
+    assert event["delivered_bytes"] == len(
+        SELECTION_TEXT.encode("utf-8"))
+
+
+def test_router_auto_full_status_delivers_its_packet(
+        tmp_path, double, monkeypatch):
+    # auto_full / exit 0: the packet is the whole decoded source.
+    env, store = _routed_env(tmp_path, router_cfg(double), monkeypatch,
+                             TR_DOUBLE_FORCE_STATUS="auto_full")
+    observation = env.execute({"command": "run tests"})
+    assert observation["stdout"] == SELECTION_TEXT
+    (event,) = router_events(store)
+    assert event["status"] == "auto_full"
+    assert event["packet_bytes"] == len(
+        SELECTION_TEXT.encode("utf-8"))
 
 
 def test_script_sha_mismatch_raises(tmp_path, double):
@@ -490,3 +597,100 @@ def test_e1_grading_refuses_routed_packet_as_repo(tmp_path, double):
     packet_path.write_text(observation["stdout"], encoding="utf-8")
     with pytest.raises((subprocess.CalledProcessError, ValueError)):
         grade(store, packet_path, packet_path, "deadbeef", "deadbeef")
+
+
+# ---------------- real-tool pins: the unplanted leg ----------------
+# Window 4's wired battery planted the search terms into every
+# corpus output, so the real tool never returned
+# needs_targeted_read there, and the double returned exit 0 for
+# every status: the targeted-read path was never exercised
+# against the real tool's exit-code contract until the live
+# smoke — which halted on it. These pins run the wired path
+# against the REAL pinned tool on unplanted output shapes. They
+# run only where the pinned tool is present: set
+# TOKEN_ROUTER_SCRIPT and TOKEN_ROUTER_SHA256 (the freeze values)
+# in the environment; otherwise they skip.
+
+REAL_ROUTER_SCRIPT = os.environ.get("TOKEN_ROUTER_SCRIPT")
+REAL_ROUTER_SHA256 = os.environ.get("TOKEN_ROUTER_SHA256")
+
+
+def _real_router_present():
+    if not (REAL_ROUTER_SCRIPT and REAL_ROUTER_SHA256):
+        return False
+    path = Path(REAL_ROUTER_SCRIPT)
+    return (path.is_file()
+            and hashlib.sha256(path.read_bytes()).hexdigest()
+            == REAL_ROUTER_SHA256)
+
+
+real_router = pytest.mark.skipif(
+    not _real_router_present(),
+    reason="pinned token-router tool not present "
+           "(TOKEN_ROUTER_SCRIPT / TOKEN_ROUTER_SHA256 unset or "
+           "digest mismatch)")
+
+
+def _real_cfg():
+    return {"token_router": True,
+            "token_router_script": REAL_ROUTER_SCRIPT,
+            "token_router_sha256": REAL_ROUTER_SHA256}
+
+
+# A genuine read-only probe output: a find/ls listing carrying NO
+# failure-vocabulary term anywhere. (The Window 4 smoke's first
+# tool output had exactly this shape.)
+UNPLANTED_QUIET_TEXT = (
+    "/testbed/django/contrib/auth/validators.py\n"
+    "/testbed/tests/auth_tests/test_validators.py\n"
+    "total 8\n"
+    "drwxr-xr-x 2 root root 4096 Oct 26 22:01 .\n"
+    "drwxr-xr-x 1 root root 4096 Oct 26 22:01 ..\n")
+
+# A genuine pytest failure block: the vocabulary occurs as real
+# content, not planted into a recorded output for a battery.
+GENUINE_FAILURE_TEXT = (
+    "tests/test_widget.py::test_widget_renders FAILED\n"
+    "tests/test_widget.py:42: in test_widget_renders\n"
+    "    assert render(widget) == '<div>ok</div>'\n"
+    "E   AssertionError: assert '<div></div>' == '<div>ok</div>'\n"
+    "FAILED tests/test_widget.py::test_widget_renders"
+    " - AssertionError\n")
+
+
+@real_router
+def test_real_router_unplanted_output_takes_targeted_read(tmp_path):
+    result = {"exit_code": 0, "stdout": UNPLANTED_QUIET_TEXT,
+              "stderr": ""}
+    env, store = make_env(tmp_path, result, _real_cfg(),
+                          phase="solve")
+    observation = env.execute(
+        {"command": "find /testbed -name 'validators.py'"})
+    # The real tool returns needs_targeted_read (exit 2) for text
+    # with no search term; the wiring's targeted read delivers
+    # the raw combined text byte for byte. Against the Window 4
+    # wiring this call raised a freeze violation.
+    assert observation["stdout"] == UNPLANTED_QUIET_TEXT
+    assert observation["stderr"] == ""
+    (event,) = router_events(store)
+    assert event["status"] == "needs_targeted_read"
+    assert event["targeted_read"] is True
+    assert event["delivered_bytes"] == len(
+        UNPLANTED_QUIET_TEXT.encode("utf-8"))
+    assert event["model_called"] is False
+
+
+@real_router
+def test_real_router_genuine_failure_text_is_selected(tmp_path):
+    result = {"exit_code": 0, "stdout": GENUINE_FAILURE_TEXT,
+              "stderr": ""}
+    env, store = make_env(tmp_path, result, _real_cfg(),
+                          phase="solve")
+    observation = env.execute(
+        {"command": "pytest tests/test_widget.py"})
+    (event,) = router_events(store)
+    assert event["status"] in ("auto_candidates", "auto_full")
+    # The genuine failure lines survive in the delivered text.
+    assert "AssertionError" in observation["stdout"]
+    assert "FAILED tests/test_widget.py::test_widget_renders" in (
+        observation["stdout"])
