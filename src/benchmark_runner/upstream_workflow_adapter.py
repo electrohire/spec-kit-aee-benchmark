@@ -17,6 +17,7 @@ import re
 
 from .project_assessment import assess_project
 from .store import Store, canonical, utc, write_json
+from .verified_write import write_bytes_verified
 
 PHASES=('constitution','specify','plan','tasks')
 DOCUMENTS={'constitution':'.specify/memory/constitution.md',
@@ -202,7 +203,10 @@ class Workflow:
             raise WorkflowFailure('missing/unchanged/over-budget proposed document')
         target=self.host/self.paths[phase];target.parent.mkdir(parents=True,exist_ok=True)
         if target.is_symlink():raise WorkflowFailure('host document path must not be a symlink')
-        target.write_bytes(raw)
+        # Verified write (fleet standard, 2026-10-28): the receipt
+        # below pins sha256(raw); the file must provably hold exactly
+        # those bytes, so the write verifies by read-back or raises.
+        write_bytes_verified(target,raw)
         write_json(self.out/'document-captures'/f'{phase}.json',dict(sha256=digest,
             bytes=len(raw),capture=capture,relative_path=self.paths[phase],
             boundary='Captured untrusted proposal bytes; not semantic proof or human acceptance.'),exclusive=True)

@@ -14,6 +14,7 @@ from pathlib import Path
 import jsonschema
 
 from .store import canonical, read_json, sha, utc, write_json
+from .verified_write import write_bytes_verified
 
 
 def assess_project(root, claims, phase, store, attempt_id):
@@ -41,7 +42,10 @@ def assess_project(root, claims, phase, store, attempt_id):
             target=project/ref["path"];target.parent.mkdir(parents=True,exist_ok=True)
             data=source.read_bytes()
             if target.exists() and target.read_bytes()!=data:raise ValueError("immutable project evidence changed")
-            target.write_bytes(data)
+            # Verified write (fleet standard, 2026-10-28): this
+            # materializes hash-pinned evidence into the project; the
+            # write verifies by read-back or raises.
+            write_bytes_verified(target,data)
     call=uuid.uuid4().hex
     input_path=project/"inputs"/(phase+"-"+call+".json")
     write_json(input_path,claims,exclusive=True)

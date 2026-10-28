@@ -5,6 +5,7 @@ import uuid
 from pathlib import Path
 
 from .store import canonical, sha, utc, write_json
+from .verified_write import write_bytes_verified
 
 
 def grade(store, task_repo, harness_repo, expected_commit, expected_tasks_commit):
@@ -26,7 +27,10 @@ def grade(store, task_repo, harness_repo, expected_commit, expected_tasks_commit
         working = store.root/"grading"/run_id
         working.mkdir(parents=True)
         prediction = working/"predictions.jsonl"
-        prediction.write_bytes(canonical(dict(instance_id=attempt["task_id"],
+        # Verified write (fleet standard, 2026-10-28): this file is
+        # the grader's input; a torn write would mis-grade or void
+        # the attempt, so it verifies by read-back or raises.
+        write_bytes_verified(prediction, canonical(dict(instance_id=attempt["task_id"],
             model_name_or_path="benchmark-agent", model_patch=patch.decode()))+b"\n")
         command = ["swebench", "eval", "verified", "-p", str(prediction.resolve()),
                    "--run-id", run_id, "--task-repo", str(Path(task_repo).resolve()),

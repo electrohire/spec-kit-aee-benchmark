@@ -8,6 +8,12 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .verified_write import (
+    append_bytes_verified,
+    write_bytes_verified,
+    write_text_verified,
+)
+
 
 def utc():
     return datetime.now(timezone.utc).isoformat()
@@ -27,9 +33,19 @@ def read_json(path):
 
 def write_json(path, value, *, exclusive=False):
     path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("x" if exclusive else "w", encoding="utf-8", newline="\n") as f:
-        f.write(json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n")
+    if exclusive and path.exists():
+        # Same refusal the previous "x" mode raised; callers that
+        # pre-check existence (the CLI lifecycle command) see no
+        # change, and exclusive results/manifests stay create-only.
+        raise FileExistsError(f"refusing to overwrite existing file: {path}")
+    # Verified write (fleet standard, 2026-10-28): results, freeze
+    # manifests, and catalog entries are written via temp + fsync +
+    # atomic rename + read-back SHA-256; a write that cannot be
+    # verified raises SafeWriteError instead of standing as a result.
+    # Serialisation is unchanged, so the bytes are identical.
+    write_text_verified(
+        path, json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    )
 
 
 def redact(text):
@@ -82,10 +98,21 @@ class Store:
         path = self.root / "objects" / digest[:2] / digest
         path.parent.mkdir(parents=True, exist_ok=True)
         if not path.exists():
-            with path.open("xb") as f:
-                f.write(data)
-                f.flush()
-                os.fsync(f.fileno())
+            if data:
+                # Verified write (fleet standard, 2026-10-28): the
+                # object is content-addressed, so a torn first write
+                # would poison this digest path for every later
+                # reader; the write verifies by read-back or raises.
+                write_bytes_verified(path, data)
+            else:
+                # The empty artifact is legitimate (its digest is
+                # the empty hash); land it and confirm size 0 on disk
+                # rather than trusting the open alone.
+                with path.open("xb") as f:
+                    f.flush()
+                    os.fsync(f.fileno())
+                if path.stat().st_size != 0:
+                    raise ValueError("artifact hash mismatch")
         elif sha(path.read_bytes()) != digest:
             raise ValueError("artifact hash mismatch")
         return {"path": path.relative_to(self.root).as_posix(), "sha256": digest}
@@ -109,10 +136,10 @@ class Store:
             raise ValueError("invalid stream")
         record = {**event, "prev_hash": self._last_chain_hash(stream)}
         record["chain_hash"] = _chain_hash(record)
-        with (self.root / f"{stream}.jsonl").open("ab") as f:
-            f.write(canonical(record) + b"\n")
-            f.flush()
-            os.fsync(f.fileno())
+        # Verified append (fleet standard, 2026-10-28): fsynced and
+        # read back at its exact offset; a torn append rolls back and
+        # raises instead of leaving a corrupt tail on the hash chain.
+        append_bytes_verified(self.root / f"{stream}.jsonl", canonical(record) + b"\n")
 
     def verify_stream(self, stream):
         """Integrity summary for one event stream (FR-7.1).

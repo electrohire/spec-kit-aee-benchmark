@@ -14,6 +14,8 @@ import sys
 import time
 from types import SimpleNamespace
 
+from .verified_write import write_text_verified
+
 
 class AdmissionError(RuntimeError):
     pass
@@ -81,10 +83,12 @@ def native_usage(response):
 
 
 def write_exclusive(path, value):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open('x', encoding='utf-8', newline='\n') as handle:
-        json.dump(value, handle, indent=2, ensure_ascii=False)
-        handle.write('\n')
+    if path.exists():
+        raise FileExistsError(f"refusing to overwrite existing file: {path}")
+    # Verified write (fleet standard, 2026-10-28): episode receipts
+    # are evidence; the write verifies by read-back or raises.
+    # Serialisation is unchanged, so the bytes are identical.
+    write_text_verified(path, json.dumps(value, indent=2, ensure_ascii=False) + '\n')
 
 
 class BoundNativeTransport:
@@ -270,6 +274,14 @@ class NativeToolModel:
             self.unknown_usage += int(not record['usage_validated'])
             # This updates only the receipt created above; never an old episode.
             try:
+                # Deliberately NOT the verified writer (2026-10-28
+                # audit): this finally-block rewrite is half of an
+                # exception-composition contract — a persistence
+                # failure here must surface alongside the original
+                # failure as a BaseExceptionGroup, and the maintained
+                # tests inject failure at Path.write_text. The
+                # receipt is hashed from disk immediately below, so
+                # what landed is what is pinned.
                 path.write_text(json.dumps(record,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
             except BaseException as persistence_error:
                 self.halted = True
@@ -336,6 +348,9 @@ class ReceiptEnvironment:
         finally:
             record['ended_at'] = time.time()
             try:
+                # Deliberately NOT the verified writer: see the
+                # model-call receipt above (exception-composition
+                # contract; hashed from disk below).
                 path.write_text(json.dumps(record,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
             except BaseException as persistence_error:
                 self.halted = True
