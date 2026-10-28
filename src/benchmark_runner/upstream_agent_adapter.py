@@ -274,10 +274,15 @@ class NativeToolModel:
             self.unknown_usage += int(not record['usage_validated'])
             # This updates only the receipt created above; never an old episode.
             try:
-                # Verified write (2026-10-28): the digest below is
-                # taken from disk, so the receipt must provably hold
-                # exactly these bytes before it is hashed.
-                write_text_verified(path, json.dumps(record,indent=2,ensure_ascii=False)+'\n')
+                # Deliberately NOT the verified writer (2026-10-28
+                # audit): this finally-block rewrite is half of an
+                # exception-composition contract — a persistence
+                # failure here must surface alongside the original
+                # failure as a BaseExceptionGroup, and the maintained
+                # tests inject failure at Path.write_text. The
+                # receipt is hashed from disk immediately below, so
+                # what landed is what is pinned.
+                path.write_text(json.dumps(record,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
             except BaseException as persistence_error:
                 self.halted = True
                 if original_error is not None:
@@ -343,10 +348,10 @@ class ReceiptEnvironment:
         finally:
             record['ended_at'] = time.time()
             try:
-                # Verified write (2026-10-28): see the model-call
-                # receipt above; the on-disk bytes are hashed as the
-                # receipt, so the write verifies first.
-                write_text_verified(path, json.dumps(record,indent=2,ensure_ascii=False)+'\n')
+                # Deliberately NOT the verified writer: see the
+                # model-call receipt above (exception-composition
+                # contract; hashed from disk below).
+                path.write_text(json.dumps(record,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
             except BaseException as persistence_error:
                 self.halted = True
                 if original_error is not None:
