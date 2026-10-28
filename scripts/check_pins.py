@@ -9,7 +9,11 @@ required:
   ``vendored_sha256`` — digest recipe: sha256 over the sorted lines
   ``<relpath>\0<file sha256>\n`` for every vendored file except
   benchmark-local artifacts (``aee-config.yml``, ``assessments/``,
-  ``ledger/``, evaluator ``results/``) and ``__pycache__``
+  ``ledger/``, evaluator ``results/``), ``__pycache__``, and the
+  git-ignored ``.runtime/`` scratch directory at the extension root
+  (``.gitignore``: ``/.specify/extensions/*/.runtime/``) — the digest
+  covers the vendored tree as committed, and scratch that only
+  exists in a local working tree is not part of it
 - ``.specify/extensions/.registry`` versions and manifest hashes vs the
   vendored ``extension.yml`` files
 
@@ -25,6 +29,11 @@ ROOT = Path(__file__).resolve().parents[1]
 LOCAL_ARTIFACTS = {"aee": {"aee-config.yml", "assessments", "ledger"},
                    "evaluator": {"results"}}
 EXTENSIONS = (("aee_extension", "aee"), ("evaluator_extension", "evaluator"))
+# Git-ignored scratch at the extension root (.gitignore anchors it
+# exactly there: /.specify/extensions/*/.runtime/). Only that
+# top-level directory is excluded; a ".runtime" name anywhere deeper
+# is vendored content and stays in the digest.
+SCRATCH_TOP = {".runtime"}
 
 
 def tree_digest(base, excluded_top):
@@ -33,7 +42,7 @@ def tree_digest(base, excluded_top):
         if not path.is_file() or "__pycache__" in path.parts:
             continue
         rel = path.relative_to(base).as_posix()
-        if rel.split("/")[0] in excluded_top:
+        if rel.split("/")[0] in excluded_top or rel.split("/")[0] in SCRATCH_TOP:
             continue
         lines.append(f"{rel}\0{hashlib.sha256(path.read_bytes()).hexdigest()}\n")
     return hashlib.sha256("".join(lines).encode()).hexdigest()

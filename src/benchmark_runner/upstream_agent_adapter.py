@@ -63,6 +63,8 @@ class Limits:
 
 
 def native_usage(response):
+    if not isinstance(response, dict):
+        raise AdmissionError('native usage missing; preserve unknown, halt')
     value = response.get('usage')
     if not isinstance(value, dict):
         raise AdmissionError('native usage missing; preserve unknown, halt')
@@ -71,7 +73,10 @@ def native_usage(response):
             raise AdmissionError('invalid native token usage')
     if value['total_tokens'] != value['prompt_tokens'] + value['completion_tokens']:
         raise AdmissionError('native usage total inconsistent')
-    cached = value.get('prompt_tokens_details', {}).get('cached_tokens')
+    details = value.get('prompt_tokens_details', {})
+    if not isinstance(details, dict):
+        raise AdmissionError('native usage details malformed')
+    cached = details.get('cached_tokens')
     if cached is not None and (type(cached) is not int or not 0 <= cached <= value['prompt_tokens']):
         raise AdmissionError('cached usage is not a valid prompt subset')
     return value
@@ -218,6 +223,8 @@ class NativeToolModel:
         try:
             response = self.transport('/v1/chat/completions', request, generation_timeout)
             record['response'] = response
+            if not isinstance(response, dict):
+                raise AdmissionError('native response is not an object')
             record['usage'] = response.get('usage')
             record['unknown_reason'] = None if response.get('usage') else 'native_usage_missing'
             try:
@@ -227,23 +234,34 @@ class NativeToolModel:
                 raise
             record['usage_validated'] = True
             self.tokens += usage['total_tokens']
-            if response.get('model') != 'qwen3.8-27b':
-                raise AdmissionError('native model identity changed')
-            choice = response['choices'][0]
-            if choice['finish_reason'] != 'tool_calls':
-                raise AdmissionError('native response did not complete a tool call')
-            message = choice['message']
-            raw_calls = message.get('tool_calls') or []
-            if len(raw_calls) != 1:
-                raise AdmissionError('exactly one native action required')
-            calls = [SimpleNamespace(id=c['id'], function=SimpleNamespace(**c['function'])) for c in raw_calls]
-            actions = self.upstream.parse(calls, format_error_template='{{error}}',
-                template_kwargs=dict(finish_reason=choice['finish_reason']))
-            if len(actions) != 1 or not isinstance(actions[0].get('command'), str) or not actions[0]['command'].strip():
-                raise AdmissionError('empty or invalid native command')
-            result = {**message, 'extra':dict(actions=actions, response=response, cost=0.,
-                cost_boundary='Local API spend0; no hardware/energy/labor valuation', native_usage=usage,
-                receipt=str(path))}
+            # Parse boundary (fuzz battery, tests/test_adapter_fuzz.py):
+            # every malformed shape in the response's interpretation —
+            # missing or mistyped choices/message/tool_calls, a tool
+            # call entry of the wrong shape, or any error the upstream
+            # parser raises — fails closed as AdmissionError, the
+            # adapter's named outcome. Nothing unnamed escapes.
+            try:
+                if response.get('model') != 'qwen3.8-27b':
+                    raise AdmissionError('native model identity changed')
+                choice = response['choices'][0]
+                if choice['finish_reason'] != 'tool_calls':
+                    raise AdmissionError('native response did not complete a tool call')
+                message = choice['message']
+                raw_calls = message.get('tool_calls') or []
+                if len(raw_calls) != 1:
+                    raise AdmissionError('exactly one native action required')
+                calls = [SimpleNamespace(id=c['id'], function=SimpleNamespace(**c['function'])) for c in raw_calls]
+                actions = self.upstream.parse(calls, format_error_template='{{error}}',
+                    template_kwargs=dict(finish_reason=choice['finish_reason']))
+                if len(actions) != 1 or not isinstance(actions[0].get('command'), str) or not actions[0]['command'].strip():
+                    raise AdmissionError('empty or invalid native command')
+                result = {**message, 'extra':dict(actions=actions, response=response, cost=0.,
+                    cost_boundary='Local API spend0; no hardware/energy/labor valuation', native_usage=usage,
+                    receipt=str(path))}
+            except AdmissionError:
+                raise
+            except Exception as exc:
+                raise AdmissionError(f'native response did not parse: {exc!r}') from exc
             return result
         except BaseException as exc:
             original_error = exc

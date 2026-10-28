@@ -35,6 +35,21 @@ The protocol is OFF unless the freeze config carries
 ``residual_protocol: true``; MiniModel's flag-off path is the
 pre-change ``assemble_history`` path, byte-identical (pinned by
 tests/test_residual_protocol.py).
+
+Genesis preamble suppression (Defaults Tournament F1, ratified
+2026-10-26 as the wiring default): a session created with
+``genesis_suppression`` transmits its genesis brief in suppressed
+form — system messages in full, the problem statement verbatim,
+every other standing brief message as a digest reference line
+(``genesis_reference_line``) whose content the receiver recovers
+by entry id, the standing blocks themselves being the workspace's
+staged files. The tournament's factorial priced this transform
+over the frozen corpus at exactly 250,829 sent tokens below the
+unsuppressed stack on the campaign corpus (3,047,322 against
+3,298,151); the class default stays off, and the MiniModel wiring
+— the ratified runner configuration — turns it on unless the
+freeze config carries ``genesis_preamble_suppression: false``,
+which restores the unsuppressed genesis byte-for-byte.
 """
 from __future__ import annotations
 
@@ -155,6 +170,77 @@ def _step_detail(message, kind):
     return {"first_line": _first_line(content)}
 
 
+def genesis_reference_line(message, pos):
+    """The digest reference line that replaces one standing brief
+    message under genesis preamble suppression: the message's
+    position within the standing list, its digest kind, its entry
+    id, and its digest-bearing detail — never its full text. The
+    referenced content is recoverable byte-identically from the
+    entry id (the receiver replays the entry sequence from the
+    transmitted views; the standing blocks themselves are the
+    workspace's staged files, readable in the sandbox)."""
+    kind = classify_transmitted(message, in_brief=True)
+    line = {"step": pos, "kind": kind, "id": entry_id(message),
+            **_step_detail(message, kind)}
+    return {"role": "user", "content": json.dumps(line, sort_keys=True)}
+
+
+def suppress_genesis_brief(messages):
+    """Genesis preamble suppression (Defaults Tournament F1,
+    ratified 2026-10-26): replace a history's brief standing
+    messages with digest reference lines. The brief is the leading
+    run before the first assistant turn; the problem statement
+    (the brief's first user message) is a pinned payload and is
+    kept verbatim; system messages are kept in full; every other
+    standing message becomes its reference line. Returns
+    (new_messages, plan) where plan records the substitution —
+    the standing positions, the problem position, the original
+    entry ids, and the reference messages — so a session can
+    apply the identical substitution to every later view of the
+    same segment and verify the incoming brief still matches the
+    genesis it priced. This is exactly the transform the
+    tournament's pricing script applied per segment genesis
+    (transform_pre_segment in tourney.py); its recovery check —
+    each reference line's id equals the replaced message's entry
+    id — is re-verified here on construction."""
+    blen = _brief_length(messages)
+    problem_idx = next((i for i in range(blen)
+                        if messages[i].get("role") == "user"), None)
+    standing_idx = [i for i in range(blen) if i != problem_idx]
+    refs_by_idx = {}
+    for pos, i in enumerate(standing_idx):
+        message = messages[i]
+        if message.get("role") == "system":
+            continue
+        ref = genesis_reference_line(message, pos)
+        if json.loads(ref["content"]).get("id") != entry_id(message):
+            raise _divergence("genesis reference line does not "
+                              "recover its standing message")
+        refs_by_idx[i] = ref
+    plan = {"brief_len": blen, "problem_idx": problem_idx,
+            "standing_ids": {i: entry_id(messages[i])
+                             for i in standing_idx},
+            "refs_by_idx": refs_by_idx,
+            "before_tokens": estimate_tokens(
+                [messages[i] for i in standing_idx]) if standing_idx else 0,
+            "after_tokens": estimate_tokens(
+                [refs_by_idx.get(i, messages[i]) for i in standing_idx])
+            if standing_idx else 0}
+    return apply_genesis_plan(messages, plan), plan
+
+
+def apply_genesis_plan(messages, plan):
+    """Apply a suppression plan computed at a segment genesis to
+    one history of that segment: standing positions (index below
+    the brief length) are replaced by their reference lines; the
+    problem position and everything at or beyond the brief length
+    pass through unchanged."""
+    blen = plan["brief_len"]
+    refs = plan["refs_by_idx"]
+    return [refs.get(i, m) if i < blen else m
+            for i, m in enumerate(messages)]
+
+
 def _parse_state_block(message):
     """The parsed residual_state block of a view's first message,
     or None when the message is not a state block."""
@@ -215,7 +301,8 @@ class ResidualSession:
     MiniModel; a fresh session per attempt, exactly as the brief is
     per attempt."""
 
-    def __init__(self, store=None, identity=None):
+    def __init__(self, store=None, identity=None,
+                 genesis_suppression=False):
         self.store = store
         self.identity = dict(identity or {})
         self.sent_views = []
@@ -226,6 +313,21 @@ class ResidualSession:
         self._brief_id = None
         self._problem = None
         self._brief_bytes = 0
+        # Genesis preamble suppression (Defaults Tournament F1,
+        # ratified 2026-10-26): when enabled, the session's genesis
+        # brief is transmitted in its suppressed form — system
+        # messages in full, the problem statement verbatim, every
+        # other standing message as a digest reference line — and
+        # the same substitution is applied to every later view of
+        # the segment, with the incoming brief verified against
+        # the genesis plan before substitution (an edited genesis
+        # is a divergence, exactly as any other prefix rewrite).
+        # The MiniModel wiring enables it by default; the class
+        # default stays off so the primitive's pinned behavior is
+        # the unsuppressed protocol.
+        self._genesis_suppression = bool(genesis_suppression)
+        self._genesis_plan = None
+        self.genesis_suppression_stats = None
 
     # -- recorded state ------------------------------------------------
     def entries(self):
@@ -238,11 +340,37 @@ class ResidualSession:
     def view(self, messages, wire_cap_tokens, current_phase=None,
              recent_k=OBSERVATION_MASK_RECENT_K, artifact_registry=None,
              excerpt_chars=AUTHORED_TURN_EXCERPT_CHARS, phase=None):
+        if self._genesis_suppression:
+            messages = self._apply_genesis_suppression(messages)
         if not self.sent_views:
             return self._first_view(messages, wire_cap_tokens,
                                     current_phase, recent_k,
                                     artifact_registry, excerpt_chars, phase)
         return self._later_view(messages, wire_cap_tokens, phase)
+
+    def _apply_genesis_suppression(self, messages):
+        """Compute (at the genesis) or apply (on later views) this
+        session's genesis suppression plan. On later views the
+        incoming standing messages must still match the genesis
+        originals by entry id — the segment's genesis is part of
+        the transmitted prefix, and editing it mid-segment is a
+        rewrite of transmitted history."""
+        if self._genesis_plan is None:
+            effective, plan = suppress_genesis_brief(messages)
+            self._genesis_plan = plan
+            self.genesis_suppression_stats = {
+                "standing_messages": len(plan["standing_ids"]),
+                "reference_lines": len(plan["refs_by_idx"]),
+                "preamble_before_tokens": plan["before_tokens"],
+                "preamble_after_tokens": plan["after_tokens"]}
+            return effective
+        plan = self._genesis_plan
+        for i, want in plan["standing_ids"].items():
+            if i >= len(messages) or entry_id(messages[i]) != want:
+                raise _divergence(
+                    f"genesis standing position {i} no longer "
+                    "matches the suppressed genesis")
+        return apply_genesis_plan(messages, plan)
 
     def _record(self, result, phase, delta_messages):
         if self.store is not None:
