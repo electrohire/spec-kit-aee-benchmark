@@ -18,6 +18,7 @@ auditable as its spend.
 """
 import hashlib
 import json
+import os
 from pathlib import Path
 
 GENESIS = "GENESIS"
@@ -85,12 +86,75 @@ def admit_opening(path, opening):
     return {"admitted": True, "ledger_last_close": opening}
 
 
+def _fsync_dir(directory):
+    try:
+        fd = os.open(directory, os.O_RDONLY)
+    except OSError:
+        return
+    try:
+        os.fsync(fd)
+    except OSError:
+        pass
+    finally:
+        os.close(fd)
+
+
+def _append_line_verified(path, line, expected_hash):
+    """Append one serialized entry line with proof of landing
+    (transplanted from the staged verified-writes package,
+    2026-10-28). Records the pre-append size, appends +
+    fsyncs, then reads back the appended range: it must equal
+    the line exactly, and the file's final line must carry
+    ``expected_hash``. On any mismatch the file is truncated
+    back to its pre-append size and ``RuntimeError`` is
+    raised — the append is never blind-retried, so an entry
+    can never land twice."""
+    size_before = path.stat().st_size if path.exists() else 0
+    try:
+        with path.open("ab") as handle:
+            handle.write(line)
+            handle.flush()
+            os.fsync(handle.fileno())
+        _fsync_dir(path.parent)
+        with path.open("rb") as handle:
+            handle.seek(size_before)
+            landed = handle.read()
+        if landed != line:
+            raise RuntimeError(
+                f"ledger append read-back mismatch at {path}: "
+                f"expected {len(line)} bytes (sha256 "
+                f"{hashlib.sha256(line).hexdigest()}), read back "
+                f"{len(landed)} bytes"
+            )
+        last = json.loads(landed.decode("utf-8"))
+        if last.get("hash") != expected_hash:
+            raise RuntimeError(
+                f"ledger append hash mismatch at {path}: final "
+                f"line carries {last.get('hash')}, expected "
+                f"{expected_hash}"
+            )
+    except BaseException:
+        try:
+            with path.open("r+b") as handle:
+                handle.truncate(size_before)
+                handle.flush()
+                os.fsync(handle.fileno())
+        except OSError:
+            pass
+        raise
+
+
 def append_close(path, campaign, opening, spend, metrics,
                  source):
     """Append one campaign close. Refuses (returns the
     refusal, writes nothing) when the ledger does not verify
     or the opening is not the last close — append-only means
-    the refusal is the enforcement."""
+    the refusal is the enforcement. The append itself is
+    verified — fsync plus a read-back hash check (fleet
+    verified-writes standard, 2026-10-28) — and a write that
+    cannot be proven landed raises RuntimeError with the
+    file rolled back to its pre-append size, rather than
+    returning success."""
     state = verify_ledger(path)
     if not state["ok"]:
         return {"appended": False, "reason": "ledger_invalid",
@@ -106,8 +170,8 @@ def append_close(path, campaign, opening, spend, metrics,
              "metrics": metrics, "source": source,
              "prev": entries[-1]["hash"] if entries else GENESIS}
     entry["hash"] = _hash(entry)
-    with Path(path).open("a") as handle:
-        handle.write(json.dumps(entry, sort_keys=True) + "\n")
+    line = (json.dumps(entry, sort_keys=True) + "\n").encode("utf-8")
+    _append_line_verified(Path(path), line, entry["hash"])
     return {"appended": True, "entry": entry}
 
 
