@@ -9,6 +9,7 @@ from pathlib import Path
 from .experiment import ARMS, freeze, select, verify_freeze
 from .matched_repair import MATCHED_ARMS
 from .store import Store, read_json, write_json
+from .verified_write import write_text_verified
 
 
 def preflight(root):
@@ -107,8 +108,12 @@ def main(argv=None):
             except (KeyError, TypeError) as exc:
                 raise ValueError("invalid lifecycle evidence structure") from exc
             write_json(args.output, result, exclusive=True)
-            with markdown_path.open("x", encoding="utf-8", newline="\n") as handle:
-                handle.write(format_markdown(markdown(result)))
+            # Verified write (fleet standard, 2026-10-28): existence
+            # of both outputs was refused above, so the verified
+            # write keeps the create-only contract while adding
+            # fsync + read-back verification (SafeWriteError is a
+            # RuntimeError, caught by this command's error handler).
+            write_text_verified(markdown_path, format_markdown(markdown(result)))
         print(json.dumps(result, indent=2, allow_nan=False))
         return 0
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as e:

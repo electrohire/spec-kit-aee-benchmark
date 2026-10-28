@@ -14,6 +14,7 @@ import subprocess
 
 from .upstream_agent_adapter import AdmissionError, write_exclusive
 from .upstream_docker_transport import PREFIX
+from .verified_write import write_bytes_verified
 
 
 EXPORT = r'''
@@ -148,7 +149,14 @@ def export_tree(environment, out, *, tree, reader_python):
     argv = _argv(environment, reader_python, EXPORT, tree)
     result = _run(argv, b'', out, 'export')
     (out/'export-stderr.bin').write_bytes(result.stderr)
-    (out/'tree.pack').write_bytes(result.stdout)
+    # Verified write (fleet standard, 2026-10-28) for the retained
+    # pack: the receipt below pins the in-memory hash, and the file
+    # is the evidence. A failed export's empty response keeps the
+    # legacy write so preserve-and-halt sees exactly what arrived.
+    if result.stdout:
+        write_bytes_verified(out/'tree.pack', result.stdout)
+    else:
+        (out/'tree.pack').write_bytes(result.stdout)
     receipt = dict(argv=argv, returncode=result.returncode, tree=tree,
                    pack_bytes=len(result.stdout), pack_sha256=hashlib.sha256(result.stdout).hexdigest(),
                    stderr_sha256=hashlib.sha256(result.stderr).hexdigest(),
@@ -221,7 +229,13 @@ def make_grader_patch(environment, exported, out, *, registered_grade_base_tree,
             or value['grade_base_tree']!=registered_grade_base_tree
             or hashlib.sha256(patch).hexdigest()!=value['patch_sha256']):
         raise AdmissionError('independent grade projection integrity mismatch')
-    (out/'candidate.patch').write_bytes(patch)
+    # Verified write (2026-10-28): the receipt below pins the
+    # in-memory patch hash; the file must provably hold those bytes.
+    # An empty patch keeps the legacy write (nothing to tear).
+    if patch:
+        write_bytes_verified(out/'candidate.patch', patch)
+    else:
+        (out/'candidate.patch').write_bytes(patch)
     receipt = dict(argv=argv, returncode=response.returncode,
         retained_tree=manifest['tree'], grade_base_tree=registered_grade_base_tree,
         retained_pack_sha256=manifest['pack_sha256'], patch_bytes=len(patch),

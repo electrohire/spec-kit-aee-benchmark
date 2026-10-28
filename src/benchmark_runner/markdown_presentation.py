@@ -4,6 +4,8 @@ from pathlib import Path
 
 from markdown_it import MarkdownIt
 
+from .verified_write import write_text_verified
+
 
 def _signature(tokens):
     result = []
@@ -66,4 +68,7 @@ def format_markdown(text):
 
 
 def write_markdown(path, text):
-    Path(path).write_text(format_markdown(text), encoding="utf-8", newline="\n")
+    # Verified write (fleet standard, 2026-10-28): presentation
+    # outputs are reports; a silent partial write would stand as the
+    # report, so the write verifies by read-back or raises.
+    write_text_verified(path, format_markdown(text))
