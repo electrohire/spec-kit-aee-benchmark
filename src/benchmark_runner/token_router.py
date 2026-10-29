@@ -53,6 +53,30 @@ at its smoke gate. The Window 5 fix dispatches on status.)
 tool's optional model-selector path, which this wiring never
 enables, so its appearance under the pinned invocation is
 genuinely unexpected and fails closed.
+
+Window 7 addition (2026-10-29, pre-registered proposal in the
+Window 6 router research memo, Part 2): the delivery cap. Behind
+the freeze keys ``token_router_cap_threshold_bytes`` and
+``token_router_cap_max_delivery_bytes`` (both present and valid,
+or both absent — a partial or invalid pair is a freeze
+violation), a ``needs_targeted_read`` delivery whose raw size
+exceeds the threshold is delivered as a bounded digest instead
+of the full text: a header naming the raw size and the artifact
+digest, every failure-vocabulary line (the six registered
+ROUTER_TERMS) verbatim in order, then head and tail excerpts —
+never more than the maximum delivery bytes in total. The
+construction is a pure function of the combined text, the
+artifact digest, and the two cap parameters, so the analysis can
+rebuild any capped delivery byte for byte. A capped digest's
+artifact digest is registered on the environment state; a later
+command that is exactly ``retrieve-observation <digest>`` for a
+registered digest is answered by ``try_retrieval`` with the full
+verified text and a router-stream event whose delivered bytes
+the accounting charges as clawback in full. Any other command —
+including an unregistered digest — is not intercepted. Failure
+outputs still bypass verbatim with the cap in place; routing
+decisions, entry construction, and every other delivery rule are
+unchanged.
 """
 from __future__ import annotations
 
@@ -145,12 +169,11 @@ def _verify_router_tool(cfg, state):
         state["verified"] = True
 
 
-def _targeted_read(artifact, in_hand_combined, store):
-    """Retrieve the raw combined text from the digest-addressed
-    artifact and re-verify it twice: the artifact file's bytes
-    against the artifact record's digest, and the rebuilt combined
-    text (from the artifact's recorded stdout/stderr) against the
-    in-hand combined text. Any mismatch is a freeze violation."""
+def _read_artifact_result(artifact, store):
+    """Read the digest-addressed artifact and return its recorded
+    tool result: the artifact file's bytes are verified against
+    the artifact record's digest, and the content must parse as a
+    recorded tool result. Any failure is a freeze violation."""
     if store is None:
         raise _freeze_error(
             "targeted read requires the run store to resolve the "
@@ -167,11 +190,25 @@ def _targeted_read(artifact, in_hand_combined, store):
             "targeted read artifact digest mismatch: file bytes do "
             "not hash to the recorded artifact sha256")
     try:
-        recorded = json.loads(data.decode("utf-8"))
+        return json.loads(data.decode("utf-8"))
+    except ValueError as exc:
+        raise _freeze_error(
+            f"targeted read artifact is not a parseable tool "
+            f"result: {exc}") from exc
+
+
+def _targeted_read(artifact, in_hand_combined, store):
+    """Retrieve the raw combined text from the digest-addressed
+    artifact and re-verify it twice: the artifact file's bytes
+    against the artifact record's digest, and the rebuilt combined
+    text (from the artifact's recorded stdout/stderr) against the
+    in-hand combined text. Any mismatch is a freeze violation."""
+    recorded = _read_artifact_result(artifact, store)
+    try:
         rebuilt = combined_text(
             {"stdout": recorded["stdout"],
              "stderr": recorded["stderr"]})
-    except (ValueError, KeyError, TypeError) as exc:
+    except (KeyError, TypeError) as exc:
         raise _freeze_error(
             f"targeted read artifact is not a parseable tool "
             f"result: {exc}") from exc
@@ -181,6 +218,135 @@ def _targeted_read(artifact, in_hand_combined, store):
             "artifact's recorded output differs from the in-hand "
             "output")
     return in_hand_combined
+
+
+# --- Window 7 delivery cap -------------------------------------
+# Freeze keys (both or neither; a partial or invalid pair is a
+# freeze violation):
+#   token_router_cap_threshold_bytes — raw size above which a
+#     needs_targeted_read delivery is capped;
+#   token_router_cap_max_delivery_bytes — the maximum bytes a
+#     capped delivery may carry.
+CAP_THRESHOLD_KEY = "token_router_cap_threshold_bytes"
+CAP_MAX_DELIVERY_KEY = "token_router_cap_max_delivery_bytes"
+
+_RETRIEVAL_RE = re.compile(r"^retrieve-observation ([0-9a-f]{64})$")
+
+
+def _cap_params(cfg):
+    """The freeze's cap parameters, or None when the cap is not
+    configured. Both keys absent means Window 6 behavior exactly;
+    a partial or invalid pair fails closed."""
+    threshold = cfg.get(CAP_THRESHOLD_KEY)
+    max_delivery = cfg.get(CAP_MAX_DELIVERY_KEY)
+    if threshold is None and max_delivery is None:
+        return None
+    if (not isinstance(threshold, int) or isinstance(threshold, bool)
+            or not isinstance(max_delivery, int)
+            or isinstance(max_delivery, bool)
+            or threshold <= 0 or max_delivery <= 0):
+        raise _freeze_error(
+            f"invalid delivery-cap freeze keys: {CAP_THRESHOLD_KEY}="
+            f"{threshold!r}, {CAP_MAX_DELIVERY_KEY}={max_delivery!r} "
+            f"(both must be positive integers, or both absent)")
+    return threshold, max_delivery
+
+
+def capped_delivery(combined, artifact_sha256, threshold, max_delivery):
+    """The bounded delivery for an over-threshold targeted read:
+    a pure function of (combined text, artifact digest, cap
+    parameters), so any capped delivery can be rebuilt byte for
+    byte from the artifact. Returns None when the text is within
+    the threshold (the caller delivers it in full); otherwise a
+    dict with the delivery text (never more than max_delivery
+    UTF-8 bytes) and the failure-signal line accounting.
+
+    Construction, in order: a one-line header naming the raw
+    size, the threshold, and the explicit-retrieval command for
+    this artifact; every line carrying the registered failure
+    vocabulary (ROUTER_TERMS), verbatim and in order, while the
+    byte budget lasts; a head excerpt; a tail excerpt. Excerpts
+    take whole lines only and stop at the first line that does
+    not fit their share of the remaining budget.
+    """
+    raw_bytes = len(combined.encode("utf-8"))
+    if raw_bytes <= threshold:
+        return None
+    lines = combined.split("\n")
+    signal_lines = [ln for ln in lines
+                    if any(term in ln for term in ROUTER_TERMS)]
+
+    def section(marker, candidates, budget):
+        """[marker] + whole candidate lines, in appearance
+        order, while the section's own joined byte length stays
+        within budget; [] when no candidate fits (a label is
+        never delivered for an empty section)."""
+        if budget <= 0:
+            return []
+        picked = []
+        size = len(marker.encode("utf-8"))
+        for ln in candidates:
+            add = len(ln.encode("utf-8")) + 1
+            if size + add > budget:
+                break
+            picked.append(ln)
+            size += add
+        return [marker] + picked if picked else []
+
+    def tail_section(marker, budget):
+        """Like section(), but candidates are picked from the
+        END of the text backwards and presented in original
+        order."""
+        if budget <= 0:
+            return []
+        picked_rev = []
+        size = len(marker.encode("utf-8"))
+        for ln in reversed(lines):
+            add = len(ln.encode("utf-8")) + 1
+            if size + add > budget:
+                break
+            picked_rev.append(ln)
+            size += add
+        return [marker] + picked_rev[::-1] if picked_rev else []
+
+    out_lines = []
+
+    def total():
+        return len("\n".join(out_lines).encode("utf-8")) if out_lines \
+            else 0
+
+    def room():
+        # Bytes left under max_delivery, charging the newline
+        # that would join a new section to what is already out.
+        return max_delivery - total() - (1 if out_lines else 0)
+
+    header = (f"[router digest: {raw_bytes} bytes over the "
+              f"{threshold}-byte delivery cap; full text: "
+              f"retrieve-observation {artifact_sha256}]")
+    if len(header.encode("utf-8")) <= max_delivery:
+        out_lines.append(header)
+    signals_included = 0
+    if signal_lines:
+        sec = section("--- failure-signal lines (verbatim) ---",
+                      signal_lines, room())
+        signals_included = len(sec) - 1 if sec else 0
+        out_lines.extend(sec)
+    if room() > 0:
+        out_lines.extend(section("--- head excerpt ---", lines,
+                                 room() // 2))
+    if room() > 0:
+        out_lines.extend(tail_section("--- tail excerpt ---",
+                                      room()))
+    text = "\n".join(out_lines)
+    encoded = text.encode("utf-8")
+    if len(encoded) > max_delivery:
+        # Only reachable when the header alone exceeds a
+        # pathological max_delivery; the clamp is deterministic,
+        # so reconstruction still matches byte for byte.
+        text = encoded[:max_delivery].decode("utf-8", errors="ignore")
+    return {"text": text,
+            "signal_lines_total": len(signal_lines),
+            "signal_lines_included": signals_included}
 
 
 _SELECTED_LINE_RE = re.compile(r"^\d+:", re.MULTILINE)
@@ -203,7 +369,8 @@ def route_observation(result, artifact, cfg, *, store=None,
     exit_code = result["exit_code"]
 
     def _event(status, delivered_stdout, delivered_stderr,
-               packet_bytes=0, targeted_read=False, packet=None):
+               packet_bytes=0, targeted_read=False, packet=None,
+               extra=None):
         delivered_bytes = (len(delivered_stdout.encode("utf-8"))
                            + len(delivered_stderr.encode("utf-8")))
         selected_lines = (len(_SELECTED_LINE_RE.findall(packet))
@@ -215,7 +382,7 @@ def route_observation(result, artifact, cfg, *, store=None,
                 "delivered_bytes": delivered_bytes,
                 "targeted_read": targeted_read,
                 "selected_lines": selected_lines,
-                "model_called": False}
+                "model_called": False, **(extra or {})}
 
     if exit_code != 0:
         # Failure outputs bypass routing and are carried verbatim.
@@ -228,6 +395,7 @@ def route_observation(result, artifact, cfg, *, store=None,
             "skipped_empty", result["stdout"], result["stderr"])
 
     _verify_router_tool(cfg, state)
+    cap = _cap_params(cfg)
     script = cfg["token_router_script"]
     with tempfile.TemporaryDirectory(prefix="token-router-") as tmp:
         target = Path(tmp) / "combined.txt"
@@ -295,6 +463,30 @@ def route_observation(result, artifact, cfg, *, store=None,
                 packet=packet)
         if status == "needs_targeted_read":
             delivered = _targeted_read(artifact, combined, store)
+            if cap is not None:
+                capped = capped_delivery(
+                    delivered, artifact["sha256"], cap[0], cap[1])
+                if capped is not None:
+                    # Window 7: the bounded digest replaces the
+                    # full text; the digest's artifact is
+                    # registered for explicit retrieval, and the
+                    # event carries the cap accounting.
+                    if state is not None:
+                        state.setdefault("capped_digests", {})[
+                            artifact["sha256"]] = dict(artifact)
+                    new_result = {**result,
+                                  "stdout": capped["text"],
+                                  "stderr": ""}
+                    return new_result, _event(
+                        "needs_targeted_read", capped["text"], "",
+                        targeted_read=True,
+                        extra={"capped": True,
+                               "cap_threshold_bytes": cap[0],
+                               "cap_max_delivery_bytes": cap[1],
+                               "signal_lines_total":
+                                   capped["signal_lines_total"],
+                               "signal_lines_included":
+                                   capped["signal_lines_included"]})
             new_result = {**result, "stdout": delivered, "stderr": ""}
             return new_result, _event(
                 "needs_targeted_read", delivered, "",
@@ -304,3 +496,51 @@ def route_observation(result, artifact, cfg, *, store=None,
         # handling, so the combined text is delivered verbatim.
         new_result = {**result, "stdout": combined, "stderr": ""}
         return new_result, _event("bypass", combined, "")
+
+
+def try_retrieval(command, store, cfg, *, identity=None, state=None):
+    """Window 7 explicit retrieval: answer a command that is
+    exactly ``retrieve-observation <digest>`` for a digest this
+    environment previously delivered in capped form.
+
+    Returns (delivered_text, event, artifact) — the full combined
+    text re-verified from the digest-addressed artifact (the same
+    digest check the targeted read performs), a router-stream
+    event with status ``explicit_retrieval`` whose
+    delivered_bytes the accounting charges as clawback in full,
+    and the registered artifact record — or None when the command
+    is not an explicit retrieval of a registered digest (the
+    caller then executes it as an ordinary command, byte-
+    identically to the pre-Window-7 path). The router tool is not
+    invoked; no model is called. A registered digest whose
+    artifact fails verification raises TokenRouterFreezeError,
+    like every other integrity failure in this module.
+    """
+    if not cfg.get("token_router") or _cap_params(cfg) is None:
+        return None
+    match = _RETRIEVAL_RE.match((command or "").strip())
+    if match is None:
+        return None
+    registry = (state or {}).get("capped_digests") or {}
+    artifact = registry.get(match.group(1))
+    if artifact is None:
+        return None
+    recorded = _read_artifact_result(artifact, store)
+    try:
+        delivered = combined_text(
+            {"stdout": recorded["stdout"],
+             "stderr": recorded["stderr"]})
+        exit_code = recorded["exit_code"]
+    except (KeyError, TypeError) as exc:
+        raise _freeze_error(
+            f"explicit retrieval artifact is not a parseable "
+            f"tool result: {exc}") from exc
+    delivered_bytes = len(delivered.encode("utf-8"))
+    event = {**dict(identity or {}), "timestamp": utc(),
+             "artifact": artifact["sha256"],
+             "exit_code": exit_code, "status": "explicit_retrieval",
+             "raw_bytes": delivered_bytes, "packet_bytes": 0,
+             "delivered_bytes": delivered_bytes,
+             "targeted_read": False, "selected_lines": 0,
+             "model_called": False, "retrieval": True}
+    return delivered, event, artifact

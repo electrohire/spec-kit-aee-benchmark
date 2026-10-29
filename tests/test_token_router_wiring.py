@@ -43,6 +43,7 @@ from benchmark_runner.grading import grade
 from benchmark_runner.store import Store, canonical, sha
 from benchmark_runner.token_router import (ROUTER_TERMS, ROUTER_VERSION,
                                            TokenRouterFreezeError,
+                                           capped_delivery,
                                            route_observation)
 from benchmark_runner.workflow import grounded_claims
 
@@ -597,6 +598,211 @@ def test_e1_grading_refuses_routed_packet_as_repo(tmp_path, double):
     packet_path.write_text(observation["stdout"], encoding="utf-8")
     with pytest.raises((subprocess.CalledProcessError, ValueError)):
         grade(store, packet_path, packet_path, "deadbeef", "deadbeef")
+
+
+# ---------------- Window 7: capped targeted read + retrieval ----
+# The delivery cap (freeze keys token_router_cap_threshold_bytes /
+# token_router_cap_max_delivery_bytes) bounds a needs_targeted_read
+# delivery to a digest + failure-signal lines + excerpts; the full
+# text is delivered only on an explicit retrieve-observation
+# command for a digest the environment capped, logged as an
+# explicit_retrieval event charged in full.
+
+CAP_CFG = {"token_router_cap_threshold_bytes": 200,
+           "token_router_cap_max_delivery_bytes": 400}
+
+BIG_QUIET_TEXT = "".join(
+    "quiet filler line %03d with some padding\n" % i
+    for i in range(40))  # ~1,560 bytes, no failure vocabulary
+
+
+class CountingSandbox(StubSandbox):
+    def __init__(self, result):
+        super().__init__(result)
+        self.calls = 0
+
+    def execute(self, command, timeout=60):
+        self.calls += 1
+        return dict(self.result)
+
+
+def test_capped_targeted_read_delivers_bounded_digest(
+        tmp_path, double):
+    result = {"exit_code": 0, "stdout": BIG_QUIET_TEXT, "stderr": ""}
+    env, store = make_env(tmp_path, result, router_cfg(double,
+                                                       **CAP_CFG),
+                          phase="solve")
+    observation = env.execute({"command": "cat big"})
+    artifact = store.events("tools")[-1]["artifact"]
+    (event,) = router_events(store)
+    assert event["status"] == "needs_targeted_read"
+    assert event["targeted_read"] is True
+    assert event["capped"] is True
+    assert event["cap_threshold_bytes"] == 200
+    assert event["cap_max_delivery_bytes"] == 400
+    assert event["raw_bytes"] == len(BIG_QUIET_TEXT.encode("utf-8"))
+    assert event["delivered_bytes"] <= 400
+    # The delivered digest is exactly what the model was shown
+    # (it is well under the observation shaping truncation).
+    assert event["delivered_bytes"] == len(
+        observation["stdout"].encode("utf-8"))
+    assert observation["stdout"].startswith("[router digest:")
+    assert ("retrieve-observation " + artifact["sha256"]
+            in observation["stdout"])
+    assert observation["source_id"] == artifact["sha256"]
+    assert event["signal_lines_total"] == 0
+    assert event["signal_lines_included"] == 0
+
+
+def test_capped_delivery_keeps_failure_signal_lines(
+        tmp_path, double, monkeypatch):
+    # The double (like the real tool) selects on vocabulary, so a
+    # vocabulary-carrying text is forced to needs_targeted_read
+    # to exercise the cap's signal preservation directly.
+    monkeypatch.setenv("TR_DOUBLE_FORCE_STATUS",
+                       "needs_targeted_read")
+    lines = ["filler %03d xxxxxxxxxxxxxxxxxxxx" % i for i in range(30)]
+    signal = "FAILED tests/test_x.py::test_y - AssertionError: boom"
+    lines.insert(15, signal)
+    text = "\n".join(lines) + "\n"
+    result = {"exit_code": 0, "stdout": text, "stderr": ""}
+    env, store = make_env(tmp_path, result, router_cfg(double,
+                                                       **CAP_CFG),
+                          phase="solve")
+    observation = env.execute({"command": "run tests"})
+    (event,) = router_events(store)
+    assert event["capped"] is True
+    assert signal in observation["stdout"]
+    assert event["signal_lines_total"] >= 1
+    assert event["signal_lines_included"] == \
+        event["signal_lines_total"]
+
+
+def test_under_threshold_targeted_read_is_not_capped(
+        tmp_path, double):
+    result = {"exit_code": 0, "stdout": QUIET_TEXT, "stderr": ""}
+    env, store = make_env(tmp_path, result, router_cfg(double,
+                                                       **CAP_CFG),
+                          phase="solve")
+    observation = env.execute({"command": "cat file"})
+    assert observation["stdout"] == QUIET_TEXT
+    (event,) = router_events(store)
+    assert event["status"] == "needs_targeted_read"
+    assert "capped" not in event
+    assert event["delivered_bytes"] == event["raw_bytes"]
+
+
+def test_no_cap_keys_keeps_window6_delivery(tmp_path, double):
+    result = {"exit_code": 0, "stdout": BIG_QUIET_TEXT, "stderr": ""}
+    env, store = make_env(tmp_path, result, router_cfg(double),
+                          phase="solve")
+    observation = env.execute({"command": "cat big"})
+    assert observation["stdout"] == BIG_QUIET_TEXT
+    (event,) = router_events(store)
+    assert "capped" not in event
+    assert event["delivered_bytes"] == event["raw_bytes"]
+
+
+def test_partial_or_invalid_cap_keys_raise(tmp_path, double):
+    result = {"exit_code": 0, "stdout": QUIET_TEXT, "stderr": ""}
+    for extra in ({"token_router_cap_threshold_bytes": 200},
+                  {"token_router_cap_max_delivery_bytes": 400},
+                  {"token_router_cap_threshold_bytes": 0,
+                   "token_router_cap_max_delivery_bytes": 400},
+                  {"token_router_cap_threshold_bytes": "200",
+                   "token_router_cap_max_delivery_bytes": 400}):
+        env, _store = make_env(tmp_path, result,
+                               router_cfg(double, **extra),
+                               phase="solve")
+        with pytest.raises(TokenRouterFreezeError, match="freeze"):
+            env.execute({"command": "cat file"})
+
+
+def test_cap_in_place_failure_bypass_stays_verbatim(
+        tmp_path, double):
+    big_failure = "".join("failure filler %03d\n" % i
+                          for i in range(40))
+    result = {"exit_code": 1, "stdout": big_failure, "stderr": ""}
+    env, store = make_env(tmp_path, result, router_cfg(double,
+                                                       **CAP_CFG),
+                          phase="solve")
+    observation = env.execute({"command": "run tests"})
+    assert observation["stdout"] == big_failure
+    (event,) = router_events(store)
+    assert event["status"] == "bypass_failure"
+    assert event["delivered_bytes"] == event["raw_bytes"]
+    assert "capped" not in event
+
+
+def test_explicit_retrieval_delivers_full_text_and_logs(
+        tmp_path, double):
+    store = Store(tmp_path / "store")
+    sandbox = CountingSandbox(
+        {"exit_code": 0, "stdout": BIG_QUIET_TEXT, "stderr": ""})
+    env = runner.MiniEnvironment(
+        sandbox, time.monotonic() + 600, store, dict(IDENTITY),
+        cfg=router_cfg(double, **CAP_CFG))
+    env.phase = "solve"
+    env.execute({"command": "cat big"})
+    assert sandbox.calls == 1
+    artifact = store.events("tools")[-1]["artifact"]
+    observation = env.execute(
+        {"command": "retrieve-observation " + artifact["sha256"]})
+    # Answered by the wiring: the sandbox never ran, no new tools
+    # event exists, and the full text is delivered.
+    assert sandbox.calls == 1
+    assert len(store.events("tools")) == 1
+    assert observation["stdout"] == BIG_QUIET_TEXT
+    assert observation["source_id"] == artifact["sha256"]
+    assert observation["evidence_ref"] == artifact["path"]
+    events = router_events(store)
+    assert [e["status"] for e in events] == [
+        "needs_targeted_read", "explicit_retrieval"]
+    retrieval = events[1]
+    assert retrieval["retrieval"] is True
+    assert retrieval["delivered_bytes"] == len(
+        BIG_QUIET_TEXT.encode("utf-8"))
+    assert retrieval["raw_bytes"] == retrieval["delivered_bytes"]
+    assert retrieval["model_called"] is False
+    # An unregistered digest is NOT intercepted: it executes as
+    # an ordinary command.
+    env.execute({"command": "retrieve-observation " + "0" * 64})
+    assert sandbox.calls == 2
+
+
+def test_retrieval_command_without_cap_falls_through(
+        tmp_path, double):
+    store = Store(tmp_path / "store")
+    sandbox = CountingSandbox(
+        {"exit_code": 0, "stdout": QUIET_TEXT, "stderr": ""})
+    env = runner.MiniEnvironment(
+        sandbox, time.monotonic() + 600, store, dict(IDENTITY),
+        cfg=router_cfg(double))
+    env.phase = "solve"
+    env.execute({"command": "retrieve-observation " + "a" * 64})
+    assert sandbox.calls == 1
+
+
+def test_capped_delivery_is_deterministic_and_bounded():
+    text = "\n".join("line %04d %s" % (i, "y" * 30)
+                     for i in range(200))
+    digest = "b" * 64
+    first = capped_delivery(text, digest, 8192, 8192)
+    second = capped_delivery(text, digest, 8192, 8192)
+    assert first is not None
+    assert first == second
+    assert len(first["text"].encode("utf-8")) <= 8192
+    assert digest in first["text"]
+    # Within the threshold there is nothing to cap.
+    assert capped_delivery("small", digest, 8192, 8192) is None
+    # Signal lines beyond the budget are accounted, not hidden.
+    signals = "\n".join(
+        ["FAILED case %03d AssertionError" % i for i in range(50)]
+        + ["pad %04d" % i for i in range(50)])
+    capped = capped_delivery(signals, digest, 100, 300)
+    assert capped["signal_lines_total"] == 50
+    assert 0 < capped["signal_lines_included"] < 50
+    assert len(capped["text"].encode("utf-8")) <= 300
 
 
 # ---------------- real-tool pins: the unplanted leg ----------------
