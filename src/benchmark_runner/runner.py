@@ -30,7 +30,7 @@ from .local_provider import (CALL_OUTER_BOUND_SECONDS, CallOuterBoundError,
                              LocalProvider, TransportStallError, base_url,
                              check_local_server, probe_worker, server_root)
 from .store import RunLock, Store, canonical, read_json, sha, utc, write_json
-from .token_router import route_observation
+from .token_router import route_observation, try_retrieval
 from .tripwires import (HALT_STUDY, attempt_wall_expiry_reason,
                         phase_exhaustion_reason, record_tripwire)
 from .workflow import (AEE_PHASES, DeltaFormatError, assess, campaign_setup,
@@ -848,12 +848,47 @@ class MiniEnvironment:
         self.cfg = cfg or {}
         # Window 4 token-router wiring: per-environment router
         # verification state (the pinned tool is verified once, on
-        # this environment's first routed observation). Inert —
-        # never read — unless the freeze carries token_router: true.
+        # this environment's first routed observation). Window 7:
+        # the same state dict carries the capped-digest registry
+        # for explicit retrieval. Inert — never read — unless the
+        # freeze carries token_router: true.
         self._router_state = {"verified": False}
 
     def execute(self, action):
         self.tool_calls += 1
+        # Window 7 explicit retrieval (freeze keys token_router +
+        # the delivery-cap pair): a command that is exactly
+        # "retrieve-observation <digest>" for a digest this
+        # environment previously delivered in capped form is
+        # answered by the wiring from the digest-addressed
+        # artifact — no sandbox execution and no tools event (no
+        # sandbox output exists); the router stream records the
+        # retrieval and its full byte charge, and the observation
+        # is shaped exactly as an ordinary delivery of the same
+        # text would be. Every other command — including a
+        # retrieval command for an unregistered digest — falls
+        # through to the ordinary path below, byte-identical.
+        if self.cfg.get("token_router"):
+            retrieval = try_retrieval(
+                action["command"], self.store, self.cfg,
+                identity=self.identity, state=self._router_state)
+            if retrieval is not None:
+                delivered, router_event, artifact = retrieval
+                self.store.append("router", router_event)
+                shaped = {"exit_code": router_event["exit_code"],
+                          "stdout": delivered, "stderr": ""}
+                if self.phase in DRAFTING_PHASES:
+                    observation = cap_observation(
+                        shaped, int(self.cfg.get(
+                            "observation_write_cap_bytes",
+                            OBSERVATION_WRITE_CAP_BYTES)))
+                    return {**observation,
+                            "evidence_ref": artifact["path"],
+                            "source_id": artifact["sha256"]}
+                return {**shaped, "stdout": delivered[-24000:],
+                        "stderr": "",
+                        "evidence_ref": artifact["path"],
+                        "source_id": artifact["sha256"]}
         result = self.sandbox.execute(action["command"], timeout=min(60, remaining(self.deadline)))
         artifact = self.store.artifact(canonical({"command": action["command"], **result}))
         self.store.append("tools", {**self.identity, "timestamp": utc(), "artifact": artifact,
