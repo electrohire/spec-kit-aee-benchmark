@@ -1,0 +1,92 @@
+{
+  "schema": "needle-stagea-registration-v1",
+  "program": "needle-combined-experiment",
+  "stage": "A (probe-first model/suite substitution)",
+  "pair": "D",
+  "model": {
+    "card": "Qwen3.8-27B incumbent at UD-Q5_K_XL, 64K context, preserve_thinking, grammar-constrained tool calls",
+    "alias": "qwen3.8-27b-q5",
+    "weights_file": "Qwen3.8-27B-UD-Q5_K_XL.gguf",
+    "weights_bytes": 20876938144,
+    "weights_sha256": "8601193d3d5760c37fb8ce1b43afebc69df5fb24e1fbc5a547c32e2200305276",
+    "server_context_tokens": 65536,
+    "wire_max_input_tokens": 57344,
+    "wire_max_output_tokens": 8192,
+    "sampling": {
+      "temperature": null,
+      "note": "null = llama.cpp server default, frozen as served and recorded at serve verification (M2)"
+    },
+    "grammar_constrained_tool_calls": false,
+    "preserve_thinking": true
+  },
+  "suite": {
+    "dataset": "princeton-nlp/SWE-bench_Verified",
+    "revision": "c104f840cc67f8b6eec6f759ebc8b2693d585d4a",
+    "file_sha256": "a45b1fe4e2f0c8390b2b2938ac83e92ed5979000856808f3679c07812e9e6dcd",
+    "rows": 500,
+    "pool": "difficulty == '<15 min fix' (194 of 500)",
+    "selection_rule": "order the pool by SHA-256 of \"needle-01:\" + instance_id ascending; take the first 3 (rank 1-2 = wave 1, rank 3 = wave 2)",
+    "tasks": [
+      {
+        "rank": 1,
+        "instance_id": "django__django-11099",
+        "base_commit": "d26b2424437dabeeca94d7900b37d2df4410da0c",
+        "selection_hash": "034f6988a202ce00f219bdda82724fbe69ee68c42372edd4b206498b688963c7",
+        "image": "swebench/sweb.eval.x86_64.django_1776_django-11099:latest"
+      },
+      {
+        "rank": 2,
+        "instance_id": "pytest-dev__pytest-5809",
+        "base_commit": "8aba863a634f40560e25055d179220f0eefabe9a",
+        "selection_hash": "03c86e30974caaaca71797d11b5dce23cff04cb06f654b6aed0e2e185291eaab",
+        "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5809:latest"
+      },
+      {
+        "rank": 3,
+        "instance_id": "django__django-16642",
+        "base_commit": "fbe850106b2e4b85f838219cb9e1df95fba6c164",
+        "selection_hash": "03f25202de1ad0e3c341437089dc6d9e51fdcabd36692bfbff3e5da0f946f897",
+        "image": "swebench/sweb.eval.x86_64.django_1776_django-16642:latest"
+      }
+    ]
+  },
+  "scaffold": {
+    "solve_instruction_path": "prompts/probe-solve.md",
+    "edit_switch_fraction": 0.4,
+    "verify_nudge_fraction": 0.55,
+    "empty_patch_gate": true,
+    "note": "H1-H3 as frozen in harness commit 1747c25ab022bae8fb64a929d985998f14fdb04d; no in-loop self-critique (H4 held out)"
+  },
+  "waves": {
+    "wave1": "ranks 1-2, one attempt each",
+    "wave2": "rank 3, one attempt, only when wave 1 produced a registered edit but no resolved delivery AND the remaining sub-cap admits a full attempt cap"
+  },
+  "attempt_cap_tokens": 250000,
+  "max_calls": 120,
+  "attempt_wall_seconds": 7200,
+  "stage_sub_cap_tokens": 2400000,
+  "program_cap_tokens": 48000000,
+  "prior_program_tokens": 23237750,
+  "pass_bar": "A pair PASSES Stage A when, across its probe waves, it produces at least one registered repository edit AND at least one graded resolved delivery, with the instrument clean (no equipment-caused zero in the counted evidence).",
+  "outcome_table": [
+    {
+      "outcome": "pass (bar met)",
+      "consequence": "the pair is eligible for the Stage B selection rule"
+    },
+    {
+      "outcome": "edits registered, no resolved delivery after wave 2",
+      "consequence": "the pair does not pass; its ladder position is reported (the model engages the repository but does not yet land a fix at probe scale)"
+    },
+    {
+      "outcome": "no registered edit across both waves, instrument clean",
+      "consequence": "a behavioral fail for this pair at probe scale, with the full transcript record standing behind it"
+    },
+    {
+      "outcome": "format-path failure (no valid tool call ever parses)",
+      "consequence": "equipment-blocked, never a behavioral fail: fix the bridge for that pair and re-probe inside the pair's remaining allocation"
+    }
+  ],
+  "grading": "official SWE-bench evaluation only; per-task controls (gold patch resolves, empty patch does not) run and recorded before any probe is scored",
+  "harness_commit": "1747c25ab022bae8fb64a929d985998f14fdb04d",
+  "serve_verification_notes": "Grammar-constrained calls were tested at serve verification and rejected on evidence: the grammar routed the action JSON into the reasoning channel (empty content). Pair D is served with preserve_thinking honored and no grammar constraint."
+}
