@@ -1,0 +1,194 @@
+{
+  "schema": "needle-cycle3-c3r1-freeze-v1",
+  "status": "FROZEN - CYCLE 3 C3-R1: probe (i) rerun under the C3-F1 native-format bridge at a8df781a. The ONLY changed input vs the Cycle 2 probe (i) run (freeze 5455856b..., code d3be1c3a) is the adapter: MiniModel's parse_model_action now tries the frozen JSON rule, then the native <tool_call> bridge, then invalid. Same six registered probe-(i) instances, same 400,000-token per-attempt cap, same grader, same direct-coding instruction, same seed. Probe (ii) is not rerun. Prior freezes, trees, and stores are closed records, never appended to or rewritten.",
+  "harness_head": "a8df781a2b0ad516f492299d40d3dea45163c704",
+  "harness_commit": "a8df781a2b0ad516f492299d40d3dea45163c704",
+  "prior_probe_i_freeze": {
+    "code_commit": "d3be1c3aa718a64cb303dcb8f3f6db8d511006ed",
+    "freeze_id": "5455856baec6f3b87c7c8af69a368a6d85cb5b1fbd06c2a48b9d5d6f330e3210",
+    "store": "runs/probe-c2-i",
+    "result": "0/6 completed, first edit never, 2,214,019 tokens"
+  },
+  "candidate_engine": {
+    "repository": "electrohire/applied-epistemic-engineering",
+    "commit": "41e7cf0cce4a6043a6d18de945d66911c65789f7",
+    "version": "1.6.0",
+    "artifact_sha256": "86f1f1828a57191cb7bf6812c023792ee253e515114a8dbc395a00038937c225",
+    "desktop_engine_src_head_verified": "41e7cf0cce4a6043a6d18de945d66911c65789f7"
+  },
+  "freeze_environment": {
+    "venv": "/home/tpierson/needle-campaign/venv-c2",
+    "versions": {
+      "mini-swe-agent": "2.4.6",
+      "markdown-it-py": "4.2.0",
+      "applied-epistemic-engineering": "1.6.0",
+      "pytest": "9.1.1",
+      "PyYAML": "6.0.3",
+      "jsonschema": "4.26.0",
+      "specify-cli": "1.2.1"
+    },
+    "aee_source": "desktop engine-src checkout at 41e7cf0cce4a6043a6d18de945d66911c65789f7 (candidate build), installed from source",
+    "conftest_contract": "passed at collection in venv-c2 (suites ran; see junit)",
+    "junit_cycle3_standalone": {
+      "tests": 21,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "junit_full_suite": {
+      "tests": 1009,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "probe_registration_sha256": "9f68549f31b188df69df45370162afc467e85aa8237a4bc61e615bdbfe2df066",
+  "probe_registration_builder_match": true,
+  "tasks": [
+    {
+      "instance_id": "pandas-dev__pandas.82fa2715.test_sample.5d2ba03e.lv1",
+      "hash_rank": 9,
+      "repo": "pandas-dev/pandas",
+      "base_commit": "82fa27153e5b646ecdb78cfc6ecf3e1750443892",
+      "image": "libercoders/featurebench-specs_pandas-instance_15f634a6@sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7",
+      "solver_image_id": "sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7",
+      "prepared_baseline_commit": "1def1bfd31f2f406b9438b04417ad45ca8446e02",
+      "fail_to_pass_test_files": [
+        "pandas/tests/groupby/methods/test_sample.py"
+      ]
+    },
+    {
+      "instance_id": "pandas-dev__pandas.82fa2715.test_iceberg.85771c70.lv1",
+      "hash_rank": 10,
+      "repo": "pandas-dev/pandas",
+      "base_commit": "82fa27153e5b646ecdb78cfc6ecf3e1750443892",
+      "image": "libercoders/featurebench-specs_pandas-instance_15f634a6@sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7",
+      "solver_image_id": "sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7",
+      "prepared_baseline_commit": "21d6452e3b62f63098ec53911fd43eacb3e71892",
+      "fail_to_pass_test_files": [
+        "pandas/tests/io/test_iceberg.py"
+      ]
+    },
+    {
+      "instance_id": "pydata__xarray.97f3a746.test_coordinate_transform.6cacb660.lv1",
+      "hash_rank": 11,
+      "repo": "pydata/xarray",
+      "base_commit": "97f3a7465a66638f68129581b658853a3992dd89",
+      "image": "libercoders/featurebench-specs_xarray-instance_62de996a@sha256:075803e6495efc4aa64c015effcae52986a62352655127f69a262dfbedfbb7d7",
+      "solver_image_id": "sha256:075803e6495efc4aa64c015effcae52986a62352655127f69a262dfbedfbb7d7",
+      "prepared_baseline_commit": "1425c7915e486d6de52e5c8b18b77980347067d7",
+      "fail_to_pass_test_files": [
+        "xarray/tests/test_coordinate_transform.py"
+      ]
+    },
+    {
+      "instance_id": "pandas-dev__pandas.82fa2715.test_reduction.3ac3b298.lv1",
+      "hash_rank": 12,
+      "repo": "pandas-dev/pandas",
+      "base_commit": "82fa27153e5b646ecdb78cfc6ecf3e1750443892",
+      "image": "libercoders/featurebench-specs_pandas-instance_15f634a6@sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7",
+      "solver_image_id": "sha256:e484ae407255b4c2c481a842e476c3c3285d2032738adf0abd410fb5f776dab7",
+      "prepared_baseline_commit": "9b43361e416e8f06f737cb81a3f4bfa103b9ad6d",
+      "fail_to_pass_test_files": [
+        "pandas/tests/arrays/integer/test_reduction.py"
+      ]
+    },
+    {
+      "instance_id": "mwaskom__seaborn.7001ebe7.test_relational.f23eb542.lv1",
+      "hash_rank": 14,
+      "repo": "mwaskom/seaborn",
+      "base_commit": "7001ebe72423238e99c0434a2ef0a0ebc9cb55c1",
+      "image": "libercoders/featurebench-specs_seaborn-instance_52738fbb@sha256:fe27a1a5205fa0939453e79d0f40c74cb402bad8ea1d42fff7de5e2106e77ce1",
+      "solver_image_id": "sha256:fe27a1a5205fa0939453e79d0f40c74cb402bad8ea1d42fff7de5e2106e77ce1",
+      "prepared_baseline_commit": "dc8985f0337a85f937d55b3ad328cefe6c502dc5",
+      "fail_to_pass_test_files": [
+        "tests/test_relational.py"
+      ]
+    },
+    {
+      "instance_id": "astropy__astropy.b0db0daa.test_tilde_path.383d7c0c.lv1",
+      "hash_rank": 16,
+      "repo": "astropy/astropy",
+      "base_commit": "b0db0daac6b851596851cb43e5456fb6c916c071",
+      "image": "libercoders/featurebench-specs_astropy-instance_493bb78b@sha256:4b5e7489d8bee8e20b53f94c74833e6d9ee0163673ac4a36eecb0372ef01fda2",
+      "solver_image_id": "sha256:4b5e7489d8bee8e20b53f94c74833e6d9ee0163673ac4a36eecb0372ef01fda2",
+      "prepared_baseline_commit": "ab7c403fd0d60100d86a6768c9a1046eac4abcda",
+      "fail_to_pass_test_files": [
+        "astropy/io/fits/tests/test_tilde_path.py"
+      ]
+    }
+  ],
+  "budgets": {
+    "per_attempt_cap_tokens": 400000,
+    "rerun_sub_bound_tokens": 2400000,
+    "cycle_sub_cap_tokens": 3500000,
+    "program_cap_tokens": 48000000,
+    "program_spend_before_cycle_3": 18199146,
+    "cycle3_inference_spend_before_rerun": 0,
+    "prior_stores": [
+      "runs/campaign",
+      "runs/campaign-1r",
+      "runs/campaign-c1",
+      "runs/smoke-c2",
+      "runs/probe-c2-i",
+      "runs/probe-c2-ii"
+    ]
+  },
+  "stores": {
+    "smoke": "runs/smoke-c3r1",
+    "probe_i_rerun": "runs/probe-c3r1-i"
+  },
+  "manifests": {
+    "smoke": "benchmarks/upstream-coding/freeze-needle-smoke-c3r1.json",
+    "probe_i": "benchmarks/upstream-coding/freeze-needle-probe-i-c3r1.json"
+  },
+  "smokes": {
+    "grader_smoke": {
+      "pass": true,
+      "gold": {
+        "grade_execution_complete": true,
+        "resolved": true,
+        "accepted": true,
+        "f2p_success": 14,
+        "f2p_failure": 0
+      },
+      "pristine": {
+        "grade_execution_complete": true,
+        "resolved": false,
+        "accepted": false,
+        "f2p_success": 0,
+        "f2p_failure": 0
+      },
+      "instance": "pandas-dev__pandas.82fa2715.test_sample.5d2ba03e.lv1 (hash rank 9)"
+    },
+    "image_audit": {
+      "pass": true,
+      "instances": 6
+    }
+  },
+  "r_a7_worker_log_record": {
+    "branch": "log source exists and is named, tail included",
+    "worker_log_source": "C:\\Users\\trist\\Development\\ElectroHire\\noerelay\\.noerelay\\runtime\\router.stdout.log - the llama.cpp worker's stdout, redirected by deploy/host/start-local-router.ps1; it carries per-request slot lines (print_timing / release, task ids, token counts) for the worker behind the probe endpoint, tagged with the endpoint's port [52301].",
+    "worker_stderr_source": "router.stderr.log in the same directory (server load and configuration lines).",
+    "harness_host_path": "/mnt/c/Users/trist/Development/ElectroHire/noerelay/.noerelay/runtime/router.stdout.log",
+    "worker_stderr_path": "/mnt/c/Users/trist/Development/ElectroHire/noerelay/.noerelay/runtime/router.stderr.log",
+    "log_tail_at_freeze": [
+      "",
+      "[52301] 3531.27.621.033 I slot print_timing: id  0 | task 704914 | n_gen =   4695, tg =  19.71 t/s, tg_3s =  19.96 t/s",
+      "",
+      "[52301] 3531.30.621.070 I slot print_timing: id  0 | task 704914 | n_gen =   4755, tg =  19.72 t/s, tg_3s =  20.00 t/s",
+      "",
+      "[52301] 3531.33.398.953 I slot print_timing: id  0 | task 704914 | prompt eval time =     719.97 ms /    70 tokens (   10.29 ms per token,    97.23 tokens per second)",
+      "",
+      "[52301] 3531.33.399.054 I slot print_timing: id  0 | task 704914 |        eval time =  243875.54 ms /  4810 tokens (   50.71 ms per token,    19.72 tokens per second)",
+      "",
+      "[52301] 3531.33.399.074 I slot print_timing: id  0 | task 704914 |       total time =  244595.51 ms /  4880 tokens",
+      "",
+      "[52301] 3531.33.399.093 I slot print_timing: id  0 | task 704914 |    graphs reused =     696582",
+      "",
+      "[52301] 3531.33.400.110 I slot      release: id  0 | task 704914 | stop processing: n_tokens = 30232, truncated = 0",
+      ""
+    ],
+    "note": "The harness reads this log for transport bundles via LOCAL_MODEL_LOG_PATH in the supervisor environment. Streaming instrumentation is ALSO active on every call; the two are complements, not substitutes."
+  }
+}
