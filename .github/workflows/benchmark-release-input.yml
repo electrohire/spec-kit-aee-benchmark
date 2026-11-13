@@ -27,6 +27,10 @@ jobs:
       candidate_sha: ${{ steps.candidate.outputs.candidate_sha }}
       artifact_sha256: ${{ steps.candidate.outputs.artifact_sha256 }}
     steps:
+      # benchmark-control is pinned to the executed snapshot by design:
+      # inputs are content-bound to this exact tree, per
+      # docs/benchmark-release-gates.md. Not staleness; the pin moves
+      # only through the release-gate flow.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: electrohire/spec-kit-aee-benchmark
