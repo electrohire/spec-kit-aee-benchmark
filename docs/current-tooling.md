@@ -1,5 +1,7 @@
 # Current controller tooling — 2026-10-16
 
+**Status: frozen treatment tooling, as of 2026-10-16.** The versions recorded on this page are a deliberate freeze for the settled campaign and stand as historical facts about that campaign. They are not the fleet's current stack, and this page is not current tooling guidance outside the frozen campaign. The fleet stack of record (Specify CLI, engine and extension versions) lives in the spec-kit-aee catalog.
+
 Verified against live PyPI/GitHub and actual installation:
 
 | Component | Installed/latest published |
