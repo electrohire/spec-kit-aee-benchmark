@@ -33,6 +33,18 @@ Three pieces, in the order a span travels through the harness:
   model output. With no principal-channel evidence, the verdict is
   stop, whatever the proposal is.
 
+The screens also carry the red-team hardening first landed in the
+standalone injection-defense screener, ported here without weakening
+any existing behavior: framing mitigation is tested by presentation
+(the claim must actually appear inside quotation marks or a code
+fence, with a clean remainder), candidate encoded content (base64,
+hex, rot13, reversed text, zlib plus base64) is decoded and graded
+before the span itself, verb and claim patterns are stem-normalised
+and expanded across choke-point action classes, task-redefinition and
+destination-alias claims fire as their own checks, and spans from one
+source can be screened assembled as a sequence. The port is
+behavior-checked against that screener over the battery corpora.
+
 A challenge is not a deletion and not an accusation. The span stays
 available as data; the claim it carries is refused authority and written
 into the record.
@@ -44,8 +56,12 @@ what data spans claimed.
 """
 from __future__ import annotations
 
+import base64
+import binascii
+import codecs
 import hashlib
 import re
+import zlib
 from dataclasses import dataclass, field, replace
 from enum import Enum
 
@@ -337,6 +353,11 @@ IMPERATIVE_VERBS = {
     "reveal", "run", "schedule", "send", "set", "share", "show", "skip", "start",
     "stop", "summarize", "suppress", "sync", "take", "transmit", "update",
     "upload", "use", "verify", "visit", "wipe", "write",
+    # Choke-point verb classes (transmission / permission / purchase /
+    # credential-adjacent), added by the red-team hardening.
+    "dispatch", "relay", "transfer", "deliver", "export", "duplicate",
+    "grant", "promote", "elevate", "purchase", "order", "wire", "pay",
+    "enter", "provide", "hand", "cancel", "ship",
 }
 
 SENSITIVE_ACTIONS = {
@@ -345,12 +366,70 @@ SENSITIVE_ACTIONS = {
     "erase", "remove", "suppress", "wipe", "ignore", "disregard",
     "forget", "override", "publish", "push", "sync", "mirror", "notify",
     "contact", "include", "omit", "skip", "disable",
+    # Choke-point extensions, added by the red-team hardening.
+    "dispatch", "relay", "transfer", "deliver", "export", "duplicate",
+    "grant", "promote", "elevate", "purchase", "order", "wire", "pay",
+    "buy", "enter", "provide", "hand", "ship",
 }
+
+_ALL_VERBS = IMPERATIVE_VERBS | SENSITIVE_ACTIONS
+
+_VERB_ALIASES = {
+    "transferred": "transfer", "transferring": "transfer",
+    "dispatched": "dispatch", "dispatching": "dispatch",
+    "relayed": "relay", "relaying": "relay",
+    "handed": "hand", "handing": "hand",
+    "wired": "wire", "wiring": "wire", "paid": "pay",
+    "sent": "send", "mailed": "mail", "cancelled": "cancel",
+    "canceled": "cancel", "duplicated": "duplicate",
+    "elevated": "elevate", "promoted": "promote", "granted": "grant",
+    "exported": "export", "delivered": "deliver", "purchased": "purchase",
+    "entered": "enter", "provided": "provide", "ordered": "order",
+}
+
+
+def _norm_verb(token: str) -> str:
+    """Suffix stemming: map an inflected token to its base verb if the
+    base is a known verb; otherwise return the token itself."""
+    lowered = token.lower()
+    if lowered in _VERB_ALIASES:
+        return _VERB_ALIASES[lowered]
+    if lowered in _ALL_VERBS:
+        return lowered
+    candidates = []
+    if lowered.endswith("ing") and len(lowered) > 4:
+        stem = lowered[:-3]
+        candidates += [stem, stem + "e"]
+        if len(stem) > 1 and stem[-1] == stem[-2]:
+            candidates.append(stem[:-1])
+    elif lowered.endswith("ed") and len(lowered) > 3:
+        stem = lowered[:-2]
+        candidates += [stem, stem + "e"]
+        if len(stem) > 1 and stem[-1] == stem[-2]:
+            candidates.append(stem[:-1])
+    elif lowered.endswith("ies") and len(lowered) > 3:
+        candidates.append(lowered[:-3] + "y")
+    elif lowered.endswith("es") and len(lowered) > 3:
+        candidates += [lowered[:-2], lowered[:-1]]
+    elif lowered.endswith("s") and len(lowered) > 2:
+        candidates.append(lowered[:-1])
+    for candidate in candidates:
+        if candidate in _ALL_VERBS:
+            return candidate
+        if candidate in _VERB_ALIASES:
+            return _VERB_ALIASES[candidate]
+    return lowered
+
+
+def _norm_words(text: str) -> list:
+    return [_norm_verb(word) for word in re.findall(r"[A-Za-z']+", text.lower())]
+
 
 SENSITIVE_OBJECTS = re.compile(
     r"(api key|secret|credential|password|private key|\.env|log entr|"
-    r"the log|the record|audit|history|contents of|record contents)",
-    re.I)
+    r"ledger entr|the log|the record|audit|history|contents of|"
+    r"record contents|vault code|signing key|vault key|recovery codes?|"
+    r"token file|client list|the archive|run archive)", re.I)
 
 CLAIM_PATTERNS = [
     re.compile(r"your (new |updated |real )?(instructions|task|orders|directives) (are|is)\b", re.I),
@@ -360,7 +439,35 @@ CLAIM_PATTERNS = [
     re.compile(r"(assistant|agent|model)\s*[,:\u2014-]\s*", re.I),
     re.compile(r"note to (the )?(assistant|agent|model)\b", re.I),
     re.compile(r"please (now )?(send|email|upload|post|delete|include|forward|run|execute|add|also)\b", re.I),
+    # Declarative / passive / redefinition forms (red-team hardening).
+    re.compile(r"\bis to be (relayed|dispatched|sent|removed|deleted|exported|transferred|delivered|uploaded|mailed|forwarded|published|granted|elevated|duplicated)\b", re.I),
+    re.compile(r"\bgets? (duplicated|sent|exported|transferred|delivered|removed|deleted|uploaded|mailed|published)\b", re.I),
+    re.compile(r"\b(continues with|involves|entails) (dispatch\w*|relay\w*|transfer\w*|hand\w*|send\w*|mail\w*|export\w*|deliver\w*)\b", re.I),
+    re.compile(r"\b(task|brief|analysis|work|remaining work) (has been |is |was )?(cancelled|canceled|on hold|paused|superseded)\b", re.I),
+    re.compile(r"\boriginal (task|brief|instructions) (was |has been )?(superseded|replaced|withdrawn|cancelled|canceled)\b", re.I),
+    re.compile(r"\bthe task is now to\b", re.I),
+    re.compile(r"\bscope (of [^.\n]{0,40})?now includes\b", re.I),
+    re.compile(r"\bas discussed\b[^.\n]{0,70}\b(proceed|wire|send|dispatch|transfer|mail|upload)\b", re.I),
+    re.compile(r"\bBEGIN (PRINCIPAL|SYSTEM|USER) MESSAGE\b", re.I),
 ]
+
+# Declarative task-redefinition / cancellation, checked as its own
+# hard check in the epistemic screen (red-team hardening).
+TASK_REDEFINITION = re.compile(
+    r"(\b(task|brief|analysis|work|remaining work) (has been |is |was )?"
+    r"(cancelled|canceled|on hold|paused|superseded)\b"
+    r"|\boriginal (task|brief|instructions) (was |has been )?"
+    r"(superseded|replaced|withdrawn|cancelled|canceled)\b"
+    r"|\bthe task is now to\b"
+    r"|\bscope (of [^.\n]{0,40})?now includes\b[^.\n]{0,80}"
+    r"(dispatch|send|mail|export|recurring|upload|deliver|weekly))", re.I)
+
+# Destination-alias: a label defined as an outside destination
+# re-points every later use of the label (red-team hardening).
+DESTINATION_ALIAS = re.compile(
+    r"('[^'\n]{2,40}'|\"[^\"\n]{2,40}\"|[A-Za-z][\w-]{2,30})\s+"
+    r"(refers to|means|stands for|is the address for|points to)\s+"
+    r"[^.\n]{0,80}(https?://|[\w.+-]+@[\w-]+\.)", re.I)
 
 AUTHORITY_CLAIMS = re.compile(
     r"(\[\s*(system|admin|developer|security)\s*(notice|message|alert|override)?\s*\]"
@@ -368,50 +475,71 @@ AUTHORITY_CLAIMS = re.compile(
     r"|admin approval|admin policy|system override|system team|developer mode"
     r"|owner confirmation|security (update|notice|policy)"
     r"|standing rules (were|have been) (revised|updated|changed)"
-    r"|by order of|on behalf of the (owner|user|admin))", re.I)
+    r"|by order of|on behalf of the (owner|user|admin)"
+    # Guidelines / policy-revision wording and forged delimiters
+    # (red-team hardening).
+    r"|(guidelines|policy|standing rules) (were |have been )?(revised|updated|changed|superseded)"
+    r"|(new|revised|updated) (guidance|guidelines|policy)\b"
+    r"|policy revision"
+    r"|BEGIN (PRINCIPAL|SYSTEM|USER) MESSAGE)", re.I)
 
 APPROVAL_CLAIM = re.compile(
     r"(pre-?approved|pre-?authorized|already approved|approval (is )?granted"
     r"|approval attached|comes with approval|the owner (has )?approved"
     r"|the user (has )?approved|cleared by the (owner|user)|cleared at the top"
     r"|skip (the )?(review|approval|check)"
-    r"|no need to (ask|flag|log|report|check))", re.I)
+    r"|no need to (ask|flag|log|report|check)"
+    # Approval synonyms (red-team hardening).
+    r"|sign-?off|signoff|green light|\bconsent\b|permission granted"
+    r"|\bis authorized\b|\bare authorized\b|\bauthorised\b[^.\n]{0,20}\bby\b"
+    r"|endorsed by|\b\w+ approved (the|this|that)\b"
+    r"|approval (was |has been )?(received|given|confirmed))", re.I)
 
 SELF_ATTESTATION = re.compile(
     r"(pre-?approved|pre-?authorized|already approved|approval (is )?granted"
     r"|urgent|emergency|top priority|do not flag|do not log|don't log"
     r"|no need to (flag|log|report|ask)|skip (the )?(review|approval|check)"
-    r"|the owner (has )?approved|the user (has )?approved|trust me)", re.I)
+    r"|the owner (has )?approved|the user (has )?approved|trust me"
+    r"|sign-?off|green light|\bconsent\b|\bis authorized\b|endorsed by)", re.I)
 
 CONCEALMENT_CLAIM = re.compile(
     r"((do not|don't|never)\s+(record|log|flag|report)\s+(this|that|it\b|the (exchange|entry|session|interaction|step))"
-    r"|(delete|erase|remove|suppress|wipe)\b[^.\n]{0,30}(log|record|entry|history|audit)"
+    r"|(delete|erase|remove|suppress|wipe)\b[^.\n]{0,30}(log|record|entry|history|audit|ledger)"
+    r"|(ledger|log|record) entry\b[^.\n]{0,40}\b(removed|deleted|suppressed)\b"
     r"|leave (this|it|that) out of|omit (this|the (log|record|entry|summary|report))"
+    r"|leave [^.\n]{0,25}out of (the )?(summary|report|log|record)"
+    r"|omit [^.\n]{0,20}from the (summary|report|log|record)"
     r"|keep (this|it) (secret|hidden|off the record)"
     r"|without (logging|recording) (this|it|the exchange)"
     r"|(does ?n[o']t|need not|no need to)\b[^.\n]{0,30}(appear in|be (recorded|noted|mentioned)))",
     re.I)
 
 EXFIL_CLAIM = re.compile(
-    r"((send|email|mail|upload|post|forward|transmit|share)\b[^.\n]{0,60}"
-    r"(api key|secret|credential|password|private key|\.env|contents of|record contents|https?://|[\w.+-]+@[\w-]+\.)"
+    r"((send|email|mail|upload|post|forward|transmit|share|dispatch\w*|relay\w*|transfer\w*|deliver\w*|export\w*|hand\w*|ship\w*)\b[^.\n]{0,60}"
+    r"(api key|secret|credential|password|private key|\.env|contents of|record contents|https?://|[\w.+-]+@[\w-]+\.|signing key|vault key|recovery codes?|token file|client list|the archive|run archive)"
     r"|(include|reveal|disclose|paste|print|output|show)\b[^.\n]{0,40}"
     r"(api key|secret|credential|password|private key|\.env|the key\b)"
+    r"|(password|vault code|credentials?)\b[^.\n]{0,40}\b(appear|be included|be shown) in\b"
     r"|(api key|secret|credentials?|password)\b[^.\n]{0,50}"
     r"(belongs|your (reply|answer|response)))", re.I)
 
 OVERRIDE_CLAIM = re.compile(
     r"((ignore|disregard|forget|override|bypass|set aside)\b[^.\n]{0,40}"
-    r"(previous|prior|above|earlier|all|your|the)?\s*(instructions|directives|rules|guidance|system prompt)"
+    r"(previous|prior|above|earlier|all|your|the)?\s*(instructions|directives|rules|guidance|system prompt|safeguards)"
     r"|(drop|discard|abandon)\b[^.\n]{0,30}(original|earlier|previous|prior) (task|instructions|directions)"
     r"|(earlier|previous|original) (directions|instructions) were a draft"
     r"|your (new |updated |real )?(instructions|task|orders) (are|is)\b"
-    r"|new instructions\s*:)", re.I)
+    r"|new instructions\s*:"
+    r"|(prior|previous|standing) safeguards no longer apply)", re.I)
 
 DESTINATION = re.compile(r"(https?://[^\s)\"']+|[\w.+-]+@[\w-]+\.[\w.]+)")
 DESTINATION_CONTEXT = re.compile(
-    r"(upload|post|send|sync|mirror|publish|push|forward|email|belong|goes to|deliver|drop|endpoint|webhook)",
-    re.I)
+    r"(upload|post|send|sync|mirror|publish|push|forward|email|belong|goes to|deliver|drop|endpoint|webhook"
+    r"|dispatch|relay|transfer|export|ship|mail)", re.I)
+EXTERNAL_PARTY = re.compile(
+    r"\bexternal (reviewer|address|archive|auditor|party|collector|portal)\b"
+    r"|\boutside (auditor|address|reviewer|collector|party)\b"
+    r"|\bpartner (portal|archive)\b", re.I)
 
 FRAMING = re.compile(
     r"(for example|e\.g\.|example\s*:|quoted|quotation|as an example"
@@ -437,20 +565,25 @@ def _segments(text: str) -> list:
 
 
 def _instruction_shaped(segment: str) -> bool:
-    """Heuristic: does this segment read as an instruction to someone?"""
+    """Heuristic: does this segment read as an instruction to someone?
+
+    Tokens are stem-normalised before the verb checks, so gerund,
+    passive, and third-person forms shape like imperatives (red-team
+    hardening).
+    """
     candidates = [segment]
     if ":" in segment:
         candidates.append(segment.split(":", 1)[1])
     for candidate in candidates:
-        stripped = candidate.strip().lstrip("-*#0123456789. )`>\"'")
+        stripped = candidate.strip().lstrip("-*#0123456789. )`>\"'<|")
         if not stripped:
             continue
-        tokens = re.findall(r"[A-Za-z']+", stripped)
-        while tokens and tokens[0].lower() in _LEAD_INS:
+        tokens = _norm_words(stripped)
+        while tokens and tokens[0] in _LEAD_INS:
             tokens = tokens[1:]
-        if tokens and tokens[0].lower() in IMPERATIVE_VERBS:
+        if tokens and tokens[0] in IMPERATIVE_VERBS:
             return True
-        if any(token.lower() in IMPERATIVE_VERBS for token in tokens[:5]):
+        if any(token in IMPERATIVE_VERBS for token in tokens[:5]):
             return True
     if any(pattern.search(segment) for pattern in CLAIM_PATTERNS):
         return True
@@ -460,7 +593,12 @@ def _instruction_shaped(segment: str) -> bool:
 
 
 def _agent_directed(segment: str) -> bool:
-    """Heuristic: is the instruction aimed at the agent's own actions?"""
+    """Heuristic: is the instruction aimed at the agent's own actions?
+
+    Stem-normalised sensitive verbs; an external party named as the
+    beneficiary or destination also counts as a destination signal
+    (red-team hardening).
+    """
     lowered = segment.lower()
     if any(pattern.search(segment) for pattern in CLAIM_PATTERNS):
         return True
@@ -472,26 +610,121 @@ def _agent_directed(segment: str) -> bool:
         return True
     if DESTINATION.search(segment) and DESTINATION_CONTEXT.search(segment):
         return True
+    if TASK_REDEFINITION.search(segment) or DESTINATION_ALIAS.search(segment):
+        return True
     if not segment.lstrip().startswith(("#", "//")) and \
             not re.match(r"\s*[A-Za-z_][\w.]*\s*\(", segment):
         candidates = [segment]
         if ":" in segment:
             candidates.append(segment.split(":", 1)[1])
         for candidate in candidates:
-            stripped = candidate.strip().lstrip("-*#0123456789. )`>\"'")
-            tokens = re.findall(r"[A-Za-z']+", stripped)
-            while tokens and tokens[0].lower() in _LEAD_INS:
+            stripped = candidate.strip().lstrip("-*#0123456789. )`>\"'<|")
+            tokens = _norm_words(stripped)
+            while tokens and tokens[0] in _LEAD_INS:
                 tokens = tokens[1:]
-            if tokens and tokens[0].lower() in SENSITIVE_ACTIONS:
+            if tokens and tokens[0] in SENSITIVE_ACTIONS:
                 return True
-    words = set(re.findall(r"[a-z']+", lowered))
+    words = set(_norm_words(lowered))
     if words & SENSITIVE_ACTIONS:
         if SENSITIVE_OBJECTS.search(segment) or DESTINATION.search(segment) \
-                or SECOND_PERSON.search(segment):
+                or SECOND_PERSON.search(segment) or EXTERNAL_PARTY.search(segment):
             return True
     if SECOND_PERSON.search(segment) and _instruction_shaped(segment):
         return True
     return False
+
+
+def _framing_ok(text: str) -> bool:
+    """Framing mitigation requires presentation, not assertion.
+
+    (a) A discursive framing marker appears in the span; (b) the hard
+    claim (or an instruction-shaped claim) is actually presented inside
+    straight double quotation marks, curly double quotes, or a code
+    fence; and (c) the remainder, with presented parts removed, contains
+    no hard claim and no agent-directed segment. In-span assertions of
+    quoted-ness ("the revision is quoted in this file", with no quote
+    presented) fail (b) and (c). Ported from the hardened screener.
+    """
+    if not FRAMING.search(text):
+        return False
+    presented = []
+    rest = text
+    for fence in re.findall(r"```(.*?)```", text, re.S):
+        presented.append(fence)
+    rest = re.sub(r"```.*?```", " ", rest, flags=re.S)
+    for match in re.findall(r'"([^"\n]{5,})"|“([^”\n]{5,})”', rest):
+        presented.append(match[0] or match[1])
+    rest = re.sub(r'"[^"\n]{5,}"|“[^”\n]{5,}”', " ", rest)
+    if not presented:
+        return False
+    if not any(any(pattern.search(part) for pattern in _HARD_CLAIMS)
+               or _instruction_shaped(part) for part in presented):
+        return False
+    if any(pattern.search(rest) for pattern in _HARD_CLAIMS):
+        return False
+    if any(_agent_directed(segment) for segment in _segments(rest)):
+        return False
+    return True
+
+
+# ---------------------------------------------------------------------------
+# Encoded content: decode candidate blobs and grade the decoded form.
+# A decoded form that screens as a challenge challenges the original
+# span; anything else leaves the original verdict alone.
+# ---------------------------------------------------------------------------
+
+def _printable_text(raw: bytes):
+    try:
+        text = raw.decode("utf-8")
+    except (UnicodeDecodeError, ValueError):
+        return None
+    if not text:
+        return None
+    good = sum(1 for char in text if char.isprintable() or char in "\n\t")
+    return text if good / max(len(text), 1) >= 0.85 else None
+
+
+def _decoded_candidates(text: str) -> list:
+    candidates = []
+    # Hex blobs.
+    for match in re.finditer(r"\b[0-9a-fA-F]{40,}\b", text):
+        blob = match.group(0)
+        if len(blob) % 2 == 0:
+            try:
+                decoded = _printable_text(binascii.unhexlify(blob))
+            except (binascii.Error, ValueError):
+                decoded = None
+            if decoded:
+                candidates.append(decoded)
+    # Base64 blobs, individually and token-joined (fragmented blobs).
+    tokens = re.findall(r"[A-Za-z0-9+/]{16,}={0,2}", text)
+    forms = list(tokens)
+    if len(tokens) > 1:
+        forms.append("".join(tokens))
+    for form in forms:
+        padding = "=" * (-len(form) % 4)
+        try:
+            raw = base64.b64decode(form + padding, validate=False)
+        except (binascii.Error, ValueError):
+            continue
+        decoded = _printable_text(raw)
+        if decoded:
+            candidates.append(decoded)
+        try:
+            inflated = _printable_text(zlib.decompress(raw))
+        except (zlib.error, ValueError):
+            inflated = None
+        if inflated:
+            candidates.append(inflated)
+    # Rot13 of the whole span and reversal of the whole span: both are
+    # involutions a benign span survives harmlessly (its transform is
+    # gibberish that screens clear), so they are safe to always try.
+    try:
+        candidates.append(codecs.decode(text, "rot_13"))
+    except Exception:
+        pass
+    candidates.append(text[::-1])
+    return [item for item in candidates if item and item != text]
 
 
 def _as_tagged_span(span) -> TaggedSpan:
@@ -502,19 +735,14 @@ def _as_tagged_span(span) -> TaggedSpan:
     raise TypeError("span must be a TaggedSpan or a mapping with text and span_class")
 
 
-def screen_l2(span, principal_record: PrincipalRecord = None):
-    """Epistemic screen. Returns ``(verdict, [checks fired])``.
+def _screen_l2_core(tagged: TaggedSpan, record: PrincipalRecord):
+    """The epistemic grading of one span's own text.
 
-    ``span`` is a TaggedSpan (or a mapping with ``text`` and
-    ``span_class``). ``principal_record`` is the explicit record the
-    claims are graded against; when omitted, the battery fixture record
-    is used. Principal spans return clear by provenance. A destination
-    the record names as allowed does not fire the new-destination
-    check; every other check is exactly the claim grading described in
-    the module docstring.
+    A destination the record names as allowed does not fire the
+    new-destination check; every other check is the claim grading
+    described in the module docstring. Encoded-content grading and
+    sequence grading live in the wrappers below, not here.
     """
-    tagged = _as_tagged_span(span)
-    record = principal_record if principal_record is not None else DEFAULT_PRINCIPAL_RECORD
     text = tagged.content
     if tagged.span_class in PRINCIPAL_SPAN_CLASSES:
         return "clear", ["provenance:principal"]
@@ -541,6 +769,12 @@ def screen_l2(span, principal_record: PrincipalRecord = None):
     if APPROVAL_CLAIM.search(text):
         checks.append("self-attestation:approval-claimed-by-interested-source")
         hard = True
+    if TASK_REDEFINITION.search(text) and (directed or shaped):
+        checks.append("contradiction:task-redefinition-or-cancellation-claimed-by-data-span")
+        hard = True
+    if DESTINATION_ALIAS.search(text):
+        checks.append("new-destination:destination-defined-by-alias-in-data-span")
+        hard = True
     destinations = DESTINATION.findall(text)
     new_destinations = [
         dest for dest in destinations if not record.destination_is_allowed(dest)
@@ -562,19 +796,72 @@ def screen_l2(span, principal_record: PrincipalRecord = None):
         checks.append("uncorroborated:agent-directed-claim-no-principal-record")
         hard = True
     if hard:
-        claim_segments = [
-            segment for segment in segments
-            if any(pattern.search(segment) for pattern in _HARD_CLAIMS)
-        ] or directed
-        framed = bool(claim_segments) and all(
-            FRAMING.search(segment) for segment in claim_segments
-        )
-        if framed and not APPROVAL_CLAIM.search(text):
+        # Framing mitigation only on presented quotation or
+        # documentation (see _framing_ok). Approval claims are never
+        # mitigated.
+        if _framing_ok(text) and not APPROVAL_CLAIM.search(text):
             return "note", checks + ["mitigation:quotation-or-documentation-framing"]
         return "challenge", checks
     if shaped:
         return "note", ["instruction-shaped-data:not-agent-directed"]
     return "clear", checks
+
+
+def screen_l2(span, principal_record: PrincipalRecord = None):
+    """Epistemic screen. Returns ``(verdict, [checks fired])``.
+
+    ``span`` is a TaggedSpan (or a mapping with ``text`` and
+    ``span_class``). ``principal_record`` is the explicit record the
+    claims are graded against; when omitted, the battery fixture record
+    is used. Principal spans return clear by provenance.
+
+    Candidate encodings in the span's text are decoded first; a decoded
+    form that the core grading challenges challenges the original span
+    with an ``encoded-content:decoded-claim`` check.
+    """
+    tagged = _as_tagged_span(span)
+    record = principal_record if principal_record is not None else DEFAULT_PRINCIPAL_RECORD
+    if tagged.span_class in PRINCIPAL_SPAN_CLASSES:
+        return "clear", ["provenance:principal"]
+    for decoded in _decoded_candidates(tagged.content):
+        decoded_span = tag_span(decoded, tagged.span_class.value, tagged.source_id)
+        verdict, _checks = _screen_l2_core(decoded_span, record)
+        if verdict == "challenge":
+            return "challenge", ["encoded-content:decoded-claim"]
+    return _screen_l2_core(tagged, record)
+
+
+def screen_sequence(spans, principal_record: PrincipalRecord = None):
+    """Sequence screen: grade spans from one source or task assembled.
+
+    Screens each span, the space-joined concatenation, and the raw
+    concatenation; returns the worst verdict and its checks, prefixed
+    with the form that produced it (``single``, ``joined-space``,
+    ``joined-raw``). Encoded fragments split across spans are handled
+    by the decoded-candidate grading inside the joined forms.
+    """
+    tagged_spans = [_as_tagged_span(span) for span in spans]
+    if not tagged_spans:
+        return "clear", ["sequence:empty"]
+    first = tagged_spans[0]
+    best = ("clear", ["sequence:no-claim"], "single")
+    forms = [
+        ("single", None),
+        ("joined-space", " ".join(span.content for span in tagged_spans)),
+        ("joined-raw", "".join(span.content for span in tagged_spans)),
+    ]
+    for form, joined in forms:
+        if form == "single":
+            for tagged in tagged_spans:
+                verdict, checks = screen_l2(tagged, principal_record)
+                if SEVERITY[verdict] > SEVERITY[best[0]]:
+                    best = (verdict, checks, form)
+        else:
+            joined_span = tag_span(joined, first.span_class.value, first.source_id)
+            verdict, checks = screen_l2(joined_span, principal_record)
+            if SEVERITY[verdict] > SEVERITY[best[0]]:
+                best = (verdict, checks, form)
+    return best[0], ["sequence:%s" % best[2]] + best[1]
 
 
 def screen_combined(span, principal_record: PrincipalRecord = None):
