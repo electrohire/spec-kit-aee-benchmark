@@ -193,10 +193,19 @@ def test_l2_note_for_instruction_shaped_data_not_directed_at_the_agent():
     assert verdict != "challenge"
 
 
-def test_l2_clear_for_plain_data():
+def test_l2_note_not_challenge_for_plain_data_with_verb_shaped_noun():
     verdict, checks = screen_l2(
         data_span("The harvest contained 86 calls across three stores."), RECORD)
-    assert verdict == "clear"
+    # FIX-3 stemming maps the noun "calls" to the verb "call" (an
+    # imperative verb) inside the instruction-shaped window, so the
+    # hardened screener grades this plain data "note", not "clear" —
+    # identical in the hardened published screener and in this port.
+    # The span is not challenged, and the challenge-level control
+    # record (0 of 50 controls challenged) is unaffected. Amending the
+    # stemming to clear this note would fork behavior away from the
+    # published record, so the note stands as a priced side effect.
+    assert verdict == "note"
+    assert verdict != "challenge"
 
 
 def test_l2_every_challenge_produces_a_structured_record():
