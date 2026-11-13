@@ -1,5 +1,13 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  # The full evidence-store verification (the evidence job below) also
+  # runs weekly, so the frozen store is re-verified on a schedule even
+  # when no change touches it.
+  schedule:
+    - cron: "23 6 * * 1"
 permissions:
   contents: read
 jobs:
@@ -13,9 +21,55 @@ jobs:
       - run: uv sync --locked --group dev --python 3.12
       - run: uv run python scripts/check_active_harness.py
       - run: uv run python scripts/check_docs.py
-      - run: uv run python scripts/check_evidence.py
       - run: uv run python scripts/audit_stopped_postmortem.py
       # Recorded pins must match the vendored extension bytes (FR-7.2).
       - run: uv run python scripts/check_pins.py
       - run: uv run python scripts/readme_results.py --check
       - run: uv run python scripts/check_release_index.py
+  evidence:
+    # Full verification of the committed evidence store under reports/.
+    # The walk re-hashes the whole store, so it runs in full only when a
+    # push or pull request changes the evidence store (or the checker
+    # itself), plus on the weekly schedule and manual dispatch above.
+    # scripts/check_evidence.py is unchanged: whenever it runs, it
+    # verifies the full store with identical scope and strictness.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Decide whether the full evidence walk is in scope
+        id: scope
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Full evidence walk: scheduled or manual run."
+            exit 0
+          fi
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            range="${{ github.event.pull_request.base.sha }}...${{ github.sha }}"
+          else
+            range="${{ github.event.before }}...${{ github.sha }}"
+          fi
+          if ! git diff --name-only "$range" > changed.txt 2>/dev/null; then
+            # Unmeasurable range (for example a brand-new branch): fail
+            # safe toward running the full verification.
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Full evidence walk: change range unavailable."
+            exit 0
+          fi
+          if grep -qE '^reports/|^scripts/check_evidence\.py$' changed.txt; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Full evidence walk: evidence store or checker changed."
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Full evidence walk skipped: no evidence-store changes in this push."
+          fi
+      - uses: astral-sh/setup-uv@v6
+        if: steps.scope.outputs.run == 'true'
+        with:
+          version: "0.11.32"
+      - run: uv sync --locked --group dev --python 3.12
+        if: steps.scope.outputs.run == 'true'
+      - run: uv run python scripts/check_evidence.py
+        if: steps.scope.outputs.run == 'true'

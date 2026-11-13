@@ -42,6 +42,10 @@ jobs:
           else
             echo 'Unsupported component/repository'; exit 1
           fi
+      # benchmark-control is pinned to the executed snapshot by design:
+      # requests are content-bound to this exact tree, per
+      # docs/benchmark-release-gates.md. Not staleness; the pin moves
+      # only through the release-gate flow.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: electrohire/spec-kit-aee-benchmark
