@@ -1,5 +1,16 @@
 # Spec Kit + AEE: established benchmark evidence
 
+![Terminal window showing the pin check passing, the lifecycle importer rebuilding the retained study-01 report from its evidence file, and the lifecycle tests passing](assets/benchmark-run.png)
+
+**The problem:** Claims that a structured workflow makes AI coding agents more accurate or cheaper are easy to assert and hard to check, because the arms are rarely run on the same tasks with the same model, graded independently, and charged for every call they make.
+
+* Same tasks, same model, three arms: a generic agent, Spec Kit, and Spec Kit + AEE run under one frozen setup, so any difference comes from the workflow rather than the setup.
+* Independent grading: upstream labels and graders score the retained outputs, and they are never supplied to the agent being graded.
+* Every call counted: setup, failed, and scored calls all enter the token accounting, and calls with unknown usage stay visible as unknowns.
+* Failures stay on the record: stopped runs keep their full scheduled denominators, their retained costs, and the reason they stopped.
+* Results ship with their limits: paired uncertainty intervals and a plain statement of what each result does not establish.
+* Release gate: a candidate build is compared with an accepted baseline under declared margins before it can be called an improvement.
+
 <!-- matched-recovery-results:start -->
 
 ## Completed matched hallucination results
